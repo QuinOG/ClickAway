@@ -5,7 +5,9 @@
 Go to the folder where you want it:
 
 cd Documents/Projects
+
 git clone https://github.com/QuinOG/ClickAway.git
+
 cd ClickAway
 
 2️⃣ Install dependencies (CRITICAL STEP)
