@@ -1,27 +1,23 @@
 # ClickAway
-
 1️⃣ Clone the repo (first time only)
 
 Go to the folder where you want it:
 
-cd Documents/Projects
-
-git clone https://github.com/QuinOG/ClickAway.git
-
-cd ClickAway
-
-
+- cd Documents/Projects
+- git clone https://github.com/QuinOG/ClickAway.git
+- cd ClickAway
+#
 2️⃣ Install dependencies (CRITICAL STEP)
 
 Inside the project folder:
 
-npm install
+- npm install
 
 This installs everything from package.json.
 Without this step, npm run dev will fail.
 #
 3️⃣ Start the React dev server
-npm run dev
+- npm run dev
 
 Open the localhost link Vite gives you.
 
