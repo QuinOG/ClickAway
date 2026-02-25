@@ -1,11 +1,9 @@
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink } from "react-router-dom"
 
-export default function Navbar({ isAuthed }) {
-  const navigate = useNavigate()
-
+export default function Navbar({ isAuthed, onLogout }) {
   function handleLogout() {
-    // Later: clear token, call /auth/logout if you do server sessions
-    navigate("/login")
+    // App-level state owns auth; this callback keeps navbar behavior in sync with route guards.
+    onLogout?.()
   }
 
   return (
@@ -14,6 +12,7 @@ export default function Navbar({ isAuthed }) {
         <div className="brand">ClickAway</div>
 
         <nav className="navLinks">
+          {/* Keep nav options auth-aware so route access and UX stay consistent. */}
           {isAuthed ? (
             <>
               <NavLink to="/game" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Game</NavLink>
@@ -25,7 +24,7 @@ export default function Navbar({ isAuthed }) {
           ) : (
             <>
               <NavLink to="/login" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Login</NavLink>
-              <NavLink to="/signup" className="navItem">Sign Up</NavLink>
+              <NavLink to="/signup" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Sign Up</NavLink>
             </>
           )}
         </nav>

@@ -6,6 +6,7 @@ import "./styles.css"
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    {/* Router is mounted once at the app root so pages can use navigation hooks anywhere. */}
     <BrowserRouter>
       <App />
     </BrowserRouter>

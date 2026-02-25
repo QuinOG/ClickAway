@@ -1,14 +1,15 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-export default function LoginPage() {
+export default function LoginPage({ onLogin }) {
   const navigate = useNavigate()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
   function handleSubmit(e) {
     e.preventDefault()
-    // Later: call API /auth/login then store token
+    onLogin?.()
+    // Temporary client-side auth success until backend login/token flow is available.
     navigate("/game")
   }
 
@@ -20,12 +21,12 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="formGrid">
           <label className="labelRow">
             <span>Username:</span>
-            <input value={username} onChange={(e) => setUsername(e.target.value)} className="input" />
+            <input value={username} onChange={(e) => setUsername(e.target.value)} className="input" required />
           </label>
 
           <label className="labelRow">
             <span>Password:</span>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input" required />
           </label>
 
           <div>

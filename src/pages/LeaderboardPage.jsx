@@ -1,3 +1,4 @@
+// Placeholder data until leaderboard API is connected.
 const demo = [{ username: "clickadmin", bestScore: 9 }]
 
 export default function LeaderboardPage() {
