@@ -1,0 +1,281 @@
+:root {
+    --bg: #f4f2ef;
+    --card: #ffffff;
+    --text: #111;
+    --muted: #666;
+    --topbar: #111;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.appShell {
+    min-height: 100vh;
+}
+
+.mainContent {
+    padding: 28px 16px;
+}
+
+.topbar {
+    background: var(--topbar);
+    color: #fff;
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.topbarInner {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: .2px;
+}
+
+.navLinks {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.navItem {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: .9;
+}
+
+.navItem:hover {
+    opacity: 1;
+}
+
+.navItem.active {
+    text-decoration: underline;
+    text-underline-offset: 6px;
+}
+
+.navButton {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    opacity: .9;
+}
+
+.navButton:hover {
+    opacity: 1;
+}
+
+.pageCenter {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+.card {
+    width: min(920px, 100%);
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+}
+
+.cardWide {
+    width: min(1000px, 100%);
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+}
+
+.cardTitle {
+    margin: 0 0 14px 0;
+    font-size: 40px;
+    letter-spacing: .2px;
+}
+
+.cardH2 {
+    margin: 20px 0 8px 0;
+    font-size: 26px;
+}
+
+.bullets {
+    margin-top: 8px;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.formGrid {
+    margin-top: 10px;
+    display: grid;
+    gap: 10px;
+    max-width: 420px;
+}
+
+.labelRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.labelRow span {
+    width: 90px;
+}
+
+.input {
+    width: 160px;
+    height: 24px;
+    padding: 2px 6px;
+}
+
+.primaryButton {
+    background: #ff6a00;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.primaryButton:hover {
+    filter: brightness(0.95);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.table th {
+    font-weight: 800;
+}
+
+/* GAME SCREEN (matches your clicker screenshot vibe) */
+.gameScreen {
+    min-height: calc(100vh - 56px);
+    background: #181a2b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px 16px;
+    position: relative;
+}
+
+.scoreNumber {
+    font-size: 56px;
+    font-weight: 800;
+    color: #56d3b1;
+    letter-spacing: 1px;
+}
+
+.timerText {
+    color: rgba(255, 255, 255, .9);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.arena {
+    width: min(520px, 90vw);
+    height: min(520px, 90vw);
+    position: relative;
+}
+
+.bigCircleButton {
+    position: absolute;
+    border-radius: 999px;
+    overflow: hidden;
+    border: none;
+    background: #4ac5a0;
+    color: #0c1020;
+    font-weight: 900;
+    letter-spacing: .8px;
+    cursor: pointer;
+    box-shadow:
+        0 18px 0 rgba(0, 0, 0, .25),
+        0 18px 40px rgba(0, 0, 0, .35);
+    user-select: none;
+}
+
+.bigCircleButton:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+.bigCircleButton:active {
+    transform: translateY(4px);
+    box-shadow:
+        0 14px 0 rgba(0, 0, 0, .25),
+        0 14px 30px rgba(0, 0, 0, .35);
+}
+
+.ppcText {
+    color: rgba(255, 255, 255, .65);
+    font-size: 14px;
+}
+
+.gameOverOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.gameOverCard {
+    background: #ffffff;
+    color: #111;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+    padding: 24px;
+    min-width: min(360px, 92vw);
+    text-align: center;
+}
+
+.gameOverCard h2 {
+    margin: 0 0 10px 0;
+}
+
+.gameOverCard p {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
