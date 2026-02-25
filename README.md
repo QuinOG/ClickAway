@@ -19,8 +19,7 @@ npm install
 
 This installs everything from package.json.
 Without this step, npm run dev will fail.
-
-
+#
 3️⃣ Start the React dev server
 npm run dev
 
