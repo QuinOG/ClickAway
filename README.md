@@ -10,6 +10,7 @@ git clone https://github.com/QuinOG/ClickAway.git
 
 cd ClickAway
 
+
 2️⃣ Install dependencies (CRITICAL STEP)
 
 Inside the project folder:
@@ -18,6 +19,7 @@ npm install
 
 This installs everything from package.json.
 Without this step, npm run dev will fail.
+
 
 3️⃣ Start the React dev server
 npm run dev
