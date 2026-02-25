@@ -4,7 +4,7 @@ export default function Navbar({ isAuthed }) {
   const navigate = useNavigate()
 
   function handleLogout() {
-    // Later: clear token, call /auth/logout if you do server sessions
+    // Frontend-only logout behavior until auth/session integration is wired up.
     navigate("/login")
   }
 
@@ -14,6 +14,7 @@ export default function Navbar({ isAuthed }) {
         <div className="brand">ClickAway</div>
 
         <nav className="navLinks">
+          {/* Keep nav options auth-aware so route access and UX stay consistent. */}
           {isAuthed ? (
             <>
               <NavLink to="/game" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Game</NavLink>

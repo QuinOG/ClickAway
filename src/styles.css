@@ -215,6 +215,7 @@ body {
     width: min(520px, 90vw);
     height: min(520px, 90vw);
     position: relative;
+    overflow: hidden;
 }
 
 .bigCircleButton {
@@ -248,6 +249,36 @@ body {
 .ppcText {
     color: rgba(255, 255, 255, .65);
     font-size: 14px;
+}
+
+.clickFeedback {
+    position: absolute;
+    pointer-events: none;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    animation: clickFeedbackFloat .55s ease-out forwards;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+
+.clickFeedback.positive {
+    color: #56d3b1;
+}
+
+.clickFeedback.negative {
+    color: #ff5f6f;
+}
+
+@keyframes clickFeedbackFloat {
+    from {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(14px, -20px) scale(1.08);
+    }
 }
 
 .gameOverOverlay {

@@ -8,7 +8,7 @@ export default function LoginPage() {
 
   function handleSubmit(e) {
     e.preventDefault()
-    // Later: call API /auth/login then store token
+    // Temporary client-side navigation until backend login/token flow is available.
     navigate("/game")
   }
 
