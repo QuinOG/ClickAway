@@ -1,3 +1,12 @@
+function getButtonInlineStyle({ style, labelFontSize, hasImage, skinImageSrc, skinImageScale }) {
+  return {
+    ...style,
+    fontSize: `${labelFontSize}px`,
+    backgroundImage: hasImage ? `url(${skinImageSrc})` : undefined,
+    backgroundSize: hasImage ? `${skinImageScale}%` : undefined,
+  }
+}
+
 export default function MovingButton({
   style,
   onClick,
@@ -13,12 +22,7 @@ export default function MovingButton({
   return (
     <button
       className={`bigCircleButton ${skinClass} ${hasImage ? "hasImage" : ""}`}
-      style={{
-        ...style,
-        fontSize: `${labelFontSize}px`,
-        backgroundImage: hasImage ? `url(${skinImageSrc})` : undefined,
-        backgroundSize: hasImage ? `${skinImageScale}%` : undefined,
-      }}
+      style={getButtonInlineStyle({ style, labelFontSize, hasImage, skinImageSrc, skinImageScale })}
       onClick={onClick}
       disabled={disabled}
     >

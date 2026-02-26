@@ -17,6 +17,75 @@ function getCoinBonusText(coinMultiplier) {
   return `Coins: +${bonusPercent}%`
 }
 
+function getRoundFeedbackMessage({ hits, misses, accuracy, bestStreak }) {
+  if (hits === 0) {
+    return "No hits landed this round. Focus on tracking the target first."
+  }
+
+  const accuracyValue = Number.parseInt(String(accuracy).replace("%", ""), 10)
+  const normalizedAccuracy = Number.isFinite(accuracyValue) ? accuracyValue : 0
+
+  if (normalizedAccuracy >= 85 && bestStreak >= 8) {
+    return "Strong run. Keep that rhythm and push for a longer streak."
+  }
+
+  if (misses > hits) {
+    return "Misses outweighed hits. Slow down slightly and prioritize clean clicks."
+  }
+
+  return "Solid round. Cut a few misses and your score will climb quickly."
+}
+
+function DifficultyOptionCard({
+  difficulty,
+  isSelected,
+  onSelectDifficulty,
+  canChangeDifficulty,
+  compact,
+}) {
+  const displayLabel = formatDifficultyLabel(difficulty)
+  const missPenaltyValue = difficulty.missPenalty > 0 ? `-${difficulty.missPenalty}` : "None"
+
+  return (
+    <button
+      type="button"
+      className={`difficultyOption ${isSelected ? "selected" : ""}`}
+      aria-pressed={isSelected}
+      onClick={() => onSelectDifficulty?.(difficulty.id)}
+      disabled={!canChangeDifficulty}
+    >
+      <span className="difficultyTop">
+        <span className="difficultyName">{displayLabel}</span>
+      </span>
+      <span className="difficultyDescriptionLine">{difficulty.description}</span>
+
+      <span className="difficultyQuickStats">
+        <span className="difficultyQuickStat">
+          <strong>{difficulty.durationSeconds}s</strong>
+          <small>Round</small>
+        </span>
+        <span className="difficultyQuickStat">
+          <strong>{missPenaltyValue}</strong>
+          <small>Miss</small>
+        </span>
+        <span className="difficultyQuickStat">
+          <strong>{getShrinkPaceLabel(difficulty.shrinkFactor)}</strong>
+          <small>Shrink</small>
+        </span>
+      </span>
+
+      <span className="difficultySecondaryInfo">
+        <span>Combo: every {difficulty.comboStep} hits</span>
+        <span>{getCoinBonusText(difficulty.coinMultiplier)}</span>
+      </span>
+
+      {!compact ? (
+        <span className="difficultyDescription">{difficulty.playerHint}</span>
+      ) : null}
+    </button>
+  )
+}
+
 function DifficultyPicker({
   difficulties = [],
   selectedDifficultyId,
@@ -30,51 +99,26 @@ function DifficultyPicker({
       role="radiogroup"
       aria-label="Difficulty"
     >
-      {difficulties.map((difficulty) => {
-        const isSelected = difficulty.id === selectedDifficultyId
-        const displayLabel = formatDifficultyLabel(difficulty)
-        const missPenaltyValue =
-          difficulty.missPenalty > 0 ? `-${difficulty.missPenalty}` : "None"
-
-        return (
-          <button
-            key={difficulty.id}
-            type="button"
-            className={`difficultyOption ${isSelected ? "selected" : ""}`}
-            aria-pressed={isSelected}
-            onClick={() => onSelectDifficulty?.(difficulty.id)}
-            disabled={!canChangeDifficulty}
-          >
-            <span className="difficultyTop">
-              <span className="difficultyName">{displayLabel}</span>
-            </span>
-            <span className="difficultyDescriptionLine">{difficulty.description}</span>
-
-            <span className="difficultyQuickStats">
-              <span className="difficultyQuickStat">
-                <strong>{difficulty.durationSeconds}s</strong>
-                <small>Round</small>
-              </span>
-              <span className="difficultyQuickStat">
-                <strong>{missPenaltyValue}</strong>
-                <small>Miss</small>
-              </span>
-              <span className="difficultyQuickStat">
-                <strong>{getShrinkPaceLabel(difficulty.shrinkFactor)}</strong>
-                <small>Shrink</small>
-              </span>
-            </span>
-
-            <span className="difficultySecondaryInfo">
-              <span>Combo: every {difficulty.comboStep} hits</span>
-              <span>{getCoinBonusText(difficulty.coinMultiplier)}</span>
-            </span>
-
-            {!compact ? <span className="difficultyDescription">{difficulty.playerHint}</span> : null}
-          </button>
-        )
-      })}
+      {difficulties.map((difficulty) => (
+        <DifficultyOptionCard
+          key={difficulty.id}
+          difficulty={difficulty}
+          isSelected={difficulty.id === selectedDifficultyId}
+          onSelectDifficulty={onSelectDifficulty}
+          canChangeDifficulty={canChangeDifficulty}
+          compact={compact}
+        />
+      ))}
     </div>
+  )
+}
+
+function SummaryRow({ label, value }) {
+  return (
+    <tr>
+      <th scope="row">{label}</th>
+      <td>{value}</td>
+    </tr>
   )
 }
 
@@ -86,11 +130,20 @@ export function ReadyOverlay({
   canChangeDifficulty = true,
 }) {
   return (
-    <div className="gameOverlay" role="dialog" aria-modal="true" aria-labelledby="round-ready-title">
-      <section className={`gameOverCard readyCard readyCardStack difficultyMood-${selectedDifficultyId}`}>
-        <h2 id="round-ready-title" className="readyTitle">Ready?</h2>
+    <div
+      className="gameOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="round-ready-title"
+    >
+      <section
+        className={`gameOverCard readyCard readyCardStack difficultyMood-${selectedDifficultyId}`}
+      >
+        <h2 id="round-ready-title" className="readyTitle">
+          Round Ready
+        </h2>
         <p className="readyLead">
-          Choose your difficulty, then build a streak before time runs out.
+          Pick your difficulty, protect your streak, and score as many clean hits as you can.
         </p>
 
         <DifficultyPicker
@@ -101,7 +154,7 @@ export function ReadyOverlay({
         />
 
         <p className="difficultyHint">
-          Difficulty changes timer length, miss penalties, and target pressure.
+          Difficulty affects timer length, miss penalties, combo growth pace, and coin reward.
         </p>
 
         <div className="overlayActions readyActions">
@@ -142,38 +195,35 @@ export function GameOverOverlay({
   canChangeDifficulty = true,
   onPlayAgain,
 }) {
+  const feedbackMessage = getRoundFeedbackMessage({
+    hits,
+    misses,
+    accuracy,
+    bestStreak,
+  })
+
   return (
-    <div className="gameOverlay" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
-      <section className={`gameOverCard gameOverCardWithDifficulty difficultyMood-${selectedDifficultyId}`}>
+    <div
+      className="gameOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="game-over-title"
+    >
+      <section
+        className={`gameOverCard gameOverCardWithDifficulty difficultyMood-${selectedDifficultyId}`}
+      >
         <h2 id="game-over-title">Game Over</h2>
         <p className="gameOverScore">Final Score: {score}</p>
+        <p className="gameOverFeedback">{feedbackMessage}</p>
 
         <table className="roundSummaryTable" aria-label="Round summary">
           <tbody>
-            <tr>
-              <th scope="row">Difficulty</th>
-              <td>{difficultyLabel}</td>
-            </tr>
-            <tr>
-              <th scope="row">Hits</th>
-              <td>{hits}</td>
-            </tr>
-            <tr>
-              <th scope="row">Misses</th>
-              <td>{misses}</td>
-            </tr>
-            <tr>
-              <th scope="row">Accuracy</th>
-              <td>{accuracy}</td>
-            </tr>
-            <tr>
-              <th scope="row">Best Streak</th>
-              <td>{bestStreak}</td>
-            </tr>
-            <tr>
-              <th scope="row">Power-ups Used</th>
-              <td>{powerupsUsed}</td>
-            </tr>
+            <SummaryRow label="Difficulty" value={difficultyLabel} />
+            <SummaryRow label="Hits" value={hits} />
+            <SummaryRow label="Misses" value={misses} />
+            <SummaryRow label="Accuracy" value={accuracy} />
+            <SummaryRow label="Best Streak" value={bestStreak} />
+            <SummaryRow label="Power-ups Used" value={powerupsUsed} />
           </tbody>
         </table>
 
@@ -183,6 +233,10 @@ export function GameOverOverlay({
           onSelectDifficulty={onSelectDifficulty}
           canChangeDifficulty={canChangeDifficulty}
         />
+
+        <p className="difficultyHint gameOverHint">
+          Select your next difficulty, then start another run.
+        </p>
 
         <div className="overlayActions gameOverActions">
           <button className="primaryButton" onClick={onPlayAgain}>

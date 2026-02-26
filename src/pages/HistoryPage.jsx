@@ -1,48 +1,24 @@
 import InfoStrip from "../components/InfoStrip.jsx"
+import { HISTORY_INSIGHTS, MOCK_HISTORY } from "../features/history/historyData.js"
 
-const MOCK_HISTORY = [
-  {
-    id: "r-001",
-    playedAt: "Today, 4:12 PM",
-    score: 84,
-    hits: 67,
-    misses: 15,
-    accuracy: "82%",
-    coinsEarned: 67,
-  },
-  {
-    id: "r-002",
-    playedAt: "Today, 3:48 PM",
-    score: 73,
-    hits: 59,
-    misses: 17,
-    accuracy: "78%",
-    coinsEarned: 59,
-  },
-  {
-    id: "r-003",
-    playedAt: "Yesterday, 8:05 PM",
-    score: 91,
-    hits: 72,
-    misses: 14,
-    accuracy: "84%",
-    coinsEarned: 72,
-  },
-]
+function getHistoryRows(roundHistory) {
+  if (Array.isArray(roundHistory) && roundHistory.length > 0) {
+    return roundHistory
+  }
 
-const HISTORY_INSIGHTS = [
-  "Low misses usually predict higher score growth.",
-  "Accuracy trends reveal consistency over time.",
-  "Coins earned mirrors successful hits each round.",
-]
+  return MOCK_HISTORY
+}
 
-export default function HistoryPage() {
+export default function HistoryPage({ roundHistory = [] }) {
+  const historyRows = getHistoryRows(roundHistory)
+
   return (
     <div className="pageCenter">
       <section className="card">
         <h1 className="cardTitle">Match History</h1>
         <p className="muted">
-          Review your recent rounds to spot patterns, improve your consistency, and track coin growth.
+          Review your recent rounds to spot patterns, improve your consistency, and track
+          coin growth.
         </p>
 
         <InfoStrip points={HISTORY_INSIGHTS} />
@@ -59,7 +35,7 @@ export default function HistoryPage() {
             </tr>
           </thead>
           <tbody>
-            {MOCK_HISTORY.map((round) => (
+            {historyRows.map((round) => (
               <tr key={round.id}>
                 <td>{round.playedAt}</td>
                 <td>{round.score}</td>

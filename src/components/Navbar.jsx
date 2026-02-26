@@ -1,8 +1,42 @@
 import { NavLink } from "react-router-dom"
 
-export default function Navbar({ isAuthed, onLogout, coins = 0 }) {
+const AUTHED_NAV_LINKS = [
+  { to: "/game", label: "Game" },
+  { to: "/history", label: "History" },
+  { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/shop", label: "Shop" },
+  { to: "/help", label: "Help" },
+]
+
+const GUEST_NAV_LINKS = [
+  { to: "/login", label: "Login" },
+  { to: "/signup", label: "Sign Up" },
+]
+
+function renderNavLink({ to, label }) {
+  return (
+    <NavLink key={to} to={to} className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>
+      {label}
+    </NavLink>
+  )
+}
+
+function NavigationLinks({ links, className }) {
+  return <div className={className}>{links.map(renderNavLink)}</div>
+}
+
+function CoinVault({ coins }) {
   const formattedCoins = Number.isFinite(coins) ? coins.toLocaleString() : "0"
 
+  return (
+    <div className="coinPill" aria-label={`Coin vault ${formattedCoins}`}>
+      <span className="coinPillLabel">¢ Coin Vault:</span>
+      <span className="coinPillValue">{formattedCoins}</span>
+    </div>
+  )
+}
+
+export default function Navbar({ isAuthed, onLogout, coins = 0 }) {
   function handleLogout() {
     // App-level state owns auth; this callback keeps navbar behavior in sync with route guards.
     onLogout?.()
@@ -26,27 +60,17 @@ export default function Navbar({ isAuthed, onLogout, coins = 0 }) {
           {/* Keep nav options auth-aware so route access and UX stay consistent. */}
           {isAuthed ? (
             <>
-              <div className="navMain">
-                <NavLink to="/game" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Game</NavLink>
-                <NavLink to="/history" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>History</NavLink>
-                <NavLink to="/leaderboard" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Leaderboard</NavLink>
-                <NavLink to="/shop" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Shop</NavLink>
-                <NavLink to="/help" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Help</NavLink>
-              </div>
+              <NavigationLinks links={AUTHED_NAV_LINKS} className="navMain" />
 
               <div className="navMeta">
-                <div className="coinPill" aria-label={`Coin vault ${formattedCoins}`}>
-                  <span className="coinPillLabel">Coin Vault:</span>
-                  <span className="coinPillValue">{formattedCoins}</span>
-                </div>
-                <button className="navButton" onClick={handleLogout}>Logout</button>
+                <CoinVault coins={coins} />
+                <button className="navButton" onClick={handleLogout}>
+                  Logout
+                </button>
               </div>
             </>
           ) : (
-            <div className="navMain navMainGuest">
-              <NavLink to="/login" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Login</NavLink>
-              <NavLink to="/signup" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Sign Up</NavLink>
-            </div>
+            <NavigationLinks links={GUEST_NAV_LINKS} className="navMain navMainGuest" />
           )}
         </nav>
       </div>

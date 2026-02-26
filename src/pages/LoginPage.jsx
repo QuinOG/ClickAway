@@ -6,8 +6,8 @@ export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  function handleSubmit(e) {
-    e.preventDefault()
+  function handleSubmit(event) {
+    event.preventDefault()
     onLogin?.()
     // Temporary client-side auth success until backend login/token flow is available.
     navigate("/game")

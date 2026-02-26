@@ -1,38 +1,66 @@
 # ClickAway
-1️⃣ Clone the repo (first time only)
 
-Go to the folder where you want it:
+## Setup
+1. Clone the repo:
+- `git clone https://github.com/QuinOG/ClickAway.git`
+- `cd ClickAway`
 
-- git clone https://github.com/QuinOG/ClickAway.git
-- cd ClickAway
-#
-2️⃣ Install dependencies (CRITICAL STEP)
+2. Install dependencies:
+- `npm install`
 
-Inside the project folder:
+3. Start the dev server:
+- `npm run dev`
 
-- npm install
+4. Create a production build:
+- `npm run build`
 
-This installs everything from package.json.
-Without this step, npm run dev will fail.
-#
-3️⃣ Start the React dev server
-- npm run dev
+## Project Structure
+- `src/components`: reusable UI components used by multiple pages.
+- `src/features`: feature-focused UI/content (game/help/shop/history/leaderboard pieces).
+- `src/hooks`: simple custom hooks (`useLocalStorageState`, `useBodyClass`).
+- `src/utils`: pure helper functions (math, storage parsing, rewards, shop helpers).
+- `src/constants`: app config and enum-like values (difficulty, powerups, shop catalog).
+- `src/styles`: shared CSS (`app.css`).
 
-Open the localhost link Vite gives you.
+## How The Game Loop Works
+1. `GamePage` starts in `ROUND_PHASE.READY`.
+2. `ReadyOverlay` lets the player select difficulty and start the round.
+3. On start, phase changes to `COUNTDOWN` and ticks down each second.
+4. When countdown reaches 0, phase changes to `PLAYING`.
+5. During play:
+- target hits increase score/streak and can award power-up charges.
+- misses reset streak and may apply a score penalty (based on difficulty).
+- timer ticks down each second.
+6. When timer reaches 0, phase changes to `GAME_OVER`.
+7. `onRoundComplete` is called once for coin rewards, then the player can play again.
 
-# React + Vite
+## Where To Change Difficulty Settings
+- Edit `src/constants/difficultyConfig.js`.
+- Each difficulty object controls:
+- `durationSeconds`
+- `initialButtonSize`
+- `minButtonSize`
+- `shrinkFactor`
+- `missPenalty`
+- `comboStep`
+- `coinMultiplier`
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## How UI State Flows
+1. `App.jsx` owns global UI state:
+- auth
+- coins
+- owned/equipped cosmetics
+- selected difficulty
+2. Global state is persisted through `useLocalStorageState`.
+3. `App.jsx` passes state and callbacks down through route components.
+4. `GamePage` owns round-local state:
+- phase/timer
+- score/streak/accuracy inputs
+- powerup charges/usage
+- target position/size and click feedback
+5. `GamePage` sends round results up through `onRoundComplete`.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Notes For Beginners
+- Keep utility functions in `src/utils` pure (no DOM reads/writes).
+- Keep constants in `src/constants` so balancing changes are easy and safe.
+- Prefer small components that only render UI and receive data via props.

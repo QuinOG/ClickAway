@@ -1,26 +1,41 @@
 import InfoStrip from "../components/InfoStrip.jsx"
+import {
+  LEADERBOARD_INSIGHTS,
+  MOCK_LEADERBOARD,
+} from "../features/leaderboard/leaderboardData.js"
+import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
 
-const MOCK_LEADERBOARD = [
-  { username: "ClickMaster", bestScore: 128, bestStreak: 19, accuracy: "86%" },
-  { username: "NeonNinja", bestScore: 117, bestStreak: 16, accuracy: "82%" },
-  { username: "SwiftTap", bestScore: 103, bestStreak: 14, accuracy: "79%" },
-  { username: "ArcadeAce", bestScore: 94, bestStreak: 12, accuracy: "75%" },
-  { username: "FocusFox", bestScore: 88, bestStreak: 11, accuracy: "73%" },
-]
+function getLeaderboardRows(roundHistory) {
+  if (!Array.isArray(roundHistory) || roundHistory.length === 0) {
+    return MOCK_LEADERBOARD
+  }
 
-const LEADERBOARD_INSIGHTS = [
-  "Highest score is the primary ranking driver.",
-  "Best streak separates players with similar scores.",
-  "Accuracy shows how repeatable your performance is.",
-]
+  const playerStats = buildPlayerLeaderboardStats(roundHistory)
+  const mergedRows = [
+    {
+      username: "You",
+      bestScore: playerStats.bestScore,
+      bestStreak: playerStats.bestStreak,
+      accuracy: playerStats.accuracy,
+    },
+    ...MOCK_LEADERBOARD,
+  ]
 
-export default function LeaderboardPage() {
+  return mergedRows
+    .sort((firstRow, secondRow) => secondRow.bestScore - firstRow.bestScore)
+    .slice(0, 5)
+}
+
+export default function LeaderboardPage({ roundHistory = [] }) {
+  const leaderboardRows = getLeaderboardRows(roundHistory)
+
   return (
     <div className="pageCenter">
       <section className="card">
         <h1 className="cardTitle">Leaderboard</h1>
         <p className="muted">
-          See how top players are performing this season. Climb by improving your score, streak consistency, and accuracy.
+          See how top players are performing this season. Climb by improving your score,
+          streak consistency, and accuracy.
         </p>
 
         <InfoStrip points={LEADERBOARD_INSIGHTS} />
@@ -36,13 +51,13 @@ export default function LeaderboardPage() {
             </tr>
           </thead>
           <tbody>
-            {MOCK_LEADERBOARD.map((row, idx) => (
-              <tr key={row.username}>
-                <td>{idx + 1}</td>
-                <td>{row.username}</td>
-                <td>{row.bestScore}</td>
-                <td>{row.bestStreak}</td>
-                <td>{row.accuracy}</td>
+            {leaderboardRows.map((player, index) => (
+              <tr key={player.username}>
+                <td>{index + 1}</td>
+                <td>{player.username}</td>
+                <td>{player.bestScore}</td>
+                <td>{player.bestStreak}</td>
+                <td>{player.accuracy}</td>
               </tr>
             ))}
           </tbody>

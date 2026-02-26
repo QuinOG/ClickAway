@@ -8,8 +8,8 @@ export default function SignupPage({ onSignup }) {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
 
-  function handleSubmit(e) {
-    e.preventDefault()
+  function handleSubmit(event) {
+    event.preventDefault()
 
     if (password !== confirmPassword) {
       setError("Passwords must match.")
