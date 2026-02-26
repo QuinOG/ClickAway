@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom"
 
-export default function Navbar({ isAuthed, onLogout }) {
+export default function Navbar({ isAuthed, onLogout, coins = 0 }) {
   function handleLogout() {
     // App-level state owns auth; this callback keeps navbar behavior in sync with route guards.
     onLogout?.()
@@ -18,7 +18,9 @@ export default function Navbar({ isAuthed, onLogout }) {
               <NavLink to="/game" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Game</NavLink>
               <NavLink to="/history" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>History</NavLink>
               <NavLink to="/leaderboard" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Leaderboard</NavLink>
+              <NavLink to="/shop" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Shop</NavLink>
               <NavLink to="/help" className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}>Help</NavLink>
+              <div className="coinPill" aria-label={`Coins ${coins}`}>Coins: {coins}</div>
               <button className="navButton" onClick={handleLogout}>Logout</button>
             </>
           ) : (

@@ -4,7 +4,7 @@ import Navbar from "./Navbar.jsx"
 
 const GAME_ROUTE_PREFIX = "/game"
 
-export default function Layout({ isAuthed, onLogout }) {
+export default function Layout({ isAuthed, onLogout, coins }) {
   const location = useLocation()
   const isGameRoute = location.pathname.startsWith(GAME_ROUTE_PREFIX)
 
@@ -18,7 +18,7 @@ export default function Layout({ isAuthed, onLogout }) {
   return (
     <div className="appShell">
       {/* Navbar visibility/links are driven by auth state from App-level routing. */}
-      <Navbar isAuthed={isAuthed} onLogout={onLogout} />
+      <Navbar isAuthed={isAuthed} onLogout={onLogout} coins={coins} />
       <main className={`mainContent ${isGameRoute ? "gameMain" : ""}`}>
         {/* Route outlet for page content. */}
         <Outlet />
