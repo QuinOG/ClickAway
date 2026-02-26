@@ -1,101 +1,45 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import MovingButton from "../components/MovingButton.jsx"
+import GameStatusRow from "../features/game/components/GameStatusRow.jsx"
+import PowerupTray from "../features/game/components/PowerupTray.jsx"
+import {
+  CountdownOverlay,
+  GameOverOverlay,
+  ReadyOverlay,
+} from "../features/game/components/RoundOverlays.jsx"
+import {
+  FEEDBACK_LIFETIME_MS,
+  FEEDBACK_OFFSET,
+  POWERUPS,
+  POWERUP_BY_KEY,
+  READY_COUNTDOWN_START,
+  ROUND_PHASE,
+  TIMER_TICK_MS,
+  buildInitialPowerupCharges,
+} from "../features/game/gameConfig.js"
+import {
+  DIFFICULTIES,
+  DEFAULT_DIFFICULTY_ID,
+  getDifficultyById,
+} from "../features/game/difficultyConfig.js"
+import {
+  formatAccuracy,
+  getButtonLabel,
+  getButtonLabelFontSize,
+  getCenteredPosition,
+  getComboMultiplier,
+  getNextButtonSize,
+  getRandomPosition,
+  getStreakAtmosphereTier,
+} from "../features/game/gameUtils.js"
 
-const GAME_DURATION_SECONDS = 15
-const INITIAL_BUTTON_SIZE = 100
-const MIN_BUTTON_SIZE = 10
-const BUTTON_SHRINK_FACTOR = 0.97
-const TIMER_TICK_MS = 1000
-const FEEDBACK_LIFETIME_MS = 550
-const FEEDBACK_OFFSET = { x: 12, y: -12 }
-const MIN_LABEL_FONT_SIZE = 8
-const MAX_LABEL_FONT_SIZE = 18
-const LABEL_SCALE_FACTOR = 0.18
-const LABEL_HIDE_SIZE_THRESHOLD = 40
-const MAX_TIME_BUFFER_SECONDS = 30
-
-const ROUND_PHASE = {
-  READY: "ready",
-  COUNTDOWN: "countdown",
-  PLAYING: "playing",
-  GAME_OVER: "game_over",
-}
-
-const POWERUPS = [
-  {
-    id: "time_boost",
-    key: "1",
-    label: "Time +2s",
-    awardEvery: 5,
-    description: "Adds 2 seconds to the timer.",
-  },
-  {
-    id: "size_boost",
-    key: "2",
-    label: "Grow +10",
-    awardEvery: 10,
-    description: "Temporarily makes the target larger.",
-  },
-  {
-    id: "bonus_points",
-    key: "3",
-    label: "Bonus +5",
-    awardEvery: 15,
-    description: "Instantly grants 5 points.",
-  },
-]
-
-const POWERUP_BY_KEY = POWERUPS.reduce((map, powerup) => {
-  map[powerup.key] = powerup
-  return map
-}, {})
-
-function buildInitialPowerupCharges() {
-  return POWERUPS.reduce((acc, powerup) => {
-    acc[powerup.id] = 0
-    return acc
-  }, {})
-}
-
-function clampToArena(arenaSize, itemSize) {
-  return Math.max(0, arenaSize - itemSize)
-}
-
-function getCenteredPosition(rect, itemSize) {
-  return {
-    x: Math.max(0, Math.floor((rect.width - itemSize) / 2)),
-    y: Math.max(0, Math.floor((rect.height - itemSize) / 2)),
-  }
-}
-
-function getRandomPosition(rect, itemSize) {
-  const maxX = clampToArena(rect.width, itemSize)
-  const maxY = clampToArena(rect.height, itemSize)
-
-  return {
-    x: Math.floor(Math.random() * (maxX + 1)),
-    y: Math.floor(Math.random() * (maxY + 1)),
-  }
-}
-
-
-
-function getNextButtonSize(currentSize) {
-  return Math.max(MIN_BUTTON_SIZE, Math.floor(currentSize * BUTTON_SHRINK_FACTOR))
-}
-
-function getComboMultiplier(streak) {
-  return 1 + Math.floor(streak / 5)
-}
-
-function formatAccuracy(hits, misses) {
-  const totalAttempts = hits + misses
-  if (totalAttempts === 0) return "0%"
-  return `${Math.round((hits / totalAttempts) * 100)}%`
-}
+const SHAKE_STREAK_MILESTONE = 10
+const SHAKE_DURATION_MS = 260
 
 export default function GamePage({
   onRoundComplete,
+  selectedDifficultyId = DEFAULT_DIFFICULTY_ID,
+  onDifficultyChange,
   buttonSkinClass = "skin-default",
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
@@ -104,26 +48,44 @@ export default function GamePage({
   const arenaRef = useRef(null)
   const feedbackTimeoutsRef = useRef([])
   const hasAwardedRoundRef = useRef(false)
+  const shakeTimeoutRef = useRef(null)
+
+  const selectedDifficulty = useMemo(
+    () => getDifficultyById(selectedDifficultyId),
+    [selectedDifficultyId]
+  )
 
   const [phase, setPhase] = useState(ROUND_PHASE.READY)
-  const [countdownValue, setCountdownValue] = useState(3)
+  const [countdownValue, setCountdownValue] = useState(READY_COUNTDOWN_START)
+  const [isShakeActive, setIsShakeActive] = useState(false)
 
   const [score, setScore] = useState(0)
-  const [ppc] = useState(1)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
   const [powerupsUsed, setPowerupsUsed] = useState(0)
 
-  const [size, setSize] = useState(INITIAL_BUTTON_SIZE)
+  const [roundDifficulty, setRoundDifficulty] = useState(selectedDifficulty)
+  const [size, setSize] = useState(selectedDifficulty.initialButtonSize)
   const [pos, setPos] = useState({ x: 0, y: 0 })
-  const [timeLeft, setTimeLeft] = useState(GAME_DURATION_SECONDS)
+  const [timeLeft, setTimeLeft] = useState(selectedDifficulty.durationSeconds)
   const [clickFeedback, setClickFeedback] = useState([])
   const [powerupCharges, setPowerupCharges] = useState(buildInitialPowerupCharges)
 
   const isPlaying = phase === ROUND_PHASE.PLAYING
-  const comboMultiplier = useMemo(() => getComboMultiplier(streak), [streak])
+  const canChangeDifficulty =
+    phase === ROUND_PHASE.READY || phase === ROUND_PHASE.GAME_OVER
+  const comboMultiplier = useMemo(
+    () => getComboMultiplier(streak, roundDifficulty.comboStep),
+    [streak, roundDifficulty.comboStep]
+  )
+  const accuracy = useMemo(() => formatAccuracy(hits, misses), [hits, misses])
+  const atmosphereTier = useMemo(() => getStreakAtmosphereTier(streak), [streak])
+  const gameScreenClassName = useMemo(() => {
+    const shakeClass = isShakeActive ? "isShaking" : ""
+    return `gameScreen streakTier${atmosphereTier} ${shakeClass}`.trim()
+  }, [atmosphereTier, isShakeActive])
 
   const buttonStyle = useMemo(
     () => ({
@@ -135,16 +97,30 @@ export default function GamePage({
     [size, pos]
   )
 
-  const buttonLabel = size >= LABEL_HIDE_SIZE_THRESHOLD ? "Click Here" : ""
-  const buttonLabelFontSize = Math.min(
-    MAX_LABEL_FONT_SIZE,
-    Math.max(MIN_LABEL_FONT_SIZE, Math.floor(size * LABEL_SCALE_FACTOR))
-  )
+  const buttonLabel = getButtonLabel(size)
+  const buttonLabelFontSize = getButtonLabelFontSize(size)
 
   const clearFeedbackTimeouts = useCallback(() => {
     feedbackTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId))
     feedbackTimeoutsRef.current = []
   }, [])
+
+  const clearShakeTimeout = useCallback(() => {
+    if (!shakeTimeoutRef.current) return
+
+    clearTimeout(shakeTimeoutRef.current)
+    shakeTimeoutRef.current = null
+  }, [])
+
+  const triggerComboShake = useCallback(() => {
+    clearShakeTimeout()
+    setIsShakeActive(true)
+
+    shakeTimeoutRef.current = setTimeout(() => {
+      setIsShakeActive(false)
+      shakeTimeoutRef.current = null
+    }, SHAKE_DURATION_MS)
+  }, [clearShakeTimeout])
 
   const centerPosition = useCallback((nextSize) => {
     const arena = arenaRef.current
@@ -214,50 +190,62 @@ export default function GamePage({
     [grantPowerupCharge]
   )
 
-  const resetRoundState = useCallback(() => {
-    setScore(0)
-    setStreak(0)
-    setBestStreak(0)
-    setHits(0)
-    setMisses(0)
-    setPowerupsUsed(0)
-    setSize(INITIAL_BUTTON_SIZE)
-    setTimeLeft(GAME_DURATION_SECONDS)
-    setClickFeedback([])
-    setPowerupCharges(buildInitialPowerupCharges())
-    clearFeedbackTimeouts()
-    centerPosition(INITIAL_BUTTON_SIZE)
-  }, [centerPosition, clearFeedbackTimeouts])
+  const resetRoundState = useCallback(
+    (difficultySettings) => {
+      setScore(0)
+      setStreak(0)
+      setBestStreak(0)
+      setHits(0)
+      setMisses(0)
+      setPowerupsUsed(0)
+      setSize(difficultySettings.initialButtonSize)
+      setTimeLeft(difficultySettings.durationSeconds)
+      setClickFeedback([])
+      setPowerupCharges(buildInitialPowerupCharges())
+      setIsShakeActive(false)
+      clearShakeTimeout()
+      clearFeedbackTimeouts()
+      centerPosition(difficultySettings.initialButtonSize)
+    },
+    [centerPosition, clearFeedbackTimeouts, clearShakeTimeout]
+  )
 
-  function startRoundWithCountdown() {
-    resetRoundState()
+  const startRoundWithCountdown = useCallback(() => {
+    const difficultyForRound = selectedDifficulty
+    setRoundDifficulty(difficultyForRound)
+    resetRoundState(difficultyForRound)
     hasAwardedRoundRef.current = false
-    setCountdownValue(3)
+    setCountdownValue(READY_COUNTDOWN_START)
     setPhase(ROUND_PHASE.COUNTDOWN)
-  }
+  }, [resetRoundState, selectedDifficulty])
 
-  const applyPowerup = useCallback((powerupId) => {
-    if (powerupId === "time_boost") {
-      setTimeLeft((current) => Math.min(MAX_TIME_BUFFER_SECONDS, current + 2))
-      addCenterFeedback("+2s", "positive")
-      return
-    }
+  const applyPowerup = useCallback(
+    (powerupId) => {
+      if (powerupId === "time_boost") {
+        setTimeLeft((current) =>
+          Math.min(roundDifficulty.maxTimeBufferSeconds, current + 2)
+        )
+        addCenterFeedback("+2s", "positive")
+        return
+      }
 
-    if (powerupId === "size_boost") {
-      setSize((current) => {
-        const next = Math.min(INITIAL_BUTTON_SIZE, current + 10)
-        setTimeout(() => randomizePosition(next), 0)
-        return next
-      })
-      addCenterFeedback("Grow", "positive")
-      return
-    }
+      if (powerupId === "size_boost") {
+        setSize((current) => {
+          const next = Math.min(roundDifficulty.initialButtonSize, current + 10)
+          setTimeout(() => randomizePosition(next), 0)
+          return next
+        })
+        addCenterFeedback("Grow", "positive")
+        return
+      }
 
-    if (powerupId === "bonus_points") {
-      setScore((current) => current + 5)
-      addCenterFeedback("+5", "positive")
-    }
-  }, [addCenterFeedback, randomizePosition])
+      if (powerupId === "bonus_points") {
+        setScore((current) => current + 5)
+        addCenterFeedback("+5", "positive")
+      }
+    },
+    [addCenterFeedback, randomizePosition, roundDifficulty]
+  )
 
   const tryUsePowerupKey = useCallback(
     (key) => {
@@ -279,36 +267,79 @@ export default function GamePage({
     [isPlaying, powerupCharges, applyPowerup]
   )
 
-  function handleButtonClick(event) {
-    event.stopPropagation()
-    if (!isPlaying) return
+  const handleButtonClick = useCallback(
+    (event) => {
+      event.stopPropagation()
+      if (!isPlaying) return
 
-    const nextStreak = streak + 1
-    const points = ppc * getComboMultiplier(nextStreak)
+      const nextStreak = streak + 1
+      const points =
+        roundDifficulty.basePointsPerHit *
+        getComboMultiplier(nextStreak, roundDifficulty.comboStep)
 
-    setStreak(nextStreak)
-    setBestStreak((current) => Math.max(current, nextStreak))
-    setHits((current) => current + 1)
-    setScore((current) => current + points)
+      setStreak(nextStreak)
+      setBestStreak((current) => Math.max(current, nextStreak))
+      setHits((current) => current + 1)
+      setScore((current) => current + points)
 
-    addClickFeedback(event.clientX, event.clientY, `+${points}`, "positive")
-    awardPowerups(nextStreak)
+      addClickFeedback(event.clientX, event.clientY, `+${points}`, "positive")
+      awardPowerups(nextStreak)
 
-    setSize((current) => {
-      const next = getNextButtonSize(current)
-      setTimeout(() => randomizePosition(next), 0)
-      return next
-    })
-  }
+      if (nextStreak % SHAKE_STREAK_MILESTONE === 0) {
+        triggerComboShake()
+      }
 
-  function handleArenaClick(event) {
-    if (!isPlaying) return
+      setSize((current) => {
+        const next = getNextButtonSize(current, roundDifficulty)
+        setTimeout(() => randomizePosition(next), 0)
+        return next
+      })
+    },
+    [
+      addClickFeedback,
+      awardPowerups,
+      isPlaying,
+      randomizePosition,
+      roundDifficulty,
+      streak,
+      triggerComboShake,
+    ]
+  )
 
-    setStreak(0)
-    setMisses((current) => current + 1)
-    setScore((current) => Math.max(0, current - ppc))
-    addClickFeedback(event.clientX, event.clientY, `-${ppc}`, "negative")
-  }
+  const handleArenaClick = useCallback(
+    (event) => {
+      if (!isPlaying) return
+
+      const missPenalty = roundDifficulty.missPenalty
+
+      setStreak(0)
+      setMisses((current) => current + 1)
+
+      if (missPenalty > 0) {
+        setScore((current) => Math.max(0, current - missPenalty))
+        addClickFeedback(event.clientX, event.clientY, `-${missPenalty}`, "negative")
+        return
+      }
+
+      addClickFeedback(event.clientX, event.clientY, "Miss", "negative")
+    },
+    [addClickFeedback, isPlaying, roundDifficulty]
+  )
+
+  const handleDifficultySelect = useCallback(
+    (difficultyId) => {
+      onDifficultyChange?.(difficultyId)
+
+      if (phase !== ROUND_PHASE.READY) return
+
+      const nextDifficulty = getDifficultyById(difficultyId)
+      setRoundDifficulty(nextDifficulty)
+      setSize(nextDifficulty.initialButtonSize)
+      setTimeLeft(nextDifficulty.durationSeconds)
+      centerPosition(nextDifficulty.initialButtonSize)
+    },
+    [centerPosition, onDifficultyChange, phase]
+  )
 
   useEffect(() => {
     if (phase !== ROUND_PHASE.COUNTDOWN) return
@@ -349,8 +380,13 @@ export default function GamePage({
     if (hasAwardedRoundRef.current) return
 
     hasAwardedRoundRef.current = true
-    onRoundComplete?.({ clicksScored: hits, score })
-  }, [phase, hits, score, onRoundComplete])
+    onRoundComplete?.({
+      clicksScored: hits,
+      score,
+      difficultyId: roundDifficulty.id,
+      coinMultiplier: roundDifficulty.coinMultiplier,
+    })
+  }, [phase, hits, score, onRoundComplete, roundDifficulty.id, roundDifficulty.coinMultiplier])
 
   useEffect(() => {
     function onKeyDown(event) {
@@ -363,25 +399,29 @@ export default function GamePage({
   }, [tryUsePowerupKey])
 
   useEffect(() => {
-    centerPosition(INITIAL_BUTTON_SIZE)
-  }, [centerPosition])
+    centerPosition(selectedDifficulty.initialButtonSize)
+  }, [centerPosition, selectedDifficulty.initialButtonSize])
 
   useEffect(() => {
     return () => {
+      clearShakeTimeout()
       clearFeedbackTimeouts()
     }
-  }, [clearFeedbackTimeouts])
+  }, [clearFeedbackTimeouts, clearShakeTimeout])
 
   return (
-    <div className="gameScreen">
+    <div className={gameScreenClassName}>
       <div className="scoreNumber">{score}</div>
       <div className="timerText">Time Left: {timeLeft}s</div>
-
-      <div className="gameStatusRow">
-        <span className="statusChip">Streak: {streak}</span>
-        <span className="statusChip">Combo: x{comboMultiplier}</span>
-        <span className="statusChip">Best: {bestStreak}</span>
+      <div className="difficultyHudTag" aria-label={`Difficulty ${roundDifficulty.label}`}>
+        {roundDifficulty.label}
       </div>
+
+      <GameStatusRow
+        streak={streak}
+        comboMultiplier={comboMultiplier}
+        bestStreak={bestStreak}
+      />
 
       <div className={`arena ${arenaThemeClass}`} ref={arenaRef} onClick={handleArenaClick}>
         <MovingButton
@@ -406,58 +446,37 @@ export default function GamePage({
         ))}
       </div>
 
-      <div className="ppcText">Base Points Per Click: {ppc}</div>
-
-      <div className="powerupTray" aria-label="Power-ups">
-        {POWERUPS.map((powerup) => {
-          const charges = powerupCharges[powerup.id] ?? 0
-          return (
-            <div key={powerup.id} className={`powerupItem ${charges > 0 ? "ready" : ""}`}>
-              <div className="powerupKey">{powerup.key}</div>
-              <div className="powerupBody">
-                <strong>{powerup.label}</strong>
-                <span>{powerup.description}</span>
-              </div>
-              <div className="powerupCount">x{charges}</div>
-            </div>
-          )
-        })}
-      </div>
+      <PowerupTray powerupCharges={powerupCharges} />
 
       {phase === ROUND_PHASE.READY ? (
-        <div className="gameOverlay" role="dialog" aria-modal="true" aria-labelledby="round-ready-title">
-          <section className="gameOverCard">
-            <h2 id="round-ready-title">Ready?</h2>
-            <p>Hit streaks to earn key-activated power-ups.</p>
-            <button className="primaryButton" onClick={startRoundWithCountdown}>Start Round</button>
-          </section>
-        </div>
+        <ReadyOverlay
+          onStart={startRoundWithCountdown}
+          difficulties={DIFFICULTIES}
+          selectedDifficultyId={selectedDifficultyId}
+          onSelectDifficulty={handleDifficultySelect}
+          canChangeDifficulty={canChangeDifficulty}
+        />
       ) : null}
 
       {phase === ROUND_PHASE.COUNTDOWN ? (
-        <div className="gameOverlay" role="status" aria-live="polite">
-          <section className="countdownCard">
-            <p>Starting In</p>
-            <div className="countdownNumber">{countdownValue}</div>
-          </section>
-        </div>
+        <CountdownOverlay countdownValue={countdownValue} />
       ) : null}
 
       {phase === ROUND_PHASE.GAME_OVER ? (
-        <div className="gameOverlay" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
-          <section className="gameOverCard">
-            <h2 id="game-over-title">Game Over</h2>
-            <p>Final Score: {score}</p>
-            <div className="roundSummary">
-              <div>Hits: {hits}</div>
-              <div>Misses: {misses}</div>
-              <div>Accuracy: {formatAccuracy(hits, misses)}</div>
-              <div>Best Streak: {bestStreak}</div>
-              <div>Power-ups Used: {powerupsUsed}</div>
-            </div>
-            <button className="primaryButton" onClick={startRoundWithCountdown}>Play Again</button>
-          </section>
-        </div>
+        <GameOverOverlay
+          score={score}
+          hits={hits}
+          misses={misses}
+          bestStreak={bestStreak}
+          powerupsUsed={powerupsUsed}
+          accuracy={accuracy}
+          difficultyLabel={roundDifficulty.label}
+          difficulties={DIFFICULTIES}
+          selectedDifficultyId={selectedDifficultyId}
+          onSelectDifficulty={handleDifficultySelect}
+          canChangeDifficulty={canChangeDifficulty}
+          onPlayAgain={startRoundWithCountdown}
+        />
       ) : null}
     </div>
   )

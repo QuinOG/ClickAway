@@ -10,6 +10,10 @@ import HelpPage from "./pages/HelpPage.jsx"
 import HistoryPage from "./pages/HistoryPage.jsx"
 import LeaderboardPage from "./pages/LeaderboardPage.jsx"
 import { SHOP_ITEMS_BY_ID } from "./config/shopCatalog.js"
+import {
+  DEFAULT_DIFFICULTY_ID,
+  DIFFICULTIES_BY_ID,
+} from "./features/game/difficultyConfig.js"
 
 const STORAGE_KEYS = {
   auth: "clickaway_is_authed",
@@ -17,6 +21,7 @@ const STORAGE_KEYS = {
   ownedItems: "clickaway_owned_items",
   equippedButtonSkin: "clickaway_equipped_button_skin",
   equippedArenaTheme: "clickaway_equipped_arena_theme",
+  selectedDifficulty: "clickaway_selected_difficulty",
 }
 
 const DEFAULT_IDS = {
@@ -65,6 +70,15 @@ export default function App() {
   const [equippedArenaThemeId, setEquippedArenaThemeId] = useState(() =>
     readStringStorage(STORAGE_KEYS.equippedArenaTheme, DEFAULT_IDS.arenaTheme)
   )
+  const [selectedDifficultyId, setSelectedDifficultyId] = useState(() => {
+    const storedDifficultyId = readStringStorage(
+      STORAGE_KEYS.selectedDifficulty,
+      DEFAULT_DIFFICULTY_ID
+    )
+    return DIFFICULTIES_BY_ID[storedDifficultyId]
+      ? storedDifficultyId
+      : DEFAULT_DIFFICULTY_ID
+  })
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.auth, String(isAuthed))
@@ -86,6 +100,10 @@ export default function App() {
     window.localStorage.setItem(STORAGE_KEYS.equippedArenaTheme, equippedArenaThemeId)
   }, [equippedArenaThemeId])
 
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.selectedDifficulty, selectedDifficultyId)
+  }, [selectedDifficultyId])
+
   function handleLogin() {
     setIsAuthed(true)
   }
@@ -94,11 +112,18 @@ export default function App() {
     setIsAuthed(false)
   }
 
-  function handleRoundComplete({ clicksScored }) {
-    const earnedCoins = Math.max(0, clicksScored)
+  function handleRoundComplete({ clicksScored, coinMultiplier = 1 }) {
+    const normalizedMultiplier = Number.isFinite(coinMultiplier) ? Math.max(0, coinMultiplier) : 1
+    const earnedCoins = Math.max(0, Math.floor(clicksScored * normalizedMultiplier))
+
     if (earnedCoins > 0) {
       setCoins((current) => current + earnedCoins)
     }
+  }
+
+  function handleDifficultyChange(nextDifficultyId) {
+    if (!DIFFICULTIES_BY_ID[nextDifficultyId]) return
+    setSelectedDifficultyId(nextDifficultyId)
   }
 
   function canPurchaseItem(item) {
@@ -159,6 +184,8 @@ export default function App() {
             <ProtectedRoute isAuthed={isAuthed}>
               <GamePage
                 onRoundComplete={handleRoundComplete}
+                selectedDifficultyId={selectedDifficultyId}
+                onDifficultyChange={handleDifficultyChange}
                 buttonSkinClass={equippedButtonSkin?.effectClass}
                 buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
                 buttonSkinImageScale={equippedButtonSkin?.gameImageScale ?? equippedButtonSkin?.imageScale}

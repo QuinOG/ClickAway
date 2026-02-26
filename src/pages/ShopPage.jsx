@@ -84,10 +84,6 @@ export default function ShopPage({
         <h1 className="cardTitle">Shop</h1>
         <p className="muted">Spend coins earned from successful clicks. Add new items by updating the shared shop catalog config.</p>
 
-        <div className="shopHeaderRow">
-          <div className="coinCounter">Coins: {coins}</div>
-        </div>
-
         {SHOP_CATEGORIES.map((category) => (
           <section key={category.id} className="shopSection">
             <div className="shopSectionHeader">

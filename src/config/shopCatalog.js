@@ -74,7 +74,7 @@ export const SHOP_CATEGORIES = [
       createSkinItem({
         id: "skin_coin",
         name: "Gold Token",
-        cost: 35,
+        cost: 999,
         effectClass: "skin-coin",
         imageSrc: "/coin.png",
         gameImageScale: 140,
@@ -113,7 +113,7 @@ export const SHOP_CATEGORIES = [
       createThemeItem({
         id: "theme_arcade",
         name: "Arcade Night",
-        cost: 50,
+        cost: 999,
         effectClass: "theme-arcade",
         description: "Synthwave-inspired night lane with neon lane lines.",
       }),
