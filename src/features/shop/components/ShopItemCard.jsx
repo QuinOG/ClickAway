@@ -49,7 +49,9 @@ export default function ShopItemCard({
   }
 
   const hasImage = Boolean(item.imageSrc)
-  const previewClassName = `shopPreview ${hasImage ? "" : item.effectClass} ${hasImage ? "hasImage" : ""}`
+  const previewClassName = ["shopPreview", hasImage ? "hasImage" : item.effectClass]
+    .filter(Boolean)
+    .join(" ")
 
   return (
     <article className="shopItemCard">

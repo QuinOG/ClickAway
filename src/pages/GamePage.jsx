@@ -54,7 +54,6 @@ export default function GamePage({
   onRoundComplete,
   selectedDifficultyId = DEFAULT_DIFFICULTY_ID,
   onDifficultyChange,
-  buttonSkinClass = "skin-default",
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
   arenaThemeClass = "theme-default",
@@ -476,7 +475,6 @@ export default function GamePage({
         isButtonDisabled={!isPlaying}
         buttonLabel={buttonLabel}
         buttonLabelFontSize={buttonLabelFontSize}
-        buttonSkinClass={buttonSkinClass}
         buttonSkinImageSrc={buttonSkinImageSrc}
         buttonSkinImageScale={buttonSkinImageScale}
         clickFeedbackItems={clickFeedbackItems}

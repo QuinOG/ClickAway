@@ -312,16 +312,6 @@ body {
     font-size: clamp(20px, 2.3vw, 26px);
 }
 
-.bullets {
-    margin: 10px 0 0;
-    padding-left: 22px;
-    color: #d4deef;
-}
-
-.bullets li {
-    margin: 6px 0;
-}
-
 .muted {
     color: var(--ink-soft);
     margin: 0;
@@ -549,18 +539,6 @@ body {
     background-color: transparent;
 }
 
-.shopTypeTag {
-    width: fit-content;
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: #212a3a;
-    background: #ecdfc4;
-}
-
 .shopItemFooter {
     margin-top: 2px;
     display: flex;
@@ -619,12 +597,6 @@ body {
 
 .helpTable {
     margin-top: 10px;
-}
-
-.helpNote {
-    margin: 14px 0 0;
-    font-size: 13px;
-    color: #9fb3d5;
 }
 
 .infoStrip {
@@ -867,14 +839,6 @@ body {
     outline: none;
 }
 
-.ppcText {
-    color: var(--hud-color);
-    opacity: 0.82;
-    font-size: 13px;
-    letter-spacing: 0.4px;
-    transition: color 0.2s ease;
-}
-
 .powerupTray {
     width: min(720px, 92vw);
     display: grid;
@@ -1003,14 +967,6 @@ body {
     color: rgba(235, 241, 255, 0.84);
     font-size: 16px;
     font-weight: 600;
-}
-
-.roundSummary {
-    margin: 0 0 16px;
-    display: grid;
-    gap: 8px;
-    font-size: 14px;
-    color: rgba(241, 246, 255, 0.9);
 }
 
 .difficultyPicker {

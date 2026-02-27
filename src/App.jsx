@@ -206,7 +206,6 @@ export default function App() {
                 onRoundComplete={handleRoundComplete}
                 selectedDifficultyId={selectedDifficultyId}
                 onDifficultyChange={handleDifficultyChange}
-                buttonSkinClass={equippedButtonSkin?.effectClass}
                 buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
                 buttonSkinImageScale={
                   equippedButtonSkin?.gameImageScale ?? equippedButtonSkin?.imageScale

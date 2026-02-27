@@ -10,7 +10,6 @@ export default function GameArena({
   isButtonDisabled,
   buttonLabel,
   buttonLabelFontSize,
-  buttonSkinClass,
   buttonSkinImageSrc,
   buttonSkinImageScale,
   clickFeedbackItems,
@@ -23,7 +22,6 @@ export default function GameArena({
         disabled={isButtonDisabled}
         label={buttonLabel}
         labelFontSize={buttonLabelFontSize}
-        skinClass={buttonSkinClass}
         skinImageSrc={buttonSkinImageSrc}
         skinImageScale={buttonSkinImageScale}
       />
