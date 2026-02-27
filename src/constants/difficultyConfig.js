@@ -13,7 +13,7 @@ export const DIFFICULTIES = [
     label: "Easy",
     description: "Longer timer and gentler pacing.",
     playerHint: "Best for new players learning movement and timing.",
-    durationSeconds: 20,
+    durationSeconds: 200,
     initialButtonSize: 110,
     minButtonSize: 24,
     shrinkFactor: 0.98,

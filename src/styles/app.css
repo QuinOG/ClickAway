@@ -515,28 +515,7 @@ body {
     width: 76px;
     height: 76px;
     flex-shrink: 0;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: linear-gradient(135deg, #283247, #1d273c);
-}
-
-.shopPreview.skin-default {
-    background: linear-gradient(145deg, #6af0ca, #34b892);
-}
-
-.shopPreview.skin-neon,
-.shopPreview.skin-neoncircle {
-    background: linear-gradient(145deg, #8bf57f, #2ec4dd);
-}
-
-.shopPreview.skin-ember,
-.shopPreview.skin-fireball {
-    background: linear-gradient(145deg, #ffbe7a, #ff6d4b);
-}
-
-.shopPreview.skin-ice,
-.shopPreview.skin-coin {
-    background: linear-gradient(145deg, #e9feff, #8fdfff);
+    border-radius: 8px;
 }
 
 .shopPreview.theme-default {
@@ -567,7 +546,7 @@ body {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-color: #fff;
+    background-color: transparent;
 }
 
 .shopTypeTag {
@@ -861,46 +840,11 @@ body {
     transition: filter 0.15s ease;
 }
 
-.bigCircleButton.skin-default {
-    background: linear-gradient(145deg, #6af0ca, #34b892);
-    color: #08251f;
-}
-
-.bigCircleButton.skin-neon {
-    background: linear-gradient(145deg, #8bf57f, #2ec4dd);
-    color: #06252d;
-}
-
-.bigCircleButton.skin-neoncircle {
-    background: linear-gradient(145deg, #8bf57f, #2ec4dd);
-    color: #06252d;
-}
-
-.bigCircleButton.skin-ember {
-    background: linear-gradient(145deg, #ffbe7a, #ff6d4b);
-    color: #301307;
-}
-
-.bigCircleButton.skin-fireball {
-    background: linear-gradient(145deg, #ffbe7a, #ff6d4b);
-    color: #301307;
-}
-
-.bigCircleButton.skin-ice {
-    background: linear-gradient(145deg, #e9feff, #8fdfff);
-    color: #0e2b3a;
-}
-
-.bigCircleButton.skin-coin {
-    background: linear-gradient(145deg, #e9feff, #8fdfff);
-    color: #0e2b3a;
-}
-
 .bigCircleButton.hasImage {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: #ffffff;
+    color: rgba(255, 255, 255, 0.96);
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
@@ -916,6 +860,11 @@ body {
 
 .bigCircleButton:hover {
     filter: brightness(1.03);
+}
+
+.bigCircleButton:focus,
+.bigCircleButton:focus-visible {
+    outline: none;
 }
 
 .ppcText {

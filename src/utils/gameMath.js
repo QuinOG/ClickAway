@@ -83,7 +83,7 @@ export function formatAccuracy(hits, misses) {
  * @returns {string}
  */
 export function getButtonLabel(size) {
-  return size >= LABEL_HIDE_SIZE_THRESHOLD ? "Click Here" : ""
+  return size >= LABEL_HIDE_SIZE_THRESHOLD ? "Click Me" : ""
 }
 
 /**

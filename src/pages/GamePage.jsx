@@ -274,7 +274,6 @@ export default function GamePage({
             roundDifficulty.initialButtonSize,
             currentButtonSize + 10
           )
-          queueButtonReposition(nextButtonSize)
           return nextButtonSize
         })
         addCenterFeedback("Grow", "positive")
@@ -286,7 +285,7 @@ export default function GamePage({
         addCenterFeedback("Freeze", "positive")
       }
     },
-    [addCenterFeedback, queueButtonReposition, roundDifficulty]
+    [addCenterFeedback, roundDifficulty]
   )
 
   const tryUsePowerupKey = useCallback(

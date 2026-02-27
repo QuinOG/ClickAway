@@ -48,11 +48,14 @@ export default function ShopItemCard({
     onPurchase?.(item)
   }
 
+  const hasImage = Boolean(item.imageSrc)
+  const previewClassName = `shopPreview ${hasImage ? "" : item.effectClass} ${hasImage ? "hasImage" : ""}`
+
   return (
     <article className="shopItemCard">
       <div className="shopItemTop">
         <div
-          className={`shopPreview ${item.effectClass} ${item.imageSrc ? "hasImage" : ""}`}
+          className={previewClassName}
           style={getPreviewStyle(item)}
           aria-hidden="true"
         />

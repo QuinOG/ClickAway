@@ -18,10 +18,11 @@ export default function MovingButton({
   skinImageScale = 100,
 }) {
   const hasImage = Boolean(skinImageSrc)
+  const skinClassName = hasImage ? "" : skinClass
 
   return (
     <button
-      className={`bigCircleButton ${skinClass} ${hasImage ? "hasImage" : ""}`}
+      className={`bigCircleButton ${skinClassName} ${hasImage ? "hasImage" : ""}`}
       style={getButtonInlineStyle({ style, labelFontSize, hasImage, skinImageSrc, skinImageScale })}
       onClick={onClick}
       disabled={disabled}
