@@ -39,7 +39,7 @@ export default function HelpPage() {
 
         <HelpTableSection
           title="Difficulty"
-          columns={["Mode", "Timer", "Miss Penalty", "Coin Rate", "Best For"]}
+          columns={["Mode", "Timer", "Miss Penalty", "Coin Rate", "Coins", "Level", "Rank"]}
           rows={DIFFICULTY_ROWS}
         />
 

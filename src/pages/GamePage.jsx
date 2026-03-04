@@ -24,6 +24,7 @@ import {
   getStreakAtmosphereTier,
 } from "../utils/gameMath.js"
 import { calculateRoundXp } from "../utils/progressionUtils.js"
+import { calculateRoundRankDelta } from "../utils/rankUtils.js"
 import GameArena from "../features/game/components/GameArena.jsx"
 import GameHud from "../features/game/components/GameHud.jsx"
 import PowerupTray from "../features/game/components/PowerupTray.jsx"
@@ -59,6 +60,9 @@ export default function GamePage({
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   playerLevelProgressPercent = 0,
+  playerRankLabel = "Bronze",
+  playerRankMmr = 0,
+  playerRankToNextTier = 0,
   buttonSkinClass = "skin-default",
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
@@ -98,6 +102,7 @@ export default function GamePage({
     phase === ROUND_PHASE.READY || phase === ROUND_PHASE.GAME_OVER
   const isTimedRound = roundDifficulty.isTimedRound !== false
   const allowsLevelProgression = roundDifficulty.allowsLevelProgression !== false
+  const allowsRankProgression = roundDifficulty.allowsRankProgression === true
 
   const comboMultiplier = useMemo(
     () => getComboMultiplier(streak, roundDifficulty.comboStep),
@@ -110,6 +115,18 @@ export default function GamePage({
       ? calculateRoundXp({ hits, misses, bestStreak, score })
       : 0),
     [allowsLevelProgression, bestStreak, hits, misses, score]
+  )
+  const roundRankDelta = useMemo(
+    () => calculateRoundRankDelta({
+      score,
+      hits,
+      misses,
+      bestStreak,
+      difficultyId: roundDifficulty.id,
+      progressionMode: roundDifficulty.progressionMode,
+      allowsRankProgression,
+    }),
+    [allowsRankProgression, bestStreak, hits, misses, roundDifficulty.id, roundDifficulty.progressionMode, score]
   )
   const atmosphereTier = useMemo(() => getStreakAtmosphereTier(streak), [streak])
 
@@ -451,6 +468,7 @@ export default function GamePage({
       score,
       bestStreak,
       difficultyId: roundDifficulty.id,
+      progressionMode: roundDifficulty.progressionMode,
       coinMultiplier: roundDifficulty.coinMultiplier,
       allowsCoinRewards: roundDifficulty.allowsCoinRewards !== false,
       allowsLevelProgression: roundDifficulty.allowsLevelProgression !== false,
@@ -467,6 +485,7 @@ export default function GamePage({
     roundDifficulty.allowsRankProgression,
     roundDifficulty.coinMultiplier,
     roundDifficulty.id,
+    roundDifficulty.progressionMode,
     score,
   ])
 
@@ -508,6 +527,10 @@ export default function GamePage({
         playerXpIntoLevel={playerXpIntoLevel}
         playerXpToNextLevel={playerXpToNextLevel}
         playerLevelProgressPercent={playerLevelProgressPercent}
+        playerRankLabel={playerRankLabel}
+        playerRankMmr={playerRankMmr}
+        playerRankToNextTier={playerRankToNextTier}
+        allowsRankProgression={allowsRankProgression}
         streak={streak}
         comboMultiplier={comboMultiplier}
         bestStreak={bestStreak}
@@ -560,6 +583,10 @@ export default function GamePage({
           playerXpToNextLevel={playerXpToNextLevel}
           roundXpEarned={roundXpEarned}
           allowsLevelProgression={allowsLevelProgression}
+          playerRankLabel={playerRankLabel}
+          playerRankMmr={playerRankMmr}
+          roundRankDelta={roundRankDelta}
+          allowsRankProgression={allowsRankProgression}
           selectedDifficultyId={selectedDifficultyId}
           onPlayAgain={returnToReadyOverlay}
         />

@@ -20,6 +20,7 @@ import SignupPage from "./pages/SignupPage.jsx"
 import { readArrayFromStorage, readBooleanFromStorage, readNumberFromStorage, readStringFromStorage } from "./utils/localStorage.js"
 import { appendHistoryEntry, createHistoryEntry } from "./utils/historyUtils.js"
 import { calculateRoundXp, getLevelProgress } from "./utils/progressionUtils.js"
+import { calculateRoundRankDelta, getRankProgress, INITIAL_RANK_MMR } from "./utils/rankUtils.js"
 import { calculateRoundCoins } from "./utils/roundRewards.js"
 import { canPurchaseShopItem, isShopItemOwned } from "./utils/shopUtils.js"
 
@@ -56,6 +57,11 @@ export default function App() {
   const [levelXp, setLevelXp] = useLocalStorageState({
     key: STORAGE_KEYS.levelXp,
     readValue: () => readNumberFromStorage(STORAGE_KEYS.levelXp),
+  })
+
+  const [rankMmr, setRankMmr] = useLocalStorageState({
+    key: STORAGE_KEYS.rankMmr,
+    readValue: () => readNumberFromStorage(STORAGE_KEYS.rankMmr, INITIAL_RANK_MMR),
   })
 
   const [ownedItemIds, setOwnedItemIds] = useLocalStorageState({
@@ -106,6 +112,7 @@ export default function App() {
   )
 
   const levelProgress = useMemo(() => getLevelProgress(levelXp), [levelXp])
+  const rankProgress = useMemo(() => getRankProgress(rankMmr), [rankMmr])
 
   function handleLogin() {
     setIsAuthed(true)
@@ -120,6 +127,8 @@ export default function App() {
     coinMultiplier = 1,
     allowsCoinRewards = true,
     allowsLevelProgression = true,
+    allowsRankProgression = false,
+    progressionMode = "",
     hits = 0,
     misses = 0,
     score = 0,
@@ -137,6 +146,15 @@ export default function App() {
         score,
       })
       : 0
+    const rankDelta = calculateRoundRankDelta({
+      score,
+      hits,
+      misses,
+      bestStreak,
+      difficultyId,
+      progressionMode,
+      allowsRankProgression,
+    })
 
     const historyEntry = createHistoryEntry({
       score,
@@ -145,6 +163,9 @@ export default function App() {
       bestStreak,
       coinsEarned: earnedCoins,
       difficultyId,
+      progressionMode,
+      xpEarned: earnedXp,
+      rankDelta,
     })
 
     if (earnedCoins > 0) {
@@ -153,6 +174,10 @@ export default function App() {
 
     if (earnedXp > 0) {
       setLevelXp((currentXp) => currentXp + earnedXp)
+    }
+
+    if (rankDelta !== 0) {
+      setRankMmr((currentMmr) => Math.max(0, currentMmr + rankDelta))
     }
 
     setRoundHistory((currentHistory) =>
@@ -234,6 +259,9 @@ export default function App() {
                 playerXpIntoLevel={levelProgress.xpIntoLevel}
                 playerXpToNextLevel={levelProgress.xpToNextLevel}
                 playerLevelProgressPercent={levelProgress.progressPercent}
+                playerRankLabel={rankProgress.tierLabel}
+                playerRankMmr={rankProgress.mmr}
+                playerRankToNextTier={rankProgress.mmrToNextTier}
                 buttonSkinClass={equippedButtonSkin?.effectClass}
                 buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
                 buttonSkinImageScale={
@@ -271,7 +299,11 @@ export default function App() {
           path="/leaderboard"
           element={
             <ProtectedRoute isAuthed={isAuthed}>
-              <LeaderboardPage roundHistory={roundHistory} />
+              <LeaderboardPage
+                roundHistory={roundHistory}
+                playerRankLabel={rankProgress.tierLabel}
+                playerRankMmr={rankProgress.mmr}
+              />
             </ProtectedRoute>
           }
         />

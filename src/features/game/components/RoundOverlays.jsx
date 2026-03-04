@@ -159,9 +159,16 @@ function buildGameOverStats({
   roundXpEarned,
   playerXpToNextLevel,
   allowsLevelProgression,
+  playerRankLabel,
+  playerRankMmr,
+  roundRankDelta,
+  allowsRankProgression,
 }) {
   const xpEarnedDisplay = allowsLevelProgression ? `+${roundXpEarned}` : "Off"
   const nextLevelDisplay = allowsLevelProgression ? `${playerXpToNextLevel} XP` : "Off"
+  const rankDeltaDisplay = allowsRankProgression
+    ? `${roundRankDelta > 0 ? "+" : ""}${roundRankDelta}`
+    : "Off"
 
   return [
     { label: "Hits", value: hits },
@@ -172,6 +179,9 @@ function buildGameOverStats({
     { label: "Level", value: playerLevel },
     { label: "XP Earned", value: xpEarnedDisplay },
     { label: "Next Level", value: nextLevelDisplay },
+    { label: "Rank", value: allowsRankProgression ? playerRankLabel : "Unranked" },
+    { label: "MMR", value: allowsRankProgression ? playerRankMmr : "Off" },
+    { label: "Rank Delta", value: rankDeltaDisplay },
   ]
 }
 
@@ -300,6 +310,10 @@ export function GameOverOverlay({
   playerXpToNextLevel = 0,
   roundXpEarned = 0,
   allowsLevelProgression = false,
+  playerRankLabel = "Bronze",
+  playerRankMmr = 0,
+  roundRankDelta = 0,
+  allowsRankProgression = false,
   selectedDifficultyId,
   onPlayAgain,
 }) {
@@ -319,6 +333,10 @@ export function GameOverOverlay({
     roundXpEarned,
     playerXpToNextLevel,
     allowsLevelProgression,
+    playerRankLabel,
+    playerRankMmr,
+    roundRankDelta,
+    allowsRankProgression,
   })
   const tone = getGameOverTone({ hits, misses, accuracy, bestStreak })
   const formattedScore = Number(score).toLocaleString()
@@ -347,6 +365,11 @@ export function GameOverOverlay({
           <p className="gameOverLevelMeta">
             Level {playerLevel} · XP {playerXpIntoLevel}/{playerXpIntoLevel + playerXpToNextLevel}
           </p>
+          {allowsRankProgression ? (
+            <p className="gameOverRankMeta">
+              Rank {playerRankLabel} · {playerRankMmr} MMR
+            </p>
+          ) : null}
         </section>
 
         <p className="gameOverFeedback">{feedbackMessage}</p>

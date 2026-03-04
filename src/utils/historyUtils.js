@@ -61,6 +61,9 @@ export function createHistoryEntry({
   bestStreak = 0,
   coinsEarned = 0,
   difficultyId = "",
+  progressionMode = "",
+  xpEarned = 0,
+  rankDelta = 0,
 }) {
   const playedDate = new Date()
 
@@ -75,6 +78,9 @@ export function createHistoryEntry({
     accuracy: formatAccuracy(hits, misses),
     coinsEarned,
     difficultyId,
+    progressionMode,
+    xpEarned,
+    rankDelta,
   }
 }
 

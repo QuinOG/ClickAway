@@ -2,7 +2,7 @@ export const GETTING_STARTED_STEPS = [
   "Log in.",
   "Open Game and check your difficulty.",
   "Press Start Round and wait for the 3-second countdown.",
-  "Click the moving target before time hits 0.",
+  "Practice has no timer. Medium/Hard are timed.",
   "Review results, then press Play Again.",
 ]
 
@@ -17,6 +17,7 @@ export const ROUND_FLOW_POINTS = [
 export const CONTROLS_ROWS = [
   ["Hit Target", "Left click directly on the moving target."],
   ["Miss", "Left click the arena outside the target."],
+  ["End Practice Round", "Use the End Practice Round button during Practice."],
   ["Use Time +2s", "Press 1 when charges are available."],
   ["Use Grow +10", "Press 2 when charges are available."],
   ["Use Freeze 1s", "Press 3 when charges are available."],
@@ -33,9 +34,9 @@ export const NAVIGATION_ROWS = [
 ]
 
 export const DIFFICULTY_ROWS = [
-  ["Easy", "200s", "0", "1.00x", "Best for learning."],
-  ["Normal", "15s", "1", "1.10x", "Balanced default mode."],
-  ["Hard", "12s", "2", "1.25x", "Fast, high-risk mode."],
+  ["Practice", "No limit", "0", "Off", "Coins Off", "Level Off", "Rank Off"],
+  ["Medium", "15s", "1", "1.10x", "Coins On", "Level On", "Rank Off"],
+  ["Hard", "12s", "2", "1.25x", "Coins On", "Level On", "Rank On"],
 ]
 
 export const SCORING_ROWS = [
@@ -67,24 +68,30 @@ export const PERFORMANCE_TIPS = [
   "Use Grow when target is tiny.",
   "Save Time +2s for late round.",
   "Use Freeze for precision moments.",
-  "Practice on Easy, then move up.",
+  "Use Practice mode, then move up.",
 ]
 
 export const PROGRESSION_POINTS = [
-  "Coins, owned items, loadout, difficulty, and history are saved locally.",
-  "History stores score, hits, misses, streak, difficulty, and coins.",
-  "Leaderboard is built from saved history.",
+  "Progress is mode-based: Practice (training), Medium (coins + XP), Hard (coins + XP + rank).",
+  "Leveling uses XP earned from round performance.",
+  "Rank/MMR changes only in Hard mode.",
+  "History stores mode, XP earned, and rank delta each round.",
+  "Leaderboard uses competitive (Hard) rounds only.",
   "Clearing browser storage resets progress.",
 ]
 
 export const FAQ_ITEMS = [
   {
     question: "What should I do first if I have never played?",
-    answer: "Start on Easy for a few rounds, then move to Normal.",
+    answer: "Start in Practice, then move to Medium once accuracy is stable.",
   },
   {
     question: "How do I earn coins quickly?",
-    answer: "Land more hits, keep streaks, and use higher coin-rate difficulties when ready.",
+    answer: "Play Medium/Hard, land more hits, and protect streaks.",
+  },
+  {
+    question: "When does rank change?",
+    answer: "Only in Hard mode rounds.",
   },
   {
     question: "Do I lose coins on misses?",

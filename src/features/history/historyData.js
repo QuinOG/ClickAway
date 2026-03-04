@@ -7,6 +7,9 @@ export const MOCK_HISTORY = [
     misses: 15,
     accuracy: "82%",
     coinsEarned: 67,
+    progressionMode: "non_competitive",
+    xpEarned: 94,
+    rankDelta: 0,
   },
   {
     id: "r-002",
@@ -16,6 +19,9 @@ export const MOCK_HISTORY = [
     misses: 17,
     accuracy: "78%",
     coinsEarned: 59,
+    progressionMode: "non_competitive",
+    xpEarned: 80,
+    rankDelta: 0,
   },
   {
     id: "r-003",
@@ -25,11 +31,14 @@ export const MOCK_HISTORY = [
     misses: 14,
     accuracy: "84%",
     coinsEarned: 72,
+    progressionMode: "competitive",
+    xpEarned: 112,
+    rankDelta: 14,
   },
 ]
 
 export const HISTORY_INSIGHTS = [
-  "Low misses usually predict higher score growth.",
-  "Accuracy trends reveal consistency over time.",
-  "Coins earned mirrors successful hits each round.",
+  "Practice rounds are for training only (no coins, no XP, no rank).",
+  "Medium rounds build coins and XP without affecting competitive rank.",
+  "Hard rounds are the only mode that changes rank/MMR.",
 ]

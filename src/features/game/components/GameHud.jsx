@@ -9,6 +9,10 @@ export default function GameHud({
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   playerLevelProgressPercent = 0,
+  playerRankLabel = "Bronze",
+  playerRankMmr = 0,
+  playerRankToNextTier = 0,
+  allowsRankProgression = false,
   streak,
   comboMultiplier,
   bestStreak,
@@ -46,6 +50,15 @@ export default function GameHud({
       >
         Level {playerLevel} · XP {playerXpIntoLevel}/{playerXpIntoLevel + playerXpToNextLevel}
       </div>
+
+      {allowsRankProgression ? (
+        <div
+          className="rankHudTag"
+          aria-label={`Current rank ${playerRankLabel}, rating ${playerRankMmr}`}
+        >
+          Rank: {playerRankLabel} · {playerRankMmr} MMR · {playerRankToNextTier} to next
+        </div>
+      ) : null}
 
       <GameStatusRow
         streak={streak}
