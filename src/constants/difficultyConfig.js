@@ -6,8 +6,8 @@ export const DIFFICULTY_IDS = {
 
 export const PROGRESSION_MODE = {
   PRACTICE: "practice",
-  NON_COMPETITIVE: "non_competitive",
-  COMPETITIVE: "competitive",
+  NON_RANKED: "non_ranked",
+  RANKED: "ranked",
 }
 
 export const DEFAULT_DIFFICULTY_ID = DIFFICULTY_IDS.NORMAL
@@ -39,7 +39,7 @@ export const DIFFICULTIES = [
     label: "Casual",
     description: "Balanced timing and score pressure.",
     playerHint: "Coins and levels are enabled. Ranked progression is disabled.",
-    progressionMode: PROGRESSION_MODE.NON_COMPETITIVE,
+    progressionMode: PROGRESSION_MODE.NON_RANKED,
     isTimedRound: true,
     allowsCoinRewards: true,
     allowsLevelProgression: true,
@@ -59,7 +59,7 @@ export const DIFFICULTIES = [
     label: "Ranked",
     description: "Faster shrink and harsher miss cost.",
     playerHint: "Full progression mode: coins, levels, and Ranked progression are all enabled.",
-    progressionMode: PROGRESSION_MODE.COMPETITIVE,
+    progressionMode: PROGRESSION_MODE.RANKED,
     isTimedRound: true,
     allowsCoinRewards: true,
     allowsLevelProgression: true,

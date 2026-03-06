@@ -373,16 +373,6 @@
     font-size: clamp(20px, 2.3vw, 26px);
 }
 
-.bullets {
-    margin: 10px 0 0;
-    padding-left: 22px;
-    color: #d4deef;
-}
-
-.bullets li {
-    margin: 6px 0;
-}
-
 .muted {
     color: var(--ink-soft);
     margin: 0;
@@ -642,10 +632,146 @@
     border-spacing: 0;
 }
 
+.leaderboardTable .leaderboardNumeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboardSortButton {
+    width: 100%;
+    border: 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+.leaderboardSortButton.isActive {
+    color: #f6fbff;
+}
+
+.leaderboardSortButton:focus-visible {
+    outline: 2px solid rgba(148, 211, 255, 0.8);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.leaderboardSortIndicator {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 1px;
+    line-height: 0.7;
+    font-size: 8px;
+    color: rgba(183, 203, 230, 0.58);
+}
+
+.leaderboardSortIndicator .isActive {
+    color: rgba(226, 242, 255, 0.96);
+}
+
+.leaderboardTableRow {
+    cursor: pointer;
+}
+
+.leaderboardTableRow td {
+    transition: background-color 0.14s ease;
+    cursor: pointer;
+}
+
+.leaderboardTableRow:hover td,
+.leaderboardTableRow:focus-visible td {
+    background: rgba(128, 176, 231, 0.16);
+}
+
+.leaderboardTableRow.isCurrentUser td {
+    background: linear-gradient(90deg, rgba(108, 154, 211, 0.28), rgba(108, 154, 211, 0.1));
+}
+
+.leaderboardTableRow.isCurrentUser td:first-child {
+    position: relative;
+}
+
+.leaderboardTableRow.isCurrentUser td:first-child::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 2px;
+    background: rgba(161, 214, 255, 0.72);
+}
+
+.leaderboardTableRow.isCurrentUser:hover td,
+.leaderboardTableRow.isCurrentUser:focus-visible td {
+    background: linear-gradient(90deg, rgba(121, 168, 222, 0.34), rgba(121, 168, 222, 0.14));
+}
+
 .leaderboardEntryHoverWrap {
     position: relative;
     display: inline-flex;
     align-items: center;
+    gap: 8px;
+}
+
+.leaderboardPlayerName {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.leaderboardYouBadge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(167, 213, 255, 0.58);
+    border-radius: 999px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.34px;
+    line-height: 1;
+    color: rgba(230, 244, 255, 0.96);
+    background: rgba(112, 170, 229, 0.24);
+}
+
+.leaderboardTierBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(174, 206, 243, 0.36);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba(226, 239, 255, 0.94);
+    background: rgba(113, 150, 191, 0.12);
+}
+
+.leaderboardTierBadgeIcon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+.leaderboardTierBadge.is-gold {
+    border-color: rgba(239, 207, 128, 0.45);
+    background: rgba(239, 207, 128, 0.14);
+}
+
+.leaderboardTierBadge.is-silver {
+    border-color: rgba(194, 210, 230, 0.48);
+    background: rgba(194, 210, 230, 0.14);
+}
+
+.leaderboardTierBadge.is-bronze {
+    border-color: rgba(206, 162, 125, 0.48);
+    background: rgba(206, 162, 125, 0.14);
 }
 
 .leaderboardEntryHoverCard .profileHoverCard {
@@ -668,11 +794,87 @@
     margin-bottom: 10px;
 }
 
+.infoStripToggle {
+    width: 100%;
+    border: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+.infoStripToggle .cardH2 {
+    margin: 0;
+}
+
+.infoStripToggle:focus-visible {
+    outline: 2px solid rgba(146, 210, 255, 0.78);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+.infoStripToggleText {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+}
+
+.infoStripSummary {
+    font-size: 12px;
+    color: rgba(205, 222, 244, 0.84);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.infoStripToggleIcon {
+    border: 1px solid rgba(176, 209, 245, 0.44);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+    color: rgba(222, 238, 255, 0.92);
+    background: rgba(114, 163, 217, 0.18);
+}
+
+.infoStripBody {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    transition: max-height 0.2s ease, opacity 0.2s ease, margin-top 0.2s ease;
+}
+
+.infoStripBody.isExpanded {
+    max-height: 260px;
+    opacity: 1;
+    margin-top: 10px;
+}
+
+.infoStripBody.isExpanded .helpInlineList {
+    margin-top: 0;
+}
+
 .helpInlineList {
     margin-top: 10px;
     display: grid;
     gap: 8px;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .leaderboardTableRow td,
+    .infoStripBody {
+        transition: none;
+    }
 }
 
 @media (max-width: 700px) {

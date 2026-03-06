@@ -4,168 +4,264 @@ function getMetricNumber(stats = {}, metricKey = "") {
   return Number.isFinite(numericValue) ? Math.max(0, numericValue) : null
 }
 
-export const ACHIEVEMENTS = [
-  {
-    id: "level-3",
-    title: "Rookie Circuit",
-    description: "Reach level 3.",
-    iconKey: "level",
-    metricKey: "level",
-    targetValue: 3,
-    computeCurrent: (stats) => getMetricNumber(stats, "level"),
-  },
-  {
-    id: "level-5",
-    title: "Arena Regular",
-    description: "Reach level 5.",
-    iconKey: "level",
-    metricKey: "level",
-    targetValue: 5,
-    computeCurrent: (stats) => getMetricNumber(stats, "level"),
-  },
-  {
-    id: "level-10",
-    title: "Veteran Pulse",
-    description: "Reach level 10.",
-    iconKey: "level",
-    metricKey: "level",
-    targetValue: 10,
-    computeCurrent: (stats) => getMetricNumber(stats, "level"),
-  },
-  {
-    id: "rounds-1",
-    title: "First Click",
-    description: "Play 1 total round.",
-    iconKey: "rounds",
-    metricKey: "totalRounds",
-    targetValue: 1,
-    computeCurrent: (stats) => getMetricNumber(stats, "totalRounds"),
-  },
-  {
-    id: "rounds-10",
-    title: "Session Builder",
-    description: "Play 10 total rounds.",
-    iconKey: "rounds",
-    metricKey: "totalRounds",
-    targetValue: 10,
-    computeCurrent: (stats) => getMetricNumber(stats, "totalRounds"),
-  },
-  {
-    id: "rounds-50",
-    title: "Endurance Grind",
-    description: "Play 50 total rounds.",
-    iconKey: "rounds",
-    metricKey: "totalRounds",
-    targetValue: 50,
-    computeCurrent: (stats) => getMetricNumber(stats, "totalRounds"),
-  },
-  {
-    id: "competitive-1",
-    title: "Placement Ready",
-    description: "Play 1 competitive round.",
-    iconKey: "competitive",
-    metricKey: "competitiveRounds",
-    targetValue: 1,
-    computeCurrent: (stats) => getMetricNumber(stats, "competitiveRounds"),
-  },
-  {
-    id: "competitive-10",
-    title: "Rank Ladder",
-    description: "Play 10 competitive rounds.",
-    iconKey: "competitive",
-    metricKey: "competitiveRounds",
-    targetValue: 10,
-    computeCurrent: (stats) => getMetricNumber(stats, "competitiveRounds"),
-  },
-  {
-    id: "competitive-50",
-    title: "Rank Specialist",
-    description: "Play 50 competitive rounds.",
-    iconKey: "competitive",
-    metricKey: "competitiveRounds",
-    targetValue: 50,
-    computeCurrent: (stats) => getMetricNumber(stats, "competitiveRounds"),
-  },
-  {
-    id: "best-score-100",
-    title: "Century Strike",
-    description: "Reach a best score of 100.",
-    iconKey: "score",
-    metricKey: "bestScore",
-    targetValue: 100,
-    computeCurrent: (stats) => getMetricNumber(stats, "bestScore"),
-  },
-  {
-    id: "best-score-200",
-    title: "Double Century",
-    description: "Reach a best score of 200.",
-    iconKey: "score",
-    metricKey: "bestScore",
-    targetValue: 200,
-    computeCurrent: (stats) => getMetricNumber(stats, "bestScore"),
-  },
-  {
-    id: "best-score-300",
-    title: "Triple Threat",
-    description: "Reach a best score of 300.",
-    iconKey: "score",
-    metricKey: "bestScore",
-    targetValue: 300,
-    computeCurrent: (stats) => getMetricNumber(stats, "bestScore"),
-  },
-  {
-    id: "best-streak-10",
-    title: "Combo Apprentice",
-    description: "Reach a best streak of 10.",
-    iconKey: "streak",
-    metricKey: "bestStreak",
-    targetValue: 10,
-    computeCurrent: (stats) => getMetricNumber(stats, "bestStreak"),
-  },
-  {
-    id: "best-streak-25",
-    title: "Combo Engineer",
-    description: "Reach a best streak of 25.",
-    iconKey: "streak",
-    metricKey: "bestStreak",
-    targetValue: 25,
-    computeCurrent: (stats) => getMetricNumber(stats, "bestStreak"),
-  },
-  {
-    id: "accuracy-80",
-    title: "Steady Aim",
-    description: "Reach 80% overall accuracy.",
-    iconKey: "accuracy",
-    metricKey: "overallAccuracyPercent",
-    targetValue: 80,
-    computeCurrent: (stats) => getMetricNumber(stats, "overallAccuracyPercent"),
-  },
-  {
-    id: "accuracy-90",
-    title: "Pinpoint Rhythm",
-    description: "Reach 90% overall accuracy.",
-    iconKey: "accuracy",
-    metricKey: "overallAccuracyPercent",
-    targetValue: 90,
-    computeCurrent: (stats) => getMetricNumber(stats, "overallAccuracyPercent"),
-  },
-  {
-    id: "clean-run-20",
-    title: "Clean Run",
-    description: "Finish a round with 20+ hits and zero misses.",
-    iconKey: "clean",
-    metricKey: "bestCleanRunHits",
-    targetValue: 20,
-    computeCurrent: (stats) => getMetricNumber(stats, "bestCleanRunHits"),
-  },
-  {
-    id: "coins-500",
-    title: "Coin Collector",
-    description: "Earn 500 total coins.",
-    iconKey: "economy",
-    metricKey: "totalCoinsEarned",
-    targetValue: 500,
-    computeCurrent: (stats) => getMetricNumber(stats, "totalCoinsEarned"),
-  },
+export const ACHIEVEMENT_CATEGORIES = [
+  { key: "rounds", label: "Rounds", isCoreCategory: true },
+  { key: "level", label: "Level", isCoreCategory: true },
+  { key: "ranked", label: "Ranked", isCoreCategory: true },
+  { key: "economy", label: "Economy", isCoreCategory: true },
+  { key: "master", label: "Master", isCoreCategory: false },
 ]
 
+export const DEFAULT_ACHIEVEMENT_CATEGORY_KEY = "rounds"
+
+export const CORE_ACHIEVEMENT_CATEGORY_KEYS = ACHIEVEMENT_CATEGORIES
+  .filter((category) => category.isCoreCategory)
+  .map((category) => category.key)
+
+export const ACHIEVEMENT_CATEGORY_LABELS = ACHIEVEMENT_CATEGORIES.reduce(
+  (labelsByKey, category) => ({
+    ...labelsByKey,
+    [category.key]: category.label,
+  }),
+  {}
+)
+
+function getCategoryLabel(categoryKey = "") {
+  return ACHIEVEMENT_CATEGORY_LABELS[categoryKey] ?? "General"
+}
+
+function createMetricAchievement({
+  id,
+  title,
+  description,
+  iconKey,
+  metricKey,
+  targetValue,
+  categoryKey,
+}) {
+  const categoryLabel = getCategoryLabel(categoryKey)
+
+  return {
+    id,
+    title,
+    description,
+    iconKey,
+    metricKey,
+    targetValue,
+    categoryKey,
+    categoryLabel,
+    type: "metric",
+    computeCurrent: (stats) => getMetricNumber(stats, metricKey),
+  }
+}
+
+function createCategoryMasterAchievement(coreCategoryKey = "") {
+  const coreCategoryLabel = getCategoryLabel(coreCategoryKey)
+
+  return {
+    id: `master-${coreCategoryKey}`,
+    title: `${coreCategoryLabel} Master`,
+    description: `Unlock all ${coreCategoryLabel} achievements.`,
+    iconKey: "master",
+    categoryKey: "master",
+    categoryLabel: getCategoryLabel("master"),
+    type: "categoryMaster",
+    isCategoryMaster: true,
+    masterCategoryKey: coreCategoryKey,
+    masterCategoryLabel: coreCategoryLabel,
+  }
+}
+
+function createMasterOfMastersAchievement() {
+  return {
+    id: "master-of-masters",
+    title: "Master of Masters",
+    description: "Unlock all category master achievements.",
+    iconKey: "master",
+    categoryKey: "master",
+    categoryLabel: getCategoryLabel("master"),
+    type: "masterOfMasters",
+    isMasterOfMasters: true,
+  }
+}
+
+function buildCoreCategoryAchievements(categoryKey = "", metricAchievements = []) {
+  return metricAchievements.map((achievement) =>
+    createMetricAchievement({
+      ...achievement,
+      categoryKey,
+    })
+  )
+}
+
+const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
+  rounds: [
+    {
+      id: "easy-rounds-1",
+      title: "First Click",
+      description: "Play 1 total round.",
+      iconKey: "rounds",
+      metricKey: "totalRounds",
+      targetValue: 1,
+    },
+    {
+      id: "easy-rounds-10",
+      title: "Session Builder",
+      description: "Play 10 total rounds.",
+      iconKey: "rounds",
+      metricKey: "totalRounds",
+      targetValue: 1,
+    },
+    {
+      id: "hard-rounds-50",
+      title: "Endurance Grind",
+      description: "Play 50 total rounds.",
+      iconKey: "rounds",
+      metricKey: "totalRounds",
+      targetValue: 1,
+    },
+    {
+      id: "career-rounds-250",
+      title: "Routine Runner",
+      description: "Play 250 total rounds.",
+      iconKey: "rounds",
+      metricKey: "totalRounds",
+      targetValue: 1,
+    },
+    {
+      id: "career-rounds-1000",
+      title: "Clockwork Grinder",
+      description: "Play 1,000 total rounds.",
+      iconKey: "rounds",
+      metricKey: "totalRounds",
+      targetValue: 1,
+    },
+  ],
+  level: [
+    {
+      id: "easy-level-5",
+      title: "Arena Regular",
+      description: "Reach level 5.",
+      iconKey: "level",
+      metricKey: "level",
+      targetValue: 1,
+    },
+    {
+      id: "hard-level-15",
+      title: "Arcade Operator",
+      description: "Reach level 15.",
+      iconKey: "level",
+      metricKey: "level",
+      targetValue: 1,
+    },
+    {
+      id: "career-level-30",
+      title: "Arena Veteran",
+      description: "Reach level 30.",
+      iconKey: "level",
+      metricKey: "level",
+      targetValue: 1,
+    },
+    {
+      id: "career-level-50",
+      title: "Legacy Player",
+      description: "Reach level 50.",
+      iconKey: "level",
+      metricKey: "level",
+      targetValue: 1,
+    },
+  ],
+  ranked: [
+    {
+      id: "easy-ranked-1",
+      title: "Placement Ready",
+      description: "Play 1 ranked round.",
+      iconKey: "ranked",
+      metricKey: "rankedRounds",
+      targetValue: 1,
+    },
+    {
+      id: "hard-ranked-10",
+      title: "Rank Ladder",
+      description: "Play 10 ranked rounds.",
+      iconKey: "ranked",
+      metricKey: "rankedRounds",
+      targetValue: 1,
+    },
+    {
+      id: "hard-ranked-50",
+      title: "Rank Specialist",
+      description: "Play 50 ranked rounds.",
+      iconKey: "ranked",
+      metricKey: "rankedRounds",
+      targetValue: 1,
+    },
+    {
+      id: "career-ranked-250",
+      title: "Rank Devotee",
+      description: "Play 250 ranked rounds.",
+      iconKey: "ranked",
+      metricKey: "rankedRounds",
+      targetValue: 1,
+    },
+    {
+      id: "career-ranked-1000",
+      title: "Queue Legend",
+      description: "Play 1,000 ranked rounds.",
+      iconKey: "ranked",
+      metricKey: "rankedRounds",
+      targetValue: 1,
+    },
+  ],
+  economy: [
+    {
+      id: "easy-coins-500",
+      title: "Coin Collector",
+      description: "Earn 500 total coins.",
+      iconKey: "economy",
+      metricKey: "totalCoinsEarned",
+      targetValue: 1,
+    },
+    {
+      id: "hard-coins-5000",
+      title: "Vault Builder",
+      description: "Earn 5,000 total coins.",
+      iconKey: "economy",
+      metricKey: "totalCoinsEarned",
+      targetValue: 1,
+    },
+    {
+      id: "career-coins-25000",
+      title: "Golden Vault",
+      description: "Earn 25,000 total coins.",
+      iconKey: "economy",
+      metricKey: "totalCoinsEarned",
+      targetValue: 1,
+    },
+    {
+      id: "career-coins-100000",
+      title: "Treasury King",
+      description: "Earn 100,000 total coins.",
+      iconKey: "economy",
+      metricKey: "totalCoinsEarned",
+      targetValue: 1,
+    },
+  ],
+}
+
+const CORE_ACHIEVEMENTS = CORE_ACHIEVEMENT_CATEGORY_KEYS.flatMap((categoryKey) =>
+  buildCoreCategoryAchievements(
+    categoryKey,
+    CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS[categoryKey] ?? []
+  )
+)
+
+const CATEGORY_MASTER_ACHIEVEMENTS = CORE_ACHIEVEMENT_CATEGORY_KEYS.map((categoryKey) =>
+  createCategoryMasterAchievement(categoryKey)
+)
+
+export const ACHIEVEMENTS = [
+  ...CORE_ACHIEVEMENTS,
+  ...CATEGORY_MASTER_ACHIEVEMENTS,
+  createMasterOfMastersAchievement(),
+]

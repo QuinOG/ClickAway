@@ -24,10 +24,15 @@ export default function HistoryPage({ roundHistory = [] }) {
       <section className="card">
         <h1 className="cardTitle">Match History</h1>
         <p className="muted">
-          Review rounds by mode and track coins, XP gain, and competitive rank changes.
+          Review rounds by mode and track coins, XP gain, and ranked rank changes.
         </p>
 
-        <InfoStrip points={HISTORY_INSIGHTS} />
+        <InfoStrip
+          points={HISTORY_INSIGHTS}
+          collapsible
+          defaultCollapsed
+          summary={HISTORY_INSIGHTS[0]}
+        />
 
         <table className="table helpTable">
           <thead>

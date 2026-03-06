@@ -25,7 +25,7 @@ import {
 } from "./game/achievements/evaluateAchievements.js"
 import { readArrayFromStorage, readBooleanFromStorage, readNumberFromStorage, readStringFromStorage } from "./utils/localStorage.js"
 import { appendHistoryEntry, buildPlayerLeaderboardStats, createHistoryEntry } from "./utils/historyUtils.js"
-import { isCompetitiveModeEntry } from "./utils/modeUtils.js"
+import { isRankedModeEntry } from "./utils/modeUtils.js"
 import { calculateRoundXp, getLevelProgress } from "./utils/progressionUtils.js"
 import {
   calculateRoundRankDelta,
@@ -177,13 +177,13 @@ export default function App() {
   )
 
   const levelProgress = useMemo(() => getLevelProgress(levelXp), [levelXp])
-  const hasCompetitiveHistory = useMemo(
-    () => roundHistory.some((entry) => isCompetitiveModeEntry(entry)),
+  const hasRankedHistory = useMemo(
+    () => roundHistory.some((entry) => isRankedModeEntry(entry)),
     [roundHistory]
   )
   const rankProgress = useMemo(
-    () => getRankProgressWithPlacement(rankMmr, hasCompetitiveHistory),
-    [hasCompetitiveHistory, rankMmr]
+    () => getRankProgressWithPlacement(rankMmr, hasRankedHistory),
+    [hasRankedHistory, rankMmr]
   )
   const playerLeaderboardStats = useMemo(
     () => buildPlayerLeaderboardStats(roundHistory),
@@ -433,6 +433,7 @@ export default function App() {
                 playerRankMmr={rankProgress.mmr}
                 playerCoins={coins}
                 playerLevel={levelProgress.level}
+                currentUsername={playerUsername}
               />
             </ProtectedRoute>
           }

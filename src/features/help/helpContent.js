@@ -65,8 +65,8 @@ export const RANK_TIER_ROWS = [
 ]
 
 export const RANK_RULES_POINTS = [
-  "Placement state: account shows Unranked until you have competitive history.",
-  "Rank delta applies only when mode is Ranked + competitive progression is enabled.",
+  "Placement state: account shows Unranked until you have ranked history.",
+  "Rank delta applies only when mode is Ranked + ranked progression is enabled.",
   "Round rank delta is clamped between -30 and +35 per round.",
   "Delta is influenced by score, best streak, accuracy tiers, misses, and low-hit penalties.",
   "Low-performance safeguards exist: very high misses or very low hits can heavily reduce MMR gain.",
@@ -129,7 +129,7 @@ export const DATA_SYSTEM_POINTS = [
 export const FAQ_ITEMS = [
   {
     question: "What mode should I start with?",
-    answer: "Practice first for mechanics, then Casual for stable rewards, then Ranked for competitive climb.",
+    answer: "Practice first for mechanics, then Casual for stable rewards, then Ranked for ranked climb.",
   },
   {
     question: "Why did my MMR not change?",

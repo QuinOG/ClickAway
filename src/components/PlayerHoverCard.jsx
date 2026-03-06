@@ -19,7 +19,7 @@ function HoverStatRow({ label, value, tone = "default" }) {
   )
 }
 
-function CompetitiveHoverRank({ rankLabel, rankMmr }) {
+function RankedHoverRank({ rankLabel, rankMmr }) {
   const displayLabel = rankLabel || "Unranked"
   const displayMmr = Number.isFinite(rankMmr) ? Math.max(0, rankMmr) : 0
   const isUnranked = displayLabel.toLowerCase() === "unranked"
@@ -49,7 +49,7 @@ export default function PlayerHoverCard({ rankLabel = "Unranked", rankMmr = 0, c
 
   return (
     <div className="profileHoverCard">
-      <CompetitiveHoverRank rankLabel={rankLabel} rankMmr={rankMmr} />
+      <RankedHoverRank rankLabel={rankLabel} rankMmr={rankMmr} />
       <section className="profileHoverStats" aria-label="Player quick stats">
         <table className="profileHoverStatsTable">
           <tbody>

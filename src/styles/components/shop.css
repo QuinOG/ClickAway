@@ -329,27 +329,6 @@
         linear-gradient(160deg, rgba(25, 52, 94, 0.86), rgba(38, 106, 160, 0.8));
 }
 
-.shopPreview.profile-image-compass {
-    border-radius: 14px;
-    background:
-        radial-gradient(circle at 16% 15%, rgba(174, 225, 255, 0.28), rgba(174, 225, 255, 0) 42%),
-        linear-gradient(160deg, rgba(33, 77, 108, 0.9), rgba(52, 140, 176, 0.8));
-}
-
-.shopPreview.profile-image-lunar {
-    border-radius: 14px;
-    background:
-        radial-gradient(circle at 20% 12%, rgba(210, 218, 255, 0.22), rgba(210, 218, 255, 0) 44%),
-        linear-gradient(160deg, rgba(34, 38, 70, 0.9), rgba(74, 80, 116, 0.8));
-}
-
-.shopPreview.profile-image-gold {
-    border-radius: 14px;
-    background:
-        radial-gradient(circle at 20% 12%, rgba(255, 234, 176, 0.3), rgba(255, 234, 176, 0) 44%),
-        linear-gradient(160deg, rgba(92, 71, 16, 0.92), rgba(181, 129, 35, 0.8));
-}
-
 .shopPreview.hasImage {
     background-size: contain;
     background-position: center;
@@ -357,18 +336,6 @@
     background-color: transparent;
     border-color: transparent;
     background-image: none;
-}
-
-.shopTypeTag {
-    width: fit-content;
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: #212a3a;
-    background: #ecdfc4;
 }
 
 .shopItemFooter {

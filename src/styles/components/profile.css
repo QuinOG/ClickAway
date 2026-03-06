@@ -97,21 +97,6 @@
     display: block;
 }
 
-.profileAvatar.profile-image-compass {
-    border-color: rgba(160, 226, 255, 0.64);
-    box-shadow: 0 8px 18px rgba(8, 25, 40, 0.45);
-}
-
-.profileAvatar.profile-image-lunar {
-    border-color: rgba(194, 204, 255, 0.5);
-    box-shadow: 0 8px 18px rgba(12, 14, 32, 0.46);
-}
-
-.profileAvatar.profile-image-gold {
-    border-color: rgba(255, 220, 144, 0.66);
-    box-shadow: 0 8px 18px rgba(48, 31, 8, 0.46);
-}
-
 .profileIdentityText {
     display: grid;
     gap: 3px;

@@ -64,8 +64,8 @@ export function getUnrankedProgress() {
   }
 }
 
-export function getRankProgressWithPlacement(mmr = INITIAL_RANK_MMR, hasCompetitiveHistory = false) {
-  if (!hasCompetitiveHistory) {
+export function getRankProgressWithPlacement(mmr = INITIAL_RANK_MMR, hasRankedHistory = false) {
+  if (!hasRankedHistory) {
     return getUnrankedProgress()
   }
 
@@ -106,9 +106,9 @@ export function calculateRoundRankDelta({
 }) {
   const resolvedModeId = modeId || difficultyId
   const isHardMode = resolvedModeId === DIFFICULTY_IDS.HARD
-  const isCompetitiveMode = progressionMode === PROGRESSION_MODE.COMPETITIVE
+  const isRankedMode = progressionMode === PROGRESSION_MODE.RANKED
 
-  if (!allowsRankProgression || !isHardMode || !isCompetitiveMode) {
+  if (!allowsRankProgression || !isHardMode || !isRankedMode) {
     return 0
   }
 

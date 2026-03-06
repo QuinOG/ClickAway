@@ -873,21 +873,17 @@
     background: rgba(107, 181, 245, 0.2);
 }
 
-.modeCard-ranked,
-.modeCard-competitive {
+.modeCard-ranked {
     border-color: rgba(203, 120, 120, 0.42);
     background: linear-gradient(170deg, rgba(153, 78, 78, 0.24), rgba(255, 255, 255, 0.04));
 }
 
-.modeCard-ranked::before,
-.modeCard-competitive::before {
+.modeCard-ranked::before {
     background: rgba(219, 134, 134, 0.9);
 }
 
 .modeCard-ranked .modeCardGlyph,
-.modeCard-ranked .modeCardBadge,
-.modeCard-competitive .modeCardGlyph,
-.modeCard-competitive .modeCardBadge {
+.modeCard-ranked .modeCardBadge {
     border-color: rgba(214, 147, 147, 0.5);
     background: rgba(190, 104, 104, 0.24);
 }

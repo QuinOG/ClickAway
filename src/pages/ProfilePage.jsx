@@ -1,9 +1,14 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
+import AchievementTile from "../components/achievements/AchievementTile.jsx"
 import AchievementsCarousel from "../components/achievements/AchievementsCarousel.jsx"
+import {
+  ACHIEVEMENT_CATEGORIES,
+  DEFAULT_ACHIEVEMENT_CATEGORY_KEY,
+} from "../game/achievements/achievementsList.js"
 import { evaluateAchievements } from "../game/achievements/evaluateAchievements.js"
 import { formatAccuracy } from "../utils/gameMath.js"
-import { isCompetitiveModeEntry } from "../utils/modeUtils.js"
+import { isRankedModeEntry } from "../utils/modeUtils.js"
 import { getRankImageSrc } from "../utils/rankUtils.js"
 
 function buildProfileStats(roundHistory = []) {
@@ -13,7 +18,7 @@ function buildProfileStats(roundHistory = []) {
   let totalMisses = 0
   let bestScore = 0
   let bestStreak = 0
-  let competitiveRounds = 0
+  let rankedRounds = 0
 
   rows.forEach((round) => {
     const hits = Number(round.hits) || 0
@@ -26,37 +31,37 @@ function buildProfileStats(roundHistory = []) {
     bestScore = Math.max(bestScore, score)
     bestStreak = Math.max(bestStreak, streak)
 
-    if (isCompetitiveModeEntry(round)) {
-      competitiveRounds += 1
+    if (isRankedModeEntry(round)) {
+      rankedRounds += 1
     }
   })
 
   return {
     totalRounds: rows.length,
-    competitiveRounds,
+    rankedRounds,
     bestScore,
     bestStreak,
     overallAccuracy: formatAccuracy(totalHits, totalMisses),
   }
 }
 
-function buildCompetitiveInsights(roundHistory = []) {
-  const competitiveRounds = (Array.isArray(roundHistory) ? roundHistory : [])
-    .filter((round) => isCompetitiveModeEntry(round))
-  const recentCompetitiveRounds = competitiveRounds.slice(0, 10)
-  const recentRankDelta = recentCompetitiveRounds.reduce(
+function buildRankedInsights(roundHistory = []) {
+  const rankedRounds = (Array.isArray(roundHistory) ? roundHistory : [])
+    .filter((round) => isRankedModeEntry(round))
+  const recentRankedRounds = rankedRounds.slice(0, 10)
+  const recentRankDelta = recentRankedRounds.reduce(
     (sum, round) => sum + (Number(round.rankDelta) || 0),
     0
   )
-  const positiveDeltaRounds = recentCompetitiveRounds.filter(
+  const positiveDeltaRounds = recentRankedRounds.filter(
     (round) => (Number(round.rankDelta) || 0) > 0
   ).length
-  const recentWinRate = recentCompetitiveRounds.length > 0
-    ? Math.round((positiveDeltaRounds / recentCompetitiveRounds.length) * 100)
+  const recentWinRate = recentRankedRounds.length > 0
+    ? Math.round((positiveDeltaRounds / recentRankedRounds.length) * 100)
     : 0
 
   return {
-    recentSampleSize: recentCompetitiveRounds.length,
+    recentSampleSize: recentRankedRounds.length,
     recentRankDelta,
     recentWinRate,
   }
@@ -75,10 +80,10 @@ function getProfileTagline({ totalRounds, overallAccuracy, bestStreak }) {
   return "Momentum is building. Focus accuracy and chain longer streaks."
 }
 
-function getPlayerTitle({ totalRounds, competitiveRounds, bestStreak, rankLabel = "" }) {
+function getPlayerTitle({ totalRounds, rankedRounds, bestStreak, rankLabel = "" }) {
   if (totalRounds === 0) return "Arena Rookie"
   if (rankLabel.toLowerCase() === "gold") return "Gold Contender"
-  if (competitiveRounds >= 25) return "Ranked Specialist"
+  if (rankedRounds >= 25) return "Ranked Specialist"
   if (bestStreak >= 15) return "Combo Architect"
   if (totalRounds >= 60) return "Arena Veteran"
   return "Rising Contender"
@@ -166,14 +171,82 @@ export default function ProfilePage({
   achievementStats = {},
   persistedAchievementIds = [],
 }) {
+  const [requestedCategoryKey, setRequestedCategoryKey] = useState(
+    DEFAULT_ACHIEVEMENT_CATEGORY_KEY
+  )
   const evaluatedAchievements = useMemo(
     () => evaluateAchievements(achievementStats, {
       persistedUnlockedIds: persistedAchievementIds,
     }),
     [achievementStats, persistedAchievementIds]
   )
+  const categorySortIndexByKey = useMemo(
+    () => new Map(ACHIEVEMENT_CATEGORIES.map((category, index) => [category.key, index])),
+    []
+  )
+  const availableAchievementCategories = useMemo(
+    () =>
+      ACHIEVEMENT_CATEGORIES.filter((category) => {
+        if (category.key === "master") {
+          return evaluatedAchievements.some(
+            (achievement) =>
+              achievement.type === "categoryMaster" || achievement.type === "masterOfMasters"
+          )
+        }
+
+        return evaluatedAchievements.some(
+          (achievement) =>
+            achievement.categoryKey === category.key && achievement.type === "metric"
+        )
+      }),
+    [evaluatedAchievements]
+  )
+  const selectedCategoryKey = useMemo(() => {
+    const hasRequestedCategory = availableAchievementCategories.some(
+      (category) => category.key === requestedCategoryKey
+    )
+    if (hasRequestedCategory) return requestedCategoryKey
+
+    return availableAchievementCategories[0]?.key ?? DEFAULT_ACHIEVEMENT_CATEGORY_KEY
+  }, [availableAchievementCategories, requestedCategoryKey])
+  const categoryMasterAchievements = useMemo(
+    () =>
+      evaluatedAchievements
+        .filter((achievement) => achievement.type === "categoryMaster")
+        .sort((firstAchievement, secondAchievement) => {
+          const firstIndex = categorySortIndexByKey.get(firstAchievement.masterCategoryKey) ?? 0
+          const secondIndex = categorySortIndexByKey.get(secondAchievement.masterCategoryKey) ?? 0
+          return firstIndex - secondIndex
+        }),
+    [categorySortIndexByKey, evaluatedAchievements]
+  )
+  const masterOfMastersAchievement = useMemo(
+    () =>
+      evaluatedAchievements.find((achievement) => achievement.type === "masterOfMasters") ?? null,
+    [evaluatedAchievements]
+  )
+  const featuredMasterAchievement = useMemo(() => {
+    if (selectedCategoryKey === "master") {
+      return masterOfMastersAchievement
+    }
+
+    return categoryMasterAchievements.find(
+      (achievement) => achievement.masterCategoryKey === selectedCategoryKey
+    ) ?? null
+  }, [categoryMasterAchievements, masterOfMastersAchievement, selectedCategoryKey])
+  const carouselAchievements = useMemo(() => {
+    if (selectedCategoryKey === "master") {
+      return categoryMasterAchievements
+    }
+
+    return evaluatedAchievements.filter(
+      (achievement) =>
+        achievement.categoryKey === selectedCategoryKey && achievement.type === "metric"
+    )
+  }, [categoryMasterAchievements, evaluatedAchievements, selectedCategoryKey])
+
   const profileStats = buildProfileStats(roundHistory)
-  const competitiveInsights = buildCompetitiveInsights(roundHistory)
+  const rankedInsights = buildRankedInsights(roundHistory)
   const rankLabel = rankProgress.tierLabel ?? "Unranked"
   const rankMmr = rankProgress.mmr ?? 0
   const rankIconSrc = getRankImageSrc(rankLabel)
@@ -187,7 +260,7 @@ export default function ProfilePage({
   const profileTagline = getProfileTagline(profileStats)
   const playerTitle = getPlayerTitle({
     totalRounds: profileStats.totalRounds,
-    competitiveRounds: profileStats.competitiveRounds,
+    rankedRounds: profileStats.rankedRounds,
     bestStreak: profileStats.bestStreak,
     rankLabel,
   })
@@ -308,25 +381,25 @@ export default function ProfilePage({
                 </p>
               </div>
             </div>
-            <div className="profileRankInsights" aria-label="Recent competitive trend">
+            <div className="profileRankInsights" aria-label="Recent ranked trend">
               <article className="profileRankInsightItem">
                 <span className="profileRankInsightLabel">Last 10 Delta</span>
                 <strong className="profileRankInsightValue">
-                  {formatSignedValue(competitiveInsights.recentRankDelta)}
+                  {formatSignedValue(rankedInsights.recentRankDelta)}
                 </strong>
               </article>
               <article className="profileRankInsightItem">
                 <span className="profileRankInsightLabel">Positive Rounds</span>
                 <strong className="profileRankInsightValue">
-                  {competitiveInsights.recentSampleSize > 0
-                    ? `${competitiveInsights.recentWinRate}%`
+                  {rankedInsights.recentSampleSize > 0
+                    ? `${rankedInsights.recentWinRate}%`
                     : "N/A"}
                 </strong>
               </article>
               <article className="profileRankInsightItem">
                 <span className="profileRankInsightLabel">Sample Size</span>
                 <strong className="profileRankInsightValue">
-                  {competitiveInsights.recentSampleSize}/10
+                  {rankedInsights.recentSampleSize}/10
                 </strong>
               </article>
             </div>
@@ -346,14 +419,48 @@ export default function ProfilePage({
           />
 
           <section className="profileStatsSection profileAchievementsSection" aria-label="Achievements">
-            <header className="profileStatsSectionHeader">
-              <h2 className="profileStatsSectionTitle">Achievements</h2>
-              <p className="profileStatsSectionDescription">
-                Track unlock progress across level, consistency, and ranked play.
-              </p>
-            </header>
+            <div className="achievementHeaderRow">
+              <div className="achievementHeaderText">
+                <h2 className="profileStatsSectionTitle">Achievements</h2>
+                <p className="profileStatsSectionDescription">
+                  Track unlock progress across level, consistency, and ranked play.
+                </p>
+              </div>
 
-            <AchievementsCarousel achievements={evaluatedAchievements} />
+              <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">
+                {availableAchievementCategories.map((category) => {
+                  const isSelected = category.key === selectedCategoryKey
+
+                  return (
+                    <button
+                      key={category.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isSelected}
+                      className={`achievementCategoryTab ${isSelected ? "isSelected" : ""}`}
+                      onClick={() => setRequestedCategoryKey(category.key)}
+                    >
+                      {category.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
+              {featuredMasterAchievement ? (
+                <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
+              ) : (
+                <p className="achievementsEmptyState">No master achievement found.</p>
+              )}
+            </div>
+
+            <div className="achievementsMainArea">
+              <AchievementsCarousel
+                key={`achievements-${selectedCategoryKey}`}
+                achievements={carouselAchievements}
+              />
+            </div>
           </section>
         </div>
       </section>

@@ -8,8 +8,8 @@ const MODE_LABELS_BY_ID = {
 
 const MODE_LABELS_BY_PROGRESSION = {
   [PROGRESSION_MODE.PRACTICE]: "Practice",
-  [PROGRESSION_MODE.NON_COMPETITIVE]: "Casual",
-  [PROGRESSION_MODE.COMPETITIVE]: "Ranked",
+  [PROGRESSION_MODE.NON_RANKED]: "Casual",
+  [PROGRESSION_MODE.RANKED]: "Ranked",
 }
 
 function resolveModeId(entry = {}) {
@@ -47,8 +47,8 @@ export function getModeLabelFromModeConfig(mode = {}) {
   })
 }
 
-export function isCompetitiveModeEntry(entry = {}) {
+export function isRankedModeEntry(entry = {}) {
   const modeId = resolveModeId(entry)
-  return entry.progressionMode === PROGRESSION_MODE.COMPETITIVE
+  return entry.progressionMode === PROGRESSION_MODE.RANKED
     || modeId === DIFFICULTY_IDS.HARD
 }
