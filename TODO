@@ -1,61 +1,19 @@
-Replace the realistic mock rows in HistoryPage and LeaderboardPage with clearer empty states or visibly labeled sample data. Right now first-time users could mistake placeholder data for real data.
+GamePage already computes `accuracy` from hits/misses and passes it to GameHud as a prop, but GameHud's prop list doesn't include it and it never renders. Display live accuracy in the HUD so players can track shot quality mid-round without waiting for game over.
 
-Make the history, leaderboard, and help tables mobile-friendly. A horizontal scroll wrapper or stacked card view below a breakpoint would help a lot on smaller screens.
+GameOverOverlay has a full `bestScore` prop, `isNewBestScore` flag, and "New Best" badge already written — but GamePage never passes `bestScore`. Derive the player's previous best score from `roundHistory` in App.jsx and thread it through to make the badge actually fire.
 
-Add lightweight filters to HistoryPage, like All, Practice, Casual, Ranked, plus a simple sort toggle. The data is already in memory, so this is an easy frontend-only win.
+PowerupTray shows "Unlock: streak N" but gives no sense of progress toward the next charge. Each powerup has `awardEvery` and `streak` is available in GamePage — add a small fill bar per powerup slot showing `streak % awardEvery` hits completed so players feel the build-up.
 
-Add extra shop filters in ShopPage: Owned, Not Owned, Equipped, and Affordable. Category tabs are good, but these filters would make the shop easier to scan as it grows.
+GamePage passes `modeLabel`, `playerRankLabel`, `playerRankMmr`, `playerRankToNextTier`, and `allowsRankProgression` to GameHud but none of those props appear in GameHud's destructuring or JSX. At minimum, render the current mode label during play so the player knows what mode they are in mid-round.
 
-Strengthen state badges in ShopItemCard. Small labels like Owned, Built-in, Equipped, or Need 120 more coins would communicate item state faster than the button alone.
+`getProfileAvatarStyle` receives `seedText` but ignores it and always returns the same red gradient, so every player with no profile image looks identical. Hash the username characters to a hue angle and generate a distinct HSL gradient per player.
 
-Show live accuracy, hits, and misses in GameHud, not just at round end. Those stats are already tracked, so exposing them during play would improve feedback without changing gameplay.
+HistoryPage is a raw table with no aggregation — there is no summary of totals anywhere on the page. Add a compact stat strip above the table showing total rounds, cumulative XP earned, total coins earned, and all-time best score derived from the same `roundHistory` array already passed in.
 
-Make PowerupTray clickable/tappable in addition to keyboard-driven. The current key hints are good for desktop, but touch users need direct interaction.
+LeaderboardPage calls `buildPlayerLeaderboardStats(rankedHistory)` — ranked rounds only — for the player's bestScore, bestStreak, and accuracy in their leaderboard row, while mock players carry all-time stats. Pass the full `roundHistory` instead so the player row is built on the same basis as everyone else.
 
-Add a pause/restart/confirm-leave overlay during active rounds. That would make the game feel less brittle if a player misclicks, loses focus, or wants to reset quickly.
+GameOverOverlay computes `levelXpAfterRound` and `levelXpCap` and shows them as a text string ("X/Y XP"), but ProfilePage already has a visual level progress bar with the same two values. Replace the text-only level progress row in the game-over rewards section with a bar using those same computed values.
 
-Adjust ReadyOverlay for mobile-first controls. The current "left/right/Enter" guidance is desktop-centric; swipe support or visible segmented mode buttons would land better on phones.
+"Play Again" returns to ReadyOverlay which restarts the mode carousel, forcing the player to navigate back to their mode before hitting Start. Add a secondary "Rematch" action on GameOverOverlay that skips the carousel and immediately starts a countdown with the same `roundMode` that just ended.
 
-Make the hover-only profile cards work on touch. PlayerHoverCard in the navbar and leaderboard is strong on desktop, but tap-to-open behavior would be more usable on mobile.
-
-Add progress counts to achievement category tabs and a small unlock animation in ProfilePage. That would give the achievements area more momentum with very little scope.
-
-Add active-section highlighting or collapsible topic groups in HelpPage. The content is already solid; a little navigation state would make it much easier to scan.
-
-Additional frontend-only wins:
-
-Add a compact recent-results strip to the top of HistoryPage, like last 5 outcomes or average score/accuracy over the last 10 rounds. The data is already local and it would make the page feel more useful before scrolling the full table.
-
-Highlight personal bests in HistoryPage and ProfilePage. Small markers like New Best Score or Best Streak would make progression more visible without changing any systems.
-
-Add sticky table headers on HistoryPage, LeaderboardPage, and HelpPage. That is a small CSS-only improvement that helps a lot once those tables grow.
-
-Show leaderboard movement indicators, even if it is just static delta styling for now. Up/down arrows or gain/loss color treatment would make rankings easier to scan.
-
-Add a small "copied" or "saved" toast pattern that can be reused across shop equips, profile actions, and settings-style interactions. The shop already has feedback UI, so this could become a lightweight shared pattern.
-
-Let ShopPage remember the last selected category/filter in local state or local storage. That is a tiny quality-of-life win for repeat visits.
-
-Add a visible compare state in ShopLoadoutPreview so hovering or tapping an item makes the preview feel more intentional. A simple "Previewing: Neon Arena" label would probably be enough.
-
-Surface "next unlock" hints in ProfilePage, such as how many rounds, hits, or ranked games remain for the nearest achievement. The achievement data is already evaluated, so a lightweight summary card should be feasible.
-
-Add a per-mode summary card on the ProfilePage or HistoryPage. Practice, Casual, and Ranked could each show rounds played, best score, and average accuracy using existing round history data.
-
-Expose a subtle streak danger state in GameHud when the player has a strong combo active. A minor color shift or pulse on the streak stat would improve moment-to-moment tension with minimal logic.
-
-Add optional reduced-motion handling across game feedback, overlays, and achievement animations. This is mostly a frontend polish and accessibility pass, not a feature rewrite.
-
-Make the countdown and round-over overlays more informative with one-line mode summaries like "Ranked: miss penalty active" or "Practice: no rewards". That would clarify mode rules at the exact moment players need them.
-
-Add focus-visible and keyboard-state polish across navbar menus, shop cards, tabs, and overlays. The app already has a lot of interactive UI, so tightening those states would improve perceived quality quickly.
-
-Consider a small "polish / accessibility" sublist for easy pickups:
-
-Add skeleton or shimmer placeholders for profile, leaderboard, and shop sections if those views ever gain async loading. Even mocked delay states can help layout stability now.
-
-Improve empty-state illustration or icon treatment across HistoryPage, LeaderboardPage, and achievements so first-use screens feel deliberate instead of unfinished.
-
-Add tap-target and spacing cleanup for mobile in navbar actions, shop tabs, achievement tabs, and powerup buttons. That is small scope and usually pays off immediately.
-
-Add ARIA live messaging for important game events like streak milestones, powerup earned, and round end. That is frontend-only and improves accessibility meaningfully.
+PlayerHoverCard shows Coin Vault, XP Level, and Accuracy but no round count, so there is no way to judge whether a player's accuracy is based on 3 rounds or 300. Add a Rounds Played row using the existing data already present on leaderboard player objects and passed from `roundHistory` for the current player.

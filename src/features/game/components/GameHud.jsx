@@ -28,19 +28,18 @@ export default function GameHud({
         </div>
       </div>
 
-      <GameStatusRow
-        streak={streak}
-        comboMultiplier={comboMultiplier}
-        bestStreak={bestStreak}
-      />
-
-      {!isTimedRound && isPlaying ? (
-        <div className="hudActions">
+      <div className="hudStatusLine">
+        <GameStatusRow
+          streak={streak}
+          comboMultiplier={comboMultiplier}
+          bestStreak={bestStreak}
+        />
+        {!isTimedRound && isPlaying ? (
           <button className="secondaryButton hudActionButton" type="button" onClick={onEndRound}>
             End Practice Round
           </button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </>
   )
 }

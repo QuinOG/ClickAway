@@ -76,23 +76,26 @@
     transition: color 0.2s ease;
 }
 
-.gameStatusRow {
+.hudStatusLine {
     width: min(720px, 94vw);
     display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 10px;
     flex-shrink: 0;
 }
 
-.hudActions {
-    margin-top: 2px;
+.gameStatusRow {
     display: flex;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .hudActionButton {
     min-height: 34px;
     font-size: 12px;
     padding: 8px 12px;
+    flex-shrink: 0;
 }
 
 .statusBar {
@@ -257,7 +260,7 @@
 }
 
 .powerupTray {
-    width: min(720px, 92vw);
+    width: min(620px, 94vw, 100%);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
@@ -265,10 +268,9 @@
 }
 
 .powerupItem {
-    display: grid;
-    grid-template-rows: auto auto auto;
-    align-content: center;
-    gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     padding: 8px 10px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.18);
@@ -289,19 +291,6 @@
     align-items: center;
 }
 
-.powerupKey {
-    min-width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    display: grid;
-    place-items: center;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    color: #0f1525;
-    background: #f4d299;
-}
-
 .powerupLabel {
     font-size: 12px;
     font-weight: 700;
@@ -309,9 +298,40 @@
     line-height: 1.2;
 }
 
-.powerupHint {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.56);
+.powerupBottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.powerupIcon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+
+.powerupSegmentBar {
+    display: flex;
+    gap: 3px;
+    flex: 1;
+}
+
+.powerupSegment {
+    flex: 1;
+    height: 8px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    transition: background 0.12s ease-out;
+}
+
+.powerupSegment.filled {
+    background: #f4d299;
+}
+
+.powerupItem.ready .powerupSegment.filled {
+    background: rgba(110, 235, 191, 0.9);
 }
 
 .powerupCount {

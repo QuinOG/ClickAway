@@ -308,7 +308,7 @@ export default function ProfilePage({
                 )}
               </div>
               <div className="profileIdentityText">
-                <p className="profilePlayerName">{playerName}</p>
+                <p className="profilePlayerName">{playerName.charAt(0).toUpperCase() + playerName.slice(1)}</p>
                 <p className="profilePlayerTitle">{playerTitle}</p>
               </div>
             </div>

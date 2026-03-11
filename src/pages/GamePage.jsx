@@ -560,7 +560,7 @@ export default function GamePage({
         clickFeedbackItems={clickFeedbackItems}
       />
 
-      <PowerupTray powerupCharges={powerupCharges} />
+      <PowerupTray powerupCharges={powerupCharges} streak={streak} />
 
       {phase === ROUND_PHASE.READY ? (
         <ReadyOverlay

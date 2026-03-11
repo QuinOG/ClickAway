@@ -216,8 +216,8 @@ export default function App() {
 
   function handleLogin(username = "") {
     const normalizedUsername = normalizeUsername(username)
-    // Keep signup as the source of truth unless no username has been created yet.
-    if (normalizedUsername && !normalizeUsername(playerUsername)) {
+    // Treat the signed-in username as the active profile identity.
+    if (normalizedUsername) {
       setPlayerUsername(normalizedUsername)
     }
     setIsAuthed(true)

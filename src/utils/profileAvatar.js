@@ -6,12 +6,7 @@ export function getProfileInitials(name = "") {
 }
 
 export function getProfileAvatarStyle(seedText = "") {
-  const seed = [...String(seedText)].reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  const hue = seed % 360
-  const nextHue = (hue + 36) % 360
-
-  // Keep the generated identity tile stable for the same username.
   return {
-    background: `linear-gradient(145deg, hsl(${hue} 78% 62%), hsl(${nextHue} 74% 52%))`,
+    background: "linear-gradient(145deg, #ff1919d2, #690b1288)",
   }
 }

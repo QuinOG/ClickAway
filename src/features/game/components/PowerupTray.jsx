@@ -1,25 +1,34 @@
 import { POWERUPS } from "../../../constants/gameConstants.js"
 
-function getPowerupHintText(charges, powerup) {
-  if (charges > 0) return `Ready: press ${powerup.key}`
-  return `Unlock: streak ${powerup.awardEvery}`
-}
+const SEGMENT_COUNT = 5
 
-export default function PowerupTray({ powerupCharges }) {
+export default function PowerupTray({ powerupCharges, streak = 0 }) {
   return (
     <div className="powerupTray" aria-label="Power-ups">
       {POWERUPS.map((powerup) => {
         const charges = powerupCharges[powerup.id] ?? 0
-        const hintText = getPowerupHintText(charges, powerup)
+        const hitsPerSegment = powerup.awardEvery / SEGMENT_COUNT
+        const filledSegments = charges > 0
+          ? SEGMENT_COUNT
+          : Math.floor((streak % powerup.awardEvery) / hitsPerSegment)
 
         return (
           <div key={powerup.id} className={`powerupItem ${charges > 0 ? "ready" : ""}`}>
             <div className="powerupTop">
-              <div className="powerupKey">{powerup.key}</div>
+              <strong className="powerupLabel">{powerup.label}</strong>
               <div className="powerupCount">x{charges}</div>
             </div>
-            <strong className="powerupLabel">{powerup.label}</strong>
-            <span className="powerupHint">{hintText}</span>
+            <div className="powerupBottom">
+              <img src={powerup.icon} alt="" className="powerupIcon" />
+              <div className="powerupSegmentBar">
+                {Array.from({ length: SEGMENT_COUNT }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`powerupSegment ${i < filledSegments ? "filled" : ""}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         )
       })}
