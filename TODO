@@ -1,33 +1,54 @@
-# Targeted Feature Split and Barrel Standardization
+Findings
 
-**Summary**
-- Refactor the clearest feature-local monoliths using the same pattern as the overlay split: smaller files by concern, then folder-level barrels to keep imports clean.
-- Include matching CSS modularization so the code split and style split stay aligned.
-- Keep runtime behavior, route paths, storage keys, and top-level page/component props unchanged.
+High: src/App.jsx:83, src/App.jsx:313, and src/App.jsx:424 make App.jsx the app shell, auth/session manager, local persistence layer, progression engine, shop inventory manager, achievement sync point, and router all at once. That is the biggest maintainability risk in src, because almost every cross-cutting change now has to pass through one file.
 
-**Implementation Changes**
-- Standardize barrel usage on folder `index.js` files and retire ad hoc barrel filenames like `RoundOverlaysBarrel.jsx`.
-- Add barrels for grouped folders that already import sibling files together: round overlays, help sections, shop components, and achievement components.
-- Split `GamePage` into a thin composition layer plus feature-local modules for round state/timers, powerup handling, click feedback, and keyboard handling; keep `GamePage` as the page entry.
-- Split `GameOverOverlay` into smaller internal modules: score/reward summary UI, reusable section renderer, XP progress UI, and XP animation planning/hook logic; keep the `GameOverOverlay` prop contract unchanged.
-- Split `ProfilePage` into feature-local helpers and presentational sections: profile stats/selectors, hero/rank section, summary stats section, and achievements shell; keep shared achievement tiles/carousel reusable.
-- Split the large data files by domain and re-export from a stable barrel: shop catalog by item category and achievement definitions by achievement category.
-- Break `game.css`, `profile.css`, `shop.css`, and `achievements.css` into smaller partials behind their current top-level stylesheet entry files so `styles/app.css` can keep importing the same public CSS entrypoints.
-- Keep `App.jsx` and `layout.css` out of this pass except for import updates needed to consume the new barrels.
+High: src/pages/GamePage.jsx:60, src/pages/GamePage.jsx:269, src/pages/GamePage.jsx:311, and src/pages/GamePage.jsx:432 show that GamePage.jsx is really the game engine, not a page component. It owns round state, timers, powerups, feedback lifecycles, keyboard handling, and scoring. A new developer looking in features/game will still miss most of the real game logic because it lives in pages.
 
-**Public Interfaces**
-- Import paths for grouped feature modules change to folder barrels rather than file-by-file imports.
-- Existing exports that other code relies on stay stable: `SHOP_CATEGORIES`, `SHOP_ITEMS_BY_ID`, achievement category metadata, and the current page/component prop shapes.
-- CSS class names stay stable during the split so JSX markup does not need behavior-driven renaming.
+High: feature boundaries are inconsistent. Achievements are split across src/pages/ProfilePage.jsx:3, src/App.jsx:22, src/game/achievements, src/components/achievements, and src/styles/components/achievements.css; shop is split between src/pages/ShopPage.jsx:2, src/features/shop, and src/constants; auth is split between src/pages, src/components/auth, and src/services. That makes the codebase harder to navigate because related files do not share one obvious home.
 
-**Test Plan**
-- Clear the current lint blocker in `src/utils/profileAvatar.js` first so lint can be used as an acceptance gate.
-- Run `npm run lint` and `npm run build` after the refactor.
-- Smoke test game flow end to end: ready overlay, countdown, active round, powerup hotkeys, practice round end, and game-over XP/coins/rank display.
-- Smoke test profile behavior: hero data, rank card, summary stats, achievement category tabs, featured master banner, and carousel paging.
-- Smoke test help and shop pages to confirm new barrels resolve correctly and the CSS split does not change layout or responsive behavior.
+Medium: terminology is inconsistent around “difficulty” vs “mode”. src/constants/difficultyConfig.js:1 defines DIFFICULTY_*, while src/App.jsx:8 and src/pages/GamePage.jsx:4 immediately alias those values back to “mode”. That is a signal the file and symbol names no longer match the product language.
+Medium: there are misleading alias files and leftover structure. src/config/shopCatalog.js:1, src/features/game/gameConfig.js:1, src/features/game/gameUtils.js:1, and src/features/game/difficultyConfig.js:1 are pass-through modules, and src/styles/_deprecated.css:1 is intentionally unused. These files make the tree look richer than it is and slow down discovery.
 
-**Assumptions**
-- Barrel convention for this codebase becomes folder-level `index.js`, not standalone `*Barrel.jsx` files.
-- This pass is intentionally targeted, not an app-wide architecture rewrite; `App.jsx` state ownership remains where it is for now.
-- Current baseline is: production build passes, lint fails only on the pre-existing unused `seedText` variable, and the refactor should end with both checks green.
+Medium: styling is still organized as large global buckets instead of by feature ownership. src/main.jsx:5 imports one global stylesheet, and src/styles/app.css:3 fans out to broad files like game.css (1,372 lines), layout.css (774), and profile.css (560). That makes UI changes harder to trace from component to style source.
+
+Medium: src/pages/ProfilePage.jsx:15, src/pages/ProfilePage.jsx:102, and src/pages/ProfilePage.jsx:146 combine domain calculations, small reusable subcomponents, achievement filtering, and the full page layout in one file. It is readable today, but it will become difficult to evolve once profile or achievements expand further.
+Recommended Direction
+
+Keep route files thin and rename pages to routes if you want that intent to be explicit. A route file should mostly compose feature screens and pass route-level params.
+Move feature-owned code under feature roots. Example:
+src/
+  app/
+    AppRoutes.jsx
+    providers/
+  features/
+    auth/
+    game/
+    history/
+    leaderboard/
+    profile/
+    shop/
+  shared/
+    components/
+    hooks/
+    lib/
+    styles/
+Rename src/constants/difficultyConfig.js to something like src/features/game/config/modes.js. The current code already speaks in “modes”, so the filesystem should match that language.
+Move src/constants/shopCatalog.js to src/features/shop/catalog/items.js or src/features/shop/config/catalog.js. Shop data is feature data, not an app-wide constant.
+Move src/game/achievements either into src/features/profile/achievements if achievements are primarily profile-facing, or into src/features/achievements if they will be used across multiple screens.
+Move src/components/auth into src/features/auth/components, and keep LoginPage.jsx / SignupPage.jsx as thin route wrappers around LoginScreen / SignupScreen.
+Oversized Files To Split
+
+App.jsx: split into AppRoutes.jsx, useAuthSession.js, usePlayerProgress.js, useInventory.js, and useAchievementProgress.js. Reason: each area changes for different product reasons and should not share one edit surface.
+
+GamePage.jsx: split into useGameSession.js, useRoundTimer.js, usePowerups.js, useClickFeedback.js, and a thin GameScreen.jsx. Reason: the page currently mixes engine logic, effect cleanup, and presentation wiring.
+
+ProfilePage.jsx: extract profileStats.js, ProfileHero.jsx, RankShowcase.jsx, PlayerSummarySection.jsx, and ProfileAchievementsSection.jsx. Reason: it currently mixes derived data, reusable UI blocks, and one large render tree.
+
+styles/components/game.css and styles/components/profile.css: split by component or subfeature, or co-locate per feature. Reason: developers should be able to jump from a component to its styles without scanning a 500-1,300 line stylesheet.
+Naming Improvements
+
+gameMath.js -> gameScoring.js and gamePositioning.js if kept separate; “math” is too vague.
+historyUtils.js -> historyStats.js or historyEntries.js; it currently mixes entry creation and leaderboard derivation.
+modeUtils.js -> modeHelpers.js or merge into the game feature once modes.js exists.
+shopCatalog.js -> shopItems.js or catalog.js; “catalog” is fine, but pairing it with the feature path makes it clearer.
+Assumption: this review is scoped to src only. I did not evaluate whether the backend structure in server should mirror these same feature boundaries.
