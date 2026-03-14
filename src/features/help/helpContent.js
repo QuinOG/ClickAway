@@ -59,7 +59,7 @@ export const MODE_TUNING_ROWS = [
 ]
 
 export const RANK_TIER_ROWS = [
-  { id: "bronze", label: "Bronze", mmrRange: "0-499 MMR", imageSrc: "/ranks/bronze.png" },
+  { id: "bronze", label: "Bronze", mmrRange: "1-499 MMR", imageSrc: "/ranks/bronze.png" },
   { id: "silver", label: "Silver", mmrRange: "500-1499 MMR", imageSrc: "/ranks/silver.png" },
   { id: "gold", label: "Gold", mmrRange: "1500+ MMR", imageSrc: "/ranks/gold.png" },
 ]

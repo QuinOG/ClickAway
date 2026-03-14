@@ -19,6 +19,23 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173"
 const JWT_SECRET = process.env.JWT_SECRET || ""
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin"
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || ""
+const BREACHED_PASSWORDS = new Set([
+  "123456", "12345678", "123456789", "12345", "1234", "123", 
+  "1234567", "111111", "000000", "123123", "1234567890",
+  "654321", "112233", "12345678910", "987654321",
+
+  "admin", "password", "Password", "admin123", "user", 
+  "guest", "root", "toor", "secret", "welcome", "Welcome1",
+
+  "qwerty", "qwerty123", "qwerasdf", "zxcvbnm", "1q2w3e4r",
+
+  "iloveyou", "minecraft", "dragon", "monkey", "sunshine", 
+  "princess", "football", "starwars", "batman", "superman",
+
+  "P@ssw0rd", "Pass@123", "Aa123456", "Admin@123", "Password1!",
+  "Abcd@1234", "Aa@123456", "password123", "Password123"
+]);
+
 
 if (!JWT_SECRET) {
   throw new Error("Missing JWT_SECRET. Set it in your environment before starting the server.")
@@ -42,8 +59,16 @@ function validateUsername(username) {
 }
 
 function validatePassword(password = "") {
-  if (!password) return "Password is required."
-  if (password.length < 8) return "Password must be at least 8 characters."
+  if (!password) return "Password is required.";
+
+  if (password.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+
+  if (BREACHED_PASSWORDS.has(password)) {
+    return "Password is too simple."
+  }
+
   return ""
 }
 
@@ -51,7 +76,7 @@ function buildAuthPayload(user) {
   return {
     id: user.id,
     username: user.username,
-    role: user.role,
+    role: user.role || "player",
   }
 }
 
@@ -60,7 +85,7 @@ function createAuthResponse(user) {
     token: signAuthToken(buildAuthPayload(user), JWT_SECRET),
     user: {
       username: user.username,
-      role: user.role,
+      role: user.role || "player",
     },
   }
 }
@@ -91,20 +116,19 @@ async function seedAdminAccount() {
     return
   }
 
-  const existingAdmin = findUserByUsername(ADMIN_USERNAME)
+  const existingAdmin = await findUserByUsername(ADMIN_USERNAME)
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12)
 
   if (!existingAdmin) {
-    createUser({
+    await createUser({
       username: ADMIN_USERNAME,
       passwordHash,
-      role: "admin",
     })
     console.log(`Admin account created for username "${ADMIN_USERNAME}".`)
     return
   }
 
-  updateUserPassword({
+  await updateUserPassword({
     id: existingAdmin.id,
     passwordHash,
   })
@@ -131,17 +155,16 @@ app.post("/api/auth/signup", async (request, response) => {
     return
   }
 
-  const existingUser = findUserByUsername(username)
+  const existingUser = await findUserByUsername(username)
   if (existingUser) {
     response.status(409).json({ error: "That username is already taken." })
     return
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
-  const createdUser = createUser({
+  const createdUser = await createUser({
     username,
     passwordHash,
-    role: "player",
   })
 
   response.status(201).json(createAuthResponse(createdUser))
@@ -156,7 +179,7 @@ app.post("/api/auth/login", async (request, response) => {
     return
   }
 
-  const user = findUserByUsername(username)
+  const user = await findUserByUsername(username)
   if (!user) {
     response.status(401).json({ error: "Invalid username or password." })
     return
@@ -171,8 +194,8 @@ app.post("/api/auth/login", async (request, response) => {
   response.json(createAuthResponse(user))
 })
 
-app.get("/api/auth/me", requireAuth, (request, response) => {
-  const user = findUserById(request.auth.userId)
+app.get("/api/auth/me", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
   if (!user) {
     response.status(401).json({ error: "Session is no longer valid." })
     return

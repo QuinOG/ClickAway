@@ -33,12 +33,12 @@ function getUsernameHint(username = "", shouldShowValidation = false) {
 
   if (trimmedUsername.length < 3) {
     return {
-      text: "Short usernames work, but 3+ characters are easier to recognize.",
+      text: "Username must be at least 3 characters.",
       tone: "warning",
     }
   }
 
-  return { text: `Looking good: ${trimmedUsername}`, tone: "success" }
+  return { text: `Looking good: "${trimmedUsername}" `, tone: "success" }
 }
 
 function getPasswordHint(password = "", shouldShowValidation = false) {
@@ -55,7 +55,7 @@ function getPasswordHint(password = "", shouldShowValidation = false) {
 
   if (password.length < 8) {
     return {
-      text: "This will work, but 8+ characters is stronger.",
+      text: "Password must be at least 8 characters.",
       tone: "warning",
     }
   }

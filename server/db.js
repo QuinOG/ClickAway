@@ -1,75 +1,68 @@
-import fs from "node:fs"
-import path from "node:path"
+import mysql from "mysql2/promise"
+import dotenv from "dotenv"
 
-import Database from "better-sqlite3"
+dotenv.config()
 
-const DATA_DIRECTORY = path.join(process.cwd(), "server", "data")
-const DATABASE_PATH = path.join(DATA_DIRECTORY, "clickaway.db")
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "clickaway",
+  waitForConnections: true,
+  connectionLimit: 10,
+})
 
-if (!fs.existsSync(DATA_DIRECTORY)) {
-  fs.mkdirSync(DATA_DIRECTORY, { recursive: true })
+function mapUserRow(row) {
+  if (!row) return null
+
+  return {
+    id: Number(row.id),
+    username: row.username,
+    passwordHash: row.passwordHash,
+    role: "player",
+  }
 }
 
-const db = new Database(DATABASE_PATH)
-
-db.pragma("journal_mode = WAL")
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL COLLATE NOCASE UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'player',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+export async function findUserByUsername(username) {
+  const [rows] = await pool.execute(
+    `SELECT id, username, password_hash AS passwordHash
+     FROM users
+     WHERE username = ?
+     LIMIT 1`,
+    [username]
   )
-`)
 
-const findUserByUsernameStatement = db.prepare(`
-  SELECT id, username, password_hash AS passwordHash, role
-  FROM users
-  WHERE username = ?
-  COLLATE NOCASE
-  LIMIT 1
-`)
-
-const findUserByIdStatement = db.prepare(`
-  SELECT id, username, role
-  FROM users
-  WHERE id = ?
-  LIMIT 1
-`)
-
-const insertUserStatement = db.prepare(`
-  INSERT INTO users (username, password_hash, role)
-  VALUES (@username, @passwordHash, @role)
-`)
-
-const updatePasswordStatement = db.prepare(`
-  UPDATE users
-  SET password_hash = @passwordHash
-  WHERE id = @id
-`)
-
-export function findUserByUsername(username) {
-  return findUserByUsernameStatement.get(username) || null
+  return mapUserRow(rows[0])
 }
 
-export function findUserById(id) {
-  return findUserByIdStatement.get(id) || null
+export async function findUserById(id) {
+  const [rows] = await pool.execute(
+    `SELECT id, username, password_hash AS passwordHash
+     FROM users
+     WHERE id = ?
+     LIMIT 1`,
+    [id]
+  )
+
+  return mapUserRow(rows[0])
 }
 
-export function createUser({ username, passwordHash, role = "player" }) {
-  const result = insertUserStatement.run({
-    username,
-    passwordHash,
-    role,
-  })
+export async function createUser({ username, passwordHash }) {
+  const [result] = await pool.execute(
+    "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+    [username, passwordHash]
+  )
 
-  return findUserById(result.lastInsertRowid)
+  return findUserById(result.insertId)
 }
 
-export function updateUserPassword({ id, passwordHash }) {
-  updatePasswordStatement.run({ id, passwordHash })
+export async function updateUserPassword({ id, passwordHash }) {
+  await pool.execute(
+    "UPDATE users SET password_hash = ? WHERE id = ?",
+    [passwordHash, id]
+  )
+
+  return findUserById(id)
 }
 
-
+export default pool
