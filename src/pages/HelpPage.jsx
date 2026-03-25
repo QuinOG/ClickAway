@@ -3,6 +3,7 @@ import HelpListSection from "../features/help/components/HelpListSection.jsx"
 import HelpRankTiersSection from "../features/help/components/HelpRankTiersSection.jsx"
 import HelpTableSection from "../features/help/components/HelpTableSection.jsx"
 import {
+  ACCOUNT_ROWS,
   CONTROLS_ROWS,
   DATA_SYSTEM_POINTS,
   DIFFICULTY_ROWS,
@@ -15,12 +16,14 @@ import {
   PERFORMANCE_TIPS,
   POWERUP_ROWS,
   POWERUP_RULES_POINTS,
+  PROFILE_POINTS,
   PROGRESSION_POINTS,
   RANK_RULES_POINTS,
   RANK_TIER_ROWS,
   ROUND_FLOW_POINTS,
   SCORING_ROWS,
   SHOP_POINTS,
+  TRACKING_POINTS,
 } from "../features/help/helpContent.js"
 
 export default function HelpPage() {
@@ -121,6 +124,19 @@ export default function HelpPage() {
             <HelpListSection title="Performance Tips" items={PERFORMANCE_TIPS} />
             <HelpListSection title="Data and Storage" items={DATA_SYSTEM_POINTS} />
           </div>
+        </section>
+
+        <section id="account" className="helpTopicGroup" aria-label="Account, profile, and tracking">
+          <h2 className="helpGroupTitle">| Account, Profile, and Tracking</h2>
+          <div className="helpGrid">
+            <HelpTableSection
+              title="Account Access"
+              columns={["Task", "How It Works"]}
+              rows={ACCOUNT_ROWS}
+            />
+            <HelpListSection title="Profile and Achievements" items={PROFILE_POINTS} />
+          </div>
+          <HelpListSection title="History and Leaderboard" items={TRACKING_POINTS} />
         </section>
 
         <section id="faq" className="helpTopicGroup" aria-label="Frequently asked questions">

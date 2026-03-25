@@ -28,7 +28,6 @@ export const POWERUPS = [
     key: "1",
     label: "Time +2s",
     awardEvery: 5,
-    icon: "/ice.png",
     description: "Adds 2 seconds to the timer.",
   },
   {
@@ -36,7 +35,6 @@ export const POWERUPS = [
     key: "2",
     label: "Grow +10",
     awardEvery: 10,
-    icon: "/ice.png",
     description: "Temporarily makes the target larger.",
   },
   {
@@ -44,7 +42,6 @@ export const POWERUPS = [
     key: "3",
     label: "Freeze 1s",
     awardEvery: 15,
-    icon: "/ice.png",
     description: "Stops target movement for 1 seconds.",
   },
 ]

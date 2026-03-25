@@ -1,29 +1,21 @@
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import InfoStrip from "../components/InfoStrip.jsx"
 import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
-import {
-  LEADERBOARD_INSIGHTS,
-  MOCK_LEADERBOARD,
-} from "../features/leaderboard/leaderboardData.js"
-import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
-import { isRankedModeEntry } from "../utils/modeUtils.js"
-import { getRankImageSrc } from "../utils/rankUtils.js"
+import { LEADERBOARD_INSIGHTS } from "../features/leaderboard/leaderboardData.js"
+import { fetchLeaderboard } from "../services/api.js"
+import { getLevelProgress } from "../utils/progressionUtils.js"
+import { getRankImageSrc, getRankProgressWithPlacement } from "../utils/rankUtils.js"
 
 const SORTABLE_COLUMNS = [
   { key: "mmr", label: "MMR" },
   { key: "bestScore", label: "Best Score" },
   { key: "bestStreak", label: "Best Streak" },
-  { key: "accuracy", label: "Accuracy" },
+  { key: "accuracyPercent", label: "Accuracy" },
 ]
 
 const DEFAULT_SORT = { key: "mmr", direction: "desc" }
-
-function getRankedHistory(roundHistory) {
-  if (!Array.isArray(roundHistory)) return []
-  return roundHistory.filter(isRankedModeEntry)
-}
 
 function parseAccuracyPercent(accuracy) {
   if (typeof accuracy === "number" && Number.isFinite(accuracy)) {
@@ -45,56 +37,54 @@ function formatNumericValue(value) {
 }
 
 function getSortableValue(player, sortKey) {
-  if (sortKey === "accuracy") {
-    return parseAccuracyPercent(player.accuracy)
-  }
-
   const numericValue = Number(player?.[sortKey])
   return Number.isFinite(numericValue) ? numericValue : 0
 }
 
 function isCurrentUserRow(player, currentUserId, currentUsername) {
-  const rowName = String(player?.username ?? "").trim().toLowerCase()
-  if (rowName === "you") return true
+  const normalizedCurrentUserId = String(currentUserId ?? "").trim()
+  const normalizedRowUserId = String(player?.userId ?? "").trim()
 
-  const normalizedCurrentUserId = String(currentUserId ?? "").trim().toLowerCase()
-  const rowUserId = String(player?.userId ?? "").trim().toLowerCase()
-  if (normalizedCurrentUserId && rowUserId === normalizedCurrentUserId) {
+  if (normalizedCurrentUserId && normalizedCurrentUserId === normalizedRowUserId) {
     return true
   }
 
   const normalizedCurrentUsername = String(currentUsername ?? "").trim().toLowerCase()
-  return Boolean(normalizedCurrentUsername && rowName === normalizedCurrentUsername)
+  const normalizedRowUsername = String(player?.username ?? "").trim().toLowerCase()
+  return Boolean(
+    !normalizedCurrentUserId &&
+    normalizedCurrentUsername &&
+    normalizedCurrentUsername === normalizedRowUsername
+  )
 }
 
-function getLeaderboardRows(
-  roundHistory,
-  playerRankLabel,
-  playerRankMmr,
-  playerCoins,
-  playerLevel,
-  currentUserId,
-) {
-  const rankedHistory = getRankedHistory(roundHistory)
-  const playerStats = buildPlayerLeaderboardStats(rankedHistory)
-  const mergedRows = [
-    {
-      username: "You",
-      userId: currentUserId || "local-player",
-      bestScore: playerStats.bestScore,
-      bestStreak: playerStats.bestStreak,
-      accuracy: playerStats.accuracy,
-      rankLabel: playerRankLabel,
-      mmr: playerRankMmr,
-      coins: playerCoins,
-      level: playerLevel,
-    },
-    ...MOCK_LEADERBOARD,
-  ]
+function normalizeLeaderboardRow(row = {}, rowIndex = 0) {
+  const rankedRounds = Math.max(0, Number(row.rankedRounds) || 0)
+  const mmr = Math.max(0, Number(row.mmr) || 0)
+  const accuracyPercent = parseAccuracyPercent(row.accuracyPercent)
+  const levelXp = Math.max(0, Number(row.levelXp) || 0)
+  const level = getLevelProgress(levelXp).level
+  const rankProgress = getRankProgressWithPlacement(mmr, rankedRounds > 0)
 
-  return mergedRows
-    .sort((firstRow, secondRow) => secondRow.bestScore - firstRow.bestScore)
-    .slice(0, 5)
+  return {
+    rank: Math.max(1, Number(row.rank) || (rowIndex + 1)),
+    rowIndex,
+    userId: String(row.userId ?? ""),
+    username: String(row.username || "Player"),
+    mmr,
+    coins: Math.max(0, Number(row.coins) || 0),
+    level,
+    bestScore: Math.max(0, Number(row.bestScore) || 0),
+    bestStreak: Math.max(0, Number(row.bestStreak) || 0),
+    accuracyPercent,
+    accuracy: formatAccuracyPercent(accuracyPercent),
+    rankLabel: rankProgress.tierLabel,
+  }
+}
+
+async function requestLeaderboardRows(authToken) {
+  const response = await fetchLeaderboard(authToken)
+  return (Array.isArray(response?.rows) ? response.rows : []).map(normalizeLeaderboardRow)
 }
 
 function SortableHeader({ label, columnKey, sortConfig, onSort }) {
@@ -136,29 +126,74 @@ function TierBadge({ tierLabel = "Unranked" }) {
 }
 
 export default function LeaderboardPage({
-  roundHistory = [],
-  playerRankLabel = "Unranked",
-  playerRankMmr = 0,
-  playerCoins = 0,
-  playerLevel = 1,
+  authToken = "",
   currentUserId = "",
   currentUsername = "",
 }) {
   const navigate = useNavigate()
   const [sortConfig, setSortConfig] = useState(DEFAULT_SORT)
+  const [leaderboardRows, setLeaderboardRows] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState("")
 
-  const leaderboardRows = useMemo(
-    () =>
-      getLeaderboardRows(
-        roundHistory,
-        playerRankLabel,
-        playerRankMmr,
-        playerCoins,
-        playerLevel,
-        currentUserId,
-      ).map((row, rowIndex) => ({ ...row, rowIndex })),
-    [currentUserId, playerCoins, playerLevel, playerRankLabel, playerRankMmr, roundHistory],
-  )
+  const loadLeaderboard = useCallback(async () => {
+    if (!authToken) {
+      setLeaderboardRows([])
+      setLoadError("Missing authentication token.")
+      setIsLoading(false)
+      return
+    }
+
+    setIsLoading(true)
+    setLoadError("")
+
+    try {
+      setLeaderboardRows(await requestLeaderboardRows(authToken))
+    } catch (error) {
+      setLeaderboardRows([])
+      setLoadError(error.message || "Unable to load leaderboard.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [authToken])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    async function syncLeaderboard() {
+      if (!authToken) {
+        if (!isCancelled) {
+          setLeaderboardRows([])
+          setLoadError("Missing authentication token.")
+          setIsLoading(false)
+        }
+        return
+      }
+
+      setIsLoading(true)
+      setLoadError("")
+
+      try {
+        const rows = await requestLeaderboardRows(authToken)
+        if (isCancelled) return
+        setLeaderboardRows(rows)
+      } catch (error) {
+        if (isCancelled) return
+        setLeaderboardRows([])
+        setLoadError(error.message || "Unable to load leaderboard.")
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    syncLeaderboard()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [authToken])
 
   const sortedRows = useMemo(() => {
     return [...leaderboardRows].sort((firstRow, secondRow) => {
@@ -170,7 +205,6 @@ export default function LeaderboardPage({
         return (firstValue - secondValue) * directionMultiplier
       }
 
-      // Stable fallback preserves source order when values are tied.
       return firstRow.rowIndex - secondRow.rowIndex
     })
   }, [leaderboardRows, sortConfig])
@@ -208,74 +242,101 @@ export default function LeaderboardPage({
       <section className="card">
         <h1 className="cardTitle">Leaderboard</h1>
         <p className="muted">
-          Ranked leaderboard. Only Ranked mode rounds affect rank/MMR placement.
+          View your current rank/MMR placement.
         </p>
 
         <InfoStrip
           points={LEADERBOARD_INSIGHTS}
           collapsible
           defaultCollapsed
-          summary={LEADERBOARD_INSIGHTS[0]}
         />
 
-        <table className="table helpTable leaderboardTable">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Tier</th>
-              {SORTABLE_COLUMNS.map((column) => (
-                <SortableHeader
-                  key={column.key}
-                  label={column.label}
-                  columnKey={column.key}
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedRows.map((player, index) => {
-              const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)
+        {isLoading ? (
+          <div className="leaderboardStatusCard" role="status" aria-live="polite">
+            <p className="leaderboardStatusTitle">Loading leaderboard...</p>
+            <p className="muted">Fetching ranked standings from the server.</p>
+          </div>
+        ) : null}
 
-              return (
-                <tr
-                  key={`${player.username}-${player.rowIndex}`}
-                  className={`leaderboardTableRow${isCurrentUser ? " isCurrentUser" : ""}`}
-                  tabIndex={0}
-                  onClick={() => handleProfileOpen(player, isCurrentUser)}
-                  onKeyDown={(event) => handleRowKeyDown(event, player, isCurrentUser)}
-                  aria-label={`Open ${player.username} profile`}
-                >
-                  <td>{index + 1}</td>
-                  <td>
-                    <div className="leaderboardEntryHoverWrap">
-                      <span className="leaderboardPlayerName">
-                        {player.username}
-                        {isCurrentUser ? <span className="leaderboardYouBadge">YOU</span> : null}
-                      </span>
-                      <div className="leaderboardEntryHoverCard">
-                        <PlayerHoverCard
-                          rankLabel={player.rankLabel}
-                          rankMmr={player.mmr}
-                          coins={player.coins}
-                          level={player.level}
-                          accuracy={player.accuracy}
-                        />
+        {!isLoading && loadError ? (
+          <div className="leaderboardStatusCard" role="alert">
+            <p className="leaderboardStatusTitle">Leaderboard unavailable</p>
+            <p className="muted">{loadError}</p>
+            <button type="button" className="leaderboardRetryButton" onClick={loadLeaderboard}>
+              Retry
+            </button>
+          </div>
+        ) : null}
+
+        {!isLoading && !loadError && sortedRows.length === 0 ? (
+          <div className="leaderboardStatusCard" role="status" aria-live="polite">
+            <p className="leaderboardStatusTitle">No ranked players yet.</p>
+            <p className="muted">Play a Ranked round to start populating the ladder.</p>
+          </div>
+        ) : null}
+
+        {!isLoading && !loadError && sortedRows.length > 0 ? (
+          <table className="table helpTable leaderboardTable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Tier</th>
+                {SORTABLE_COLUMNS.map((column) => (
+                  <SortableHeader
+                    key={column.key}
+                    label={column.label}
+                    columnKey={column.key}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                  />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sortedRows.map((player) => {
+                const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)
+
+                return (
+                  <tr
+                    key={`${player.userId}-${player.rank}`}
+                    className={`leaderboardTableRow${isCurrentUser ? " isCurrentUser" : ""}`}
+                    tabIndex={0}
+                    onClick={() => handleProfileOpen(player, isCurrentUser)}
+                    onKeyDown={(event) => handleRowKeyDown(event, player, isCurrentUser)}
+                    aria-label={`Open ${player.username} profile`}
+                  >
+                    <td>{formatNumericValue(player.rank)}</td>
+                    <td>
+                      <div className="leaderboardEntryHoverWrap">
+                        <span className="leaderboardPlayerName">
+                          {player.username}
+                          {isCurrentUser ? <span className="leaderboardYouBadge">YOU</span> : null}
+                        </span>
+                        <div className="leaderboardEntryHoverCard">
+                          <PlayerHoverCard
+                            rankLabel={player.rankLabel}
+                            rankMmr={player.mmr}
+                            coins={player.coins}
+                            level={player.level}
+                            accuracy={player.accuracy}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td><TierBadge tierLabel={player.rankLabel} /></td>
-                  <td className="leaderboardNumeric">{formatNumericValue(player.mmr)}</td>
-                  <td className="leaderboardNumeric">{formatNumericValue(player.bestScore)}</td>
-                  <td className="leaderboardNumeric">{formatNumericValue(player.bestStreak)}</td>
-                  <td className="leaderboardNumeric">{formatAccuracyPercent(player.accuracy)}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td><TierBadge tierLabel={player.rankLabel} /></td>
+                    <td className="leaderboardNumeric">{formatNumericValue(player.mmr)}</td>
+                    <td className="leaderboardNumeric">{formatNumericValue(player.bestScore)}</td>
+                    <td className="leaderboardNumeric">{formatNumericValue(player.bestStreak)}</td>
+                    <td className="leaderboardNumeric">
+                      {formatAccuracyPercent(player.accuracyPercent)}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        ) : null}
       </section>
     </div>
   )

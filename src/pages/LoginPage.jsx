@@ -47,6 +47,8 @@ export default function LoginPage({ onLogin }) {
   const navigate = useNavigate()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [submitError, setSubmitError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [touchedFields, setTouchedFields] = useState({
     username: false,
     password: false,
@@ -68,15 +70,24 @@ export default function LoginPage({ onLogin }) {
     ))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     setHasSubmitted(true)
 
-    if (getUsernameError(username) || getPasswordError(password)) {
+    if (isSubmitting || getUsernameError(username) || getPasswordError(password)) {
       return
     }
 
-    onLogin?.(username.trim())
+    setIsSubmitting(true)
+    const loginResult = await onLogin?.(username.trim(), password)
+    if (loginResult?.ok === false) {
+      setSubmitError(loginResult.error || "Unable to log in with those details.")
+      setIsSubmitting(false)
+      return
+    }
+
+    setSubmitError("")
+    setIsSubmitting(false)
     navigate("/game")
   }
 
@@ -93,7 +104,10 @@ export default function LoginPage({ onLogin }) {
             label="Username"
             name="username"
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            onChange={(event) => {
+              setUsername(event.target.value)
+              setSubmitError("")
+            }}
             onBlur={() => markFieldTouched("username")}
             autoComplete="username"
             autoCapitalize="none"
@@ -105,6 +119,7 @@ export default function LoginPage({ onLogin }) {
             hintTone={usernameHint.tone}
             autoFocus
             required
+            disabled={isSubmitting}
           />
 
           <AuthInputField
@@ -112,7 +127,10 @@ export default function LoginPage({ onLogin }) {
             name="password"
             type="password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              setPassword(event.target.value)
+              setSubmitError("")
+            }}
             onBlur={() => markFieldTouched("password")}
             autoComplete="current-password"
             placeholder="Enter password"
@@ -120,11 +138,18 @@ export default function LoginPage({ onLogin }) {
             hint={passwordHint.text}
             hintTone={passwordHint.tone}
             required
+            disabled={isSubmitting}
           />
 
-          <button className="primaryButton authButton" type="submit">
-            Login
+          <button className="primaryButton authButton" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Logging in..." : "Login"}
           </button>
+
+          {submitError ? (
+            <p className="authHint authHint-error" role="alert">
+              {submitError}
+            </p>
+          ) : null}
         </form>
 
         <div className="authFooter">

@@ -16,10 +16,15 @@ export default function PowerupTray({ powerupCharges, streak = 0 }) {
           <div key={powerup.id} className={`powerupItem ${charges > 0 ? "ready" : ""}`}>
             <div className="powerupTop">
               <strong className="powerupLabel">{powerup.label}</strong>
-              <div className="powerupCount">x{charges}</div>
+              <div className="powerupMeta">
+                {charges > 0 ? <span className="powerupReadyCue">Ready</span> : null}
+                <div className="powerupCount">x{charges}</div>
+              </div>
             </div>
             <div className="powerupBottom">
-              <img src={powerup.icon} alt="" className="powerupIcon" />
+              <div className="powerupSlotBadge" aria-hidden="true">
+                {powerup.key}
+              </div>
               <div className="powerupSegmentBar">
                 {Array.from({ length: SEGMENT_COUNT }, (_, i) => (
                   <div

@@ -249,7 +249,7 @@ export default function ProfilePage({
   })
   const playerInitials = getProfileInitials(playerName)
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
-  const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
+  const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle()
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
 
   const playerProgressStats = [

@@ -4,7 +4,7 @@ export const INITIAL_RANK_MMR = 0
 export const UNRANKED_LABEL = "Unranked"
 
 const RANK_TIERS = [
-  { id: "bronze", label: "Bronze", minMmr: 0 },
+  { id: "bronze", label: "Bronze", minMmr: 1 },
   { id: "silver", label: "Silver", minMmr: 500 },
   { id: "gold", label: "Gold", minMmr: 1500 },
 ]
@@ -131,16 +131,16 @@ export function calculateRoundRankDelta({
 
   // 3) Accuracy tiers:
   if (normalizedAccuracy >= 99) delta += 8
-  else if (normalizedAccuracy >= 95) delta += 6
-  else if (normalizedAccuracy >= 90) delta += 3
-  else if (normalizedAccuracy >= 85) delta += 1
-  else if (normalizedAccuracy >= 75) delta -= 3
-  else if (normalizedAccuracy >= 60) delta -= 6
+  else if (normalizedAccuracy >= 96) delta += 6
+  else if (normalizedAccuracy >= 93) delta += 3
+  else if (normalizedAccuracy >= 90) delta += 1
+  else if (normalizedAccuracy >= 85) delta -= 3
+  else if (normalizedAccuracy >= 80) delta -= 6
   else delta -= 10
 
   // 4) Penalties
   if (normalizedMisses >= 18) delta -= 10
   if (normalizedHits <= 8) delta -= 12
 
-  return Math.max(-30, Math.min(35, Math.floor(delta)))
+  return Math.max(-25, Math.min(35, Math.floor(delta)))
 }

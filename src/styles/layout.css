@@ -498,12 +498,11 @@
 }
 
 .helpGroupTitle {
-    margin: 0 0 3px;
     font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: clamp(20px, 2.3vw, 26px);
+    font-size: clamp(20px, 2.3vw, 30px);
     color: #72afff;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.75px;
 }
 
 .helpBlock {
@@ -511,7 +510,7 @@
     border-radius: 16px;
     padding: 14px;
     background: linear-gradient(170deg, rgba(18, 28, 48, 0.9), rgba(23, 36, 60, 0.82));
-    margin-top: 12px;
+    margin-top: 16px;
 }
 
 .helpBlock .cardH2 {
@@ -627,9 +626,44 @@
 }
 
 .leaderboardTable {
-    overflow: visible;
     border-collapse: separate;
     border-spacing: 0;
+}
+
+.leaderboardStatusCard {
+    margin-top: 16px;
+    border: 1px solid rgba(174, 206, 243, 0.22);
+    border-radius: 16px;
+    padding: 18px;
+    background: rgba(20, 32, 53, 0.58);
+}
+
+.leaderboardStatusTitle {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #eef4ff;
+}
+
+.leaderboardRetryButton {
+    margin-top: 12px;
+    border: 1px solid rgba(174, 206, 243, 0.42);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font: inherit;
+    font-weight: 700;
+    color: #eef4ff;
+    background: rgba(105, 150, 204, 0.18);
+    cursor: pointer;
+}
+
+.leaderboardRetryButton:hover {
+    background: rgba(118, 166, 224, 0.24);
+}
+
+.leaderboardRetryButton:focus-visible {
+    outline: 2px solid rgba(148, 211, 255, 0.8);
+    outline-offset: 2px;
 }
 
 .leaderboardTable .leaderboardNumeric {
@@ -689,7 +723,7 @@
 }
 
 .leaderboardTableRow.isCurrentUser td {
-    background: linear-gradient(90deg, rgba(108, 154, 211, 0.28), rgba(108, 154, 211, 0.1));
+    background-color: rgba(108, 154, 211, 0.2);
 }
 
 .leaderboardTableRow.isCurrentUser td:first-child {
@@ -709,7 +743,7 @@
 
 .leaderboardTableRow.isCurrentUser:hover td,
 .leaderboardTableRow.isCurrentUser:focus-visible td {
-    background: linear-gradient(90deg, rgba(121, 168, 222, 0.34), rgba(121, 168, 222, 0.14));
+    background-color: rgba(121, 168, 222, 0.26);
 }
 
 .leaderboardEntryHoverWrap {
@@ -717,6 +751,11 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+}
+
+.leaderboardTableRow:hover .leaderboardEntryHoverWrap,
+.leaderboardTableRow:focus-visible .leaderboardEntryHoverWrap {
+    z-index: 2;
 }
 
 .leaderboardPlayerName {
@@ -864,10 +903,18 @@
 }
 
 .helpInlineList {
-    margin-top: 10px;
+    margin: 10px 0 0;
+    padding-left: 0;
+    list-style-position: inside;
     display: grid;
-    gap: 8px;
+    gap: 10px 18px;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: start;
+}
+
+.helpInlineList li {
+    margin: 0;
+    line-height: 1.4;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -892,9 +939,4 @@
     }
 }
 
-.leaderboardTable tbody,
-.leaderboardTable tr,
-.leaderboardTable td {
-    overflow: visible;
-}
 

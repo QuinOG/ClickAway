@@ -33,12 +33,12 @@ function getUsernameHint(username = "", shouldShowValidation = false) {
 
   if (trimmedUsername.length < 3) {
     return {
-      text: "Short usernames work, but 3+ characters are easier to recognize.",
+      text: "Username must be at least 3 characters.",
       tone: "warning",
     }
   }
 
-  return { text: `Looking good: ${trimmedUsername}`, tone: "success" }
+  return { text: `Looking good: "${trimmedUsername}" `, tone: "success" }
 }
 
 function getPasswordHint(password = "", shouldShowValidation = false) {
@@ -55,7 +55,7 @@ function getPasswordHint(password = "", shouldShowValidation = false) {
 
   if (password.length < 8) {
     return {
-      text: "This will work, but 8+ characters is stronger.",
+      text: "Password must be at least 8 characters.",
       tone: "warning",
     }
   }
@@ -87,6 +87,8 @@ export default function SignupPage({ onSignup }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [submitError, setSubmitError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [touchedFields, setTouchedFields] = useState({
     username: false,
     password: false,
@@ -118,11 +120,12 @@ export default function SignupPage({ onSignup }) {
     ))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     setHasSubmitted(true)
 
     if (
+      isSubmitting ||
       getUsernameError(username) ||
       getPasswordError(password) ||
       getConfirmPasswordError(password, confirmPassword)
@@ -130,7 +133,16 @@ export default function SignupPage({ onSignup }) {
       return
     }
 
-    onSignup?.(username.trim())
+    setIsSubmitting(true)
+    const signupResult = await onSignup?.(username.trim(), password)
+    if (signupResult?.ok === false) {
+      setSubmitError(signupResult.error || "Unable to create account.")
+      setIsSubmitting(false)
+      return
+    }
+
+    setSubmitError("")
+    setIsSubmitting(false)
     navigate("/game")
   }
 
@@ -147,7 +159,10 @@ export default function SignupPage({ onSignup }) {
             label="Username"
             name="username"
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            onChange={(event) => {
+              setUsername(event.target.value)
+              setSubmitError("")
+            }}
             onBlur={() => markFieldTouched("username")}
             autoComplete="username"
             autoCapitalize="none"
@@ -159,6 +174,7 @@ export default function SignupPage({ onSignup }) {
             hintTone={usernameHint.tone}
             autoFocus
             required
+            disabled={isSubmitting}
           />
 
           <AuthInputField
@@ -166,7 +182,10 @@ export default function SignupPage({ onSignup }) {
             name="password"
             type="password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              setPassword(event.target.value)
+              setSubmitError("")
+            }}
             onBlur={() => markFieldTouched("password")}
             autoComplete="new-password"
             placeholder="Create a password"
@@ -174,6 +193,7 @@ export default function SignupPage({ onSignup }) {
             hint={passwordHint.text}
             hintTone={passwordHint.tone}
             required
+            disabled={isSubmitting}
           />
 
           <AuthInputField
@@ -181,7 +201,10 @@ export default function SignupPage({ onSignup }) {
             name="confirmPassword"
             type="password"
             value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
+            onChange={(event) => {
+              setConfirmPassword(event.target.value)
+              setSubmitError("")
+            }}
             onBlur={() => markFieldTouched("confirmPassword")}
             autoComplete="new-password"
             placeholder="Re-enter your password"
@@ -189,11 +212,18 @@ export default function SignupPage({ onSignup }) {
             hint={confirmPasswordHint.text}
             hintTone={confirmPasswordHint.tone}
             required
+            disabled={isSubmitting}
           />
 
-          <button className="primaryButton authButton" type="submit">
-            Create Account
+          <button className="primaryButton authButton" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating Account..." : "Create Account"}
           </button>
+
+          {submitError ? (
+            <p className="authHint authHint-error" role="alert">
+              {submitError}
+            </p>
+          ) : null}
         </form>
 
         <div className="authFooter">

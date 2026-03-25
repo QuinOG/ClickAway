@@ -31,3 +31,13 @@
     font-size: 13px;
     letter-spacing: 0.25px;
 }
+
+.leaderboardTable {
+    overflow: visible;
+}
+
+.leaderboardTable tbody,
+.leaderboardTable tr,
+.leaderboardTable td {
+    overflow: visible;
+}

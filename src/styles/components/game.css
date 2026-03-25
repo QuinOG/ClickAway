@@ -289,6 +289,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 }
 
 .powerupLabel {
@@ -298,18 +299,35 @@
     line-height: 1.2;
 }
 
+.powerupMeta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
 .powerupBottom {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.powerupIcon {
+.powerupSlotBadge {
     width: 20px;
     height: 20px;
-    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(240, 248, 255, 0.94);
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    display: grid;
+    place-items: center;
     flex-shrink: 0;
-    opacity: 0.85;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .powerupSegmentBar {
@@ -339,6 +357,26 @@
     font-family: "Space Grotesk", "Verdana", sans-serif;
     font-weight: 700;
     color: #ffecbe;
+}
+
+.powerupReadyCue {
+    padding: 3px 7px;
+    border-radius: 999px;
+    border: 1px solid rgba(127, 237, 197, 0.28);
+    background: rgba(110, 235, 191, 0.14);
+    color: rgba(222, 248, 236, 0.9);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.34px;
+    text-transform: uppercase;
+    line-height: 1;
+    animation: powerupReadyIn 220ms ease-out;
+}
+
+.powerupItem.ready .powerupSlotBadge {
+    border-color: rgba(110, 235, 191, 0.45);
+    background: rgba(110, 235, 191, 0.16);
+    color: rgba(235, 253, 245, 0.98);
 }
 
 .clickFeedback {
@@ -1102,6 +1140,13 @@
     background: rgba(255, 255, 255, 0.03);
 }
 
+.gameOverListRow.isStacked {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 8px;
+    padding-block: 10px;
+}
+
 .gameOverListRow:nth-child(even) {
     background: rgba(255, 255, 255, 0.045);
 }
@@ -1122,9 +1167,123 @@
     min-width: 88px;
 }
 
+.gameOverListContent {
+    min-width: 0;
+}
+
 .gameOverListValue.isReward {
     color: rgba(196, 240, 210, 0.98);
     text-shadow: 0 0 10px rgba(120, 220, 170, 0.2);
+}
+
+.gameOverXpProgress {
+    display: grid;
+    gap: 8px;
+}
+
+.gameOverXpProgressTop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.gameOverXpProgressTitleGroup {
+    display: grid;
+    gap: 2px;
+}
+
+.gameOverXpProgressLevel {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.42px;
+    color: rgba(205, 222, 244, 0.82);
+}
+
+.gameOverXpProgressPercent {
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 24px;
+    line-height: 1;
+    color: #f6faff;
+}
+
+.gameOverXpProgressSummary {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(222, 236, 252, 0.88);
+}
+
+.gameOverXpProgressEnds {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(210, 227, 248, 0.84);
+}
+
+.gameOverXpProgressTrack {
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    overflow: hidden;
+}
+
+.gameOverXpProgressFill {
+    position: relative;
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(105, 197, 255, 0.96), rgba(90, 174, 255, 0.94));
+    box-shadow: 0 0 12px rgba(105, 197, 255, 0.24);
+}
+
+.gameOverXpProgressFill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+.gameOverXpProgressFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 24px;
+    flex-wrap: wrap;
+}
+
+.gameOverXpProgressRemaining {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(206, 221, 242, 0.74);
+}
+
+.gameOverLevelUpMessage {
+    min-height: 22px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.32px;
+    color: #04111d;
+    background: rgba(125, 234, 185, 0.95);
+    box-shadow: 0 10px 18px rgba(56, 177, 124, 0.18);
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.gameOverLevelUpMessage.isVisible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .gameOverPracticeNote {
@@ -1277,7 +1436,8 @@
     .gameScreen.isShaking .arena,
     .modeCard,
     .readyCardChoosing,
-    .gameOverScorePanel.isComplete {
+    .gameOverScorePanel.isComplete,
+    .powerupReadyCue {
         animation: none;
     }
 }
@@ -1453,6 +1613,10 @@
         min-height: 0;
     }
 
+    .powerupMeta {
+        gap: 5px;
+    }
+
     .overlayActions {
         justify-content: center;
         flex-wrap: wrap;
@@ -1464,6 +1628,18 @@
 
     .gameOverSection {
         padding: 7px;
+    }
+}
+
+@keyframes powerupReadyIn {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 

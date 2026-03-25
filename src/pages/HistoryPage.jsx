@@ -31,7 +31,6 @@ export default function HistoryPage({ roundHistory = [] }) {
           points={HISTORY_INSIGHTS}
           collapsible
           defaultCollapsed
-          summary={HISTORY_INSIGHTS[0]}
         />
 
         <table className="table helpTable">

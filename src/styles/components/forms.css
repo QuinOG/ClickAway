@@ -218,45 +218,6 @@
     border-radius: 6px;
 }
 
-.formGrid {
-    margin-top: 14px;
-    display: grid;
-    gap: 12px;
-    max-width: 460px;
-}
-
-.labelRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.labelRow span {
-    min-width: 92px;
-    font-size: 14px;
-    color: #d8e4f9;
-}
-
-.input {
-    width: 100%;
-    max-width: 240px;
-    height: 36px;
-    padding: 6px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.26);
-    border-radius: 10px;
-    background: rgba(11, 20, 36, 0.72);
-    color: #f0f5ff;
-    font-family: inherit;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.input:focus {
-    outline: none;
-    border-color: rgba(108, 184, 255, 0.78);
-    box-shadow: 0 0 0 3px rgba(61, 152, 255, 0.24);
-}
-
 @media (max-width: 700px) {
     .authForm {
         width: 100%;
@@ -274,15 +235,5 @@
         width: 100%;
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .labelRow {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-
-    .input {
-        max-width: none;
     }
 }

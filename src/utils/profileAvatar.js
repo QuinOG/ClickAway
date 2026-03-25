@@ -5,7 +5,7 @@ export function getProfileInitials(name = "") {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase()
 }
 
-export function getProfileAvatarStyle(seedText = "") {
+export function getProfileAvatarStyle() {
   return {
     background: "linear-gradient(145deg, #ff1919d2, #690b1288)",
   }

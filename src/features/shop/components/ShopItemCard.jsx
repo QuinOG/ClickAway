@@ -6,7 +6,7 @@ function getActionState({ isOwned, isEquipped, canAfford }) {
       ? "Equipped"
       : "Equip"
     : canAfford
-      ? "Buy"
+      ? "Unlock"
       : "Need Coins"
   const isDisabled = isOwned ? isEquipped : !canAfford
 
@@ -24,19 +24,27 @@ function formatCoins(value) {
   return Number.isFinite(value) ? value.toLocaleString() : "0"
 }
 
-function getFooterText({ item, isOwned, isEquipped, canAfford }) {
-  if (isEquipped) return ""
-  if (isOwned) return ""
-  if (!canAfford) return ""
-
-  return item.cost === 0 ? "Free unlock" : `${formatCoins(item.cost)} coins`
-}
-
 function getActionLabel({ item, isOwned, canAfford, coins, defaultLabel }) {
   if (isOwned || canAfford) return defaultLabel
 
   const missingCoins = Math.max(0, item.cost - coins)
-  return `${formatCoins(missingCoins)+" Coins Needed"}`
+  return `Need ${formatCoins(missingCoins)} more`
+}
+
+function getStateLabel({ isOwned, isEquipped, canAfford }) {
+  if (isEquipped) return "Active"
+  if (isOwned) return "Owned"
+  if (!canAfford) return "Locked"
+  return "Ready"
+}
+
+function getPriceLabel({ item }) {
+  if (item.builtIn || item.cost === 0) return "Core"
+  return `${formatCoins(item.cost)}C`
+}
+
+function getTypeClass(type) {
+  return String(type ?? "cosmetic").replace(/_/g, "-")
 }
 
 function getPreviewStyle(item) {
@@ -84,10 +92,15 @@ export default function ShopItemCard({
   }
 
   const hasImage = Boolean(item.imageSrc)
-  const previewClassName = `shopPreview ${hasImage ? "" : item.effectClass} ${hasImage ? "hasImage" : ""}`
+  const itemTypeClass = getTypeClass(item.type)
+  const previewClassName = `shopPreview is-${itemTypeClass} ${
+    hasImage ? "hasImage" : item.effectClass
+  }`
+  const previewFrameClassName = `shopItemPreviewFrame is-${itemTypeClass}`
   const cardClassName = `shopItemCard shopItemCard-${visualState}`
-  const actionButtonClassName = `primaryButton shopActionButton ${isOwned ? "isEquip" : "isBuy"}`
-  const footerText = getFooterText({ item, isOwned, isEquipped, canAfford })
+  const actionButtonClassName = `primaryButton shopActionButton ${
+    isOwned ? "isEquip" : canAfford ? "isBuy" : "isLocked"
+  }`
   const actionLabelDisplay = getActionLabel({
     item,
     isOwned,
@@ -95,29 +108,52 @@ export default function ShopItemCard({
     coins,
     defaultLabel: actionLabel,
   })
-  const footerClassName = `shopItemFooter ${footerText ? "" : "hasNoMeta"}`
+  const stateLabel = getStateLabel({ isOwned, isEquipped, canAfford })
+  const priceLabel = getPriceLabel({ item })
 
   return (
     <article className={cardClassName}>
-      <div className="shopItemTop">
-        <div
-          className={previewClassName}
-          style={getPreviewStyle(item)}
-          aria-hidden="true"
-        />
+      <div className="shopItemHeader">
+        <span className={`shopItemStateTag is-${visualState}`}>{stateLabel}</span>
+        {isEquipped ? null : (
+          <span className={`shopItemPriceTag ${item.cost === 0 ? "isCore" : ""}`}>
+            {priceLabel}
+          </span>
+        )}
+      </div>
 
-        <div className="shopItemInfo">
-          <h3>{item.name}</h3>
-          <p>{item.description}</p>
+      <div className="shopItemShowcase">
+        <div className={previewFrameClassName}>
+          <span className="shopItemPreviewGlow" aria-hidden="true" />
+          {item.type === "button_skin" ? (
+            <div
+              className={`shopPreviewButtonStage ${hasImage ? "hasImage" : item.effectClass}`}
+              style={getPreviewStyle(item)}
+              aria-hidden="true"
+            />
+          ) : (
+            <div
+              className={previewClassName}
+              style={getPreviewStyle(item)}
+              aria-hidden="true"
+            />
+          )}
         </div>
       </div>
 
-      <div className={footerClassName}>
-        {footerText ? <span className="shopCost">{footerText}</span> : null}
-        {isEquipped ? (
-          <span className="shopSelectedPill">Selected</span>
-        ) : (
-          <button className={actionButtonClassName} onClick={handleAction} disabled={isActionDisabled}>
+      <div className="shopItemInfo">
+        <h3>{item.name}</h3>
+        <p>{item.description}</p>
+      </div>
+
+      <div className="shopItemFooter">
+        {isEquipped ? null : (
+          <button
+            type="button"
+            className={actionButtonClassName}
+            onClick={handleAction}
+            disabled={isActionDisabled}
+          >
             {actionLabelDisplay}
           </button>
         )}

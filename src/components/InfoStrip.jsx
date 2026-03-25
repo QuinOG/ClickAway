@@ -11,7 +11,7 @@ export default function InfoStrip({
   const bodyId = useId()
   if (!points.length) return null
 
-  const summaryText = summary || points[0]
+  const summaryText = String(summary || "").trim()
 
   if (!collapsible) {
     return (
@@ -37,7 +37,7 @@ export default function InfoStrip({
       >
         <span className="infoStripToggleText">
           <span className="cardH2 infoStripTitle">{title}</span>
-          <span className="infoStripSummary">{summaryText}</span>
+          {summaryText ? <span className="infoStripSummary">{summaryText}</span> : null}
         </span>
         <span className="infoStripToggleIcon" aria-hidden="true">{isCollapsed ? "Show" : "Hide"}</span>
       </button>

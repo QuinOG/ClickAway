@@ -1,236 +1,466 @@
-/* Shop page and shop card styles: category tabs, cards, previews, and actions. */
+/* Shop page presentation: game-native HUD, loadout stage, armory tabs, and cosmetic inventory cards. */
 .shopCard {
-    width: min(1000px, 100%);
-}
-
-.shopHero {
-    margin-top: 14px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-}
-
-.shopHeroStat {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 12px;
-    padding: 10px 12px;
-    background: linear-gradient(165deg, rgba(22, 34, 58, 0.85), rgba(18, 27, 46, 0.88));
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.shopHeroLabel {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.35px;
-    color: #9eb5d9;
-    font-weight: 700;
-}
-
-.shopHeroValue {
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 19px;
-    line-height: 1.1;
-    color: #f1f7ff;
-}
-
-.shopTabs {
-    margin-top: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 14px;
-    background: rgba(9, 16, 31, 0.48);
-    padding: 6px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 6px;
-}
-
-.shopLoadoutPreview {
-    margin-top: 14px;
-    border: 1px solid rgba(169, 208, 246, 0.2);
-    border-radius: 18px;
-    padding: 16px;
-    background:
-        radial-gradient(circle at 100% 0%, rgba(105, 197, 255, 0.13), rgba(105, 197, 255, 0) 42%),
-        linear-gradient(170deg, rgba(14, 24, 43, 0.92), rgba(18, 32, 57, 0.9));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.shopLoadoutPreviewHeader {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: flex-start;
-}
-
-.shopLoadoutEyebrow {
-    margin: 0;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.42px;
-    text-transform: uppercase;
-    color: #9ccaf8;
-}
-
-.shopLoadoutTitle {
-    margin: 4px 0 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 24px;
-    color: #f4f9ff;
-}
-
-.shopLoadoutMeta {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
-}
-
-.shopLoadoutMeta span {
-    border: 1px solid rgba(159, 210, 255, 0.24);
-    border-radius: 999px;
-    padding: 6px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #d9edff;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.shopLoadoutArena {
-    margin-top: 14px;
-    min-height: 220px;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    width: min(1120px, 100%);
     position: relative;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(167, 205, 255, 0.18);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(92, 155, 255, 0.14) 0%, rgba(92, 155, 255, 0) 34%),
+        radial-gradient(circle at 0% 0%, rgba(68, 228, 194, 0.08) 0%, rgba(68, 228, 194, 0) 24%),
+        linear-gradient(180deg, rgba(12, 18, 33, 0.98), rgba(7, 11, 22, 0.99));
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 16px 30px rgba(4, 9, 18, 0.26);
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 28px 90px rgba(1, 5, 12, 0.56);
 }
 
-.shopLoadoutArena::before {
+.shopCard::before {
     content: "";
     position: absolute;
-    inset: -18%;
-    border-radius: 30px;
-    background: radial-gradient(circle, rgba(105, 197, 255, 0.18) 0%, rgba(105, 197, 255, 0) 62%);
-    opacity: 0.4;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0)),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 32px);
+    opacity: 0.6;
     pointer-events: none;
 }
 
-.shopLoadoutArena.theme-default {
-    background:
-        radial-gradient(circle at 50% 18%, rgba(106, 240, 202, 0.11) 0%, rgba(106, 240, 202, 0) 40%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
-        rgba(255, 255, 255, 0.04);
-}
-
-.shopLoadoutArena.theme-sunset {
-    background:
-        radial-gradient(circle at 18% 12%, rgba(255, 204, 149, 0.38) 0%, rgba(255, 204, 149, 0) 42%),
-        radial-gradient(circle at 80% 78%, rgba(255, 130, 118, 0.2) 0%, rgba(255, 130, 118, 0) 48%),
-        linear-gradient(180deg, rgba(255, 170, 117, 0.2), rgba(255, 170, 117, 0)),
-        linear-gradient(160deg, rgba(67, 31, 83, 0.95), rgba(219, 96, 75, 0.9));
-}
-
-.shopLoadoutArena.theme-forest {
-    background:
-        radial-gradient(circle at 28% 18%, rgba(164, 255, 197, 0.22) 0%, rgba(164, 255, 197, 0) 44%),
-        radial-gradient(circle at 72% 72%, rgba(92, 198, 140, 0.2) 0%, rgba(92, 198, 140, 0) 50%),
-        radial-gradient(circle at 50% 100%, rgba(58, 156, 105, 0.18) 0%, rgba(58, 156, 105, 0) 55%),
-        linear-gradient(165deg, rgba(19, 50, 45, 0.96), rgba(49, 116, 72, 0.9));
-}
-
-.shopLoadoutArena.theme-arcade {
-    background:
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 36px),
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 36px),
-        radial-gradient(circle at 86% 10%, rgba(113, 149, 255, 0.35) 0%, rgba(113, 149, 255, 0) 42%),
-        linear-gradient(160deg, rgba(18, 24, 56, 0.95), rgba(60, 29, 103, 0.9));
-}
-
-.shopLoadoutButton {
-    position: absolute;
-    left: 50%;
-    top: 58%;
-    width: 112px;
-    height: 112px;
-    transform: translate(-50%, -50%);
-    border-radius: 999px;
-    overflow: hidden;
-    border: 0;
-    background: linear-gradient(145deg, #6af0ca, #34b892);
-    color: #08251f;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-    letter-spacing: 0.3px;
-    box-shadow: 0 14px 0 rgba(0, 0, 0, 0.2), 0 18px 24px rgba(0, 0, 0, 0.28);
+.shopCard>* {
+    position: relative;
     z-index: 1;
 }
 
-.shopLoadoutButton.hasImage {
-    background-position: center;
-    background-repeat: no-repeat;
-    color: rgba(255, 255, 255, 0.96);
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+.shopScreenTitle {
+    margin-bottom: 0;
 }
 
-.shopLoadoutAvatar {
+.shopScreenSignal {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #dcebff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.36px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.shopScreenSignalDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #80f2be;
+    box-shadow: 0 0 0 4px rgba(128, 242, 190, 0.14);
+    flex-shrink: 0;
+}
+
+.shopArmoryHeader {
+    display: grid;
+    gap: 12px;
+}
+
+.shopArmoryTop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.shopCommandSurface {
+    position: relative;
+    overflow: hidden;
+    padding: 22px 28px 22px;
+    border-radius: 26px;
+    border: 1px solid rgba(154, 204, 255, 0.18);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(92, 155, 255, 0.12), rgba(92, 155, 255, 0) 34%),
+        radial-gradient(circle at 0% 100%, rgba(68, 228, 194, 0.07), rgba(68, 228, 194, 0) 28%),
+        linear-gradient(180deg, rgba(13, 20, 37, 0.97), rgba(8, 13, 24, 0.99));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 24px 60px rgba(2, 7, 16, 0.42);
+}
+
+.shopCommandSurface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 48px);
+    opacity: 0.58;
+    pointer-events: none;
+}
+
+.shopCommandSurface>* {
+    position: relative;
+    z-index: 1;
+}
+
+.shopCommandGrid {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.94fr) minmax(340px, 1.2fr);
+    gap: 28px;
+    align-items: stretch;
+}
+
+.shopCommandColumn {
+    min-width: 0;
+    display: grid;
+    gap: 16px;
+}
+
+.shopCommandSection {
+    min-width: 0;
+    position: relative;
+}
+
+.shopCommandColumn-economy {
+    position: relative;
+    padding-right: 24px;
+}
+
+.shopCommandColumn-economy::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    right: 0;
+    bottom: 6px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(126, 178, 255, 0), rgba(126, 178, 255, 0.14) 20%, rgba(126, 178, 255, 0.14) 80%, rgba(126, 178, 255, 0));
+    pointer-events: none;
+}
+
+.shopCommandSection-balance {
+    position: relative;
+    padding-top: 10px;
+}
+
+.shopCommandSection-balance::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: -8px;
+    width: 104px;
+    height: 104px;
+    background: radial-gradient(circle, rgba(255, 209, 103, 0.07), rgba(255, 209, 103, 0) 72%);
+    filter: blur(4px);
+    opacity: 0.58;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.shopCommandValue-balance {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 0;
+    padding: 0;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.shopCommandValue-balance::before {
+    content: none;
+}
+
+.shopCommandValueMain {
+    display: inline-block;
+    color: #f5e6bd;
+    letter-spacing: -0.03em;
+    -webkit-text-fill-color: currentColor;
+    text-shadow: none;
+}
+
+.shopCommandSection-balance .shopCommandLabel {
+    margin-bottom: 10px;
+}
+
+.shopCommandLabel {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #8ea8ca;
+}
+
+.shopCommandValue {
+    margin-top: 10px;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(34px, 4vw, 50px);
+    line-height: 0.92;
+    color: #f5f9ff;
+}
+
+.shopCommandProgressHeader,
+.shopCommandProgressMeta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.shopCommandProgressValue {
+    flex-shrink: 0;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    color: #f0f7ff;
+}
+
+.shopCommandProgressBar {
+    margin-top: 14px;
+    height: 9px;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.18);
+}
+
+.shopCommandProgressFill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #72ceff 0%, #80e4d0 100%);
+    box-shadow: 0 0 14px rgba(126, 218, 255, 0.16);
+}
+
+.shopCommandProgressMeta {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #9eb3d0;
+}
+
+.shopCommandSection-loadout {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 14px;
+}
+
+.shopCommandLoadoutHeader {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.shopCommandLoadoutStage {
+    min-height: 228px;
+    width: 100%;
+    border-radius: 20px;
+    border: 1px solid rgba(165, 208, 255, 0.12);
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 16px 32px rgba(3, 8, 17, 0.24);
+}
+
+.shopCommandLoadoutStage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 36px);
+    opacity: 0.26;
+    pointer-events: none;
+}
+
+.shopCommandLoadoutStage::after {
+    content: "";
+    position: absolute;
+    inset: -16%;
+    background: radial-gradient(circle, rgba(99, 181, 255, 0.12), rgba(99, 181, 255, 0) 60%);
+    opacity: 0.34;
+    pointer-events: none;
+}
+
+.shopCommandLoadoutStage.theme-default {
+    background:
+        radial-gradient(circle at 50% 18%, rgba(106, 240, 202, 0.1) 0%, rgba(106, 240, 202, 0) 40%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+        rgba(255, 255, 255, 0.03);
+}
+
+.shopCommandLoadoutStage.theme-sunset {
+    background:
+        radial-gradient(circle at 18% 12%, rgba(255, 204, 149, 0.26) 0%, rgba(255, 204, 149, 0) 42%),
+        radial-gradient(circle at 80% 78%, rgba(255, 130, 118, 0.14) 0%, rgba(255, 130, 118, 0) 48%),
+        linear-gradient(180deg, rgba(255, 170, 117, 0.1), rgba(255, 170, 117, 0)),
+        linear-gradient(160deg, rgba(67, 31, 83, 0.88), rgba(219, 96, 75, 0.84));
+}
+
+.shopCommandLoadoutStage.theme-forest {
+    background:
+        radial-gradient(circle at 28% 18%, rgba(164, 255, 197, 0.14) 0%, rgba(164, 255, 197, 0) 44%),
+        radial-gradient(circle at 72% 72%, rgba(92, 198, 140, 0.12) 0%, rgba(92, 198, 140, 0) 50%),
+        radial-gradient(circle at 50% 100%, rgba(58, 156, 105, 0.12) 0%, rgba(58, 156, 105, 0) 55%),
+        linear-gradient(165deg, rgba(19, 50, 45, 0.9), rgba(49, 116, 72, 0.84));
+}
+
+.shopCommandLoadoutStage.theme-arcade {
+    background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 36px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 36px),
+        radial-gradient(circle at 86% 10%, rgba(113, 149, 255, 0.2) 0%, rgba(113, 149, 255, 0) 42%),
+        linear-gradient(160deg, rgba(18, 24, 56, 0.9), rgba(60, 29, 103, 0.84));
+}
+
+.shopCommandLoadoutPedestal {
+    position: absolute;
+    left: 50%;
+    bottom: 22px;
+    width: min(220px, 72%);
+    height: 46px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, rgba(125, 198, 255, 0.1) 28%, rgba(125, 198, 255, 0) 72%);
+    filter: blur(2px);
+    opacity: 0.74;
+}
+
+.shopCommandLoadoutAvatarFrame {
     position: absolute;
     top: 16px;
     right: 16px;
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    box-shadow: 0 10px 18px rgba(6, 14, 28, 0.36);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.shopCommandLoadoutAvatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 10px 18px rgba(6, 14, 28, 0.28);
     font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 28px;
+    font-size: 18px;
     font-weight: 700;
     color: #f8fcff;
     display: grid;
     place-items: center;
+    position: relative;
     z-index: 1;
 }
 
-.shopLoadoutAvatar.hasImage {
+.shopCommandLoadoutAvatar.hasImage {
     padding: 4px;
     overflow: hidden;
     background: linear-gradient(155deg, rgba(54, 89, 138, 0.9), rgba(40, 123, 173, 0.82));
 }
 
-.shopLoadoutAvatarImage {
+.shopCommandLoadoutAvatarImage {
     width: 100%;
     height: 100%;
-    border-radius: 14px;
+    border-radius: 12px;
     object-fit: cover;
     display: block;
 }
 
+.shopCommandLoadoutButton {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    width: 102px;
+    height: 102px;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    overflow: hidden;
+    background: linear-gradient(145deg, #6af0ca, #34b892);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 12px 0 rgba(0, 0, 0, 0.14),
+        0 20px 24px rgba(0, 0, 0, 0.22);
+    z-index: 2;
+}
+
+.shopCommandLoadoutButton.hasImage {
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.shopCommandLoadoutMeta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    font-size: 12px;
+    color: #97aecc;
+}
+
+.shopCommandLoadoutMeta span {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 6px;
+    overflow: hidden;
+    min-width: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.shopCommandLoadoutMeta strong {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+    color: #93abcb;
+}
+
+.shopCommandLoadoutMeta span>span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #dce8f7;
+}
+
+.shopTabRail {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    padding: 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(158, 203, 255, 0.14);
+    background: rgba(8, 14, 27, 0.52);
+}
+
 .shopTab {
+    position: relative;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.03);
     color: #d5e5ff;
-    border-radius: 10px;
-    min-height: 44px;
-    padding: 8px 10px;
+    border-radius: 16px;
+    min-height: 68px;
+    padding: 12px 14px;
     font-family: inherit;
+    text-align: left;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    gap: 10px;
+    transition:
+        background-color 0.16s ease,
+        border-color 0.16s ease,
+        transform 0.16s ease,
+        box-shadow 0.16s ease;
 }
 
 .shopTab:hover {
-    border-color: rgba(170, 217, 255, 0.4);
-    background: rgba(138, 198, 255, 0.12);
+    border-color: rgba(170, 217, 255, 0.36);
+    background: rgba(138, 198, 255, 0.1);
     transform: translateY(-1px);
 }
 
@@ -240,37 +470,71 @@
 }
 
 .shopTab.active {
-    border-color: rgba(146, 216, 255, 0.68);
-    background: linear-gradient(140deg, rgba(113, 202, 255, 0.28), rgba(75, 143, 247, 0.24));
-    box-shadow: 0 8px 16px rgba(11, 31, 60, 0.28);
+    border-color: rgba(146, 216, 255, 0.42);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(116, 195, 255, 0.14), rgba(116, 195, 255, 0) 42%),
+        linear-gradient(140deg, rgba(113, 202, 255, 0.12), rgba(75, 143, 247, 0.08));
+    box-shadow: 0 8px 18px rgba(11, 31, 60, 0.18);
+}
+
+.shopTabSignal {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: rgba(184, 209, 243, 0.24);
+    border: 1px solid rgba(184, 209, 243, 0.32);
+    box-shadow: 0 0 0 4px rgba(184, 209, 243, 0.08);
+}
+
+.shopTab.active .shopTabSignal {
+    background: #93daff;
+    border-color: rgba(147, 218, 255, 0.58);
+    box-shadow: 0 0 0 4px rgba(147, 218, 255, 0.12);
+}
+
+.shopTabCopy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
 }
 
 .shopTabLabel {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: 0.15px;
+    letter-spacing: 0.16px;
+}
+
+.shopTabOwned {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+    color: #96adcf;
 }
 
 .shopTabCount {
-    min-width: 26px;
-    height: 24px;
+    min-width: 32px;
+    height: 28px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #f2f8ff;
 }
 
 .shopFeedback {
-    margin-top: 12px;
+    margin-top: 14px;
     border: 1px solid transparent;
-    border-radius: 12px;
-    padding: 10px 12px;
+    border-radius: 16px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -309,8 +573,8 @@
 .shopFeedbackDismiss {
     margin-left: auto;
     border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 9px;
-    min-height: 30px;
+    border-radius: 10px;
+    min-height: 32px;
     padding: 0 10px;
     background: rgba(255, 255, 255, 0.08);
     color: inherit;
@@ -326,22 +590,29 @@
     background: rgba(255, 255, 255, 0.14);
 }
 
-.shopGrid {
+.shopInventoryDeck {
+    margin-top: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 14px;
-    margin-top: 10px;
+    gap: 22px;
 }
 
 .shopSection {
-    margin-top: 18px;
+    position: relative;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    animation: shopSectionReveal 0.24s ease-out both;
+}
+
+.shopSection:first-child {
+    padding-top: 0;
+    border-top: 0;
 }
 
 .shopSectionHeader h2 {
     margin: 0;
     font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 22px;
-    color: #ecf3ff;
+    font-size: clamp(24px, 2.6vw, 30px);
+    color: #edf4ff;
 }
 
 .shopSectionTitleRow {
@@ -352,116 +623,309 @@
 }
 
 .shopSectionMeta {
-    border: 1px solid rgba(139, 206, 255, 0.38);
+    border: 1px solid rgba(139, 206, 255, 0.32);
     border-radius: 999px;
-    padding: 4px 10px;
+    padding: 5px 11px;
     font-size: 11px;
     letter-spacing: 0.35px;
     text-transform: uppercase;
     color: #d0ebff;
-    background: rgba(80, 163, 255, 0.14);
-    font-weight: 700;
+    background: rgba(80, 163, 255, 0.12);
+    font-weight: 800;
 }
 
 .shopSectionHeader p {
-    margin: 4px 0 10px;
+    margin: 6px 0 0;
+    max-width: 64ch;
     font-size: 13px;
-    color: #a9bbd8;
+    color: #98add0;
+}
+
+.shopGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
 }
 
 .shopItemCard {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 16px;
-    padding: 12px;
-    background: linear-gradient(170deg, rgba(18, 28, 48, 0.88), rgba(23, 36, 61, 0.82));
+    --shop-item-accent: rgba(141, 208, 255, 0.34);
+    --shop-item-glow: rgba(94, 164, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 15px;
+    background: linear-gradient(180deg, rgba(16, 25, 43, 0.96), rgba(9, 14, 26, 0.98));
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    gap: 10px;
+    height: 100%;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 10px 22px rgba(7, 15, 30, 0.2);
+}
+
+.shopItemCard::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, var(--shop-item-glow), rgba(255, 255, 255, 0) 42%);
+    pointer-events: none;
+}
+
+.shopItemCard::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--shop-item-accent), rgba(255, 255, 255, 0));
+    opacity: 0.72;
+    pointer-events: none;
 }
 
 .shopItemCard:hover {
-    transform: translateY(-1px);
-    border-color: rgba(174, 219, 255, 0.34);
-    box-shadow: 0 10px 20px rgba(7, 15, 30, 0.26);
+    transform: translateY(-2px);
+    border-color: rgba(174, 219, 255, 0.24);
+    box-shadow: 0 14px 28px rgba(7, 15, 30, 0.24);
 }
 
 .shopItemCard-equipped {
-    border-color: rgba(135, 247, 196, 0.8);
+    --shop-item-accent: rgba(129, 236, 183, 0.76);
+    --shop-item-glow: rgba(129, 236, 183, 0.2);
+    border-color: rgba(135, 247, 196, 0.76);
     box-shadow:
-        0 0 0 2px rgba(127, 236, 181, 0.28),
-        0 12px 24px rgba(9, 24, 19, 0.35);
-    background:
-        radial-gradient(circle at 95% 0%, rgba(129, 236, 183, 0.18), rgba(129, 236, 183, 0) 46%),
-        linear-gradient(170deg, rgba(18, 34, 48, 0.92), rgba(23, 50, 61, 0.86));
+        0 0 0 1px rgba(127, 236, 181, 0.22),
+        0 16px 30px rgba(9, 24, 19, 0.32);
 }
 
 .shopItemCard-equipped .shopItemInfo h3 {
     color: #dfffee;
 }
 
-.shopSelectedPill {
-    border-radius: 999px;
-    padding: 8px 12px;
-    min-height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.35px;
-    color: #07301f;
-    background: linear-gradient(135deg, #95ffd2, #69e6af);
-    border: 1px solid rgba(153, 255, 214, 0.75);
-    box-shadow: 0 4px 10px rgba(8, 35, 23, 0.3);
+.shopItemCard-owned {
+    --shop-item-accent: rgba(156, 213, 255, 0.32);
+    --shop-item-glow: rgba(98, 169, 255, 0.1);
+    border-color: rgba(156, 213, 255, 0.22);
 }
 
-.shopItemCard-owned {
-    border-color: rgba(156, 213, 255, 0.45);
+.shopItemCard-available {
+    --shop-item-accent: rgba(255, 206, 126, 0.42);
+    --shop-item-glow: rgba(255, 194, 92, 0.12);
+    border-color: rgba(255, 206, 126, 0.28);
 }
 
 .shopItemCard-locked {
-    border-color: rgba(255, 163, 163, 0.34);
+    --shop-item-accent: rgba(255, 191, 133, 0.3);
+    --shop-item-glow: rgba(255, 179, 112, 0.08);
+    border-color: rgba(255, 191, 133, 0.2);
+    background:
+        linear-gradient(180deg, rgba(24, 28, 38, 0.96), rgba(14, 17, 26, 0.98));
+    box-shadow: 0 8px 18px rgba(7, 15, 30, 0.14);
 }
 
-.shopItemTop {
+.shopItemCard-locked::before {
+    background: radial-gradient(circle at 100% 0%, rgba(160, 168, 186, 0.08), rgba(255, 255, 255, 0) 42%);
+}
+
+.shopItemCard-locked .shopItemStateTag,
+.shopItemCard-locked .shopItemPriceTag,
+.shopItemCard-locked .shopItemInfo h3,
+.shopItemCard-locked .shopItemInfo p {
+    opacity: 0.74;
+}
+
+.shopItemCard-locked .shopItemPreviewFrame,
+.shopItemCard-locked .shopPreview,
+.shopItemCard-locked .shopPreviewButtonStage {
+    filter: saturate(0.68) brightness(0.88);
+}
+
+.shopItemHeader,
+.shopItemInfo,
+.shopItemFooter,
+.shopItemShowcase {
+    position: relative;
+    z-index: 1;
+}
+
+.shopItemHeader {
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    min-height: 26px;
 }
 
-.shopItemInfo {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+.shopItemStateTag,
+.shopItemPriceTag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    min-height: 24px;
+    padding: 0 9px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.34px;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
-.shopItemInfo h3 {
-    margin: 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 18px;
-    color: #f2f7ff;
+.shopItemStateTag {
+    gap: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.035);
+    color: #d7e7ff;
 }
 
-.shopItemInfo p {
-    margin: 0;
-    font-size: 13px;
-    color: #adc0dd;
-    line-height: 1.3;
+.shopItemStateTag::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.9;
+}
+
+.shopItemStateTag.is-equipped {
+    border-color: rgba(127, 243, 189, 0.42);
+    background: rgba(127, 243, 189, 0.12);
+    color: #dcffef;
+}
+
+.shopItemStateTag.is-owned {
+    border-color: rgba(143, 209, 255, 0.24);
+    background: rgba(143, 209, 255, 0.07);
+    color: #dbf0ff;
+}
+
+.shopItemStateTag.is-available {
+    border-color: rgba(255, 207, 115, 0.3);
+    background: rgba(255, 207, 115, 0.08);
+    color: #ffe7b8;
+}
+
+.shopItemStateTag.is-locked {
+    border-color: rgba(255, 191, 133, 0.24);
+    background: rgba(255, 191, 133, 0.08);
+    color: #ffe0c0;
+}
+
+.shopItemPriceTag {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(8, 14, 26, 0.44);
+    color: #f3f8ff;
+}
+
+.shopItemPriceTag.isCore {
+    border-color: rgba(127, 243, 189, 0.36);
+    color: #d9ffeb;
+}
+
+.shopItemPreviewFrame {
+    min-height: 152px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at 50% 8%, rgba(128, 199, 255, 0.1), rgba(128, 199, 255, 0) 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
+        rgba(8, 14, 27, 0.84);
+    display: grid;
+    place-items: center;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.shopItemPreviewFrame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.shopItemPreviewFrame::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 12px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(130, 198, 255, 0.06) 36%, rgba(130, 198, 255, 0) 72%);
+    filter: blur(8px);
+    opacity: 0.84;
+    pointer-events: none;
+}
+
+.shopItemPreviewGlow {
+    position: absolute;
+    inset: 18% 20%;
+    z-index: 0;
+    background: radial-gradient(circle, var(--shop-item-glow), rgba(255, 255, 255, 0) 68%);
+    filter: blur(12px);
+    opacity: 0.86;
+    pointer-events: none;
+}
+
+.shopPreview,
+.shopPreviewButtonStage {
+    position: relative;
+    z-index: 1;
 }
 
 .shopPreview {
-    width: 76px;
-    height: 76px;
+    width: 114px;
+    height: 114px;
     flex-shrink: 0;
-    border-radius: 8px;
+    border-radius: 26px;
     border: 1px solid rgba(255, 255, 255, 0.14);
     background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 14px 22px rgba(5, 11, 22, 0.24);
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.shopPreview.is-arena-theme {
+    width: 126px;
+    height: 108px;
+}
+
+.shopPreview.is-profile-image {
+    width: 108px;
+    height: 108px;
+}
+
+.shopPreviewButtonStage {
+    width: 110px;
+    height: 110px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        rgba(9, 15, 28, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 14px 24px rgba(5, 11, 22, 0.24);
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.shopPreviewButtonStage.hasImage {
+    border-color: transparent;
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 18px 26px rgba(5, 11, 22, 0.26);
+}
+
+.shopItemCard:hover .shopPreview,
+.shopItemCard:hover .shopPreviewButtonStage {
+    transform: scale(1.04);
+    filter: saturate(1.04);
 }
 
 .shopPreview.theme-default {
@@ -489,7 +953,7 @@
 }
 
 .shopPreview.profile-image-default {
-    border-radius: 14px;
+    border-radius: 24px;
     background:
         radial-gradient(circle at 82% 18%, rgba(122, 219, 255, 0.3) 0%, rgba(122, 219, 255, 0) 46%),
         linear-gradient(160deg, rgba(25, 52, 94, 0.86), rgba(38, 106, 160, 0.8));
@@ -501,71 +965,143 @@
     background-repeat: no-repeat;
     background-color: transparent;
     border-color: transparent;
-    background-image: none;
+    box-shadow: none;
+}
+
+.shopItemInfo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 auto;
+}
+
+.shopItemInfo h3 {
+    margin: 0;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 18px;
+    line-height: 1.15;
+    color: #f2f7ff;
+}
+
+.shopItemInfo p {
+    margin: 0;
+    font-size: 12.5px;
+    color: #a7bbda;
+    line-height: 1.46;
 }
 
 .shopItemFooter {
-    margin-top: 2px;
+    margin-top: auto;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.shopItemFooter.hasNoMeta {
     justify-content: flex-end;
-}
-
-.shopCost {
-    font-weight: 700;
-    color: #ebf3ff;
+    gap: 12px;
+    min-height: 44px;
+    padding-top: 4px;
 }
 
 .shopActionButton {
-    min-width: 118px;
+    min-width: 122px;
+    border-radius: 13px;
+    padding: 10px 14px;
+}
+
+.shopActionButton.isBuy {
+    color: #271300;
+    background: linear-gradient(135deg, #ffd47d, #ff9a5c);
+    box-shadow: 0 8px 20px rgba(255, 153, 76, 0.22);
 }
 
 .shopActionButton.isEquip {
     background: linear-gradient(135deg, #7dcaff, #4f9bff);
 }
 
-.shopActionButton:disabled {
-    opacity: 0.64;
-    cursor: not-allowed;
-    transform: none;
+.shopActionButton.isLocked {
+    color: #e8eef8;
+    background: linear-gradient(135deg, rgba(96, 108, 138, 0.82), rgba(67, 77, 102, 0.88));
     box-shadow: none;
 }
 
-@media (max-width: 700px) {
-    .shopHero {
+.shopActionButton:disabled {
+    cursor: not-allowed;
+    transform: none;
+}
+
+.shopActionButton.isLocked:disabled,
+.shopActionButton.isEquip:disabled {
+    opacity: 0.82;
+    box-shadow: none;
+    filter: none;
+}
+
+@media (max-width: 980px) {
+    .shopCommandGrid {
         grid-template-columns: 1fr;
     }
 
-    .shopLoadoutPreviewHeader {
+    .shopCommandColumn-economy::after {
+        display: none;
+    }
+
+    .shopCommandColumn-economy {
+        padding-right: 0;
+    }
+
+    .shopCommandLoadoutStage {
+        min-height: 212px;
+    }
+
+}
+
+@media (max-width: 700px) {
+    .shopArmoryTop {
         flex-direction: column;
+        align-items: flex-start;
     }
 
-    .shopLoadoutMeta {
-        justify-content: flex-start;
+    .shopCommandSurface {
+        padding: 18px 22px 18px;
     }
 
-    .shopLoadoutArena {
-        min-height: 180px;
+    .shopCommandColumn {
+        gap: 14px;
     }
 
-    .shopLoadoutButton {
-        width: 88px;
-        height: 88px;
-        font-size: 18px;
+    .shopCommandValue-balance {
+        gap: 8px;
+        padding: 0;
     }
 
-    .shopLoadoutAvatar {
-        width: 58px;
-        height: 58px;
-        font-size: 22px;
+    .shopCommandValue {
+        font-size: clamp(34px, 10vw, 46px);
     }
 
-    .shopTabs {
+    .shopCommandProgressMeta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .shopCommandLoadoutStage {
+        min-height: 196px;
+    }
+
+    .shopCommandLoadoutButton {
+        width: 92px;
+        height: 92px;
+    }
+
+    .shopCommandLoadoutAvatar {
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .shopCommandLoadoutMeta {
+        grid-template-columns: 1fr;
+    }
+
+    .shopTabRail {
         grid-template-columns: 1fr;
     }
 
@@ -582,6 +1118,37 @@
     .shopFeedbackDismiss {
         margin-left: 0;
     }
+
+    .shopGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .shopItemFooter {
+        min-height: 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .shopActionButton {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .shopCommandSurface {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .shopCommandLoadoutStage {
+        min-height: 168px;
+    }
+
+    .shopCommandLoadoutButton {
+        width: 82px;
+        height: 82px;
+    }
+
 }
 
 @keyframes shopFeedbackIn {
@@ -596,8 +1163,33 @@
     }
 }
 
+@keyframes shopSectionReveal {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .shopFeedback {
+    .shopFeedback,
+    .shopSection {
         animation: none;
+    }
+
+    .shopTab,
+    .shopItemCard,
+    .shopPreview,
+    .shopActionButton {
+        transition: none;
+    }
+
+    .shopItemCard:hover,
+    .shopTab:hover {
+        transform: none;
     }
 }

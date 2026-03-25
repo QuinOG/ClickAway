@@ -110,7 +110,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 10 total rounds.",
       iconKey: "rounds",
       metricKey: "totalRounds",
-      targetValue: 1,
+      targetValue: 10,
     },
     {
       id: "hard-rounds-50",
@@ -118,7 +118,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 50 total rounds.",
       iconKey: "rounds",
       metricKey: "totalRounds",
-      targetValue: 1,
+      targetValue: 50,
     },
     {
       id: "career-rounds-250",
@@ -126,7 +126,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 250 total rounds.",
       iconKey: "rounds",
       metricKey: "totalRounds",
-      targetValue: 1,
+      targetValue: 250,
     },
     {
       id: "career-rounds-1000",
@@ -134,7 +134,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 1,000 total rounds.",
       iconKey: "rounds",
       metricKey: "totalRounds",
-      targetValue: 1,
+      targetValue: 1000,
     },
   ],
   level: [
@@ -144,7 +144,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Reach level 5.",
       iconKey: "level",
       metricKey: "level",
-      targetValue: 1,
+      targetValue: 5,
     },
     {
       id: "hard-level-15",
@@ -152,7 +152,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Reach level 15.",
       iconKey: "level",
       metricKey: "level",
-      targetValue: 1,
+      targetValue: 15,
     },
     {
       id: "career-level-30",
@@ -160,7 +160,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Reach level 30.",
       iconKey: "level",
       metricKey: "level",
-      targetValue: 1,
+      targetValue: 30,
     },
     {
       id: "career-level-50",
@@ -168,7 +168,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Reach level 50.",
       iconKey: "level",
       metricKey: "level",
-      targetValue: 1,
+      targetValue: 50,
     },
   ],
   ranked: [
@@ -186,7 +186,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 10 ranked rounds.",
       iconKey: "ranked",
       metricKey: "rankedRounds",
-      targetValue: 1,
+      targetValue: 10,
     },
     {
       id: "hard-ranked-50",
@@ -194,7 +194,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 50 ranked rounds.",
       iconKey: "ranked",
       metricKey: "rankedRounds",
-      targetValue: 1,
+      targetValue: 50,
     },
     {
       id: "career-ranked-250",
@@ -202,7 +202,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 250 ranked rounds.",
       iconKey: "ranked",
       metricKey: "rankedRounds",
-      targetValue: 1,
+      targetValue: 250,
     },
     {
       id: "career-ranked-1000",
@@ -210,7 +210,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Play 1,000 ranked rounds.",
       iconKey: "ranked",
       metricKey: "rankedRounds",
-      targetValue: 1,
+      targetValue: 1000,
     },
   ],
   economy: [
@@ -220,7 +220,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Earn 500 total coins.",
       iconKey: "economy",
       metricKey: "totalCoinsEarned",
-      targetValue: 1,
+      targetValue: 500,
     },
     {
       id: "hard-coins-5000",
@@ -228,7 +228,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Earn 5,000 total coins.",
       iconKey: "economy",
       metricKey: "totalCoinsEarned",
-      targetValue: 1,
+      targetValue: 5000,
     },
     {
       id: "career-coins-25000",
@@ -236,7 +236,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Earn 25,000 total coins.",
       iconKey: "economy",
       metricKey: "totalCoinsEarned",
-      targetValue: 1,
+      targetValue: 25000,
     },
     {
       id: "career-coins-100000",
@@ -244,7 +244,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
       description: "Earn 100,000 total coins.",
       iconKey: "economy",
       metricKey: "totalCoinsEarned",
-      targetValue: 1,
+      targetValue: 100000,
     },
   ],
 }
