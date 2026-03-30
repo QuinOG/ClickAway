@@ -30,24 +30,29 @@ export default function HelpPage() {
   return (
     <div className="pageCenter">
       <section className="card helpDoc">
-        <h1 className="cardTitle">Help Center</h1>
-        <p className="muted helpIntro">
-          New here? Start with the Quick Start card, then use the quick nav to jump by topic.
-        </p>
-
-        <section className="helpQuickNav" aria-label="Quick help navigation">
-          <span className="helpQuickNavLabel">Jump To</span>
-          <div className="helpQuickNavLinks">
-            {HELP_QUICK_NAV.map((item) => (
-              <a key={item.id} className="helpQuickNavLink" href={`#${item.id}`}>
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </section>
+        <div className="helpHero">
+          <h1 className="helpHeroTitle">
+            <span className="helpHeroTitleAccent">Help</span> Center
+          </h1>
+          <p className="helpHeroCopy">
+            New here? Start with the Quick Start guide, then use the jump nav to explore by topic.
+          </p>
+          <nav className="helpQuickNav" aria-label="Quick help navigation">
+            <span className="helpQuickNavLabel">Jump To</span>
+            <div className="helpQuickNavLinks">
+              {HELP_QUICK_NAV.map((item) => (
+                <a key={item.id} className="helpQuickNavLink" href={`#${item.id}`}>
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </nav>
+        </div>
 
         <section id="start" className="helpTopicGroup" aria-label="Start here">
-          <h2 className="helpGroupTitle">| Start Here</h2>
+          <div className="helpGroupHeader">
+            <h2 className="helpGroupTitle">Start Here</h2>
+          </div>
           <section className="helpBlock quickStartFeature" aria-label="Quick Start">
             <header className="quickStartHeader">
               <h3 className="cardH2 quickStartTitle">Quick Start</h3>
@@ -56,7 +61,7 @@ export default function HelpPage() {
               </p>
             </header>
             <div className="quickStartBody">
-              <ol className="helpList quickStartList">
+              <ol className="quickStartList">
                 {GETTING_STARTED_STEPS.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -68,7 +73,9 @@ export default function HelpPage() {
         </section>
 
         <section id="core" className="helpTopicGroup" aria-label="Core gameplay systems">
-          <h2 className="helpGroupTitle">| Core Gameplay</h2>
+          <div className="helpGroupHeader">
+            <h2 className="helpGroupTitle">Core Gameplay</h2>
+          </div>
           <div className="helpGrid">
             <HelpTableSection
               title="Navigation"
@@ -96,7 +103,9 @@ export default function HelpPage() {
         </section>
 
         <section id="modes" className="helpTopicGroup" aria-label="Modes and ranked rules">
-          <h2 className="helpGroupTitle">| Modes and Ranked</h2>
+          <div className="helpGroupHeader">
+            <h2 className="helpGroupTitle">Modes and Ranked</h2>
+          </div>
           <HelpTableSection
             title="Mode Rules"
             columns={["Mode", "Timer", "Miss Penalty", "Coin Rate", "XP", "Rank"]}
@@ -115,7 +124,9 @@ export default function HelpPage() {
         </section>
 
         <section id="progression" className="helpTopicGroup" aria-label="Progression and economy">
-          <h2 className="helpGroupTitle">| Progression and Economy</h2>
+          <div className="helpGroupHeader">
+            <h2 className="helpGroupTitle">Progression and Economy</h2>
+          </div>
           <div className="helpGrid">
             <HelpListSection title="Progression Math" items={PROGRESSION_POINTS} />
             <HelpListSection title="Shop and Cosmetics" items={SHOP_POINTS} />
@@ -127,7 +138,9 @@ export default function HelpPage() {
         </section>
 
         <section id="account" className="helpTopicGroup" aria-label="Account, profile, and tracking">
-          <h2 className="helpGroupTitle">| Account, Profile, and Tracking</h2>
+          <div className="helpGroupHeader">
+            <h2 className="helpGroupTitle">Account, Profile, and Tracking</h2>
+          </div>
           <div className="helpGrid">
             <HelpTableSection
               title="Account Access"
@@ -140,7 +153,9 @@ export default function HelpPage() {
         </section>
 
         <section id="faq" className="helpTopicGroup" aria-label="Frequently asked questions">
-          <h2 className="helpGroupTitle">| FAQ</h2>
+          <div className="helpGroupHeader">
+            <h2 className="helpGroupTitle">FAQ</h2>
+          </div>
           <HelpFaqSection faqItems={FAQ_ITEMS} showTitle={false} />
         </section>
       </section>

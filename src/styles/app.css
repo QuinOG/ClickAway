@@ -12,6 +12,7 @@
 @import "./components/forms.css";
 @import "./components/tables.css";
 @import "./components/shop.css";
+@import "./components/help.css";
 
 /* Shared animations */
 @import "./animations.css";

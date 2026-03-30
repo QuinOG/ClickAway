@@ -5,7 +5,7 @@ export default function HelpRankTiersSection({ tiers = [] }) {
       <p className="muted">Each rank tier has a target MMR range.</p>
       <div className="rankTierGrid">
         {tiers.map((tier) => (
-          <article key={tier.id} className="rankTierCard" aria-label={`${tier.label} ${tier.mmrRange}`}>
+          <article key={tier.id} className="rankTierCard" data-tier={tier.id} aria-label={`${tier.label} ${tier.mmrRange}`}>
             <p className="rankTierLabel">{tier.label}</p>
             <div className="rankTierEmblemWrap" aria-hidden="true">
               <img className="rankTierEmblem" src={tier.imageSrc} alt="" />

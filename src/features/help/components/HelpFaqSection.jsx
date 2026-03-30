@@ -2,13 +2,14 @@ export default function HelpFaqSection({ faqItems, showTitle = true }) {
   return (
     <section className="helpBlock">
       {showTitle ? <h2 className="cardH2">FAQ</h2> : null}
-      <ul className="helpList">
+      <div className="faqList">
         {faqItems.map((item) => (
-          <li key={item.question}>
-            <strong>{item.question}</strong> {item.answer}
-          </li>
+          <div key={item.question} className="faqItem">
+            <p className="faqQuestion">{item.question}</p>
+            <p className="faqAnswer">{item.answer}</p>
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   )
 }

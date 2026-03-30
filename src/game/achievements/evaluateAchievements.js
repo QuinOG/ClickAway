@@ -52,16 +52,20 @@ export function buildAchievementStats({
 } = {}) {
   const rounds = Array.isArray(roundHistory) ? roundHistory : []
   let rankedRounds = 0
+  let bestStreak = 0
   let totalCoinsEarned = 0
   let hasCoinsData = false
 
   rounds.forEach((round) => {
     const coinsEarned = toNonNegativeNumber(round?.coinsEarned)
+    const roundBestStreak = toNonNegativeNumber(round?.bestStreak) ?? 0
 
     if (coinsEarned !== null) {
       hasCoinsData = true
       totalCoinsEarned += coinsEarned
     }
+
+    bestStreak = Math.max(bestStreak, roundBestStreak)
 
     if (isRankedModeEntry(round)) {
       rankedRounds += 1
@@ -75,6 +79,7 @@ export function buildAchievementStats({
     currentCoins: toNonNegativeNumber(coins) ?? 0,
     totalRounds: rounds.length,
     rankedRounds,
+    bestStreak,
     totalCoinsEarned: hasCoinsData ? totalCoinsEarned : null,
   }
 }

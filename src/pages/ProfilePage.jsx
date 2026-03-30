@@ -406,28 +406,28 @@ export default function ProfilePage({
               <div className="achievementHeaderText">
                 <h2 className="profileStatsSectionTitle">Achievements</h2>
                 <p className="profileStatsSectionDescription">
-                  Track unlock progress across level, consistency, and ranked play.
+                  Track unlock progress across rounds, levels, economy, streaks, and ranked play.
                 </p>
               </div>
 
-              <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">
-                {availableAchievementCategories.map((category) => {
-                  const isSelected = category.key === selectedCategoryKey
+                <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">
+                  {availableAchievementCategories.map((category) => {
+                    const isSelected = category.key === selectedCategoryKey
 
-                  return (
-                    <button
-                      key={category.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={isSelected}
-                      className={`achievementCategoryTab ${isSelected ? "isSelected" : ""}`}
-                      onClick={() => setRequestedCategoryKey(category.key)}
-                    >
-                      {category.label}
-                    </button>
-                  )
-                })}
-              </div>
+                    return (
+                      <button
+                        key={category.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={isSelected}
+                        className={`achievementCategoryTab ${isSelected ? "isSelected" : ""}`}
+                        onClick={() => setRequestedCategoryKey(category.key)}
+                      >
+                        {category.label}
+                      </button>
+                    )
+                  })}
+                </div>
             </div>
 
             <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">

@@ -141,7 +141,7 @@ export const PROFILE_POINTS = [
   "Profile combines avatar identity, coin balance, level progress, ranked card, and achievements in one page.",
   "The ranked panel shows your current tier/MMR or a placement prompt until you complete at least one Ranked round.",
   "Recent ranked insights summarize the last 10 Ranked rounds: total delta, positive-round rate, and sample size.",
-  "Achievement tabs cover Rounds, Level, Ranked, Economy, and Master milestones.",
+  "Achievement tabs cover Rounds, Level, Ranked, Economy, Streak, and Master milestones.",
   "Category Master achievements unlock after finishing an entire core category; Master of Masters requires every category master.",
   "Unlocked achievements sync automatically to your account once your saved stats meet the requirement.",
 ]
@@ -186,7 +186,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: "How do achievements unlock?",
-    answer: "Achievement progress is calculated from your saved level, coins, and round history, then synced to your account automatically.",
+    answer: "Achievement progress is calculated from your saved level, coins, best streak, and round history, then synced to your account automatically.",
   },
   {
     question: "Why does my account appear reset?",
