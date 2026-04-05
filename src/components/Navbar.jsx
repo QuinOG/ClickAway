@@ -3,6 +3,7 @@ import PlayerHoverCard from "./PlayerHoverCard.jsx"
 
 const AUTHED_NAV_LINKS = [
   { to: "/game", label: "Game" },
+  { to: "/armory", label: "Armory" },
   { to: "/history", label: "History" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/shop", label: "Shop" },
@@ -31,6 +32,7 @@ export default function Navbar({
   coins = 0,
   level = 1,
   accuracyPercent = 0,
+  rankProgress = null,
   rankLabel = "Unranked",
   rankMmr = 0,
 }) {
@@ -59,6 +61,7 @@ export default function Navbar({
                     Profile
                   </NavLink>
                   <PlayerHoverCard
+                    rankProgress={rankProgress}
                     rankLabel={rankLabel}
                     rankMmr={rankMmr}
                     coins={coins}

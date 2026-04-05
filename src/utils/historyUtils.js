@@ -4,6 +4,42 @@ import {
   normalizePercentValue,
 } from "./gameMath.js"
 
+function normalizeLoadoutSnapshot(snapshot = {}) {
+  const candidateSnapshot = snapshot?.loadoutId || snapshot?.loadoutName
+    ? snapshot
+    : {
+        loadoutId: snapshot.loadoutId ?? snapshot.id ?? "",
+        loadoutName: snapshot.loadoutName ?? snapshot.name ?? "",
+        moduleIds: snapshot.moduleIds,
+        powerupIds: snapshot.powerupIds,
+      }
+  const nextModuleIds = candidateSnapshot?.moduleIds ?? {}
+  const nextPowerupIds = Array.isArray(candidateSnapshot?.powerupIds)
+    ? candidateSnapshot.powerupIds
+        .map((powerupId) => String(powerupId || "").trim())
+        .filter(Boolean)
+        .slice(0, 3)
+    : []
+
+  const loadoutId = String(candidateSnapshot?.loadoutId || "")
+  const loadoutName = String(candidateSnapshot?.loadoutName || "").trim()
+
+  if (!loadoutId && !loadoutName && !nextPowerupIds.length) {
+    return null
+  }
+
+  return {
+    loadoutId,
+    loadoutName: loadoutName || "Loadout",
+    moduleIds: {
+      tempoCoreId: String(nextModuleIds.tempoCoreId || ""),
+      streakLensId: String(nextModuleIds.streakLensId || ""),
+      powerRigId: String(nextModuleIds.powerRigId || ""),
+    },
+    powerupIds: nextPowerupIds,
+  }
+}
+
 function formatTimeOnly(date) {
   return date.toLocaleTimeString([], {
     hour: "numeric",
@@ -47,6 +83,22 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
   )
   const hits = normalizeNonNegativeNumber(entry.hits)
   const misses = normalizeNonNegativeNumber(entry.misses)
+  const loadoutSnapshot = normalizeLoadoutSnapshot(
+    entry.loadoutSnapshot ?? {
+      loadoutId: entry.loadoutId,
+      loadoutName: entry.loadoutName,
+      moduleIds: {
+        tempoCoreId: entry.tempoCoreId,
+        streakLensId: entry.streakLensId,
+        powerRigId: entry.powerRigId,
+      },
+      powerupIds: [
+        entry.powerupSlot1Id,
+        entry.powerupSlot2Id,
+        entry.powerupSlot3Id,
+      ],
+    }
+  )
 
   return {
     id: String(entry.id || `r-${Date.parse(playedAtIso)}-${index}`),
@@ -66,6 +118,7 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
     progressionMode: String(entry.progressionMode || ""),
     xpEarned: normalizeNonNegativeNumber(entry.xpEarned),
     rankDelta: Number.isFinite(Number(entry.rankDelta)) ? Number(entry.rankDelta) : 0,
+    loadoutSnapshot,
   }
 }
 
@@ -121,6 +174,7 @@ export function createHistoryEntry({
   progressionMode = "",
   xpEarned = 0,
   rankDelta = 0,
+  loadoutSnapshot = null,
 }) {
   const playedDate = new Date()
   const resolvedModeId = modeId || difficultyId
@@ -141,6 +195,7 @@ export function createHistoryEntry({
     progressionMode,
     xpEarned,
     rankDelta,
+    loadoutSnapshot,
   })
 }
 

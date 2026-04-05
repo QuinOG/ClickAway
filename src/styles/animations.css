@@ -178,3 +178,61 @@
         transform: translate(1px, 1px);
     }
 }
+
+/* Pop animation re-triggered via React key change whenever a HUD stat value updates. */
+@keyframes statValuePop {
+    0% {
+        transform: scale(0.72);
+        opacity: 0.5;
+    }
+
+    55% {
+        transform: scale(1.18);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Glow burst fired once when a powerup card transitions to the "ready" state. */
+@keyframes powerupReadyBurst {
+    0% {
+        box-shadow: 0 0 0 0 rgba(110, 235, 191, 0);
+    }
+
+    30% {
+        box-shadow: 0 0 20px 2px rgba(110, 235, 191, 0.52), 0 0 6px rgba(110, 235, 191, 0.28);
+    }
+
+    100% {
+        box-shadow: 0 0 10px rgba(110, 235, 191, 0.12);
+    }
+}
+
+/* Positive hit: scales up and floats higher — energetic, rewarding. */
+@keyframes clickFeedbackHit {
+    from {
+        opacity: 1;
+        transform: translate(0, 0) scale(1.12);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(10px, -32px) scale(1.22);
+    }
+}
+
+/* Negative miss: smaller, deflates downward — distinct from a hit. */
+@keyframes clickFeedbackMiss {
+    from {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate(-6px, -14px) scale(0.8);
+    }
+}

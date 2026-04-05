@@ -13,47 +13,11 @@ export const MAX_TIME_BUFFER_SECONDS = 30
 export const READY_COUNTDOWN_START = 3
 export const SHAKE_STREAK_MILESTONE = 10
 export const SHAKE_DURATION_MS = 260
-export const FREEZE_MOVEMENT_DURATION_MS = 1000
+export const ROUND_END_SETTLE_MS = 260
 
 export const ROUND_PHASE = {
   READY: "ready",
   COUNTDOWN: "countdown",
   PLAYING: "playing",
   GAME_OVER: "game_over",
-}
-
-export const POWERUPS = [
-  {
-    id: "time_boost",
-    key: "1",
-    label: "Time +2s",
-    awardEvery: 5,
-    description: "Adds 2 seconds to the timer.",
-  },
-  {
-    id: "size_boost",
-    key: "2",
-    label: "Grow +10",
-    awardEvery: 10,
-    description: "Temporarily makes the target larger.",
-  },
-  {
-    id: "freeze_movement",
-    key: "3",
-    label: "Freeze 1s",
-    awardEvery: 15,
-    description: "Stops target movement for 1 seconds.",
-  },
-]
-
-export const POWERUP_BY_KEY = POWERUPS.reduce((powerupsByKey, powerup) => {
-  powerupsByKey[powerup.key] = powerup
-  return powerupsByKey
-}, {})
-
-export function buildInitialPowerupCharges() {
-  return POWERUPS.reduce((chargesById, powerup) => {
-    chargesById[powerup.id] = 0
-    return chargesById
-  }, {})
 }

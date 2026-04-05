@@ -1,18 +1,25 @@
 import { useCallback } from "react"
 
+import { PROGRESSION_MODE } from "../constants/difficultyConfig.js"
 import { appendHistoryEntry, createHistoryEntry } from "../utils/historyUtils.js"
 import { calculateRoundXp } from "../utils/progressionUtils.js"
-import { calculateRoundRankDelta } from "../utils/rankUtils.js"
+import {
+  applyRankedMatchResult,
+  calculatePlacementMatchScore,
+  calculateRoundRankDelta,
+} from "../utils/rankUtils.js"
 import { calculateRoundCoins } from "../utils/roundRewards.js"
 
 export function usePlayerProgressionUpdates({
   coins,
   levelXp,
   rankMmr,
+  rankedState,
   roundHistory,
   setCoins,
   setLevelXp,
   setRankMmr,
+  setRankedState,
   setRoundHistory,
   persistProgress,
 }) {
@@ -32,6 +39,7 @@ export function usePlayerProgressionUpdates({
         avgReactionMs = null,
         bestReactionMs = null,
         modeId = "",
+        loadoutSnapshot = null,
       } = roundResult
 
       const earnedCoins = allowsCoinRewards
@@ -56,6 +64,26 @@ export function usePlayerProgressionUpdates({
         progressionMode,
         allowsRankProgression,
       })
+      const placementMatchScore = calculatePlacementMatchScore({
+        score,
+        hits,
+        misses,
+        bestStreak,
+        modeId,
+        progressionMode,
+        allowsRankProgression,
+      })
+      const hasRankedHistory = roundHistory.some(
+        (entry) => entry?.progressionMode === PROGRESSION_MODE.RANKED
+      )
+      const rankResult = applyRankedMatchResult({
+        currentMmr: rankMmr,
+        currentRankedState: rankedState,
+        hasRankedHistory,
+        baseRankDelta: rankDelta,
+        placementMatchScore,
+        allowsRankProgression,
+      })
 
       const historyEntry = createHistoryEntry({
         score,
@@ -68,23 +96,27 @@ export function usePlayerProgressionUpdates({
         modeId,
         progressionMode,
         xpEarned: earnedXp,
-        rankDelta,
+        rankDelta: rankResult.appliedRankDelta,
+        loadoutSnapshot,
       })
 
       const nextCoins = Math.max(0, coins + earnedCoins)
       const nextLevelXp = Math.max(0, levelXp + earnedXp)
-      const nextRankMmr = Math.max(0, rankMmr + rankDelta)
+      const nextRankMmr = rankResult.nextMmr
+      const nextRankedState = rankResult.nextRankedState
       const nextRoundHistory = appendHistoryEntry(roundHistory, historyEntry)
 
       setCoins(nextCoins)
       setLevelXp(nextLevelXp)
       setRankMmr(nextRankMmr)
+      setRankedState(nextRankedState)
       setRoundHistory(nextRoundHistory)
 
       void persistProgress({
         coins: nextCoins,
         levelXp: nextLevelXp,
         rankMmr: nextRankMmr,
+        rankedState: nextRankedState,
         roundHistory: nextRoundHistory,
       })
     },
@@ -93,10 +125,12 @@ export function usePlayerProgressionUpdates({
       levelXp,
       persistProgress,
       rankMmr,
+      rankedState,
       roundHistory,
       setCoins,
       setLevelXp,
       setRankMmr,
+      setRankedState,
       setRoundHistory,
     ]
   )

@@ -3,6 +3,17 @@ import "dotenv/config"
 import mysql from "mysql2/promise"
 
 import {
+  ACTIVE_LOADOUT_ID_DEFAULT,
+  DEFAULT_SAVED_LOADOUTS,
+  normalizeLoadoutState,
+} from "../src/constants/buildcraft.js"
+import { getLevelProgress } from "../src/utils/progressionUtils.js"
+import {
+  buildDefaultRankedState,
+  PLACEMENT_MATCH_COUNT,
+  migrateLegacyRankData,
+} from "../src/utils/rankUtils.js"
+import {
   DEFAULT_PLAYER_STATE,
   getCatalogItemById,
   getDefaultItemIdForType,
@@ -14,10 +25,13 @@ const DEFAULT_PROGRESS = {
   coins: 0,
   levelXp: 0,
   rankMmr: 0,
+  rankedState: buildDefaultRankedState(),
   ownedItemIds: [],
   equippedButtonSkinId: DEFAULT_PLAYER_STATE.equippedButtonSkinId,
   equippedArenaThemeId: DEFAULT_PLAYER_STATE.equippedArenaThemeId,
   equippedProfileImageId: DEFAULT_PLAYER_STATE.equippedProfileImageId,
+  activeLoadoutId: ACTIVE_LOADOUT_ID_DEFAULT,
+  savedLoadouts: DEFAULT_SAVED_LOADOUTS,
   selectedModeId: "normal",
   roundHistory: [],
   unlockedAchievementIds: [],
@@ -72,6 +86,34 @@ function normalizeOwnedItemIds(itemIds = []) {
   })
 }
 
+function normalizeLoadoutSnapshot(snapshot = {}) {
+  const moduleIds = snapshot?.moduleIds ?? {}
+  const powerupIds = Array.isArray(snapshot?.powerupIds)
+    ? snapshot.powerupIds
+        .map((powerupId) => String(powerupId || "").trim())
+        .filter(Boolean)
+        .slice(0, 3)
+    : []
+
+  const loadoutId = String(snapshot?.loadoutId || "")
+  const loadoutName = String(snapshot?.loadoutName || "").trim()
+
+  if (!loadoutId && !loadoutName && !powerupIds.length) {
+    return null
+  }
+
+  return {
+    loadoutId,
+    loadoutName: loadoutName || "Loadout",
+    moduleIds: {
+      tempoCoreId: String(moduleIds.tempoCoreId || ""),
+      streakLensId: String(moduleIds.streakLensId || ""),
+      powerRigId: String(moduleIds.powerRigId || ""),
+    },
+    powerupIds,
+  }
+}
+
 function resolveEquippedItemId(itemId, type, ownedItemIdSet) {
   const mappedItem = getMappedShopItemById(itemId)
   const defaultItemId = getDefaultItemIdForType(type)
@@ -96,6 +138,22 @@ function normalizeRoundHistoryEntry(entry = {}, index = 0) {
   const hits = toNonNegativeNumber(entry.hits, 0)
   const misses = toNonNegativeNumber(entry.misses, 0)
   const totalAttempts = hits + misses
+  const loadoutSnapshot = normalizeLoadoutSnapshot(
+    entry.loadoutSnapshot ?? {
+      loadoutId: entry.loadoutId,
+      loadoutName: entry.loadoutName,
+      moduleIds: {
+        tempoCoreId: entry.tempoCoreId,
+        streakLensId: entry.streakLensId,
+        powerRigId: entry.powerRigId,
+      },
+      powerupIds: [
+        entry.powerupSlot1Id,
+        entry.powerupSlot2Id,
+        entry.powerupSlot3Id,
+      ],
+    }
+  )
 
   return {
     playedAtDate,
@@ -111,17 +169,34 @@ function normalizeRoundHistoryEntry(entry = {}, index = 0) {
     xpEarned: toNonNegativeNumber(entry.xpEarned, 0),
     rankDelta: Number.isFinite(Number(entry.rankDelta)) ? Number(entry.rankDelta) : 0,
     accuracyPercent: totalAttempts > 0 ? (hits / totalAttempts) * 100 : 0,
+    loadoutSnapshot,
   }
 }
 
 function normalizeProgressInput(record = {}) {
   const ownedItemIds = normalizeOwnedItemIds(record.ownedItemIds)
   const ownedItemIdSet = new Set(ownedItemIds)
+  const levelXp = toNonNegativeNumber(record.levelXp, DEFAULT_PROGRESS.levelXp)
+  const normalizedRoundHistory = (Array.isArray(record.roundHistory) ? record.roundHistory : []).map(
+    normalizeRoundHistoryEntry
+  )
+  const migratedRankData = migrateLegacyRankData({
+    rankMmr: record.rankMmr,
+    rankedState: record.rankedState,
+    roundHistory: normalizedRoundHistory,
+  })
+  const level = getLevelProgress(levelXp).level
+  const normalizedLoadoutState = normalizeLoadoutState(
+    level,
+    record.savedLoadouts,
+    record.activeLoadoutId
+  )
 
   return {
     coins: toNonNegativeNumber(record.coins, DEFAULT_PROGRESS.coins),
-    levelXp: toNonNegativeNumber(record.levelXp, DEFAULT_PROGRESS.levelXp),
-    rankMmr: toNonNegativeNumber(record.rankMmr, DEFAULT_PROGRESS.rankMmr),
+    levelXp,
+    rankMmr: migratedRankData.rankMmr,
+    rankedState: migratedRankData.rankedState,
     ownedItemIds,
     equippedButtonSkinId: resolveEquippedItemId(
       record.equippedButtonSkinId,
@@ -138,10 +213,10 @@ function normalizeProgressInput(record = {}) {
       "profile_image",
       ownedItemIdSet
     ),
+    activeLoadoutId: normalizedLoadoutState.activeLoadoutId,
+    savedLoadouts: normalizedLoadoutState.savedLoadouts,
     selectedModeId: String(record.selectedModeId || DEFAULT_PROGRESS.selectedModeId),
-    roundHistory: (Array.isArray(record.roundHistory) ? record.roundHistory : []).map(
-      normalizeRoundHistoryEntry
-    ),
+    roundHistory: normalizedRoundHistory,
     unlockedAchievementIds: normalizeStringList(record.unlockedAchievementIds),
   }
 }
@@ -165,6 +240,20 @@ function buildHistoryEntry(row) {
   const playedAtDate = parseDateValue(row.playedAt) || new Date()
   const hits = toNonNegativeNumber(row.hits, 0)
   const misses = toNonNegativeNumber(row.misses, 0)
+  const loadoutSnapshot = normalizeLoadoutSnapshot({
+    loadoutId: row.loadoutId,
+    loadoutName: row.loadoutName,
+    moduleIds: {
+      tempoCoreId: row.tempoCoreId,
+      streakLensId: row.streakLensId,
+      powerRigId: row.powerRigId,
+    },
+    powerupIds: [
+      row.powerupSlot1Id,
+      row.powerupSlot2Id,
+      row.powerupSlot3Id,
+    ],
+  })
 
   return {
     id: `r-${row.id}`,
@@ -182,6 +271,7 @@ function buildHistoryEntry(row) {
     progressionMode: String(row.progressionMode || DEFAULT_PROGRESSION_MODE),
     xpEarned: toNonNegativeNumber(row.xpEarned, 0),
     rankDelta: Number.isFinite(Number(row.rankDelta)) ? Number(row.rankDelta) : 0,
+    loadoutSnapshot,
   }
 }
 
@@ -195,9 +285,13 @@ async function getUserStateRow(executor, userId, options = {}) {
        coins,
        xp,
        mmr,
+       rank_system_version AS rankSystemVersion,
+       placement_matches_played AS placementMatchesPlayed,
+       demotion_protection_rounds AS demotionProtectionRounds,
        current_button_skin_id AS currentButtonSkinId,
        current_arena_theme_id AS currentArenaThemeId,
-       current_profile_theme_id AS currentProfileThemeId
+       current_profile_theme_id AS currentProfileThemeId,
+       active_loadout_slot AS activeLoadoutId
      FROM users
      WHERE id = ?
      LIMIT 1${lockClause}`,
@@ -219,6 +313,21 @@ async function buildProgressRecord(executor, userId) {
      WHERE user_id = ?`,
     [userId]
   )
+  const [loadoutRows] = await executor.query(
+    `SELECT
+       slot_id AS id,
+       name,
+       tempo_core_id AS tempoCoreId,
+       streak_lens_id AS streakLensId,
+       power_rig_id AS powerRigId,
+       powerup_slot_1_id AS powerupSlot1Id,
+       powerup_slot_2_id AS powerupSlot2Id,
+       powerup_slot_3_id AS powerupSlot3Id
+     FROM user_loadouts
+     WHERE user_id = ?
+     ORDER BY slot_id ASC`,
+    [userId]
+  )
   const [historyRows] = await executor.query(
     `SELECT
        id,
@@ -233,6 +342,14 @@ async function buildProgressRecord(executor, userId) {
        coins_earned AS coinsEarned,
        xp_earned AS xpEarned,
        rank_delta AS rankDelta,
+       loadout_name AS loadoutName,
+       loadout_id AS loadoutId,
+       tempo_core_id AS tempoCoreId,
+       streak_lens_id AS streakLensId,
+       power_rig_id AS powerRigId,
+       powerup_slot_1_id AS powerupSlot1Id,
+       powerup_slot_2_id AS powerupSlot2Id,
+       powerup_slot_3_id AS powerupSlot3Id,
        played_at AS playedAt
      FROM round_history
      WHERE user_id = ?
@@ -262,10 +379,40 @@ async function buildProgressRecord(executor, userId) {
     ownedItemIds.push(frontendItemId)
   })
 
+  const normalizedLoadoutState = normalizeLoadoutState(
+    getLevelProgress(toNonNegativeNumber(userRow.xp, DEFAULT_PROGRESS.levelXp)).level,
+    loadoutRows.map((row) => ({
+      id: String(row.id || ""),
+      name: String(row.name || ""),
+      moduleIds: {
+        tempoCoreId: String(row.tempoCoreId || ""),
+        streakLensId: String(row.streakLensId || ""),
+        powerRigId: String(row.powerRigId || ""),
+      },
+      powerupIds: [
+        row.powerupSlot1Id,
+        row.powerupSlot2Id,
+        row.powerupSlot3Id,
+      ],
+    })),
+    userRow.activeLoadoutId
+  )
+  const normalizedRoundHistory = historyRows.map(buildHistoryEntry)
+  const migratedRankData = migrateLegacyRankData({
+    rankMmr: userRow.mmr,
+    rankedState: {
+      rankSystemVersion: userRow.rankSystemVersion,
+      placementMatchesPlayed: userRow.placementMatchesPlayed,
+      demotionProtectionRounds: userRow.demotionProtectionRounds,
+    },
+    roundHistory: normalizedRoundHistory,
+  })
+
   return {
     coins: toNonNegativeNumber(userRow.coins, DEFAULT_PROGRESS.coins),
     levelXp: toNonNegativeNumber(userRow.xp, DEFAULT_PROGRESS.levelXp),
-    rankMmr: toNonNegativeNumber(userRow.mmr, DEFAULT_PROGRESS.rankMmr),
+    rankMmr: migratedRankData.rankMmr,
+    rankedState: migratedRankData.rankedState,
     ownedItemIds,
     equippedButtonSkinId: resolveEquippedItemId(
       getFrontendItemIdByDbItemId("button_skin", userRow.currentButtonSkinId) ||
@@ -285,8 +432,10 @@ async function buildProgressRecord(executor, userId) {
       "profile_image",
       ownedItemIdSet
     ),
+    activeLoadoutId: normalizedLoadoutState.activeLoadoutId,
+    savedLoadouts: normalizedLoadoutState.savedLoadouts,
     selectedModeId: DEFAULT_PROGRESS.selectedModeId,
-    roundHistory: historyRows.map(buildHistoryEntry),
+    roundHistory: normalizedRoundHistory,
     unlockedAchievementIds: normalizeStringList(
       achievementRows.map((row) => row.achievementId)
     ),
@@ -322,6 +471,41 @@ async function syncUserCollection(executor, userId, progress) {
   }
 }
 
+async function syncUserLoadouts(executor, userId, progress) {
+  await executor.query("DELETE FROM user_loadouts WHERE user_id = ?", [userId])
+
+  if (!Array.isArray(progress.savedLoadouts) || progress.savedLoadouts.length === 0) {
+    return
+  }
+
+  const rows = progress.savedLoadouts.map((loadout) => [
+    userId,
+    loadout.id,
+    String(loadout.name || "Loadout"),
+    loadout.moduleIds?.tempoCoreId || "",
+    loadout.moduleIds?.streakLensId || "",
+    loadout.moduleIds?.powerRigId || "",
+    loadout.powerupIds?.[0] || "",
+    loadout.powerupIds?.[1] || "",
+    loadout.powerupIds?.[2] || "",
+  ])
+
+  await executor.query(
+    `INSERT INTO user_loadouts (
+       user_id,
+       slot_id,
+       name,
+       tempo_core_id,
+       streak_lens_id,
+       power_rig_id,
+       powerup_slot_1_id,
+       powerup_slot_2_id,
+       powerup_slot_3_id
+     ) VALUES ?`,
+    [rows]
+  )
+}
+
 async function syncRoundHistory(executor, userId, progress) {
   await executor.query("DELETE FROM round_history WHERE user_id = ?", [userId])
 
@@ -348,6 +532,14 @@ async function syncRoundHistory(executor, userId, progress) {
       entry.coinsEarned,
       entry.xpEarned,
       entry.rankDelta,
+      entry.loadoutSnapshot?.loadoutName || null,
+      entry.loadoutSnapshot?.loadoutId || null,
+      entry.loadoutSnapshot?.moduleIds?.tempoCoreId || null,
+      entry.loadoutSnapshot?.moduleIds?.streakLensId || null,
+      entry.loadoutSnapshot?.moduleIds?.powerRigId || null,
+      entry.loadoutSnapshot?.powerupIds?.[0] || null,
+      entry.loadoutSnapshot?.powerupIds?.[1] || null,
+      entry.loadoutSnapshot?.powerupIds?.[2] || null,
       entry.playedAtDate,
     ])
   }
@@ -366,6 +558,14 @@ async function syncRoundHistory(executor, userId, progress) {
        coins_earned,
        xp_earned,
        rank_delta,
+       loadout_name,
+       loadout_id,
+       tempo_core_id,
+       streak_lens_id,
+       power_rig_id,
+       powerup_slot_1_id,
+       powerup_slot_2_id,
+       powerup_slot_3_id,
        played_at
      ) VALUES ?`,
     [rows]
@@ -479,6 +679,7 @@ export async function findLeaderboardRows({ limit = 25 } = {}) {
        GROUP BY user_id
      ) AS ranked_stats
        ON ranked_stats.userId = users.id
+     WHERE users.placement_matches_played >= ?
      ORDER BY
        users.mmr DESC,
        ranked_stats.bestScore DESC,
@@ -487,7 +688,7 @@ export async function findLeaderboardRows({ limit = 25 } = {}) {
        users.username ASC,
        users.id ASC
      LIMIT ?`,
-    [normalizedLimit]
+    [PLACEMENT_MATCH_COUNT, normalizedLimit]
   )
 
   return rows.map((row, index) => ({
@@ -528,22 +729,31 @@ export async function saveUserProgress({ userId, ...progress }) {
        SET coins = ?,
            xp = ?,
            mmr = ?,
+           rank_system_version = ?,
+           placement_matches_played = ?,
+           demotion_protection_rounds = ?,
            current_button_skin_id = ?,
            current_arena_theme_id = ?,
-           current_profile_theme_id = ?
+           current_profile_theme_id = ?,
+           active_loadout_slot = ?
        WHERE id = ?`,
       [
         normalizedProgress.coins,
         normalizedProgress.levelXp,
         normalizedProgress.rankMmr,
+        normalizedProgress.rankedState.rankSystemVersion,
+        normalizedProgress.rankedState.placementMatchesPlayed,
+        normalizedProgress.rankedState.demotionProtectionRounds,
         buttonSkin?.dbItemId ?? null,
         arenaTheme?.dbItemId ?? null,
         profileImage?.dbItemId ?? null,
+        normalizedProgress.activeLoadoutId,
         userId,
       ]
     )
 
     await syncUserCollection(connection, userId, normalizedProgress)
+    await syncUserLoadouts(connection, userId, normalizedProgress)
     await syncRoundHistory(connection, userId, normalizedProgress)
     await syncUnlockedAchievements(connection, userId, normalizedProgress)
 

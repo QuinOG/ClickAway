@@ -11,7 +11,11 @@ import { calculateAccuracyPercent } from "../utils/gameMath.js"
 import { buildCareerReactionStats } from "../utils/historyUtils.js"
 import { isRankedModeEntry } from "../utils/modeUtils.js"
 import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatar.js"
-import { getRankImageSrc } from "../utils/rankUtils.js"
+import {
+  PLACEMENT_MATCH_COUNT,
+  getRankImageSrc,
+  getRankToneClassName,
+} from "../utils/rankUtils.js"
 
 function buildProfileStats(roundHistory = []) {
   const rows = Array.isArray(roundHistory) ? roundHistory : []
@@ -89,21 +93,32 @@ function getProfileTagline({ totalRounds, overallAccuracyPercent, bestStreak }) 
 }
 
 function getPlayerTitle({ totalRounds, rankedRounds, bestStreak, rankLabel = "" }) {
+  const normalizedRankLabel = rankLabel.toLowerCase()
   if (totalRounds === 0) return "Arena Rookie"
-  if (rankLabel.toLowerCase() === "gold") return "Gold Contender"
+  if (normalizedRankLabel.includes("deadeye")) return "Deadeye Contender"
+  if (normalizedRankLabel.includes("diamond")) return "Diamond Operator"
+  if (normalizedRankLabel.includes("platinum")) return "Platinum Climber"
+  if (normalizedRankLabel.includes("gold")) return "Gold Contender"
   if (rankedRounds >= 25) return "Ranked Specialist"
   if (bestStreak >= 15) return "Combo Architect"
   if (totalRounds >= 60) return "Arena Veteran"
   return "Rising Contender"
 }
 
-function getRankToneClass(rankLabel = "", isUnranked = false) {
-  if (isUnranked) return "rank-unranked"
-  const normalizedRank = String(rankLabel).trim().toLowerCase()
-  if (normalizedRank === "bronze" || normalizedRank === "silver" || normalizedRank === "gold") {
-    return `rank-${normalizedRank}`
+function getRankMetaText(rankProgress = {}) {
+  if (rankProgress.isUnranked) {
+    return `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank`
   }
-  return "rank-unranked"
+
+  if (rankProgress.isPlacement) {
+    return `${rankProgress.tierLabel} • ${rankProgress.placementMatchesRemaining} matches remaining`
+  }
+
+  if (rankProgress.isTopRank) {
+    return `${formatNumber(rankProgress.mmr)} rating`
+  }
+
+  return `${formatNumber(rankProgress.rr)} / ${formatNumber(rankProgress.rrMax)} RR`
 }
 
 function StatCard({ label, value, tooltip = "", tone = "neutral", isFeatured = false }) {
@@ -242,9 +257,8 @@ export default function ProfilePage({
   const reactionStats = buildCareerReactionStats(roundHistory)
   const rankedInsights = buildRankedInsights(roundHistory)
   const rankLabel = rankProgress.tierLabel ?? "Unranked"
-  const rankMmr = rankProgress.mmr ?? 0
   const rankIconSrc = getRankImageSrc(rankLabel)
-  const rankToneClass = getRankToneClass(rankLabel, rankProgress.isUnranked)
+  const rankToneClass = getRankToneClassName(rankProgress)
   const levelValue = levelProgress.level ?? 1
   const xpIntoLevel = levelProgress.xpIntoLevel ?? 0
   const xpToNextLevel = levelProgress.xpToNextLevel ?? 0
@@ -382,18 +396,16 @@ export default function ProfilePage({
                 )}
               </div>
               <div className="profileRankPrimaryText">
-                <p className="profileRankLabel">Ranked Skill Rating</p>
+                <p className="profileRankLabel">Ranked Division</p>
                 <h2 className="profileRankTitle">{rankLabel}</h2>
                 <p className="profileRankMeta">
-                  {rankProgress.isUnranked
-                    ? "Play Ranked to place"
-                    : `${formatNumber(rankMmr)} MMR`}
+                  {getRankMetaText(rankProgress)}
                 </p>
               </div>
             </div>
             <div className="profileRankInsights" aria-label="Recent ranked trend">
               <article className="profileRankInsightItem">
-                <span className="profileRankInsightLabel">Last 10 Delta</span>
+                <span className="profileRankInsightLabel">Last 10 Movement</span>
                 <strong className="profileRankInsightValue">
                   {formatSignedValue(rankedInsights.recentRankDelta)}
                 </strong>

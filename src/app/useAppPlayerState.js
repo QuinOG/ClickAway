@@ -1,23 +1,36 @@
 import { useCallback, useState } from "react"
 
+import {
+  ACTIVE_LOADOUT_ID_DEFAULT,
+  DEFAULT_SAVED_LOADOUTS,
+  normalizeLoadoutState,
+} from "../constants/buildcraft.js"
 import { DEFAULT_EQUIPPED_IDS, STORAGE_KEYS } from "../constants/appStorage.js"
 import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/difficultyConfig.js"
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js"
+import { getLevelProgress } from "../utils/progressionUtils.js"
 import { normalizeHistoryEntry } from "../utils/historyUtils.js"
 import { readStringFromStorage } from "../utils/localStorage.js"
-import { INITIAL_RANK_MMR } from "../utils/rankUtils.js"
+import {
+  buildDefaultRankedState,
+  INITIAL_RANK_MMR,
+  migrateLegacyRankData,
+} from "../utils/rankUtils.js"
 
 const DEFAULT_PLAYER_NAME = "Player"
 const DEFAULT_PROGRESS = {
   coins: 0,
   levelXp: 0,
   rankMmr: INITIAL_RANK_MMR,
+  rankedState: buildDefaultRankedState(),
   ownedItemIds: [],
   equippedButtonSkinId: DEFAULT_EQUIPPED_IDS.buttonSkin,
   equippedArenaThemeId: DEFAULT_EQUIPPED_IDS.arenaTheme,
   equippedProfileImageId: DEFAULT_EQUIPPED_IDS.profileImage,
   roundHistory: [],
   unlockedAchievementIds: [],
+  savedLoadouts: DEFAULT_SAVED_LOADOUTS,
+  activeLoadoutId: ACTIVE_LOADOUT_ID_DEFAULT,
 }
 
 function normalizeStringList(values = []) {
@@ -32,10 +45,26 @@ function normalizeStringList(values = []) {
 }
 
 function normalizeProgress(progress = {}) {
+  const levelXp = Math.max(0, Number(progress.levelXp) || 0)
+  const level = getLevelProgress(levelXp).level
+  const normalizedRoundHistory = (Array.isArray(progress.roundHistory) ? progress.roundHistory : [])
+    .map(normalizeHistoryEntry)
+  const migratedRankData = migrateLegacyRankData({
+    rankMmr: progress.rankMmr,
+    rankedState: progress.rankedState,
+    roundHistory: normalizedRoundHistory,
+  })
+  const normalizedLoadouts = normalizeLoadoutState(
+    level,
+    progress.savedLoadouts,
+    progress.activeLoadoutId
+  )
+
   return {
     coins: Math.max(0, Number(progress.coins) || 0),
-    levelXp: Math.max(0, Number(progress.levelXp) || 0),
-    rankMmr: Math.max(0, Number(progress.rankMmr) || 0),
+    levelXp,
+    rankMmr: migratedRankData.rankMmr,
+    rankedState: migratedRankData.rankedState,
     ownedItemIds: normalizeStringList(progress.ownedItemIds),
     equippedButtonSkinId: String(
       progress.equippedButtonSkinId || DEFAULT_EQUIPPED_IDS.buttonSkin
@@ -46,9 +75,10 @@ function normalizeProgress(progress = {}) {
     equippedProfileImageId: String(
       progress.equippedProfileImageId || DEFAULT_EQUIPPED_IDS.profileImage
     ),
-    roundHistory: (Array.isArray(progress.roundHistory) ? progress.roundHistory : [])
-      .map(normalizeHistoryEntry),
+    roundHistory: normalizedRoundHistory,
     unlockedAchievementIds: normalizeStringList(progress.unlockedAchievementIds),
+    savedLoadouts: normalizedLoadouts.savedLoadouts,
+    activeLoadoutId: normalizedLoadouts.activeLoadoutId,
   }
 }
 
@@ -79,6 +109,7 @@ export function useAppPlayerState() {
   const [coins, setCoins] = useState(DEFAULT_PROGRESS.coins)
   const [levelXp, setLevelXp] = useState(DEFAULT_PROGRESS.levelXp)
   const [rankMmr, setRankMmr] = useState(DEFAULT_PROGRESS.rankMmr)
+  const [rankedState, setRankedState] = useState(DEFAULT_PROGRESS.rankedState)
   const [ownedItemIds, setOwnedItemIds] = useState(DEFAULT_PROGRESS.ownedItemIds)
   const [equippedButtonSkinId, setEquippedButtonSkinId] = useState(
     DEFAULT_PROGRESS.equippedButtonSkinId
@@ -94,6 +125,8 @@ export function useAppPlayerState() {
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState(
     DEFAULT_PROGRESS.unlockedAchievementIds
   )
+  const [savedLoadouts, setSavedLoadouts] = useState(DEFAULT_PROGRESS.savedLoadouts)
+  const [activeLoadoutId, setActiveLoadoutId] = useState(DEFAULT_PROGRESS.activeLoadoutId)
 
   const applyProgress = useCallback((progress = {}) => {
     const normalizedProgress = normalizeProgress(progress)
@@ -101,12 +134,15 @@ export function useAppPlayerState() {
     setCoins(normalizedProgress.coins)
     setLevelXp(normalizedProgress.levelXp)
     setRankMmr(normalizedProgress.rankMmr)
+    setRankedState(normalizedProgress.rankedState)
     setOwnedItemIds(normalizedProgress.ownedItemIds)
     setEquippedButtonSkinId(normalizedProgress.equippedButtonSkinId)
     setEquippedArenaThemeId(normalizedProgress.equippedArenaThemeId)
     setEquippedProfileImageId(normalizedProgress.equippedProfileImageId)
     setRoundHistory(normalizedProgress.roundHistory)
     setUnlockedAchievementIds(normalizedProgress.unlockedAchievementIds)
+    setSavedLoadouts(normalizedProgress.savedLoadouts)
+    setActiveLoadoutId(normalizedProgress.activeLoadoutId)
 
     return normalizedProgress
   }, [])
@@ -165,6 +201,8 @@ export function useAppPlayerState() {
     setLevelXp,
     rankMmr,
     setRankMmr,
+    rankedState,
+    setRankedState,
     ownedItemIds,
     setOwnedItemIds,
     equippedButtonSkinId,
@@ -179,6 +217,10 @@ export function useAppPlayerState() {
     setRoundHistory,
     unlockedAchievementIds,
     setUnlockedAchievementIds,
+    savedLoadouts,
+    setSavedLoadouts,
+    activeLoadoutId,
+    setActiveLoadoutId,
     applyProgress,
     applyPlayerState,
     applyAuthenticatedSession,

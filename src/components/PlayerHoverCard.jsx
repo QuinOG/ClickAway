@@ -1,5 +1,5 @@
 import { formatPercent } from "../utils/gameMath.js"
-import { getRankImageSrc } from "../utils/rankUtils.js"
+import { PLACEMENT_MATCH_COUNT, getRankImageSrc } from "../utils/rankUtils.js"
 
 function HoverStatRow({ label, value, tone = "default" }) {
   return (
@@ -10,15 +10,38 @@ function HoverStatRow({ label, value, tone = "default" }) {
   )
 }
 
-function RankedHoverRank({ rankLabel, rankMmr }) {
-  const displayLabel = rankLabel || "Unranked"
+function getRankMetaText(rankProgress, rankLabel, rankMmr) {
+  if (rankProgress?.isUnranked) {
+    return `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank`
+  }
+
+  if (rankProgress?.isPlacement) {
+    return `${rankProgress.placementMatchesRemaining} placement matches remaining`
+  }
+
+  if (rankProgress?.isTopRank) {
+    return `${Math.max(0, Number(rankProgress.mmr) || 0).toLocaleString()} rating`
+  }
+
+  if (rankProgress && Number.isFinite(rankProgress.rr) && Number.isFinite(rankProgress.rrMax)) {
+    return `${rankProgress.rr.toLocaleString()} / ${rankProgress.rrMax.toLocaleString()} RR`
+  }
+
+  const displayLabel = String(rankLabel || "Unranked").trim().toLowerCase()
   const displayMmr = Number.isFinite(rankMmr) ? Math.max(0, rankMmr) : 0
-  const isUnranked = displayLabel.toLowerCase() === "unranked"
-  const rankImageSrc = getRankImageSrc(displayLabel)
-  const mmrText = isUnranked ? "Play 1 round of ranked to get placed" : `${displayMmr.toLocaleString()} MMR`
+  return displayLabel === "unranked"
+    ? `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank`
+    : `${displayMmr.toLocaleString()} MMR`
+}
+
+function RankedHoverRank({ rankProgress = null, rankLabel, rankMmr }) {
+  const displayLabel = rankProgress?.tierLabel || rankLabel || "Unranked"
+  const displayMmr = Number.isFinite(rankMmr) ? Math.max(0, rankMmr) : 0
+  const rankImageSrc = getRankImageSrc(rankProgress ?? displayLabel)
+  const metaText = getRankMetaText(rankProgress, displayLabel, displayMmr)
 
   return (
-    <section className="profileHoverRankBlock" aria-label={`Ranked rating ${displayLabel} ${displayMmr} MMR`}>
+    <section className="profileHoverRankBlock" aria-label={`Ranked rating ${displayLabel}`}>
       {rankImageSrc ? (
         <span className="profileHoverRankIconSlot" aria-hidden="true">
           <img className="profileHoverRankIcon" src={rankImageSrc} alt="" />
@@ -27,13 +50,14 @@ function RankedHoverRank({ rankLabel, rankMmr }) {
       <div className="profileHoverRankText">
         <span className="profileHoverRankLabel">Ranked Rating</span>
         <strong className="profileHoverRankValue">{displayLabel}</strong>
-        <span className="profileHoverRankMeta">{mmrText}</span>
+        <span className="profileHoverRankMeta">{metaText}</span>
       </div>
     </section>
   )
 }
 
 export default function PlayerHoverCard({
+  rankProgress = null,
   rankLabel = "Unranked",
   rankMmr = 0,
   coins = 0,
@@ -46,7 +70,7 @@ export default function PlayerHoverCard({
 
   return (
     <div className="profileHoverCard">
-      <RankedHoverRank rankLabel={rankLabel} rankMmr={rankMmr} />
+      <RankedHoverRank rankProgress={rankProgress} rankLabel={rankLabel} rankMmr={rankMmr} />
       <section className="profileHoverStats" aria-label="Player quick stats">
         <table className="profileHoverStatsTable">
           <tbody>

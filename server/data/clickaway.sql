@@ -99,9 +99,13 @@ CREATE TABLE `users` (
   `coins` bigint(20) NOT NULL DEFAULT 0,
   `xp` int(11) NOT NULL DEFAULT 0,
   `mmr` int(11) NOT NULL DEFAULT 0,
+  `rank_system_version` int(11) NOT NULL DEFAULT 2,
+  `placement_matches_played` int(11) NOT NULL DEFAULT 0,
+  `demotion_protection_rounds` int(11) NOT NULL DEFAULT 0,
   `current_button_skin_id` bigint(20) DEFAULT NULL,
   `current_arena_theme_id` bigint(20) DEFAULT NULL,
   `current_profile_theme_id` bigint(20) DEFAULT NULL,
+  `active_loadout_slot` varchar(20) NOT NULL DEFAULT 'loadout_1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_username` (`username`),
   KEY `idx_users_mmr_id` (`mmr`, `id`),
@@ -129,6 +133,14 @@ CREATE TABLE `round_history` (
   `coins_earned` int(11) NOT NULL DEFAULT 0,
   `xp_earned` int(11) NOT NULL DEFAULT 0,
   `rank_delta` int(11) NOT NULL DEFAULT 0,
+  `loadout_name` varchar(32) DEFAULT NULL,
+  `loadout_id` varchar(20) DEFAULT NULL,
+  `tempo_core_id` varchar(50) DEFAULT NULL,
+  `streak_lens_id` varchar(50) DEFAULT NULL,
+  `power_rig_id` varchar(50) DEFAULT NULL,
+  `powerup_slot_1_id` varchar(50) DEFAULT NULL,
+  `powerup_slot_2_id` varchar(50) DEFAULT NULL,
+  `powerup_slot_3_id` varchar(50) DEFAULT NULL,
   `played_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_user_played` (`user_id`, `played_at`),
@@ -138,6 +150,23 @@ CREATE TABLE `round_history` (
   CONSTRAINT `chk_round_history_progression_mode`
     CHECK (`progression_mode` IN ('practice', 'non_ranked', 'ranked')),
   CONSTRAINT `fk_round_history_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `user_loadouts` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `slot_id` varchar(20) NOT NULL,
+  `name` varchar(32) NOT NULL,
+  `tempo_core_id` varchar(50) NOT NULL,
+  `streak_lens_id` varchar(50) NOT NULL,
+  `power_rig_id` varchar(50) NOT NULL,
+  `powerup_slot_1_id` varchar(50) NOT NULL,
+  `powerup_slot_2_id` varchar(50) NOT NULL,
+  `powerup_slot_3_id` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_loadout_slot` (`user_id`, `slot_id`),
+  CONSTRAINT `fk_user_loadouts_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

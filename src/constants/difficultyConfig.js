@@ -17,6 +17,7 @@ export const DIFFICULTIES = [
   {
     id: DIFFICULTY_IDS.EASY,
     label: "Practice",
+    readyGlyph: "1",
     description: "Untimed training mode focused on mechanics.",
     playerHint: "No coins or progression rewards. Use this mode to warm up and drill accuracy.",
     progressionMode: PROGRESSION_MODE.PRACTICE,
@@ -37,6 +38,7 @@ export const DIFFICULTIES = [
   {
     id: DIFFICULTY_IDS.NORMAL,
     label: "Casual",
+    readyGlyph: "2",
     description: "Balanced timing and score pressure.",
     playerHint: "Coins and levels are enabled. Ranked progression is disabled.",
     progressionMode: PROGRESSION_MODE.NON_RANKED,
@@ -57,6 +59,7 @@ export const DIFFICULTIES = [
   {
     id: DIFFICULTY_IDS.HARD,
     label: "Ranked",
+    readyGlyph: "R",
     description: "Faster shrink and harsher miss cost.",
     playerHint: "Full progression mode: coins, levels, and Ranked progression are all enabled.",
     progressionMode: PROGRESSION_MODE.RANKED,

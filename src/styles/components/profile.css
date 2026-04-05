@@ -391,6 +391,70 @@
     --rank-insight-bg: rgba(73, 48, 9, 0.35);
 }
 
+.profileRankShowcase.rank-platinum {
+    --rank-card-border: rgba(113, 223, 214, 0.62);
+    --rank-card-highlight: rgba(206, 255, 251, 0.3);
+    --rank-card-fill-top: rgba(86, 196, 190, 0.22);
+    --rank-card-fill-bottom: rgba(23, 87, 96, 0.28);
+    --rank-crest-border: rgba(171, 255, 244, 0.7);
+    --rank-crest-top: rgba(230, 255, 252, 0.48);
+    --rank-crest-start: rgba(108, 221, 214, 0.54);
+    --rank-crest-end: rgba(48, 132, 149, 0.36);
+    --rank-label-color: rgba(214, 255, 249, 0.9);
+    --rank-title-color: #dffffa;
+    --rank-meta-color: rgba(214, 248, 246, 0.94);
+    --rank-insight-border: rgba(132, 223, 214, 0.34);
+    --rank-insight-bg: rgba(14, 53, 59, 0.34);
+}
+
+.profileRankShowcase.rank-diamond {
+    --rank-card-border: rgba(140, 178, 255, 0.66);
+    --rank-card-highlight: rgba(214, 226, 255, 0.34);
+    --rank-card-fill-top: rgba(99, 146, 255, 0.22);
+    --rank-card-fill-bottom: rgba(36, 54, 113, 0.3);
+    --rank-crest-border: rgba(186, 210, 255, 0.74);
+    --rank-crest-top: rgba(242, 247, 255, 0.5);
+    --rank-crest-start: rgba(126, 168, 255, 0.56);
+    --rank-crest-end: rgba(70, 96, 182, 0.4);
+    --rank-label-color: rgba(225, 234, 255, 0.92);
+    --rank-title-color: #edf3ff;
+    --rank-meta-color: rgba(223, 233, 255, 0.95);
+    --rank-insight-border: rgba(146, 181, 255, 0.34);
+    --rank-insight-bg: rgba(21, 33, 73, 0.36);
+}
+
+.profileRankShowcase.rank-deadeye {
+    --rank-card-border: rgba(255, 122, 109, 0.7);
+    --rank-card-highlight: rgba(255, 209, 155, 0.34);
+    --rank-card-fill-top: rgba(255, 104, 104, 0.24);
+    --rank-card-fill-bottom: rgba(121, 38, 21, 0.32);
+    --rank-crest-border: rgba(255, 190, 121, 0.76);
+    --rank-crest-top: rgba(255, 242, 225, 0.5);
+    --rank-crest-start: rgba(255, 125, 125, 0.58);
+    --rank-crest-end: rgba(232, 136, 52, 0.42);
+    --rank-label-color: rgba(255, 231, 208, 0.94);
+    --rank-title-color: #fff1df;
+    --rank-meta-color: rgba(255, 226, 194, 0.96);
+    --rank-insight-border: rgba(255, 164, 110, 0.36);
+    --rank-insight-bg: rgba(79, 28, 14, 0.38);
+}
+
+.profileRankShowcase.rank-placement {
+    --rank-card-border: rgba(127, 195, 255, 0.54);
+    --rank-card-highlight: rgba(214, 238, 255, 0.3);
+    --rank-card-fill-top: rgba(76, 158, 255, 0.18);
+    --rank-card-fill-bottom: rgba(24, 54, 108, 0.28);
+    --rank-crest-border: rgba(167, 219, 255, 0.64);
+    --rank-crest-top: rgba(239, 247, 255, 0.42);
+    --rank-crest-start: rgba(93, 176, 255, 0.48);
+    --rank-crest-end: rgba(56, 108, 209, 0.34);
+    --rank-label-color: rgba(220, 236, 255, 0.88);
+    --rank-title-color: #f2f8ff;
+    --rank-meta-color: rgba(220, 233, 252, 0.9);
+    --rank-insight-border: rgba(144, 203, 255, 0.3);
+    --rank-insight-bg: rgba(14, 29, 61, 0.32);
+}
+
 .profileRankInsightLabel {
     font-size: 9px;
     font-weight: 700;

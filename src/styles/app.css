@@ -8,9 +8,11 @@
 /* Feature/component styles */
 @import "./components/profile.css";
 @import "./components/achievements.css";
+@import "./components/armory.css";
 @import "./components/game.css";
 @import "./components/forms.css";
 @import "./components/tables.css";
+@import "./components/history.css";
 @import "./components/shop.css";
 @import "./components/help.css";
 

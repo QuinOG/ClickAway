@@ -6,6 +6,8 @@ export default function GameHud({
   isTimedRound = true,
   modeLabel = "",
   rankLabel = "Unranked",
+  loadoutName = "Loadout",
+  loadoutPresentation = null,
   streak,
   comboMultiplier,
   comboActive = false,
@@ -22,6 +24,9 @@ export default function GameHud({
         ? " timerUrgent"
         : ""
   const scoreClassName = `scoreNumber${comboActive ? " comboActive" : ""}`
+  const buildMeta = loadoutPresentation?.glanceText
+    ? `${loadoutPresentation.titleLine} • ${loadoutPresentation.glanceText}`
+    : loadoutPresentation?.titleLine ?? "Balanced"
 
   return (
     <>
@@ -31,13 +36,17 @@ export default function GameHud({
           <div className={scoreClassName} aria-live="polite">
             {score}
           </div>
-          <span className="hudTopMeta">Mode: {modeLabel || "Unknown"}</span>
+          <span className="hudTopMeta">
+            Mode: {modeLabel || "Unknown"} • Rank: {rankLabel || "Unranked"}
+          </span>
         </div>
 
         <div className="hudTopBlock">
           <span className="hudTopLabel">Time Remaining</span>
           <div className={`timerText${timerStateClassName}`}>{timerDisplay}</div>
-          <span className="hudTopMeta">Rank: {rankLabel || "Unranked"}</span>
+          <span className="hudTopMeta">
+            Build: {loadoutName || "Loadout"} • {buildMeta}
+          </span>
         </div>
       </div>
 

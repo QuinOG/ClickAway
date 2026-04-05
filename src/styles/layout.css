@@ -471,6 +471,178 @@
     border-spacing: 0;
 }
 
+.leaderboardSectionEyebrow {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: rgba(137, 197, 255, 0.84);
+}
+
+.leaderboardStandingPanel {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid rgba(166, 207, 248, 0.24);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255, 210, 107, 0.12), rgba(255, 210, 107, 0) 30%),
+        radial-gradient(circle at 0% 100%, rgba(105, 197, 255, 0.12), rgba(105, 197, 255, 0) 34%),
+        linear-gradient(160deg, rgba(17, 27, 48, 0.92), rgba(11, 19, 35, 0.94));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 12px 26px rgba(4, 10, 20, 0.22);
+}
+
+.leaderboardStandingMain {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+}
+
+.leaderboardStandingText {
+    display: grid;
+    gap: 10px;
+}
+
+.leaderboardStandingHeading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.leaderboardStandingTitleGroup {
+    min-width: 0;
+}
+
+.leaderboardStandingTitle {
+    margin: 0;
+}
+
+.leaderboardStandingLead {
+    margin: 7px 0 0;
+    max-width: 620px;
+    color: rgba(220, 232, 248, 0.9);
+    line-height: 1.5;
+}
+
+.leaderboardStandingTierBadge {
+    flex-shrink: 0;
+}
+
+.leaderboardStandingSpotlight {
+    min-width: 136px;
+    padding: 14px 16px;
+    border: 1px solid rgba(242, 207, 124, 0.32);
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(255, 239, 188, 0.16), rgba(255, 239, 188, 0) 46%),
+        linear-gradient(180deg, rgba(255, 220, 129, 0.12), rgba(255, 220, 129, 0.04));
+    text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.leaderboardStandingSpotlightLabel {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.85px;
+    text-transform: uppercase;
+    color: rgba(255, 229, 171, 0.78);
+}
+
+.leaderboardStandingSpotlightValue {
+    display: block;
+    margin-top: 8px;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(24px, 4vw, 34px);
+    line-height: 1;
+    color: #fff7df;
+    text-shadow: 0 0 18px rgba(255, 204, 95, 0.18);
+}
+
+.leaderboardStandingStats {
+    margin-top: 16px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.leaderboardStandingStat {
+    padding: 11px 12px;
+    border: 1px solid rgba(165, 205, 246, 0.16);
+    border-radius: 14px;
+    background:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        radial-gradient(circle at 100% 0%, rgba(105, 197, 255, 0.09), rgba(105, 197, 255, 0) 48%);
+}
+
+.leaderboardStandingStatLabel {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: rgba(189, 208, 231, 0.72);
+}
+
+.leaderboardStandingStatValue {
+    display: block;
+    margin-top: 8px;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(18px, 2.2vw, 23px);
+    line-height: 1;
+    color: #f5faff;
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboardTableIntro {
+    margin-top: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.leaderboardTableIntroText {
+    display: grid;
+    gap: 5px;
+}
+
+.leaderboardTableIntroLead {
+    margin: 0;
+    color: rgba(213, 228, 246, 0.84);
+}
+
+.leaderboardSortContextBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(176, 209, 245, 0.34);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16px;
+    color: rgba(233, 243, 255, 0.94);
+    background: rgba(107, 156, 212, 0.14);
+    white-space: nowrap;
+}
+
+.leaderboardSortContextBadge.isDefault {
+    border-color: rgba(241, 211, 132, 0.28);
+    color: rgba(255, 236, 188, 0.94);
+    background: rgba(241, 211, 132, 0.1);
+}
+
+.leaderboardSortContextNote {
+    margin: 10px 0 0;
+    color: rgba(204, 221, 241, 0.74);
+    font-size: 12px;
+}
+
 .leaderboardStatusCard {
     margin-top: 16px;
     padding: 18px 0;
@@ -551,6 +723,34 @@
     cursor: default;
 }
 
+.leaderboardTableRow.isPodium td {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.leaderboardTableRow.isRank1 td {
+    background:
+        linear-gradient(90deg, rgba(255, 215, 120, 0.15), rgba(255, 255, 255, 0.02));
+}
+
+.leaderboardTableRow.isRank2 td {
+    background:
+        linear-gradient(90deg, rgba(220, 230, 245, 0.13), rgba(255, 255, 255, 0.02));
+}
+
+.leaderboardTableRow.isRank3 td {
+    background:
+        linear-gradient(90deg, rgba(217, 163, 120, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.leaderboardTableRow.isPodium .leaderboardPlayerName {
+    font-weight: 700;
+    color: #f4f9ff;
+}
+
+.leaderboardTableRow.isPodium .tierBadge {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 .leaderboardTableRow.isInteractive {
     cursor: pointer;
 }
@@ -627,6 +827,15 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
 
+.leaderboardTableRow.isPodium .leaderboardRankBadge {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        0 6px 14px rgba(4, 10, 20, 0.22);
+}
+
 .leaderboardRankBadge.is-rank1 {
     background: linear-gradient(180deg, rgba(255, 221, 124, 0.98), rgba(233, 184, 55, 0.96));
 }
@@ -678,6 +887,22 @@
     background: rgba(239, 207, 128, 0.14);
 }
 
+.tierBadge.is-platinum {
+    border-color: rgba(131, 226, 220, 0.46);
+    background: rgba(96, 211, 205, 0.14);
+}
+
+.tierBadge.is-diamond {
+    border-color: rgba(144, 183, 255, 0.52);
+    background: rgba(109, 153, 255, 0.16);
+}
+
+.tierBadge.is-deadeye {
+    border-color: rgba(255, 117, 117, 0.5);
+    background:
+        linear-gradient(135deg, rgba(255, 117, 117, 0.18), rgba(255, 185, 82, 0.12));
+}
+
 .tierBadge.is-silver {
     border-color: rgba(194, 210, 230, 0.48);
     background: rgba(194, 210, 230, 0.14);
@@ -686,6 +911,11 @@
 .tierBadge.is-bronze {
     border-color: rgba(206, 162, 125, 0.48);
     background: rgba(206, 162, 125, 0.14);
+}
+
+.tierBadge.is-placement {
+    border-color: rgba(134, 202, 255, 0.48);
+    background: rgba(110, 180, 255, 0.14);
 }
 
 .leaderboardEntryHoverCard .profileHoverCard {
@@ -806,6 +1036,46 @@
     .card,
     .cardWide {
         animation: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .leaderboardStandingMain,
+    .leaderboardTableIntro {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .leaderboardTableIntro {
+        display: grid;
+    }
+
+    .leaderboardStandingHeading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .leaderboardStandingSpotlight {
+        min-width: 0;
+    }
+
+    .leaderboardStandingStats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .leaderboardStandingPanel {
+        padding: 16px;
+    }
+
+    .leaderboardStandingStats {
+        grid-template-columns: 1fr;
+    }
+
+    .leaderboardSortContextBadge {
+        white-space: normal;
+        text-align: center;
     }
 }
 

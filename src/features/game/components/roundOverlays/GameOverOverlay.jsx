@@ -1,12 +1,121 @@
-import { useEffect, useState } from "react"
+import { AnimatePresence, motion } from "motion/react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import TierBadge from "../../../../components/TierBadge.jsx"
+import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
+import { getDifficultyById as getModeById } from "../../../../constants/difficultyConfig.js"
 import { getLevelProgress, getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
-import { getRankTierFromMmr } from "../../../../utils/rankUtils.js"
+import {
+  PLACEMENT_MATCH_COUNT,
+  PLACEMENT_MATCH_SCORE_MAX,
+} from "../../../../utils/rankUtils.js"
 import { easeOutCubic, useCountUpNumber, usePrefersReducedMotion } from "./useOverlayMotion.js"
 
+const MotionDiv = motion.div
+const MotionSection = motion.section
 const XP_BAR_SEGMENT_DURATION_MS = 1000
 const LEVEL_UP_MESSAGE_DURATION_MS = 600
+const OVERLAY_EASE = [0.22, 1, 0.36, 1]
+const CONTENT_EASE = [0.2, 0.9, 0.28, 1]
+
+function getCardVariants(prefersReducedMotion) {
+  if (prefersReducedMotion) {
+    return {
+      hidden: { opacity: 1, y: 0, scale: 1 },
+      visible: { opacity: 1, y: 0, scale: 1 },
+      exit: { opacity: 1, y: 0, scale: 1 },
+    }
+  }
+
+  return {
+    hidden: { opacity: 0, y: 64, scale: 0.88 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { type: "spring", stiffness: 280, damping: 26, delay: 0.06 },
+    },
+    exit: {
+      opacity: 0,
+      y: -24,
+      scale: 0.97,
+      transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+    },
+  }
+}
+
+function getPromotionOverlayVariants(prefersReducedMotion) {
+  if (prefersReducedMotion) {
+    return {
+      hidden: { opacity: 1 },
+      visible: { opacity: 1 },
+      exit: { opacity: 1 },
+    }
+  }
+
+  return {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.22, ease: OVERLAY_EASE },
+    },
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.14, ease: [0.4, 0, 1, 1] },
+    },
+  }
+}
+
+function getPromotionVariants(prefersReducedMotion) {
+  if (prefersReducedMotion) {
+    return {
+      hidden: { opacity: 1, scale: 1, y: 0 },
+      visible: { opacity: 1, scale: 1, y: 0 },
+      exit: { opacity: 1, scale: 1, y: 0 },
+    }
+  }
+
+  return {
+    hidden: { opacity: 0, scale: 0.88, y: 40 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 26,
+        delayChildren: 0.18,
+        staggerChildren: 0.09,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.96,
+      y: 8,
+      transition: { duration: 0.16, ease: [0.4, 0, 1, 1] },
+    },
+  }
+}
+
+function getPromotionItemVariants(prefersReducedMotion) {
+  if (prefersReducedMotion) {
+    return {
+      hidden: { opacity: 1, y: 0, scale: 1 },
+      visible: { opacity: 1, y: 0, scale: 1 },
+    }
+  }
+
+  return {
+    hidden: { opacity: 0, y: 16, scale: 0.985 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.28, ease: CONTENT_EASE },
+    },
+  }
+}
 
 function getGameOverTone({ hits, misses, accuracy, bestStreak }) {
   const accuracyValue = Number.parseInt(String(accuracy).replace("%", ""), 10)
@@ -24,6 +133,26 @@ function formatSignedValue(value = 0) {
 
 function formatNumber(value = 0) {
   return Number(value).toLocaleString()
+}
+
+function formatRankProgressMeta(rankProgress = {}) {
+  if (!rankProgress || Object.keys(rankProgress).length === 0) {
+    return "Rank data unavailable."
+  }
+
+  if (rankProgress?.isUnranked) {
+    return `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank.`
+  }
+
+  if (rankProgress?.isPlacement) {
+    return `${rankProgress.placementMatchesRemaining} placement matches remaining.`
+  }
+
+  if (rankProgress?.isTopRank) {
+    return `${formatNumber(rankProgress.mmr)} rating.`
+  }
+
+  return `${formatNumber(rankProgress.rr)} / ${formatNumber(rankProgress.rrMax)} RR.`
 }
 
 function clampNonNegativeInteger(value) {
@@ -244,17 +373,34 @@ export function GameOverOverlay({
   roundCoinsEarned = 0,
   allowsCoinRewards = false,
   allowsLevelProgression = false,
-  playerRankMmr = 0,
-  playerRankLabel = "Unranked",
+  previousRankProgress = {},
+  projectedRankProgress = {},
   roundRankDelta = 0,
   allowsRankProgression = false,
   selectedModeId,
   bestScore = 0,
   avgReactionMs = null,
   bestReactionMs = null,
+  loadoutSnapshot = null,
+  loadoutPresentation = null,
   onPlayAgain,
   onChooseMode,
 }) {
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const promotionButtonRef = useRef(null)
+  const cardVariants = useMemo(() => getCardVariants(prefersReducedMotion), [prefersReducedMotion])
+  const promotionVariants = useMemo(
+    () => getPromotionVariants(prefersReducedMotion),
+    [prefersReducedMotion]
+  )
+  const promotionOverlayVariants = useMemo(
+    () => getPromotionOverlayVariants(prefersReducedMotion),
+    [prefersReducedMotion]
+  )
+  const promotionItemVariants = useMemo(
+    () => getPromotionItemVariants(prefersReducedMotion),
+    [prefersReducedMotion]
+  )
   const rewardsSummaryText = getModeRewardsSummary({
     allowsCoinRewards,
     allowsLevelProgression,
@@ -264,21 +410,38 @@ export function GameOverOverlay({
   const hasCleanRun = misses === 0
   const isNewBestScore = score > bestScore
   const scoreBadgeText = isNewBestScore ? "New Personal Best!" : hasCleanRun ? "Clean Run" : ""
-  const projectedMmr = Math.max(0, playerRankMmr + roundRankDelta)
-  const projectedRankLabel = getRankTierFromMmr(projectedMmr).label
-  const currentRankLabel = playerRankLabel || projectedRankLabel
+  const currentRankLabel = previousRankProgress?.tierLabel || "Unranked"
+  const projectedRankLabel = projectedRankProgress?.tierLabel || "Unranked"
+  const isPlacementReveal = (
+    allowsRankProgression &&
+    previousRankProgress?.isPlacement &&
+    !projectedRankProgress?.isPlacement &&
+    !projectedRankProgress?.isUnranked
+  )
   const isPromotion = (
     allowsRankProgression &&
-    roundRankDelta > 0 &&
-    currentRankLabel !== "Unranked" &&
-    currentRankLabel !== projectedRankLabel
+    !previousRankProgress?.isPlacement &&
+    !projectedRankProgress?.isPlacement &&
+    projectedRankProgress?.rankOrder > previousRankProgress?.rankOrder
   )
+  const isPlacementMatch = allowsRankProgression && (
+    previousRankProgress?.isPlacement ||
+    isPlacementReveal
+  )
+  const showPromotionOrPlacementOverlay = isPromotion || isPlacementReveal
   const hasReactionData = avgReactionMs !== null || bestReactionMs !== null
+  const resolvedLoadoutPresentation = useMemo(
+    () => loadoutPresentation ?? (
+      loadoutSnapshot
+        ? buildLoadoutPresentation(getModeById(selectedModeId), loadoutSnapshot)
+        : null
+    ),
+    [loadoutPresentation, loadoutSnapshot, selectedModeId]
+  )
   const reactionCaption = hasReactionData
     ? ""
     : "Reaction stats populate in timed modes after your first recorded hit."
   const tone = getGameOverTone({ hits, misses, accuracy, bestStreak })
-  const prefersReducedMotion = usePrefersReducedMotion()
   const [initialXpSnapshot] = useState(() => ({
     level: playerLevel,
     xpIntoLevel: playerXpIntoLevel,
@@ -305,9 +468,15 @@ export function GameOverOverlay({
   ))
   const [levelUpMessage, setLevelUpMessage] = useState("")
   const [isXpAnimationComplete, setIsXpAnimationComplete] = useState(() => shouldBypassXpAnimation)
-  const [showPromotionOverlay, setShowPromotionOverlay] = useState(() => isPromotion)
+  const [showPromotionOverlay, setShowPromotionOverlay] = useState(() => showPromotionOrPlacementOverlay)
 
   const performanceRows = [
+    ...(loadoutSnapshot?.loadoutName
+      ? [{ label: "Build", value: loadoutSnapshot.loadoutName }]
+      : []),
+    ...(resolvedLoadoutPresentation?.titleLine
+      ? [{ label: "Build Profile", value: resolvedLoadoutPresentation.titleLine }]
+      : []),
     { label: "Hits", value: hits },
     { label: "Misses", value: misses },
     { label: "Accuracy", value: accuracy },
@@ -335,13 +504,31 @@ export function GameOverOverlay({
     })
   }
   if (allowsRankProgression) {
-    rewardRows.push({ label: "MMR After Match", value: `${projectedMmr}`, group: "status" })
-    rewardRows.push({
-      label: "Current Rank",
-      content: <TierBadge tierLabel={projectedRankLabel} className="gameOverTierBadge" />,
-      group: "status",
-    })
+    if (projectedRankProgress?.isPlacement) {
+      rewardRows.push({
+        label: "Placement Status",
+        value: projectedRankProgress.tierLabel,
+        group: "status",
+      })
+      rewardRows.push({
+        label: "Placement Track",
+        value: formatRankProgressMeta(projectedRankProgress),
+        group: "status",
+      })
+    } else {
+      rewardRows.push({
+        label: isPlacementReveal ? "Placed Rank" : "Current Rank",
+        content: <TierBadge tierLabel={projectedRankLabel} className="gameOverTierBadge" />,
+        group: "status",
+      })
+      rewardRows.push({
+        label: projectedRankProgress?.isTopRank ? "Top Rank Rating" : "Division Progress",
+        value: formatRankProgressMeta(projectedRankProgress).replace(/\.$/, ""),
+        group: "status",
+      })
+    }
   }
+
   const animatedScore = useCountUpNumber(score, {
     durationMs: 700,
     disabled: prefersReducedMotion,
@@ -362,11 +549,17 @@ export function GameOverOverlay({
     disabled: prefersReducedMotion,
   })
   const isScoreAnimationDone = prefersReducedMotion || animatedScore === score
-  const formattedScore = Number(animatedScore).toLocaleString()
+  const formattedScore = formatNumber(animatedScore)
 
   useEffect(() => {
-    setShowPromotionOverlay(isPromotion)
-  }, [isPromotion])
+    setShowPromotionOverlay(showPromotionOrPlacementOverlay)
+  }, [showPromotionOrPlacementOverlay])
+
+  useEffect(() => {
+    if (showPromotionOverlay) {
+      promotionButtonRef.current?.focus()
+    }
+  }, [showPromotionOverlay])
 
   useEffect(() => {
     if (!allowsLevelProgression) {
@@ -498,53 +691,109 @@ export function GameOverOverlay({
   }
   if (allowsRankProgression) {
     summaryRewardRows.push({
-      label: "Rank Delta",
-      value: formatSignedValue(animatedRankDelta),
+      label: isPlacementMatch ? "Placement Score" : "Rank Delta",
+      value: isPlacementMatch
+        ? `${animatedRankDelta} / ${PLACEMENT_MATCH_SCORE_MAX}`
+        : formatSignedValue(animatedRankDelta),
     })
   }
 
   return (
-    <div
+    <MotionDiv
       className="gameOverlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="game-over-title"
+      initial={prefersReducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.18, ease: OVERLAY_EASE }}
     >
-      <section
+      <MotionSection
         className={`gameOverCard gameOverCardWithDifficulty difficultyMood-${selectedModeId} gameOverTone-${tone}`}
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
       >
-        {showPromotionOverlay ? (
-          <div className="gameOverPromotionOverlay" role="status" aria-live="polite">
-            <div className="gameOverPromotionCard">
-              <p className="gameOverPromotionEyebrow">Rank Promotion</p>
-              <h3 className="gameOverPromotionTitle">Promotion Secured</h3>
-              <p className="gameOverPromotionLead">
-                You climbed from {currentRankLabel} to {projectedRankLabel}.
-              </p>
-              <div className="gameOverPromotionTierRow" aria-hidden="true">
-                <TierBadge tierLabel={currentRankLabel} className="gameOverPromotionTier isPrevious" />
-                <span className="gameOverPromotionArrow">→</span>
-                <TierBadge tierLabel={projectedRankLabel} className="gameOverPromotionTier isCurrent" />
-              </div>
-              <button
-                type="button"
-                className="primaryButton primaryButton-lg gameOverPromotionButton"
-                onClick={() => setShowPromotionOverlay(false)}
+        <AnimatePresence initial={false} mode="wait">
+          {showPromotionOverlay ? (
+            <MotionDiv
+              key="promotion-overlay"
+              className="gameOverPromotionOverlay"
+              role="status"
+              aria-live="polite"
+              variants={promotionOverlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <MotionDiv
+                className="gameOverPromotionCard"
+                variants={promotionVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
               >
-                View Results
-              </button>
-            </div>
-          </div>
-        ) : null}
-        <header className="gameOverHeader">
-          <h2 id="game-over-title" className="gameOverTitle">
-            Round Complete
-          </h2>
-        </header>
+                <MotionDiv variants={promotionItemVariants}>
+                  <p className="gameOverPromotionEyebrow">
+                    {isPlacementReveal ? "Placement Complete" : "Rank Promotion"}
+                  </p>
+                </MotionDiv>
+                <MotionDiv variants={promotionItemVariants}>
+                  <h3 className="gameOverPromotionTitle">
+                    {isPlacementReveal ? "Rank Revealed" : "Promotion Secured"}
+                  </h3>
+                </MotionDiv>
+                <MotionDiv variants={promotionItemVariants}>
+                  <p className="gameOverPromotionLead">
+                    {isPlacementReveal
+                      ? `Your first visible rank is ${projectedRankLabel}.`
+                      : `You climbed from ${currentRankLabel} to ${projectedRankLabel}.`}
+                  </p>
+                </MotionDiv>
+                <MotionDiv
+                  className="gameOverPromotionTierRow"
+                  aria-hidden="true"
+                  variants={promotionItemVariants}
+                >
+                  <TierBadge tierLabel={currentRankLabel} className="gameOverPromotionTier isPrevious" />
+                  <span className="gameOverPromotionArrow">-&gt;</span>
+                  <TierBadge tierLabel={projectedRankLabel} className="gameOverPromotionTier isCurrent" />
+                </MotionDiv>
+                <MotionDiv variants={promotionItemVariants}>
+                  <button
+                    ref={promotionButtonRef}
+                    type="button"
+                    className="primaryButton primaryButton-lg gameOverPromotionButton"
+                    onClick={() => setShowPromotionOverlay(false)}
+                  >
+                    View Results
+                  </button>
+                </MotionDiv>
+              </MotionDiv>
+            </MotionDiv>
+          ) : null}
+        </AnimatePresence>
 
-        <section
+        <MotionDiv
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 28, delay: 0.12 }}
+        >
+          <header className="gameOverHeader">
+            <h2 id="game-over-title" className="gameOverTitle">
+              Round Complete
+            </h2>
+          </header>
+        </MotionDiv>
+
+        <MotionDiv
           className={`gameOverScorePanel ${isScoreAnimationDone ? "isComplete" : ""}`}
           aria-label="Final score summary"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 16, scale: 0.84 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 360, damping: 24, delay: 0.2 }}
         >
           <p className="gameOverScoreLabel">Final Score</p>
           <p className="gameOverScoreValue">{formattedScore}</p>
@@ -554,8 +803,21 @@ export function GameOverOverlay({
             </p>
           ) : null}
           <p className={`gameOverDifficultyBadge${allowsRankProgression ? " is-ranked" : ""}`}>
-            {allowsRankProgression ? `⚔ ${modeLabel}` : modeLabel}
+            {allowsRankProgression ? `Ranked | ${modeLabel}` : modeLabel}
           </p>
+          {loadoutSnapshot?.loadoutName ? (
+            <>
+              <p className="gameOverLoadoutBadge">
+                Build: {loadoutSnapshot.loadoutName}
+                {resolvedLoadoutPresentation?.titleLine ? ` • ${resolvedLoadoutPresentation.titleLine}` : ""}
+              </p>
+              {resolvedLoadoutPresentation?.glanceText ? (
+                <p className="gameOverLoadoutGlance">
+                  {resolvedLoadoutPresentation.glanceText}
+                </p>
+              ) : null}
+            </>
+          ) : null}
           {summaryRewardRows.length ? (
             <div className="gameOverSummaryRewards" aria-label={rewardsSummaryText}>
               {summaryRewardRows.map((row) => (
@@ -568,24 +830,41 @@ export function GameOverOverlay({
           ) : (
             <p className="gameOverRewardsLine">{rewardsSummaryText}</p>
           )}
-        </section>
+        </MotionDiv>
 
         <div className="gameOverBody">
           <div className="gameOverSections" aria-label="Round summary">
-            <GameOverSection
-              title="Performance"
-              rows={performanceRows}
-              panelType="performance"
-              caption={reactionCaption}
-            />
-            <GameOverSection title="Rewards" rows={rewardRows} panelType="rewards" />
+            <MotionDiv
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 280, damping: 28, delay: 0.3 }}
+            >
+              <GameOverSection
+                title="Performance"
+                rows={performanceRows}
+                panelType="performance"
+                caption={reactionCaption}
+              />
+            </MotionDiv>
+            <MotionDiv
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 280, damping: 28, delay: 0.38 }}
+            >
+              <GameOverSection title="Rewards" rows={rewardRows} panelType="rewards" />
+            </MotionDiv>
           </div>
           {isPracticeMode ? (
             <p className="gameOverPracticeNote">Rewards are not earned in Practice mode.</p>
           ) : null}
         </div>
 
-        <div className="overlayActions gameOverActions">
+        <MotionDiv
+          className="overlayActions gameOverActions"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 28, delay: 0.46 }}
+        >
           <button className="primaryButton primaryButton-lg" onClick={onPlayAgain}>
             Play Again
           </button>
@@ -598,8 +877,8 @@ export function GameOverOverlay({
               View History
             </Link>
           )}
-        </div>
-      </section>
-    </div>
+        </MotionDiv>
+      </MotionSection>
+    </MotionDiv>
   )
 }
