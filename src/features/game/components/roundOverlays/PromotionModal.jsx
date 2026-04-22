@@ -1,8 +1,8 @@
-import confetti from "canvas-confetti"
+﻿import confetti from "canvas-confetti"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef } from "react"
 import TierBadge from "../../../../components/TierBadge.jsx"
-import { usePrefersReducedMotion } from "./useOverlayMotion.js"
+import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
 const MotionSection = motion.section

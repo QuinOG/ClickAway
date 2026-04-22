@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+﻿import { useMemo, useState } from "react"
 
 import AchievementTile from "../components/achievements/AchievementTile.jsx"
 import AchievementsCarousel from "../components/achievements/AchievementsCarousel.jsx"
@@ -9,8 +9,8 @@ import {
 import { evaluateAchievements } from "../game/achievements/evaluateAchievements.js"
 import { calculateAccuracyPercent } from "../utils/gameMath.js"
 import { buildCareerReactionStats } from "../utils/historyUtils.js"
-import { isRankedModeEntry } from "../utils/modeUtils.js"
-import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatar.js"
+import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
+import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankImageSrc,

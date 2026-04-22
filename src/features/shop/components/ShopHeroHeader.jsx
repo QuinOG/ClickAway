@@ -1,4 +1,4 @@
-import { getProfileAvatarStyle, getProfileInitials } from "../../../utils/profileAvatar.js"
+﻿import { getProfileAvatarStyle, getProfileInitials } from "../../../utils/profileAvatarStyling.js"
 
 function formatCoins(value) {
   return Number.isFinite(value) ? value.toLocaleString() : "0"
@@ -58,6 +58,7 @@ export default function ShopHeroHeader({
   buttonSkin = null,
   arenaTheme = null,
   profileImage = null,
+  balancePulseKey = 0,
 }) {
   const remainingCount = Math.max(0, totalItems - totalOwnedCount)
 
@@ -75,7 +76,12 @@ export default function ShopHeroHeader({
             <section className="shopCommandSection shopCommandSection-balance">
               <span className="shopCommandLabel">Available Coins</span>
               <strong className="shopCommandValue shopCommandValue-balance">
-                <span className="shopCommandValueMain">{formatCoins(coins)}</span>
+                <span
+                  key={balancePulseKey}
+                  className={`shopCommandValueMain${balancePulseKey > 0 ? " shopCommandValueMain--pulseOnce" : ""}`}
+                >
+                  {formatCoins(coins)}
+                </span>
               </strong>
             </section>
 

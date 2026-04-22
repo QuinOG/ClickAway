@@ -5,7 +5,7 @@ import {
   buildRoundRules,
   normalizeLoadoutState,
 } from "../src/constants/buildcraft.js"
-import { getDifficultyById } from "../src/constants/difficultyConfig.js"
+import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 
 test("normalizeLoadoutState falls back from locked or duplicate powerups", () => {
   const normalized = normalizeLoadoutState(1, [

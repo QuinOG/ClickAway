@@ -1,4 +1,4 @@
-import { motion } from "motion/react"
+﻿import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import TierBadge from "../../../../components/TierBadge.jsx"
 import { getLevelProgress, getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
@@ -10,7 +10,7 @@ import {
   easeOutCubic,
   useCountUpNumber,
   usePrefersReducedMotion,
-} from "./useOverlayMotion.js"
+} from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
 const MotionSection = motion.section

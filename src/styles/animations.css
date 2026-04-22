@@ -236,3 +236,65 @@
         transform: translate(-6px, -14px) scale(0.8);
     }
 }
+
+/* --- Loading skeletons (shimmer reuses @keyframes shimmer) --- */
+.skeletonBlock {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.065);
+}
+
+.skeletonBlock::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeletonBlock::after {
+        animation: none;
+    }
+}
+
+.skeletonBlock--sm {
+    height: 12px;
+}
+
+.skeletonBlock--md {
+    height: 14px;
+}
+
+.skeletonBlock--lg {
+    height: 18px;
+}
+
+.skeletonBlock--pill {
+    width: 100%;
+    max-width: 160px;
+    height: 22px;
+    border-radius: 999px;
+}
+
+.skeletonBlock--tier {
+    width: 100%;
+    max-width: 72px;
+    height: 22px;
+    border-radius: 999px;
+}
+
+.skeletonBlock--rank {
+    width: 100%;
+    max-width: 36px;
+    height: 18px;
+}
+
+.skeletonBlock--num {
+    width: 100%;
+    max-width: 56px;
+    height: 14px;
+    margin-left: auto;
+}

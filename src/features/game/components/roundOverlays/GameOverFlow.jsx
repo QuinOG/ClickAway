@@ -1,6 +1,6 @@
-import { AnimatePresence, motion } from "motion/react"
+﻿import { AnimatePresence, motion } from "motion/react"
 import { useMemo, useState } from "react"
-import { usePrefersReducedMotion } from "./useOverlayMotion.js"
+import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 import { GameOverOverlay } from "./GameOverOverlay.jsx"
 import PromotionModal from "./PromotionModal.jsx"
 import RewardsModal from "./RewardsModal.jsx"

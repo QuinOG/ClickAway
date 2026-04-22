@@ -1,9 +1,9 @@
-import { AnimatePresence, motion } from "motion/react"
+﻿import { AnimatePresence, motion } from "motion/react"
 import { ROUND_PHASE } from "../constants/gameConstants.js"
 import GameArena from "../features/game/components/GameArena.jsx"
 import GameHud from "../features/game/components/GameHud.jsx"
 import PowerupTray from "../features/game/components/PowerupTray.jsx"
-import { CountdownOverlay, GameOverFlow, ReadyOverlay } from "../features/game/components/RoundOverlaysBarrel.jsx"
+import { CountdownOverlay, GameOverFlow, ReadyOverlay } from "../features/game/components/gameRoundOverlayExports.jsx"
 import { useGameScreenController } from "../features/game/hooks/useGameScreenController.js"
 
 const MotionDiv = motion.div

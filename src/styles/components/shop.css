@@ -1185,6 +1185,56 @@
     }
 }
 
+@keyframes shopBalancePulse {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    40% {
+        transform: scale(1.08);
+        filter: brightness(1.14);
+    }
+
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+.shopCommandValueMain--pulseOnce {
+    animation: shopBalancePulse 0.7s ease-out;
+}
+
+/* Toast content for unlock (react-hot-toast renders inside global toast styles) */
+.shopSuccessToast {
+    display: grid;
+    gap: 4px;
+    text-align: left;
+}
+
+.shopSuccessToastEyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(180, 220, 255, 0.88);
+}
+
+.shopSuccessToastTitle {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #f5faff;
+    line-height: 1.25;
+}
+
+.shopSuccessToastHint {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(200, 220, 248, 0.78);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .shopFeedback,
     .shopSection {
@@ -1201,5 +1251,9 @@
     .shopItemCard:hover,
     .shopTab:hover {
         transform: none;
+    }
+
+    .shopCommandValueMain--pulseOnce {
+        animation: none;
     }
 }

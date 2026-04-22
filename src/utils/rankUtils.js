@@ -1,5 +1,5 @@
 import { calculateAccuracyPercent } from "./gameMath.js"
-import { DIFFICULTY_IDS, PROGRESSION_MODE } from "../constants/difficultyConfig.js"
+import { DIFFICULTY_IDS, PROGRESSION_MODE } from "../constants/gameModesConfig.js"
 
 export const INITIAL_RANK_MMR = 0
 export const UNRANKED_LABEL = "Unranked"

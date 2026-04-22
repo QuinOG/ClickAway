@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react"
+﻿import { useCallback, useEffect, useState } from "react"
 
-import { fetchCurrentUser, loginUser, signupUser } from "../services/api.js"
-import { normalizeUsername } from "./appStateHelpers.js"
+import { fetchCurrentUser, loginUser, signupUser } from "../services/clickAwayHttpApiClient.js"
+import { normalizeUsername } from "./appAccountStateHelpers.js"
 
 export function useAuthSession({
   authToken,

@@ -1,13 +1,7 @@
 import { useEffect } from "react"
 import toast from "react-hot-toast"
 
-import { ACHIEVEMENTS } from "../game/achievements/achievementsList.js"
 import { mergeUnlockedAchievementIds } from "./appStateHelpers.js"
-
-const ACHIEVEMENT_TITLE_BY_ID = ACHIEVEMENTS.reduce((map, achievement) => {
-  map[achievement.id] = achievement.title
-  return map
-}, {})
 
 export function useAchievementSync({
   unlockedAchievementIds,

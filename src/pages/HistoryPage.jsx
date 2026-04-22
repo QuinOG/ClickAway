@@ -1,11 +1,11 @@
-import { useMemo } from "react"
+﻿import { useMemo } from "react"
 import { Link } from "react-router-dom"
 
-import { HISTORY_PREVIEW_FIELDS } from "../features/history/historyData.js"
-import { buildHistorySnapshot } from "../features/history/historyInsights.js"
+import { HISTORY_PREVIEW_FIELDS } from "../features/history/historyPageTableFieldsAndInsights.js"
+import { buildHistorySnapshot } from "../features/history/historyRoundsSnapshotBuilder.js"
 import { formatPercent } from "../utils/gameMath.js"
 import { formatPlayedAtLabel } from "../utils/historyUtils.js"
-import { getModeLabelFromHistoryEntry, isRankedModeEntry } from "../utils/modeUtils.js"
+import { getModeLabelFromHistoryEntry, isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 
 function formatRankDelta(rankDelta = 0) {
   const normalizedDelta = Number.isFinite(Number(rankDelta)) ? Number(rankDelta) : 0

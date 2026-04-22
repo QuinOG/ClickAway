@@ -1,5 +1,5 @@
-import { buildCareerReactionStats } from "../../utils/historyUtils.js"
-import { isRankedModeEntry } from "../../utils/modeUtils.js"
+﻿import { buildCareerReactionStats } from "../../utils/historyUtils.js"
+import { isRankedModeEntry } from "../../utils/gameModeLabelsAndRankedFilters.js"
 
 function toNumber(value) {
   const numericValue = Number(value)

@@ -1,4 +1,4 @@
-import { DIFFICULTY_IDS, PROGRESSION_MODE } from "../constants/difficultyConfig.js"
+import { DIFFICULTY_IDS, PROGRESSION_MODE } from "../constants/gameModesConfig.js"
 
 const MODE_LABELS_BY_ID = {
   [DIFFICULTY_IDS.EASY]: "Practice",

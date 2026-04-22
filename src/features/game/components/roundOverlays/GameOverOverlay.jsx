@@ -1,10 +1,9 @@
-import confetti from "canvas-confetti"
+﻿import confetti from "canvas-confetti"
 import { motion } from "motion/react"
 import { useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
 import { getDifficultyById as getModeById } from "../../../../constants/difficultyConfig.js"
-import { evaluateAchievements } from "../../../../game/achievements/evaluateAchievements.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./useOverlayMotion.js"
 
 const MotionDiv = motion.div

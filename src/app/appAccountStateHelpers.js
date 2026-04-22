@@ -1,4 +1,4 @@
-import { DIFFICULTIES_BY_ID as MODES_BY_ID } from "../constants/difficultyConfig.js"
+import { DIFFICULTIES_BY_ID as MODES_BY_ID } from "../constants/gameModesConfig.js"
 import { SHOP_ITEMS_BY_ID } from "../constants/shopCatalog.js"
 
 export function isValidModeId(modeId) {

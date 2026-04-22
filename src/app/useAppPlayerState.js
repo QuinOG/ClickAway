@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+﻿import { useCallback, useState } from "react"
 
 import {
   ACTIVE_LOADOUT_ID_DEFAULT,
@@ -9,12 +9,12 @@ import {
   BUILD_WALKTHROUGH_STATUS,
   normalizeBuildWalkthrough,
 } from "../constants/buildWalkthrough.js"
-import { DEFAULT_EQUIPPED_IDS, STORAGE_KEYS } from "../constants/appStorage.js"
-import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/difficultyConfig.js"
+import { DEFAULT_EQUIPPED_IDS, STORAGE_KEYS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
+import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/gameModesConfig.js"
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import { normalizeHistoryEntry } from "../utils/historyUtils.js"
-import { readStringFromStorage } from "../utils/localStorage.js"
+import { readStringFromStorage } from "../utils/browserLocalStorageRead.js"
 import {
   buildDefaultRankedState,
   INITIAL_RANK_MMR,

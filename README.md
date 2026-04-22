@@ -196,7 +196,16 @@ The leaderboard page is backed by `GET /api/leaderboard` and renders live ranked
 
 ### Help
 
-The help page explains controls, formulas, modes, ranking, progression, and other gameplay rules. Most of its content comes from structured data in `src/features/help/helpContent.js`.
+The help page explains controls, formulas, modes, ranking, progression, and other gameplay rules. Most of its content comes from structured data in `src/features/help/helpPageStructuredContent.js`.
+
+## Backend Auth Setup
+1. Copy `.env.example` to `.env`
+2. Set `JWT_SECRET` and `ADMIN_PASSWORD`
+3. Start backend:
+- `npm run server`
+
+You can run frontend + backend together with:
+- `npm run dev:all`
 
 ## Project Structure
 
@@ -209,9 +218,9 @@ ClickAway/
 |  |  |- MIGRATIONS.md             Manual migration ledger and environment notes
 |  |  |- migrations/               Incremental patches for older databases
 |  |- index.js                     Express app and API routes
-|  |- db.js                        MySQL queries and persistence helpers
+|  |- playerMysqlDatabase.js       MySQL pool, queries, and persistence helpers
 |  |- playerStateStore.js          Purchase/equip logic for player state
-|  |- shopItemMap.js               Mapping between frontend item ids and DB ids
+|  |- serverShopCatalogIdMappings.js   Mapping between frontend item ids and DB ids
 |- src/
 |  |- app/                         App-level state and synchronization hooks
 |  |- components/                  Reusable UI shared across pages
@@ -236,9 +245,9 @@ At a high level, the app works like this:
 2. `src/App.jsx` owns route wiring plus the top-level player/session state.
 3. `src/app/useAuthSession.js` restores and verifies the current session.
 4. `src/app/useAppPlayerState.js` stores the local in-memory player state used across pages.
-5. `src/services/api.js` wraps the backend API calls.
+5. `src/services/clickAwayHttpApiClient.js` wraps the backend API calls.
 6. The backend in `server/index.js` handles auth, shop, and progress routes.
-7. `server/db.js` reads from and writes to MySQL.
+7. `server/playerMysqlDatabase.js` reads from and writes to MySQL.
 
 A common path looks like this:
 
@@ -252,12 +261,12 @@ A common path looks like this:
 
 If you are changing a specific part of the app, these are the main entry points:
 
-- Game mode tuning: `src/constants/difficultyConfig.js`
+- Game mode tuning: `src/constants/gameModesConfig.js`
 - Shop catalog and cosmetic metadata: `src/constants/shopCatalog.js`
-- Help page content: `src/features/help/helpContent.js`
+- Help page content: `src/features/help/helpPageStructuredContent.js`
 - Backend routes: `server/index.js`
-- Database reads/writes: `server/db.js`
-- Frontend/backend cosmetic ID mapping: `server/shopItemMap.js`
+- Database reads/writes: `server/playerMysqlDatabase.js`
+- Frontend/backend cosmetic ID mapping: `server/serverShopCatalogIdMappings.js`
 
 ## Important Current Notes
 
@@ -267,7 +276,7 @@ These are useful to know before making deeper changes:
 - The leaderboard is backend-driven through `GET /api/leaderboard`.
 - Shop metadata lives in the frontend, while the backend only knows item ids and mappings.
 - Achievement rules are evaluated in the frontend, while unlocked achievement ids are persisted in MySQL.
-- If you add or rename a cosmetic item, you usually need to update both `src/constants/shopCatalog.js` and `server/shopItemMap.js`, and keep the SQL seed ids aligned.
+- If you add or rename a cosmetic item, you usually need to update both `src/constants/shopCatalog.js` and `server/serverShopCatalogIdMappings.js`, and keep the SQL seed ids aligned.
 
 ## Troubleshooting
 
@@ -303,5 +312,5 @@ If you only want the shortest path to understanding the repo:
 1. Read `src/App.jsx` to see the routes and the top-level state wiring.
 2. Read `src/pages/GamePage.jsx` and `src/features/game/` to understand the core gameplay loop.
 3. Read `server/index.js` to see the API surface.
-4. Read `server/db.js` to see what data is persisted.
+4. Read `server/playerMysqlDatabase.js` to see what data is persisted.
 5. Read `MYSQL_AUDIT.md` to understand what is fully implemented versus still frontend-owned or mocked.

@@ -1,4 +1,4 @@
-import HelpFlowSection from "../features/help/components/HelpFlowSection.jsx"
+﻿import HelpFlowSection from "../features/help/components/HelpFlowSection.jsx"
 import HelpFaqSection from "../features/help/components/HelpFaqSection.jsx"
 import HelpListSection from "../features/help/components/HelpListSection.jsx"
 import HelpQuickStartSection from "../features/help/components/HelpQuickStartSection.jsx"
@@ -27,7 +27,7 @@ import {
   SCORING_ROWS,
   SHOP_POINTS,
   TRACKING_POINTS,
-} from "../features/help/helpContent.js"
+} from "../features/help/helpPageStructuredContent.js"
 
 export default function HelpPage() {
   return (

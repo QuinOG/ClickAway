@@ -1,4 +1,4 @@
-import { isRankedModeEntry } from "../../utils/modeUtils.js"
+﻿import { isRankedModeEntry } from "../../utils/gameModeLabelsAndRankedFilters.js"
 import { ACHIEVEMENTS } from "./achievementsList.js"
 
 function clamp(value, min, max) {

@@ -1,6 +1,6 @@
-import { useCallback } from "react"
+﻿import { useCallback } from "react"
 
-import { equipShopItem, purchaseShopItem } from "../services/api.js"
+import { equipShopItem, purchaseShopItem } from "../services/clickAwayHttpApiClient.js"
 import { canPurchaseShopItem, isShopItemOwned } from "../utils/shopUtils.js"
 
 function buildPurchaseError(item, coins, ownedItemIds) {

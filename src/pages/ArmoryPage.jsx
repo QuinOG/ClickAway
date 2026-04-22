@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import {
@@ -21,13 +21,92 @@ import {
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../features/buildcraft/buildcraftGlyphs.jsx"
-import { ARMORY_STEPS } from "../features/armory/armorySteps.js"
-import ArmoryModeMatrix from "../features/armory/components/ArmoryModeMatrix.jsx"
-import ArmoryModeStrip from "../features/armory/components/ArmoryModeStrip.jsx"
-import ArmoryWalkthroughOverlay from "../features/armory/components/ArmoryWalkthroughOverlay.jsx"
-import { useArmoryUrlState } from "../features/armory/useArmoryUrlState.js"
-import { useArmoryWalkthrough } from "../features/armory/useArmoryWalkthrough.js"
-import { WALKTHROUGH_STEPS } from "../features/armory/walkthroughSteps.js"
+
+const ARMORY_STEPS = [
+  { id: "slot", label: "Build Slot", lead: "Name it, make it active, or reset it." },
+  { id: "passives", label: "Passive Stack", lead: "Tune the 3 systems that shape the round." },
+  { id: "hotbar", label: "Hotbar", lead: "Choose the tools on keys 1, 2, and 3." },
+  { id: "review", label: "Review Sim", lead: "See how the build feels in the current mode." },
+]
+
+const WALKTHROUGH_STEPS = [
+  {
+    id: "welcome",
+    title: "Builds live here",
+    instruction: "Armory changes your active build. Ready just launches whatever is active next round.",
+    note: "This walkthrough edits the real slot on your account, and every change saves instantly.",
+  },
+  {
+    id: "slot",
+    armoryStepId: "slot",
+    targetId: "slot",
+    title: "This is your live build slot",
+    instruction: "Rename it if you want, or keep the current name and move on.",
+    note: "Ready will use this exact slot next round.",
+  },
+  {
+    id: "tempo",
+    armoryStepId: "passives",
+    targetId: "passives",
+    moduleSlotId: "tempoCore",
+    title: "Tempo Core shapes pace",
+    instruction: "Pick the target pace you want, or keep the current option.",
+    note: "This lane changes target size, shrink pressure, and score pace.",
+  },
+  {
+    id: "streak",
+    armoryStepId: "passives",
+    targetId: "passives",
+    moduleSlotId: "streakLens",
+    title: "Streak Lens changes combo risk",
+    instruction: "Choose how fast combo grows and how punishing misses feel.",
+    note: "Safer options recover better. Greedier options score harder.",
+  },
+  {
+    id: "rig",
+    armoryStepId: "passives",
+    targetId: "passives",
+    moduleSlotId: "powerRig",
+    title: "Power Rig controls charge tempo",
+    instruction: "Pick how your round tools arrive, or keep the current rig.",
+    note: "Some rigs start charged. Others make later charges faster or slower.",
+  },
+  {
+    id: "hotbar-1",
+    armoryStepId: "hotbar",
+    targetId: "hotbar",
+    powerSlotIndex: 0,
+    title: "Key 1 is your first tool",
+    instruction: "Choose any unlocked power for key 1.",
+    note: "Duplicates are blocked automatically, so each key stays distinct.",
+  },
+  {
+    id: "hotbar-2",
+    armoryStepId: "hotbar",
+    targetId: "hotbar",
+    powerSlotIndex: 1,
+    title: "Key 2 is your backup tool",
+    instruction: "Pick a second power that complements the first.",
+    note: "Think in moments: stabilizer, bailout, or score push.",
+  },
+  {
+    id: "hotbar-3",
+    armoryStepId: "hotbar",
+    targetId: "hotbar",
+    powerSlotIndex: 2,
+    title: "Key 3 finishes the loadout",
+    instruction: "Choose the last power, or keep the one already equipped.",
+    note: "Your hotbar is the live 1 / 2 / 3 tray you will see in-round.",
+  },
+  {
+    id: "review",
+    armoryStepId: "review",
+    targetId: "review",
+    title: "Quick confidence check",
+    instruction: "This is the readout for your current mode. Glance at the feel summary, strengths, tradeoffs, and hotbar cadence.",
+    note: "If it feels right, head back to Ready. If not, keep tuning here.",
+  },
+]
 
 function getUnlockText(unlockLevel = 1) {
   return `Unlocks at Level ${unlockLevel}`
@@ -114,6 +193,31 @@ function getStepSummary(stepId, activeLoadout, activePresentation, selectedMode)
   }
 
   return selectedMode?.label ? `${selectedMode.label} preview` : "Current mode preview"
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value))
+}
+
+function measureSpotlightRect(shellElement, targetElement) {
+  if (!shellElement || !targetElement) return null
+
+  const shellRect = shellElement.getBoundingClientRect()
+  const targetRect = targetElement.getBoundingClientRect()
+  const padding = 14
+  const left = clamp(targetRect.left - shellRect.left - padding, 8, shellRect.width - 8)
+  const top = clamp(targetRect.top - shellRect.top - padding, 8, shellRect.height - 8)
+  const right = clamp(targetRect.right - shellRect.left + padding, 8, shellRect.width - 8)
+  const bottom = clamp(targetRect.bottom - shellRect.top + padding, 8, shellRect.height - 8)
+
+  return {
+    left,
+    top,
+    right,
+    bottom,
+    width: Math.max(0, right - left),
+    height: Math.max(0, bottom - top),
+  }
 }
 
 function ArmoryStepGlyph({ stepId = "", className = "" }) {
@@ -304,6 +408,102 @@ function ArmoryHotbarButton({ powerupId, index, cadenceLabel = "", isActive = fa
   )
 }
 
+function ReviewModeButton({ mode, isActive = false, onClick }) {
+  return (
+    <button
+      type="button"
+      className={`armoryModeButton ${isActive ? "isActive" : ""}`}
+      onClick={onClick}
+    >
+      <span className="armoryModeButtonLabel">{mode.label}</span>
+      <span className="armoryModeButtonMeta">
+        {mode.isTimedRound === false ? "No timer" : `${mode.durationSeconds}s`}
+      </span>
+    </button>
+  )
+}
+
+function ArmoryWalkthroughOverlay({
+  step = null,
+  stepIndex = 0,
+  stepCount = 0,
+  spotlightRect = null,
+  selectedModeLabel = "",
+  isManual = false,
+  onSkip,
+  onBack,
+  onNext,
+  onKeepCurrentName,
+  onSaveName,
+  onGoToReady,
+  onKeepTuning,
+}) {
+  if (!step) return null
+
+  const dismissLabel = isManual ? "Close" : "Skip"
+  const note = step.id === "review" && selectedModeLabel
+    ? `${step.note} This preview is using ${selectedModeLabel}.`
+    : step.note
+
+  return (
+    <div className="armoryWalkthroughOverlay" role="dialog" aria-modal="true" aria-labelledby="armory-walkthrough-title">
+      {spotlightRect ? (
+        <>
+          <div className="armoryWalkthroughBlocker" style={{ inset: `0 0 calc(100% - ${spotlightRect.top}px) 0` }} />
+          <div className="armoryWalkthroughBlocker" style={{ left: 0, top: spotlightRect.top, width: spotlightRect.left, height: spotlightRect.height }} />
+          <div className="armoryWalkthroughBlocker" style={{ left: spotlightRect.right, top: spotlightRect.top, right: 0, height: spotlightRect.height }} />
+          <div className="armoryWalkthroughBlocker" style={{ inset: `${spotlightRect.bottom}px 0 0 0` }} />
+          <div
+            className="armoryWalkthroughSpotlight"
+            style={{ left: spotlightRect.left, top: spotlightRect.top, width: spotlightRect.width, height: spotlightRect.height }}
+            aria-hidden="true"
+          />
+        </>
+      ) : (
+        <div className="armoryWalkthroughBlocker armoryWalkthroughBlockerFull" />
+      )}
+
+      <section className={`armoryWalkthroughPanel ${spotlightRect ? "" : "isCentered"}`}>
+        <div className="armoryWalkthroughPanelHeader">
+          <p className="armoryWalkthroughEyebrow">Walkthrough {stepIndex + 1} / {stepCount}</p>
+          <button type="button" className="armoryWalkthroughDismiss" onClick={onSkip}>
+            {dismissLabel}
+          </button>
+        </div>
+
+        <div className="armoryWalkthroughCopy">
+          <h2 id="armory-walkthrough-title" className="armoryWalkthroughTitle">{step.title}</h2>
+          <p className="armoryWalkthroughLead">{step.instruction}</p>
+          {note ? <p className="armoryWalkthroughNote">{note}</p> : null}
+        </div>
+
+        <div className="armoryWalkthroughActions">
+          {step.id === "welcome" ? <button type="button" className="primaryButton" onClick={onNext}>Start Walkthrough</button> : null}
+          {step.id === "slot" ? (
+            <>
+              <button type="button" className="secondaryButton" onClick={onKeepCurrentName}>Keep Current Name</button>
+              <button type="button" className="primaryButton" onClick={onSaveName}>Save Name</button>
+            </>
+          ) : null}
+          {(step.id.startsWith("hotbar") || step.id === "tempo" || step.id === "streak" || step.id === "rig") ? (
+            <>
+              <button type="button" className="secondaryButton" onClick={onBack}>Back</button>
+              <button type="button" className="primaryButton" onClick={onNext}>Continue</button>
+            </>
+          ) : null}
+          {step.id === "review" ? (
+            <>
+              <button type="button" className="secondaryButton" onClick={onBack}>Back</button>
+              <button type="button" className="secondaryButton" onClick={onKeepTuning}>Keep Tuning</button>
+              <button type="button" className="primaryButton" onClick={onGoToReady}>Go to Ready</button>
+            </>
+          ) : null}
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export default function ArmoryPage({
   modes = [],
   selectedModeId = "",
@@ -345,17 +545,6 @@ export default function ArmoryPage({
     ? WALKTHROUGH_STEPS[walkthroughStepIndex] ?? WALKTHROUGH_STEPS[0]
     : null
 
-  useArmoryUrlState({
-    buildWalkthroughStatus,
-    isWalkthroughVisible,
-    activeStepId,
-    setActiveStepId,
-    activeModuleSlotId,
-    setActiveModuleSlotId,
-    editingPowerSlotIndex,
-    setEditingPowerSlotIndex,
-  })
-
   useEffect(() => {
     setLocalSavedLoadouts(savedLoadouts)
   }, [savedLoadouts])
@@ -396,6 +585,7 @@ export default function ArmoryPage({
 
   useEffect(() => {
     setNameDraft(activeLoadout?.name ?? "")
+    setEditingPowerSlotIndex(0)
   }, [activeLoadout])
 
   const selectedModuleSlot = useMemo(
@@ -411,6 +601,23 @@ export default function ArmoryPage({
   const selectedPowerup = getPowerupById(selectedPowerupId)
   const selectedPowerCopy = getPowerupOptionPresentation(selectedPowerupId)
   const selectedPowerSlotPresentation = activePresentation?.powerSlots?.[editingPowerSlotIndex] ?? null
+
+  const measureWalkthroughTarget = useCallback(() => {
+    if (!currentWalkthroughStep?.targetId) {
+      setWalkthroughSpotlightRect(null)
+      return
+    }
+
+    const shellElement = shellRef.current
+    let targetElement = null
+
+    if (currentWalkthroughStep.targetId === "slot") targetElement = slotEditorRef.current
+    if (currentWalkthroughStep.targetId === "passives") targetElement = passiveLaneRef.current
+    if (currentWalkthroughStep.targetId === "hotbar") targetElement = hotbarEditorRef.current
+    if (currentWalkthroughStep.targetId === "review") targetElement = reviewPanelRef.current
+
+    setWalkthroughSpotlightRect(measureSpotlightRect(shellElement, targetElement))
+  }, [currentWalkthroughStep])
 
   const commitLoadoutState = useCallback((nextSavedLoadouts, nextActiveLoadoutId = localActiveLoadoutId) => {
     setLocalSavedLoadouts(nextSavedLoadouts)
@@ -455,7 +662,6 @@ export default function ArmoryPage({
       return
     }
 
-    setEditingPowerSlotIndex(0)
     commitLoadoutState(nextSavedLoadouts, nextLoadoutId)
   }
 
@@ -490,39 +696,12 @@ export default function ArmoryPage({
     if (!starterLoadout) return
 
     setNameDraft(starterLoadout.name)
-    setEditingPowerSlotIndex(0)
     updateSingleLoadout(activeLoadout.id, () => ({
       id: starterLoadout.id,
       name: starterLoadout.name,
       moduleIds: { ...starterLoadout.moduleIds },
       powerupIds: [...starterLoadout.powerupIds],
     }))
-  }
-
-  function handleCopyActiveToSlot(targetLoadoutId) {
-    if (!activeLoadout || targetLoadoutId === localActiveLoadoutId) return
-
-    const { nextSavedLoadouts: loadoutsWithName, nextName } = buildCommittedNameResult(
-      localSavedLoadouts,
-      activeLoadout,
-      nameDraft,
-    )
-    setNameDraft(nextName)
-
-    const sourceLoadout = getLoadoutById(loadoutsWithName, localActiveLoadoutId)
-    if (!sourceLoadout) return
-
-    const nextSavedLoadouts = loadoutsWithName.map((loadout) => (
-      loadout.id === targetLoadoutId
-        ? {
-          ...loadout,
-          moduleIds: { ...sourceLoadout.moduleIds },
-          powerupIds: [...sourceLoadout.powerupIds],
-        }
-        : loadout
-    ))
-
-    commitLoadoutState(nextSavedLoadouts)
   }
 
   function handleOpenStep(nextStepId) {
@@ -606,38 +785,43 @@ export default function ArmoryPage({
     }
   }, [buildWalkthroughStatus, currentWalkthroughStep, onBuildWalkthroughChange])
 
-  const spotlightLayoutKey = useMemo(() => (
-    [
-      activeModuleSlotId,
-      activeStepId,
-      editingPowerSlotIndex,
-      localActiveLoadoutId,
-      selectedModeId,
-      currentWalkthroughStep?.id ?? "",
-      localSavedLoadouts.map((l) => `${l.id}:${JSON.stringify(l.moduleIds)}:${l.powerupIds.join(",")}`).join("|"),
-    ].join("|")
-  ), [
+  useLayoutEffect(() => {
+    if (!isWalkthroughVisible) {
+      setWalkthroughSpotlightRect(null)
+      return undefined
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      measureWalkthroughTarget()
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [
     activeModuleSlotId,
     activeStepId,
-    currentWalkthroughStep?.id,
+    currentWalkthroughStep,
     editingPowerSlotIndex,
+    isWalkthroughVisible,
+    measureWalkthroughTarget,
     localActiveLoadoutId,
     localSavedLoadouts,
     selectedModeId,
   ])
 
-  useArmoryWalkthrough({
-    isWalkthroughVisible,
-    currentWalkthroughStep,
-    shellRef,
-    workspaceRef,
-    slotEditorRef,
-    passiveLaneRef,
-    hotbarEditorRef,
-    reviewPanelRef,
-    setWalkthroughSpotlightRect,
-    spotlightLayoutKey,
-  })
+  useEffect(() => {
+    if (!isWalkthroughVisible) return undefined
+
+    const handleReposition = () => measureWalkthroughTarget()
+    const workspaceElement = workspaceRef.current
+
+    window.addEventListener("resize", handleReposition)
+    workspaceElement?.addEventListener("scroll", handleReposition, { passive: true })
+
+    return () => {
+      window.removeEventListener("resize", handleReposition)
+      workspaceElement?.removeEventListener("scroll", handleReposition)
+    }
+  }, [isWalkthroughVisible, measureWalkthroughTarget])
 
   useEffect(() => {
     walkthroughSessionRef.current = {
@@ -705,28 +889,14 @@ export default function ArmoryPage({
             <span className="armoryRailSectionLabel">Saved builds</span>
             <div className="armorySlotRailList" aria-label="Saved build slots">
               {localSavedLoadouts.map((loadout, index) => (
-                <div key={loadout.id} className="armorySlotRailRow">
-                  <ArmorySlotRailButton
-                    loadout={loadout}
-                    index={index}
-                    presentation={loadoutPresentations[loadout.id]}
-                    isActive={loadout.id === localActiveLoadoutId}
-                    onClick={() => handleActivateLoadout(loadout.id)}
-                  />
-                  {loadout.id !== localActiveLoadoutId ? (
-                    <button
-                      type="button"
-                      className="secondaryButton armorySlotCopyButton"
-                      onClick={(event) => {
-                        event.preventDefault()
-                        handleCopyActiveToSlot(loadout.id)
-                      }}
-                      aria-label={`Copy active build passives and powers into ${loadout.name}`}
-                    >
-                      Copy active
-                    </button>
-                  ) : null}
-                </div>
+                <ArmorySlotRailButton
+                  key={loadout.id}
+                  loadout={loadout}
+                  index={index}
+                  presentation={loadoutPresentations[loadout.id]}
+                  isActive={loadout.id === localActiveLoadoutId}
+                  onClick={() => handleActivateLoadout(loadout.id)}
+                />
               ))}
             </div>
           </div>
@@ -742,11 +912,6 @@ export default function ArmoryPage({
         </aside>
 
         <div className="armoryWorkspace" ref={workspaceRef}>
-          <ArmoryModeStrip
-            modes={modes}
-            selectedModeId={selectedModeId}
-            onModeChange={onModeChange}
-          />
           <div className="armoryStepStack">
             <ArmoryStepCard
               step={ARMORY_STEPS[0]}
@@ -979,6 +1144,17 @@ export default function ArmoryPage({
               onActivate={() => handleOpenStep("review")}
             >
               <div ref={reviewPanelRef}>
+                <div className="armoryReviewModeRow" aria-label="Mode preview">
+                  {modes.map((mode) => (
+                    <ReviewModeButton
+                      key={mode.id}
+                      mode={mode}
+                      isActive={mode.id === selectedMode.id}
+                      onClick={() => onModeChange?.(mode.id)}
+                    />
+                  ))}
+                </div>
+
                 <section className="armoryReviewHero">
                   <div className="armoryReviewHeroCopy">
                     <p className="armoryReviewEyebrow">Current mode</p>
@@ -1006,13 +1182,6 @@ export default function ArmoryPage({
                     </article>
                   ))}
                 </div>
-
-                <ArmoryModeMatrix
-                  modes={modes}
-                  activeLoadout={activeLoadout}
-                  selectedModeId={selectedMode.id}
-                  onModeChange={onModeChange}
-                />
 
                 <div className="armoryReviewGrid">
                   <section className="armoryReviewPanel">

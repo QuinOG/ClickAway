@@ -1,12 +1,12 @@
-import pool, {
+﻿import pool, {
   findUserById,
   findUserByUsername,
   findUserProgressByUserId,
-} from "./db.js"
+} from "./playerMysqlDatabase.js"
 import {
   getCatalogItemById,
   getMappedShopItemById,
-} from "./shopItemMap.js"
+} from "./serverShopCatalogIdMappings.js"
 
 export class PlayerStateError extends Error {
   constructor(status, message) {

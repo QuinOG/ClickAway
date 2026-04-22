@@ -21,3 +21,35 @@ export const ROUND_PHASE = {
   PLAYING: "playing",
   GAME_OVER: "game_over",
 }
+
+export const POWERUPS = [
+  {
+    id: "time_boost",
+    key: "1",
+    label: "Time +2s",
+    awardEvery: 5,
+    icon: "/powerup-time.svg",
+    description: "Adds 2 seconds to the timer.",
+  },
+  {
+    id: "size_boost",
+    key: "2",
+    label: "Grow +10",
+    awardEvery: 10,
+    icon: "/powerup-grow.svg",
+    description: "Temporarily makes the target larger.",
+  },
+  {
+    id: "freeze_movement",
+    key: "3",
+    label: "Freeze 1s",
+    awardEvery: 15,
+    icon: "/lock.png",
+    description: "Stops target movement for 1 seconds.",
+  },
+]
+
+export const POWERUP_BY_KEY = POWERUPS.reduce((powerupsByKey, powerup) => {
+  powerupsByKey[powerup.key] = powerup
+  return powerupsByKey
+}, {})

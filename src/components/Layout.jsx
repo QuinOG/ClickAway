@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react"
+import { Suspense } from "react"
 import { Toaster } from "react-hot-toast"
 import { useOutlet, useLocation } from "react-router-dom"
 import { useState } from "react"
@@ -6,22 +6,18 @@ import Navbar from "./Navbar.jsx"
 import { useBodyClass } from "../hooks/useBodyClass.js"
 
 const MotionDiv = motion.div
-
-// Freezes the outlet at mount so the exiting MotionDiv doesn't re-render
-// with the new route's content while its exit animation is still playing.
-function FrozenOutlet() {
-  const outlet = useOutlet()
-  const [frozen] = useState(outlet)
-  return frozen
-}
 const GAME_ROUTE_PREFIX = "/game"
 const GAME_ROUTE_BODY_CLASS = "gameRouteActive"
 const ARMORY_ROUTE_PREFIX = "/armory"
 const ARMORY_ROUTE_BODY_CLASS = "armoryRouteActive"
-const PAGE_EASE = [0.4, 0, 0.2, 1]
 
-// Game route: suppress min-height so the flex item doesn't overflow. flex: 1 comes from .gameMain > * CSS rule.
-const gamePageStyle = { minHeight: 0, overflow: "hidden" }
+function RouteFallback() {
+  return (
+    <div className="routeFallback" aria-busy="true" aria-live="polite">
+      <span className="routeFallbackText">Loading…</span>
+    </div>
+  )
+}
 
 const TOAST_STYLE = {
   background: "rgba(11, 18, 36, 0.97)",
@@ -44,15 +40,15 @@ export default function Layout({
   rankLabel,
   rankMmr,
 }) {
-  const location = useLocation()
-  const isGameRoute = location.pathname.startsWith(GAME_ROUTE_PREFIX)
-  const isArmoryRoute = location.pathname.startsWith(ARMORY_ROUTE_PREFIX)
+  const { pathname } = useLocation()
+  const isGameRoute = pathname.startsWith(GAME_ROUTE_PREFIX)
+  const isArmoryRoute = pathname.startsWith(ARMORY_ROUTE_PREFIX)
+
   useBodyClass(GAME_ROUTE_BODY_CLASS, isGameRoute)
   useBodyClass(ARMORY_ROUTE_BODY_CLASS, isArmoryRoute)
 
   return (
     <div className="appShell">
-      {/* Navbar visibility/links are driven by auth state from App-level routing. */}
       <Navbar
         isArmoryRoute={isArmoryRoute}
         isAuthed={isAuthed}
@@ -64,7 +60,7 @@ export default function Layout({
         rankMmr={rankMmr}
       />
       <main className={`mainContent ${isGameRoute ? "gameMain" : ""} ${isArmoryRoute ? "armoryMain" : ""}`.trim()}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <MotionDiv
             key={location.pathname}
             style={isGameRoute ? gamePageStyle : undefined}
@@ -76,7 +72,7 @@ export default function Layout({
               ease: PAGE_EASE,
             }}
           >
-            <FrozenOutlet />
+            <Outlet />
           </MotionDiv>
         </AnimatePresence>
       </main>

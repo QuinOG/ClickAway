@@ -31,6 +31,63 @@
     flex: 1;
 }
 
+/* Route change: subtle enter only (CSS; avoids AnimatePresence exit/sync issues). */
+.routeOutlet {
+    animation: routeOutletEnter 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes routeOutletEnter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mainContent.gameMain > .routeOutlet {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.mainContent.armoryMain > .routeOutlet {
+    min-height: 0;
+    min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .routeOutlet {
+        animation: none;
+    }
+}
+
+.routeFallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: min(200px, 36dvh);
+}
+
+.routeFallbackText {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(220, 230, 255, 0.55);
+    letter-spacing: 0.02em;
+}
+
+.mainContent.gameMain > .routeOutlet > .routeFallback {
+    flex: 1;
+    min-height: 0;
+}
+
+.mainContent.armoryMain > .routeOutlet > .routeFallback {
+    flex: 1;
+    min-height: 0;
+}
+
 .gameRouteActive {
     overflow: hidden;
 }
@@ -733,6 +790,35 @@
 .leaderboardRetryButton:focus-visible {
     outline: 2px solid rgba(148, 211, 255, 0.8);
     outline-offset: 2px;
+}
+
+.leaderboardSkeletonWrap {
+    margin-top: 18px;
+}
+
+.leaderboardSkeletonIntro {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.leaderboardSkeletonIntro .skeletonBlock--pill {
+    max-width: 220px;
+}
+
+.leaderboardSkeletonTable .leaderboardSkeletonRow td {
+    vertical-align: middle;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.leaderboardSkeletonTable .leaderboardSkeletonRow {
+    pointer-events: none;
+}
+
+.leaderboardSkeletonTable .leaderboardSkeletonPlayer {
+    width: 100%;
+    max-width: 140px;
 }
 
 .leaderboardTable .leaderboardNumeric {

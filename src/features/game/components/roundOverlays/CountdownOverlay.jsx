@@ -1,6 +1,6 @@
-import { AnimatePresence, motion } from "motion/react"
+﻿import { AnimatePresence, motion } from "motion/react"
 
-import { usePrefersReducedMotion } from "./useOverlayMotion.js"
+import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
 const MotionSection = motion.section

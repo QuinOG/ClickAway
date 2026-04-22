@@ -1,8 +1,16 @@
-import "dotenv/config"
+﻿import "dotenv/config"
 
 import bcrypt from "bcryptjs"
 import cors from "cors"
 import express from "express"
+import { fileURLToPath } from "url"
+import { dirname, join } from "path"
+import { existsSync } from "fs"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+import rateLimit from "express-rate-limit"
 
 import { extractBearerToken, signAuthToken, verifyAuthToken } from "./auth.js"
 import {
@@ -13,11 +21,15 @@ import {
   findUserByUsername,
   saveUserProgress,
   updateUserPassword,
-} from "./db.js"
+  initializeSchema,
+  default as pool,
+} from "./playerMysqlDatabase.js"
+import { calculateRewards, simulateRound } from "./roundRewards.js"
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
 import { sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 
 const app = express()
+app.set("trust proxy", 1)
 const playerStateStore = createPlayerStateStore()
 
 const PORT = Number(process.env.PORT || 4000)
@@ -35,6 +47,23 @@ app.use(cors({
   credentials: false,
 }))
 app.use(express.json())
+
+function sanitizeUsername(username = "") {
+  return String(username).trim()
+}
+
+function validateUsername(username) {
+  if (!username) return "Username is required."
+  if (username.length < 3) return "Username must be at least 3 characters."
+  if (username.length > 32) return "Username must be 32 characters or less."
+  return ""
+}
+
+function validatePassword(password = "") {
+  if (!password) return "Password is required."
+  if (password.length < 8) return "Password must be at least 8 characters."
+  return ""
+}
 
 function buildAuthPayload(user) {
   return {
@@ -57,19 +86,15 @@ async function createAuthResponse(user) {
 }
 
 function normalizeProgressPayload(body = {}) {
+  // Only allow safe client-controlled fields.
+  // coins, levelXp, rankMmr, and roundHistory are server-owned and never accepted from client.
   return {
-    coins: body.coins,
-    levelXp: body.levelXp,
-    rankMmr: body.rankMmr,
-    rankedState: body.rankedState,
-    ownedItemIds: body.ownedItemIds,
     equippedButtonSkinId: body.equippedButtonSkinId,
     equippedArenaThemeId: body.equippedArenaThemeId,
     equippedProfileImageId: body.equippedProfileImageId,
     activeLoadoutId: body.activeLoadoutId,
     savedLoadouts: body.savedLoadouts,
     selectedModeId: body.selectedModeId,
-    roundHistory: body.roundHistory,
     unlockedAchievementIds: body.unlockedAchievementIds,
     buildWalkthrough: body.buildWalkthrough,
   }
@@ -298,6 +323,73 @@ app.post("/api/shop/equip", requireAuth, async (request, response) => {
   }
 })
 
+app.post("/api/round/complete", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  const { modeId, events } = request.body ?? {}
+
+  const simulation = simulateRound(events, modeId)
+  if (!simulation.valid) {
+    response.status(400).json({ error: simulation.reason })
+    return
+  }
+
+  const { hits, misses, score, bestStreak } = simulation
+
+  try {
+    const { earnedCoins, earnedXp, rankDelta, progressionMode } = calculateRewards({
+      modeId,
+      hits,
+      misses,
+      score,
+      bestStreak,
+    })
+
+    const currentProgress = await findUserProgressByUserId(user.id)
+
+    const nextCoins = Math.min(MAX_COINS, Math.max(0, currentProgress.coins + earnedCoins))
+    const nextLevelXp = Math.min(MAX_XP, Math.max(0, currentProgress.levelXp + earnedXp))
+    const nextRankMmr = Math.min(MAX_MMR, Math.max(0, currentProgress.rankMmr + rankDelta))
+
+    const historyEntry = {
+      score,
+      hits,
+      misses,
+      bestStreak,
+      coinsEarned: earnedCoins,
+      xpEarned: earnedXp,
+      rankDelta,
+      modeId,
+      progressionMode,
+      playedAtIso: new Date().toISOString(),
+    }
+
+    const nextRoundHistory = [historyEntry, ...currentProgress.roundHistory].slice(0, 100)
+
+    const progress = await saveUserProgress({
+      userId: user.id,
+      coins: nextCoins,
+      levelXp: nextLevelXp,
+      rankMmr: nextRankMmr,
+      ownedItemIds: currentProgress.ownedItemIds,
+      equippedButtonSkinId: currentProgress.equippedButtonSkinId,
+      equippedArenaThemeId: currentProgress.equippedArenaThemeId,
+      equippedProfileImageId: currentProgress.equippedProfileImageId,
+      selectedModeId: modeId,
+      roundHistory: nextRoundHistory,
+      unlockedAchievementIds: currentProgress.unlockedAchievementIds,
+    })
+
+    response.json({ progress, earnedCoins, earnedXp, rankDelta })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
 app.put("/api/progress", requireAuth, async (request, response) => {
   const user = await findUserById(request.auth.userId)
   if (!user) {
@@ -307,10 +399,21 @@ app.put("/api/progress", requireAuth, async (request, response) => {
 
   try {
     const currentProgress = await findUserProgressByUserId(user.id)
-    const nextProgress = mergeProgressPayload(
-      currentProgress,
-      normalizeProgressPayload(request.body)
+    const incoming = normalizeProgressPayload(request.body)
+
+    // Whitelist achievement IDs against the catalog
+    if (Array.isArray(incoming.unlockedAchievementIds)) {
+      const [catalogRows] = await pool.query("SELECT id FROM achievements_catalog")
+      const validIds = new Set(catalogRows.map((r) => r.id))
+      incoming.unlockedAchievementIds = incoming.unlockedAchievementIds.filter(
+        (id) => validIds.has(id)
+      )
+    }
+
+    const nextProgress = clampProgressBounds(
+      mergeProgressPayload(currentProgress, incoming)
     )
+
     const progress = await saveUserProgress({
       userId: user.id,
       ...nextProgress,
@@ -322,10 +425,20 @@ app.put("/api/progress", requireAuth, async (request, response) => {
   }
 })
 
+const distPath = join(__dirname, "../dist")
+
+if (existsSync(distPath)) {
+  app.use(express.static(distPath))
+  app.get("/{*splat}", (_request, response) => {
+    response.sendFile(join(distPath, "index.html"))
+  })
+}
+
 async function startServer() {
+  await initializeSchema()
   await seedAdminAccount()
-  app.listen(PORT, () => {
-    console.log(`Auth server listening on http://localhost:${PORT}`)
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Auth server listening on http://0.0.0.0:${PORT}`)
   })
 }
 

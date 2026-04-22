@@ -1,4 +1,4 @@
-import { PowerupGlyph } from "../../buildcraft/buildcraftGlyphs.jsx"
+import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 
 const SEGMENT_COUNT = 5
 
@@ -38,7 +38,7 @@ function getPowerupState(powerup, charges) {
   }
 }
 
-export default function PowerupTray({ powerupSlots = [], streak = 0 }) {
+export default function PowerupTray({ powerupSlots = [], streak = 0, onUsePowerup }) {
   return (
     <div className="powerupTray" aria-label="Power hotbar">
       {powerupSlots.map((powerup) => {
@@ -54,6 +54,10 @@ export default function PowerupTray({ powerupSlots = [], streak = 0 }) {
           <div
             key={powerup.slotKey}
             className={`powerupItem ${charges > 0 ? "ready" : ""} ${powerupState.tone === "active" ? "active" : ""}`}
+            onClick={() => onUsePowerup?.(powerup.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && onUsePowerup?.(powerup.id)}
           >
             <div className="powerupTop">
               <div className="powerupHeading">

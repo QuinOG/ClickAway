@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+﻿import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
 import TierBadge from "../components/TierBadge.jsx"
-import { fetchLeaderboard } from "../services/api.js"
+import { fetchLeaderboard } from "../services/clickAwayHttpApiClient.js"
 import { formatPercent, normalizePercentValue } from "../utils/gameMath.js"
 import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
-import { isRankedModeEntry } from "../utils/modeUtils.js"
+import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import {
   PLACEMENT_MATCH_COUNT,
@@ -22,6 +22,7 @@ const SORTABLE_COLUMNS = [
 
 const DEFAULT_SORT = { key: "mmr", direction: "desc" }
 const VISIBLE_LEADERBOARD_LIMIT = 25
+const LEADERBOARD_SKELETON_ROW_COUNT = 8
 
 function formatNumericValue(value) {
   const normalizedValue = Number(value)
@@ -87,6 +88,58 @@ function normalizeLeaderboardRow(row = {}, rowIndex = 0) {
 async function requestLeaderboardRows(authToken) {
   const response = await fetchLeaderboard(authToken)
   return (Array.isArray(response?.rows) ? response.rows : []).map(normalizeLeaderboardRow)
+}
+
+function LeaderboardTableSkeleton() {
+  return (
+    <div
+      className="leaderboardSkeletonWrap"
+      aria-busy="true"
+      aria-live="polite"
+      aria-label="Loading leaderboard standings"
+    >
+      <div className="leaderboardSkeletonIntro">
+        <div className="skeletonBlock skeletonBlock--pill" aria-hidden="true" />
+      </div>
+      <table className="table helpTable leaderboardTable leaderboardSkeletonTable">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Player</th>
+            <th scope="col">Tier</th>
+            {SORTABLE_COLUMNS.map((column) => (
+              <th key={column.key} scope="col" className="leaderboardNumeric">
+                {column.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: LEADERBOARD_SKELETON_ROW_COUNT }, (_, rowIndex) => (
+            <tr
+              key={`leaderboard-skeleton-${rowIndex}`}
+              className="leaderboardTableRow leaderboardSkeletonRow"
+            >
+              <td>
+                <div className="skeletonBlock skeletonBlock--rank" aria-hidden="true" />
+              </td>
+              <td>
+                <div className="skeletonBlock skeletonBlock--md leaderboardSkeletonPlayer" aria-hidden="true" />
+              </td>
+              <td>
+                <div className="skeletonBlock skeletonBlock--tier" aria-hidden="true" />
+              </td>
+              {SORTABLE_COLUMNS.map((column) => (
+                <td key={column.key} className="leaderboardNumeric">
+                  <div className="skeletonBlock skeletonBlock--num" aria-hidden="true" />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 function SortableHeader({ label, columnKey, sortConfig, onSort }) {
@@ -399,12 +452,7 @@ export default function LeaderboardPage({
           rankedRounds={rankedRounds.length}
         />
 
-        {isLoading ? (
-          <div className="leaderboardStatusCard" role="status" aria-live="polite">
-            <p className="leaderboardStatusTitle">Loading leaderboard...</p>
-            <p className="muted">Fetching ranked standings from the server.</p>
-          </div>
-        ) : null}
+        {isLoading ? <LeaderboardTableSkeleton /> : null}
 
         {!isLoading && loadError ? (
           <div className="leaderboardStatusCard" role="alert">

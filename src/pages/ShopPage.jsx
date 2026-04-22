@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react"
+﻿import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { SHOP_CATEGORIES, SHOP_ITEMS_BY_ID } from "../constants/shopCatalog.js"
+import { celebrateShopEquip, celebrateShopPurchase } from "../features/shop/shopPurchaseEquipCelebration.js"
 import ShopCategoryTabs from "../features/shop/components/ShopCategoryTabs.jsx"
 import ShopHeroHeader from "../features/shop/components/ShopHeroHeader.jsx"
 import ShopItemCard from "../features/shop/components/ShopItemCard.jsx"
@@ -23,6 +24,7 @@ export default function ShopPage({
   equippedProfileImageId = "profile_default",
 }) {
   const [activeCategoryId, setActiveCategoryId] = useState(ALL_TAB_ID)
+  const [balancePulseKey, setBalancePulseKey] = useState(0)
 
   const totalItems = SHOP_ITEMS.length
   const categoryOwnedCounts = useMemo(
@@ -68,7 +70,18 @@ export default function ShopPage({
   async function handlePurchase(item) {
     const purchaseResult = await onPurchase?.(item)
     if (purchaseResult?.ok) {
-      toast.success(`${item.name} unlocked.`)
+      celebrateShopPurchase()
+      setBalancePulseKey((key) => key + 1)
+      toast.success(
+        (
+          <div className="shopSuccessToast">
+            <span className="shopSuccessToastEyebrow">New unlock</span>
+            <strong className="shopSuccessToastTitle">{item.name}</strong>
+            <span className="shopSuccessToastHint">Added to your collection</span>
+          </div>
+        ),
+        { duration: 3800 },
+      )
       return true
     }
 
@@ -79,7 +92,10 @@ export default function ShopPage({
   async function handleEquip(item) {
     const equipResult = await onEquip?.(item)
     if (equipResult?.ok) {
-      toast.success(`${item.name} equipped.`)
+      celebrateShopEquip()
+      toast.success(`Equipped — ${item.name}`, {
+        duration: 2600,
+      })
       return true
     }
 
@@ -99,6 +115,7 @@ export default function ShopPage({
           buttonSkin={equippedButtonSkin}
           arenaTheme={equippedArenaTheme}
           profileImage={equippedProfileImage}
+          balancePulseKey={balancePulseKey}
         />
 
         <ShopCategoryTabs
