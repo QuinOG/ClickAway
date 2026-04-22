@@ -17,14 +17,18 @@ import {
   getRankToneClassName,
 } from "../utils/rankUtils.js"
 
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
+
 function buildProfileStats(roundHistory = []) {
   const rows = Array.isArray(roundHistory) ? roundHistory : []
+  const now = Date.now()
 
   let totalHits = 0
   let totalMisses = 0
   let bestScore = 0
   let bestStreak = 0
   let rankedRounds = 0
+  let roundsThisWeek = 0
 
   rows.forEach((round) => {
     const hits = Number(round.hits) || 0
@@ -40,6 +44,13 @@ function buildProfileStats(roundHistory = []) {
     if (isRankedModeEntry(round)) {
       rankedRounds += 1
     }
+
+    if (round.playedAtIso) {
+      const playedAt = new Date(round.playedAtIso).getTime()
+      if (!Number.isNaN(playedAt) && now - playedAt <= ONE_WEEK_MS) {
+        roundsThisWeek += 1
+      }
+    }
   })
 
   return {
@@ -48,6 +59,7 @@ function buildProfileStats(roundHistory = []) {
     bestScore,
     bestStreak,
     overallAccuracyPercent: calculateAccuracyPercent(totalHits, totalMisses),
+    roundsThisWeek,
   }
 }
 
@@ -276,6 +288,18 @@ export default function ProfilePage({
   const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
 
+  const nextRankGoalStat = (() => {
+    if (rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank) return null
+    const mmrToNext = rankProgress.mmrToNextTier ?? 0
+    if (mmrToNext <= 0) return null
+    return {
+      label: "Next Rank",
+      value: `${formatNumber(mmrToNext)} RR`,
+      tooltip: `${formatNumber(mmrToNext)} RR needed to reach ${rankProgress.nextTierLabel}.`,
+      tone: "score",
+    }
+  })()
+
   const playerProgressStats = [
     {
       label: "Coins",
@@ -295,6 +319,19 @@ export default function ProfilePage({
       tooltip: `XP progress in the current level. ${formatNumber(xpToNextLevel)} XP remaining.`,
       tone: "level",
     },
+    {
+      label: "Total Rounds",
+      value: formatNumber(profileStats.totalRounds),
+      tooltip: "Total rounds played across all modes.",
+      tone: "neutral",
+    },
+    {
+      label: "This Week",
+      value: formatNumber(profileStats.roundsThisWeek),
+      tooltip: "Rounds played in the last 7 days.",
+      tone: "neutral",
+    },
+    ...(nextRankGoalStat ? [nextRankGoalStat] : []),
   ]
 
   const performanceStats = [

@@ -78,6 +78,7 @@ function normalizeLeaderboardRow(row = {}, rowIndex = 0) {
     bestScore: Math.max(0, Number(row.bestScore) || 0),
     bestStreak: Math.max(0, Number(row.bestStreak) || 0),
     accuracyPercent,
+    rankedRounds,
     rankProgress,
     rankLabel: rankProgress.tierLabel,
   }
@@ -221,6 +222,31 @@ function LeaderboardStandingPanel({
   )
 }
 
+function NearMeSection({ gatewayRows = [], mmrGap = 0 }) {
+  return (
+    <section className="leaderboardNearMeSection" aria-label="Your path to the top 25">
+      <div className="leaderboardNearMeHeader">
+        <p className="leaderboardSectionEyebrow">Closest to You</p>
+        <p className="leaderboardNearMeLead">
+          {mmrGap > 0
+            ? `${formatNumericValue(mmrGap)} more RR to enter the visible top ${VISIBLE_LEADERBOARD_LIMIT}`
+            : `You are at the edge of the top ${VISIBLE_LEADERBOARD_LIMIT}`}
+        </p>
+      </div>
+      <div className="leaderboardNearMeRows">
+        {gatewayRows.map((player) => (
+          <div key={`${player.userId}-near`} className="leaderboardNearMeRow">
+            <span className="leaderboardNearMeRank">#{formatNumericValue(player.rank)}</span>
+            <span className="leaderboardNearMeName">{player.username}</span>
+            <span className="leaderboardNearMeTier">{player.rankLabel}</span>
+            <span className="leaderboardNearMeMmr">{formatNumericValue(player.mmr)} RR</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default function LeaderboardPage({
   authToken = "",
   currentUserId = "",
@@ -322,6 +348,20 @@ export default function LeaderboardPage({
   const activeSortLabel = getSortLabel(sortConfig.key)
   const isDefaultLadderSort = sortConfig.key === DEFAULT_SORT.key && sortConfig.direction === DEFAULT_SORT.direction
 
+  const nearMeData = useMemo(() => {
+    if (currentVisiblePlayer) return null
+    if (!currentRankProgress || currentRankProgress.isUnranked || currentRankProgress.isPlacement) return null
+    if (leaderboardRows.length === 0) return null
+
+    const rowsByMmr = [...leaderboardRows].sort((a, b) => b.mmr - a.mmr)
+    const gatewayRows = rowsByMmr.slice(-3)
+    const lowestVisibleMmr = rowsByMmr[rowsByMmr.length - 1]?.mmr ?? 0
+    const userMmr = currentRankProgress.mmr ?? 0
+    const mmrGap = lowestVisibleMmr - userMmr
+
+    return { gatewayRows, mmrGap: Math.max(0, mmrGap), lowestVisibleMmr }
+  }, [currentVisiblePlayer, currentRankProgress, leaderboardRows])
+
   function handleSort(columnKey) {
     setSortConfig((currentSort) => {
       if (currentSort.key === columnKey) {
@@ -381,6 +421,13 @@ export default function LeaderboardPage({
             <p className="leaderboardStatusTitle">No ranked players yet.</p>
             <p className="muted">Finish your placement matches to start populating the ladder.</p>
           </div>
+        ) : null}
+
+        {nearMeData ? (
+          <NearMeSection
+            gatewayRows={nearMeData.gatewayRows}
+            mmrGap={nearMeData.mmrGap}
+          />
         ) : null}
 
         {!isLoading && !loadError && sortedRows.length > 0 ? (
@@ -446,6 +493,9 @@ export default function LeaderboardPage({
                               coins={player.coins}
                               level={player.level}
                               accuracyPercent={player.accuracyPercent}
+                              bestScore={player.bestScore}
+                              bestStreak={player.bestStreak}
+                              rankedRounds={player.rankedRounds}
                             />
                           </div>
                         </div>

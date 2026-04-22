@@ -94,6 +94,8 @@ export function useGameScreenController({
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
   arenaThemeClass = "theme-default",
+  achievementStats = {},
+  unlockedAchievementIds = [],
 }) {
   const arenaRef = useRef(null)
   const feedbackTimeoutIdsRef = useRef([])
@@ -156,6 +158,7 @@ export function useGameScreenController({
   const [bestReactionMs, setBestReactionMs] = useState(null)
   const [comboSurgeHitsRemaining, setComboSurgeHitsRemaining] = useState(0)
   const [guardActiveUntilMs, setGuardActiveUntilMs] = useState(0)
+  const [sessionStats, setSessionStats] = useState({ rounds: 0, bestScore: 0, netRR: 0 })
 
   const isPlaying = phase === ROUND_PHASE.PLAYING && !isRoundEnding
   const canChangeMode = phase === ROUND_PHASE.READY || phase === ROUND_PHASE.GAME_OVER
@@ -239,6 +242,14 @@ export function useGameScreenController({
     [allowsCoinRewards, hits, roundMode.coinMultiplier]
   )
   const atmosphereTier = useMemo(() => getStreakAtmosphereTier(streak), [streak])
+  const pbPaceStatus = useMemo(() => {
+    if (!isPlaying || !isTimedRound) return null
+    if (!playerBestScore || playerBestScore <= 0) return null
+    const elapsedSeconds = roundMode.durationSeconds - timeLeft
+    if (elapsedSeconds < 3) return null
+    const expectedPace = Math.round(playerBestScore * (elapsedSeconds / roundMode.durationSeconds))
+    return score >= expectedPace ? "ahead" : "behind"
+  }, [isPlaying, isTimedRound, playerBestScore, roundMode.durationSeconds, score, timeLeft])
   const isGuardActive = guardActiveUntilMs > 0
   const displayMode = phase === ROUND_PHASE.READY ? resolvedSelectedMode : roundMode
   const previewPowerupCharges = useMemo(
@@ -736,6 +747,12 @@ export function useGameScreenController({
       allowsRankProgression: roundMode.allowsRankProgression === true,
       loadoutSnapshot: roundStartLoadoutSnapshot,
     })
+
+    setSessionStats((prev) => ({
+      rounds: prev.rounds + 1,
+      bestScore: Math.max(prev.bestScore, score),
+      netRR: prev.netRR + (roundMode.allowsRankProgression === true ? projectedRankOutcome.appliedRankDelta : 0),
+    }))
   }, [
     avgReactionMs,
     bestReactionMs,
@@ -744,6 +761,7 @@ export function useGameScreenController({
     misses,
     onRoundComplete,
     phase,
+    projectedRankOutcome,
     roundMode.allowsCoinRewards,
     roundMode.allowsLevelProgression,
     roundMode.allowsRankProgression,
@@ -815,6 +833,8 @@ export function useGameScreenController({
       loadoutPresentation: phase === ROUND_PHASE.READY
         ? previewLoadoutPresentation
         : activeRoundLoadoutPresentation,
+      pbPaceStatus,
+      playerBestScore,
       onEndRound: endCurrentRound,
     },
     arenaProps: {
@@ -843,6 +863,7 @@ export function useGameScreenController({
       canChangeMode,
       activeLoadoutName: resolvedLoadout?.name ?? "Loadout",
       showArmoryWalkthroughBadge: buildWalkthrough?.status === "not_started",
+      sessionStats: sessionStats.rounds > 0 ? sessionStats : null,
     },
     countdownOverlayProps: {
       countdownValue,
@@ -871,8 +892,11 @@ export function useGameScreenController({
       bestReactionMs,
       loadoutSnapshot: roundStartLoadoutSnapshot,
       loadoutPresentation: activeRoundLoadoutPresentation,
+      onRematch: () => startRoundWithCountdown(roundMode.id, activeLoadoutId),
       onPlayAgain: returnToReadyOverlay,
       onChooseMode: returnToReadyOverlay,
+      achievementStats,
+      unlockedAchievementIds,
     },
   }
 }

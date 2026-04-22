@@ -50,8 +50,11 @@ export function GameOverFlow({
   bestReactionMs = null,
   loadoutSnapshot = null,
   loadoutPresentation = null,
+  onRematch,
   onPlayAgain,
   onChooseMode,
+  achievementStats = {},
+  unlockedAchievementIds = [],
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const flowVariants = useMemo(() => getFlowVariants(prefersReducedMotion), [prefersReducedMotion])
@@ -100,8 +103,11 @@ export function GameOverFlow({
     bestReactionMs,
     loadoutSnapshot,
     loadoutPresentation,
+    onRematch,
     onPlayAgain,
     onChooseMode,
+    achievementStats,
+    unlockedAchievementIds,
   }
 
   return (

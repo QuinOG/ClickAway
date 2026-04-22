@@ -145,6 +145,59 @@
     line-height: 1;
 }
 
+.historyTrendStrip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(162, 204, 248, 0.12);
+}
+
+.historyTrendLabel {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: rgba(136, 196, 255, 0.72);
+    white-space: nowrap;
+}
+
+.historyTrendStats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+}
+
+.historyTrendStat {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.historyTrendStatLabel {
+    font-size: 12px;
+    color: rgba(190, 215, 245, 0.6);
+}
+
+.historyTrendStatValue {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e6f0ff;
+    font-variant-numeric: tabular-nums;
+}
+
+.historyTrendStatValue.isTrendPositive {
+    color: #72deb6;
+}
+
+.historyTrendStatValue.isTrendNegative {
+    color: #ff8a93;
+}
+
 .historyTableWrap {
     overflow-x: visible;
     width: 100%;

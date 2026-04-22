@@ -15,6 +15,7 @@ import {
   updateUserPassword,
 } from "./db.js"
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
+import { sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 
 const app = express()
 const playerStateStore = createPlayerStateStore()
@@ -34,23 +35,6 @@ app.use(cors({
   credentials: false,
 }))
 app.use(express.json())
-
-function sanitizeUsername(username = "") {
-  return String(username).trim()
-}
-
-function validateUsername(username) {
-  if (!username) return "Username is required."
-  if (username.length < 3) return "Username must be at least 3 characters."
-  if (username.length > 32) return "Username must be 32 characters or less."
-  return ""
-}
-
-function validatePassword(password = "") {
-  if (!password) return "Password is required."
-  if (password.length < 8) return "Password must be at least 8 characters."
-  return ""
-}
 
 function buildAuthPayload(user) {
   return {

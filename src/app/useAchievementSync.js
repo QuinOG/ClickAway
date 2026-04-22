@@ -1,6 +1,13 @@
 import { useEffect } from "react"
+import toast from "react-hot-toast"
 
+import { ACHIEVEMENTS } from "../game/achievements/achievementsList.js"
 import { mergeUnlockedAchievementIds } from "./appStateHelpers.js"
+
+const ACHIEVEMENT_TITLE_BY_ID = ACHIEVEMENTS.reduce((map, achievement) => {
+  map[achievement.id] = achievement.title
+  return map
+}, {})
 
 export function useAchievementSync({
   unlockedAchievementIds,
@@ -17,6 +24,16 @@ export function useAchievementSync({
     if (mergedIds === unlockedAchievementIds) {
       return
     }
+
+    const currentIdSet = new Set(Array.isArray(unlockedAchievementIds) ? unlockedAchievementIds : [])
+    mergedIds.forEach((id) => {
+      if (!currentIdSet.has(id)) {
+        const achievementTitle = ACHIEVEMENT_TITLE_BY_ID[id]
+        if (achievementTitle) {
+          toast.success(`Achievement unlocked: ${achievementTitle}`, { duration: 4000 })
+        }
+      }
+    })
 
     setUnlockedAchievementIds(mergedIds)
     void persistProgress({

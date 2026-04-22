@@ -1,10 +1,19 @@
 import { AnimatePresence, motion } from "motion/react"
 import { Toaster } from "react-hot-toast"
-import { Outlet, useLocation } from "react-router-dom"
+import { useOutlet, useLocation } from "react-router-dom"
+import { useState } from "react"
 import Navbar from "./Navbar.jsx"
 import { useBodyClass } from "../hooks/useBodyClass.js"
 
 const MotionDiv = motion.div
+
+// Freezes the outlet at mount so the exiting MotionDiv doesn't re-render
+// with the new route's content while its exit animation is still playing.
+function FrozenOutlet() {
+  const outlet = useOutlet()
+  const [frozen] = useState(outlet)
+  return frozen
+}
 const GAME_ROUTE_PREFIX = "/game"
 const GAME_ROUTE_BODY_CLASS = "gameRouteActive"
 const ARMORY_ROUTE_PREFIX = "/armory"
@@ -55,7 +64,7 @@ export default function Layout({
         rankMmr={rankMmr}
       />
       <main className={`mainContent ${isGameRoute ? "gameMain" : ""} ${isArmoryRoute ? "armoryMain" : ""}`.trim()}>
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="wait">
           <MotionDiv
             key={location.pathname}
             style={isGameRoute ? gamePageStyle : undefined}
@@ -67,7 +76,7 @@ export default function Layout({
               ease: PAGE_EASE,
             }}
           >
-            <Outlet />
+            <FrozenOutlet />
           </MotionDiv>
         </AnimatePresence>
       </main>

@@ -129,6 +129,68 @@
     white-space: nowrap;
 }
 
+.leaderboardNearMeSection {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(162, 204, 248, 0.12);
+}
+
+.leaderboardNearMeHeader {
+    margin-bottom: 12px;
+}
+
+.leaderboardNearMeLead {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: rgba(190, 215, 245, 0.72);
+    line-height: 1.45;
+}
+
+.leaderboardNearMeRows {
+    display: grid;
+    gap: 6px;
+}
+
+.leaderboardNearMeRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 13px;
+}
+
+.leaderboardNearMeRank {
+    min-width: 36px;
+    font-weight: 800;
+    color: rgba(200, 220, 248, 0.6);
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboardNearMeName {
+    flex: 1;
+    font-weight: 700;
+    color: #ddeeff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leaderboardNearMeTier {
+    font-size: 12px;
+    color: rgba(180, 210, 248, 0.6);
+}
+
+.leaderboardNearMeMmr {
+    font-weight: 700;
+    color: rgba(200, 225, 255, 0.86);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 @media (max-width: 640px) {
     .historyEmptyState {
         padding: 20px 16px;

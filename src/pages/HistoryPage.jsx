@@ -234,6 +234,36 @@ export default function HistoryPage({ roundHistory = [] }) {
               </section>
             ) : null}
 
+            {historySnapshot.recentSampleSize >= 3 ? (
+              <section className="historyTrendStrip" aria-label="Recent performance trend">
+                <p className="historyTrendLabel">
+                  Last {historySnapshot.recentSampleSize} rounds
+                </p>
+                <div className="historyTrendStats">
+                  <span className="historyTrendStat">
+                    <span className="historyTrendStatLabel">Avg Score</span>
+                    <strong className="historyTrendStatValue">
+                      {formatNumber(historySnapshot.recentAverageScore)}
+                    </strong>
+                  </span>
+                  <span className="historyTrendStat">
+                    <span className="historyTrendStatLabel">Avg Accuracy</span>
+                    <strong className="historyTrendStatValue">
+                      {formatPercent(historySnapshot.recentAccuracyPercent)}
+                    </strong>
+                  </span>
+                  {historySnapshot.recentRankedSampleSize > 0 ? (
+                    <span className="historyTrendStat">
+                      <span className="historyTrendStatLabel">Net RR</span>
+                      <strong className={`historyTrendStatValue ${historySnapshot.recentRankDelta > 0 ? "isTrendPositive" : historySnapshot.recentRankDelta < 0 ? "isTrendNegative" : ""}`}>
+                        {historySnapshot.recentRankDelta > 0 ? "+" : ""}{historySnapshot.recentRankDelta} RR
+                      </strong>
+                    </span>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
+
             <section className="historyLogSection" aria-label="Full match log">
               <div className="historySectionHeader">
                 <h2 className="historySectionTitle">Full Log</h2>

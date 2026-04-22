@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
 import { getDifficultyById as getModeById } from "../../../../constants/difficultyConfig.js"
+import { evaluateAchievements } from "../../../../game/achievements/evaluateAchievements.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./useOverlayMotion.js"
 
 const MotionDiv = motion.div
@@ -98,6 +99,9 @@ export function GameOverOverlay({
   bestReactionMs = null,
   loadoutSnapshot = null,
   loadoutPresentation = null,
+  achievementStats = {},
+  unlockedAchievementIds = [],
+  onRematch,
   onPlayAgain,
   onChooseMode,
 }) {
@@ -123,6 +127,16 @@ export function GameOverOverlay({
   )
 
   const tone = getGameOverTone({ hits, misses, accuracy, bestStreak })
+
+  const nearestAchievement = useMemo(() => {
+    if (!achievementStats || Object.keys(achievementStats).length === 0) return null
+    const evaluated = evaluateAchievements(achievementStats, {
+      persistedUnlockedIds: unlockedAchievementIds,
+    })
+    return evaluated
+      .filter((a) => !a.isUnlocked && a.type === "metric" && a.isProgressAvailable && a.percent > 0)
+      .sort((a, b) => b.percent - a.percent)[0] ?? null
+  }, [achievementStats, unlockedAchievementIds])
 
   // Confetti shower on new personal best — fires once after the score counts up.
   useEffect(() => {
@@ -234,6 +248,14 @@ export function GameOverOverlay({
         {isPracticeMode ? (
           <p className="gameOverPracticeNote">Rewards are not earned in Practice mode.</p>
         ) : null}
+
+        {nearestAchievement ? (
+          <div className="gameOverAchievementHint" aria-label="Nearest achievement">
+            <span className="gameOverAchievementHintLabel">Next up</span>
+            <span className="gameOverAchievementHintName">{nearestAchievement.title}</span>
+            <span className="gameOverAchievementHintProgress">{nearestAchievement.progressText}</span>
+          </div>
+        ) : null}
       </div>
 
       <MotionDiv
@@ -242,18 +264,17 @@ export function GameOverOverlay({
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 28, delay: 0.38 }}
       >
-        <button className="primaryButton primaryButton-lg" onClick={onPlayAgain}>
+        <button className="primaryButton primaryButton-lg" onClick={onRematch ?? onPlayAgain}>
           Play Again
         </button>
-        {isPracticeMode ? (
-          <button className="secondaryButton" type="button" onClick={onChooseMode}>
-            Back to Modes
-          </button>
-        ) : (
+        <button className="secondaryButton" type="button" onClick={onPlayAgain}>
+          Choose Mode
+        </button>
+        {!isPracticeMode ? (
           <Link className="secondaryButton" to="/history">
             View History
           </Link>
-        )}
+        ) : null}
       </MotionDiv>
     </MotionSection>
   )

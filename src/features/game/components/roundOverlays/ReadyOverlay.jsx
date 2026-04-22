@@ -109,6 +109,11 @@ function ModePreviewContent({ mode }) {
   )
 }
 
+function formatSessionRR(netRR = 0) {
+  if (netRR === 0) return "Even"
+  return `${netRR > 0 ? "+" : ""}${netRR} RR`
+}
+
 export function ReadyOverlay({
   onStart,
   modes = [],
@@ -117,6 +122,7 @@ export function ReadyOverlay({
   canChangeMode = true,
   activeLoadoutName = "Loadout",
   showArmoryWalkthroughBadge = false,
+  sessionStats = null,
   onClose,
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -291,6 +297,31 @@ export function ReadyOverlay({
             <span aria-hidden="true">&#8250;</span>
           </button>
         </MotionDiv>
+
+        {sessionStats ? (
+          <MotionDiv
+            className="readySessionStrip"
+            variants={prefersReducedMotion ? undefined : readySectionVariants}
+            aria-label="Session summary"
+          >
+            <span className="readySessionLabel">This session</span>
+            <span className="readySessionStat">
+              {sessionStats.rounds} {sessionStats.rounds === 1 ? "round" : "rounds"}
+            </span>
+            <span className="readySessionDivider" aria-hidden="true" />
+            <span className="readySessionStat">
+              Best: {Number(sessionStats.bestScore).toLocaleString()}
+            </span>
+            {sessionStats.netRR !== 0 ? (
+              <>
+                <span className="readySessionDivider" aria-hidden="true" />
+                <span className={`readySessionStat ${sessionStats.netRR > 0 ? "isPositive" : "isNegative"}`}>
+                  {formatSessionRR(sessionStats.netRR)}
+                </span>
+              </>
+            ) : null}
+          </MotionDiv>
+        ) : null}
 
         <MotionDiv
           className="overlayActions readyActions"

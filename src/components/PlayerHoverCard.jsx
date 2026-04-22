@@ -63,6 +63,9 @@ export default function PlayerHoverCard({
   coins = 0,
   level = 1,
   accuracyPercent = 0,
+  bestScore = null,
+  bestStreak = null,
+  rankedRounds = null,
 }) {
   const formattedCoins = Number.isFinite(coins) ? coins.toLocaleString() : "0"
   const normalizedLevel = Number.isFinite(level) ? Math.max(1, level) : 1
@@ -74,9 +77,26 @@ export default function PlayerHoverCard({
       <section className="profileHoverStats" aria-label="Player quick stats">
         <table className="profileHoverStatsTable">
           <tbody>
-            <HoverStatRow label="Coin Vault" value={formattedCoins} tone="coins" />
             <HoverStatRow label="XP Level" value={`Lv ${normalizedLevel}`} tone="level" />
             <HoverStatRow label="Accuracy" value={formattedAccuracy} tone="accuracy" />
+            {bestScore !== null ? (
+              <HoverStatRow
+                label="Best Score"
+                value={Number.isFinite(bestScore) ? Math.max(0, bestScore).toLocaleString() : "0"}
+              />
+            ) : null}
+            {bestStreak !== null ? (
+              <HoverStatRow
+                label="Best Streak"
+                value={Number.isFinite(bestStreak) ? Math.max(0, bestStreak).toLocaleString() : "0"}
+              />
+            ) : null}
+            {rankedRounds !== null ? (
+              <HoverStatRow
+                label="Ranked Rounds"
+                value={Number.isFinite(rankedRounds) ? Math.max(0, rankedRounds).toLocaleString() : "0"}
+              />
+            ) : null}
           </tbody>
         </table>
       </section>

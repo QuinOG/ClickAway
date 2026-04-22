@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { MotionConfig } from "motion/react"
 
@@ -175,16 +176,16 @@ export default function App() {
         if (activeAuthTokenRef.current !== authToken) {
           return null
         }
-        applyProgress(response.progress)
         return response.progress
       })
       .catch((error) => {
         console.error("Unable to sync player progress:", error)
+        toast.error("Could not save progress. Check your connection and try again.")
         return null
       })
 
     return persistQueueRef.current
-  }, [applyProgress, authToken])
+  }, [authToken])
 
   const waitForPendingProgress = useCallback(
     () => persistQueueRef.current.catch(() => null),
@@ -270,7 +271,6 @@ export default function App() {
     equippedArenaThemeId,
     equippedProfileImageId,
     applyProgress,
-    applyAuthenticatedSession,
     waitForPendingProgress,
     syncProgressSnapshot,
   })
@@ -361,6 +361,8 @@ export default function App() {
                   equippedButtonSkin?.imageScale
                 }
                 arenaThemeClass={equippedArenaTheme?.effectClass}
+                achievementStats={achievementStats}
+                unlockedAchievementIds={unlockedAchievementIds}
               />
             </ProtectedRoute>
           }

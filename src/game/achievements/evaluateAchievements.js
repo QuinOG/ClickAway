@@ -55,10 +55,18 @@ export function buildAchievementStats({
   let bestStreak = 0
   let totalCoinsEarned = 0
   let hasCoinsData = false
+  let cleanRounds = 0
+  let bestSingleRoundAccuracy = 0
+  let bestRankedStreak = 0
+  let bestSingleScore = 0
 
   rounds.forEach((round) => {
     const coinsEarned = toNonNegativeNumber(round?.coinsEarned)
     const roundBestStreak = toNonNegativeNumber(round?.bestStreak) ?? 0
+    const hits = toNonNegativeNumber(round?.hits) ?? 0
+    const misses = toNonNegativeNumber(round?.misses) ?? 0
+    const score = toNonNegativeNumber(round?.score) ?? 0
+    const attempts = hits + misses
 
     if (coinsEarned !== null) {
       hasCoinsData = true
@@ -66,9 +74,33 @@ export function buildAchievementStats({
     }
 
     bestStreak = Math.max(bestStreak, roundBestStreak)
+    bestSingleScore = Math.max(bestSingleScore, score)
+
+    if (misses === 0 && hits >= 5) {
+      cleanRounds += 1
+    }
+
+    if (attempts >= 10) {
+      const accuracy = Math.round((hits / attempts) * 100)
+      bestSingleRoundAccuracy = Math.max(bestSingleRoundAccuracy, accuracy)
+    }
 
     if (isRankedModeEntry(round)) {
       rankedRounds += 1
+      bestRankedStreak = Math.max(bestRankedStreak, roundBestStreak)
+    }
+  })
+
+  // Consecutive ranked wins — scan ranked rounds oldest-first
+  let maxConsecutiveRankedWins = 0
+  let currentStreak = 0
+  const rankedRoundsOldestFirst = rounds.filter((round) => isRankedModeEntry(round)).reverse()
+  rankedRoundsOldestFirst.forEach((round) => {
+    if (Number(round?.rankDelta) > 0) {
+      currentStreak += 1
+      maxConsecutiveRankedWins = Math.max(maxConsecutiveRankedWins, currentStreak)
+    } else {
+      currentStreak = 0
     }
   })
 
@@ -81,6 +113,11 @@ export function buildAchievementStats({
     rankedRounds,
     bestStreak,
     totalCoinsEarned: hasCoinsData ? totalCoinsEarned : null,
+    cleanRounds,
+    bestSingleRoundAccuracy,
+    bestRankedStreak,
+    bestSingleScore,
+    maxConsecutiveRankedWins,
   }
 }
 

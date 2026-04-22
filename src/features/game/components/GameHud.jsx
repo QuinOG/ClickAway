@@ -12,6 +12,8 @@ export default function GameHud({
   comboActive = false,
   bestStreak,
   isPlaying = false,
+  pbPaceStatus = null,
+  playerBestScore = 0,
   onEndRound,
 }) {
   const timerDisplay = isTimedRound ? `${timeLeft}s` : "No Limit"
@@ -31,16 +33,24 @@ export default function GameHud({
           <div className={scoreClassName} aria-live="polite">
             {score}
           </div>
-          <span className="hudTopMeta">
-            Mode: {modeLabel || "Unknown"} / Rank: {rankLabel || "Unranked"}
-          </span>
+          {pbPaceStatus ? (
+            <span className={`hudPbPace hudPbPace-${pbPaceStatus}`} aria-live="polite">
+              {pbPaceStatus === "ahead" ? "▲ PB pace" : "▼ Behind PB"}
+            </span>
+          ) : (
+            <span className="hudTopMeta">
+              Mode: {modeLabel || "Unknown"} / Rank: {rankLabel || "Unranked"}
+            </span>
+          )}
         </div>
 
         <div className="hudTopBlock">
           <span className="hudTopLabel">Time Remaining</span>
           <div className={`timerText${timerStateClassName}`}>{timerDisplay}</div>
           <span className="hudTopMeta">
-            Build: {loadoutName || "Loadout"}
+            {pbPaceStatus && playerBestScore > 0
+              ? `Best: ${playerBestScore.toLocaleString()} \u00b7 Build: ${loadoutName || "Loadout"}`
+              : `Build: ${loadoutName || "Loadout"}`}
           </span>
         </div>
       </div>

@@ -56,7 +56,6 @@ export function useShopActions({
   equippedArenaThemeId,
   equippedProfileImageId,
   applyProgress,
-  applyAuthenticatedSession,
   waitForPendingProgress,
   syncProgressSnapshot,
 }) {
@@ -79,13 +78,18 @@ export function useShopActions({
     try {
       await waitForPendingProgress?.()
       const session = await purchaseShopItem(authToken, item.id)
-      const nextProgress = hasFullProgressPayload(session)
-        ? applyAuthenticatedSession(session)
-        : applyProgress({
-            ...syncProgressSnapshot?.(),
-            coins: Math.max(0, coins - (Number(item.cost) || 0)),
-            ownedItemIds: Array.from(new Set([...ownedItemIds, item.id])),
-          })
+      const nextProgress = applyProgress({
+        ...syncProgressSnapshot?.(),
+        ...(hasFullProgressPayload(session)
+          ? {
+              coins: session.progress.coins,
+              ownedItemIds: session.progress.ownedItemIds,
+            }
+          : {
+              coins: Math.max(0, coins - (Number(item.cost) || 0)),
+              ownedItemIds: Array.from(new Set([...ownedItemIds, item.id])),
+            }),
+      })
       syncProgressSnapshot?.(nextProgress)
       return { ok: true }
     } catch (error) {
@@ -96,7 +100,6 @@ export function useShopActions({
     }
   }, [
     applyProgress,
-    applyAuthenticatedSession,
     authToken,
     coins,
     ownedItemIds,
@@ -130,16 +133,22 @@ export function useShopActions({
     try {
       await waitForPendingProgress?.()
       const session = await equipShopItem(authToken, item.id)
-      const nextProgress = hasFullProgressPayload(session)
-        ? applyAuthenticatedSession(session)
-        : applyProgress({
-            ...syncProgressSnapshot?.(),
-            ...buildEquipProgressPatch(item, {
+      const nextProgress = applyProgress({
+        ...syncProgressSnapshot?.(),
+        ...(hasFullProgressPayload(session)
+          ? {
+              coins: session.progress.coins,
+              ownedItemIds: session.progress.ownedItemIds,
+              equippedButtonSkinId: session.progress.equippedButtonSkinId,
+              equippedArenaThemeId: session.progress.equippedArenaThemeId,
+              equippedProfileImageId: session.progress.equippedProfileImageId,
+            }
+          : buildEquipProgressPatch(item, {
               equippedButtonSkinId,
               equippedArenaThemeId,
               equippedProfileImageId,
-            }),
-          })
+            })),
+      })
       syncProgressSnapshot?.(nextProgress)
       return { ok: true }
     } catch (error) {
@@ -150,7 +159,6 @@ export function useShopActions({
     }
   }, [
     applyProgress,
-    applyAuthenticatedSession,
     authToken,
     equippedArenaThemeId,
     equippedButtonSkinId,

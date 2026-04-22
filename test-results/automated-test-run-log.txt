@@ -1,0 +1,6 @@
+﻿The following cases are included in this run:
+- F-A01, F-A03, F-A04 (authValidation.test.js)
+- F-G05, F-G06, F-G07, F-S02 (modeAndShopUsecase.test.js)
+Plus existing unit tests: buildWalkthrough, buildcraft, rankUtils.
+
+run npm test
