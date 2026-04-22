@@ -128,6 +128,8 @@ export function useGameScreenController({
   const [bestStreak, setBestStreak] = useState(0)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
+  const roundStartTimeRef = useRef(0)
+  const roundEventsRef = useRef([])
 
   const [roundMode, setRoundMode] = useState(resolvedSelectedMode)
   const [buttonSize, setButtonSize] = useState(resolvedSelectedMode.initialButtonSize)
@@ -440,6 +442,11 @@ export function useGameScreenController({
     setRoundMode(nextRoundMode)
     resetRoundState(nextRoundMode)
     hasAwardedRoundRef.current = false
+    roundEventsRef.current = []
+    roundStartTimeRef.current = 0
+    reactionTotalMsRef.current = 0
+    reactionSampleCountRef.current = 0
+    buttonSpawnedAtRef.current = 0
     setRoundStartBestScore(playerBestScore)
     setRoundStartLevel(playerLevel)
     setRoundStartXpIntoLevel(playerXpIntoLevel)
@@ -572,6 +579,24 @@ export function useGameScreenController({
     }))
   }, [applyPowerup, isPlaying, powerupCharges, roundMode.equippedPowerups])
 
+  const handleUsePowerup = useCallback((powerupId) => {
+    if (!isPlaying) return
+
+    const powerup = roundMode.equippedPowerups.find((item) => item.id === powerupId)
+    if (!powerup) return
+
+    const availableCharges = powerupCharges[powerup.id] ?? 0
+    if (availableCharges <= 0) return
+
+    const wasApplied = applyPowerup(powerup)
+    if (!wasApplied) return
+
+    setPowerupCharges((currentCharges) => ({
+      ...currentCharges,
+      [powerup.id]: Math.max(0, (currentCharges[powerup.id] ?? 0) - 1),
+    }))
+  }, [applyPowerup, isPlaying, powerupCharges, roundMode.equippedPowerups])
+
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()
     if (!isPlaying) return
@@ -592,6 +617,7 @@ export function useGameScreenController({
       ? Math.max(0, Math.round(performance.now() - buttonSpawnedAtRef.current))
       : null
 
+    roundEventsRef.current.push({ type: "hit", t: Date.now() - roundStartTimeRef.current })
     buttonSpawnedAtRef.current = 0
 
     if (hitReactionMs !== null) {
@@ -640,6 +666,7 @@ export function useGameScreenController({
   const handleArenaClick = useCallback((event) => {
     if (!isPlaying) return
 
+    roundEventsRef.current.push({ type: "miss", t: Date.now() - roundStartTimeRef.current })
     setMisses((currentMisses) => currentMisses + 1)
 
     if (guardActiveUntilMs > performance.now()) {
@@ -672,6 +699,7 @@ export function useGameScreenController({
       setCountdownValue((currentCountdown) => {
         if (currentCountdown <= 1) {
           clearInterval(countdownInterval)
+          roundStartTimeRef.current = Date.now()
           setPhase(ROUND_PHASE.PLAYING)
           return 0
         }
@@ -734,6 +762,7 @@ export function useGameScreenController({
       allowsCoinRewards: roundMode.allowsCoinRewards !== false,
       allowsLevelProgression: roundMode.allowsLevelProgression !== false,
       allowsRankProgression: roundMode.allowsRankProgression === true,
+      events: roundEventsRef.current,
       loadoutSnapshot: roundStartLoadoutSnapshot,
     })
   }, [
@@ -835,6 +864,7 @@ export function useGameScreenController({
     powerupTrayProps: {
       powerupSlots,
       streak,
+      onUsePowerup: handleUsePowerup,
     },
     readyOverlayProps: {
       onStart: startRoundWithCountdown,

@@ -68,13 +68,9 @@ export default function App() {
 
     // progression
     coins,
-    setCoins,
     levelXp,
-    setLevelXp,
     rankMmr,
-    setRankMmr,
     rankedState,
-    setRankedState,
 
     // inventory + cosmetics
     ownedItemIds,
@@ -86,7 +82,6 @@ export default function App() {
     selectedModeId,
     setSelectedModeId,
     roundHistory,
-    setRoundHistory,
 
     // achievements
     unlockedAchievementIds,
@@ -299,17 +294,8 @@ export default function App() {
   })
 
   const { handleRoundComplete } = usePlayerProgressionUpdates({
-    coins,
-    levelXp,
-    rankMmr,
-    rankedState,
-    roundHistory,
-    setCoins,
-    setLevelXp,
-    setRankMmr,
-    setRankedState,
-    setRoundHistory,
-    persistProgress,
+    authToken,
+    applyProgress,
   })
 
   const { handlePurchase, handleEquip } = useShopActions({

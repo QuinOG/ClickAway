@@ -198,6 +198,15 @@ The leaderboard page is backed by `GET /api/leaderboard` and renders live ranked
 
 The help page explains controls, formulas, modes, ranking, progression, and other gameplay rules. Most of its content comes from structured data in `src/features/help/helpPageStructuredContent.js`.
 
+## Backend Auth Setup
+1. Copy `.env.example` to `.env`
+2. Set `JWT_SECRET` and `ADMIN_PASSWORD`
+3. Start backend:
+- `npm run server`
+
+You can run frontend + backend together with:
+- `npm run dev:all`
+
 ## Project Structure
 
 ```text

@@ -1,0 +1,23 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="14" y1="12" x2="81" y2="84" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9CFFD6"/>
+      <stop offset="1" stop-color="#32B98D"/>
+    </linearGradient>
+    <linearGradient id="button" x1="33" y1="29" x2="63" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FFFD"/>
+      <stop offset="1" stop-color="#D5FFF0"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="76" height="76" rx="22" fill="url(#bg)"/>
+  <circle cx="48" cy="48" r="18" fill="url(#button)"/>
+  <circle cx="48" cy="48" r="14.5" stroke="#157055" stroke-width="3.5"/>
+  <path d="M48 20V31" stroke="#157055" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M48 76V65" stroke="#157055" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M20 48H31" stroke="#157055" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M76 48H65" stroke="#157055" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M48 18L42 24H54L48 18Z" fill="#157055"/>
+  <path d="M48 78L42 72H54L48 78Z" fill="#157055"/>
+  <path d="M18 48L24 42V54L18 48Z" fill="#157055"/>
+  <path d="M78 48L72 42V54L78 48Z" fill="#157055"/>
+</svg>
