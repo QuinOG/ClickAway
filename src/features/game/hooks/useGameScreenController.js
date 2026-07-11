@@ -9,8 +9,14 @@ import { buildLoadoutPresentation } from "../../../constants/buildcraftPresentat
 import {
   DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID,
   DIFFICULTIES as MODES,
+  DIFFICULTY_IDS,
   getDifficultyById as getModeById,
 } from "../../../constants/gameModesConfig.js"
+import {
+  buildDrillMode,
+  getTrainingDrillById,
+  TRAINING_DRILLS,
+} from "../../../constants/drillConfig.js"
 import {
   FEEDBACK_LIFETIME_MS,
   FEEDBACK_OFFSET,
@@ -31,7 +37,12 @@ import {
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
 import { createRoundSimulation } from "../../../game/engine/roundEngine.js"
+import {
+  FREEZE_MOVEMENT_DURATION_MS,
+  MAGNET_CENTER_FREEZE_MS,
+} from "../../../game/engine/roundGeometry.js"
 import { createRandomSeed, createSeededRng } from "../../../game/engine/seededRng.js"
+import { computeGhostScoreAtElapsed } from "../../../utils/replayUtils.js"
 import { requestRoundStart } from "../../../services/clickAwayHttpApiClient.js"
 import { calculateRoundXp } from "../../../utils/progressionUtils.js"
 import {
@@ -39,10 +50,27 @@ import {
   calculatePlacementMatchScore,
   calculateRoundRankDelta,
 } from "../../../utils/rankUtils.js"
+import { shouldShowArmoryOnboardingBadge } from "../../../constants/buildWalkthrough.js"
+import {
+  getGameOnboardingStep,
+  getNextOnboardingStatusAfterRound,
+  isGameOnboardingStatus,
+} from "../../../constants/gameOnboarding.js"
 import { calculateRoundCoins } from "../../../utils/roundRewards.js"
+import {
+  evaluateDrillMetric,
+} from "../../../utils/drillStatsUtils.js"
+import { getWarmupSuggestion } from "../../../utils/trainingRecommendations.js"
 
-const MAGNET_CENTER_FREEZE_MS = 400
-const FREEZE_MOVEMENT_DURATION_MS = 1000
+function getArenaClickCoordinates(event, arenaElement) {
+  if (!arenaElement) return null
+
+  const arenaRect = arenaElement.getBoundingClientRect()
+  return {
+    x: Math.round(event.clientX - arenaRect.left),
+    y: Math.round(event.clientY - arenaRect.top),
+  }
+}
 
 function buildGameScreenClassName(atmosphereTier, isShakeActive) {
   const shakeClassName = isShakeActive ? "isShaking" : ""
@@ -85,17 +113,22 @@ export function useGameScreenController({
   playerRankedState = {},
   playerHasRankedHistory = false,
   playerBestScore = 0,
+  lifetimeStats = null,
   savedLoadouts = [],
   activeLoadoutId = "",
   activeLoadout = null,
   onLoadoutStateChange,
   buildWalkthrough = null,
+  onBuildWalkthroughChange,
   buttonSkinClass = "skin-default",
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
   arenaThemeClass = "theme-default",
   achievementStats = {},
   unlockedAchievementIds = [],
+  ghostReplay = null,
+  challengeId = null,
+  autoStartGhostDuel = false,
 }) {
   const arenaRef = useRef(null)
   const feedbackTimeoutIdsRef = useRef([])
@@ -114,7 +147,20 @@ export function useGameScreenController({
   const roundNonceRef = useRef(0)
   const roundSeedRef = useRef(0)
   const roundTokenRef = useRef(null)
+  const arenaDimensionsRef = useRef(null)
   const rngRef = useRef(Math.random)
+  const ghostReplayRef = useRef(ghostReplay)
+  const challengeIdRef = useRef(challengeId)
+
+  useEffect(() => {
+    ghostReplayRef.current = ghostReplay
+  }, [ghostReplay])
+
+  useEffect(() => {
+    challengeIdRef.current = challengeId
+  }, [challengeId])
+
+  const [ghostScore, setGhostScore] = useState(0)
 
   const resolvedLoadout = useMemo(
     () => getResolvedLoadout(savedLoadouts, activeLoadoutId, activeLoadout),
@@ -170,9 +216,15 @@ export function useGameScreenController({
   const [comboSurgeHitsRemaining, setComboSurgeHitsRemaining] = useState(0)
   const [guardActiveUntilMs, setGuardActiveUntilMs] = useState(0)
   const [sessionStats, setSessionStats] = useState({ rounds: 0, bestScore: 0, netRR: 0 })
+  const [selectedDrillId, setSelectedDrillId] = useState(null)
+  const activeDrillIdRef = useRef(null)
 
   const isPlaying = phase === ROUND_PHASE.PLAYING && !isRoundEnding
-  const canChangeMode = phase === ROUND_PHASE.READY || phase === ROUND_PHASE.GAME_OVER
+  const buildWalkthroughStatus = buildWalkthrough?.status ?? null
+  const gameOnboardingStep = getGameOnboardingStep(buildWalkthroughStatus)
+  const isGameOnboardingActive = isGameOnboardingStatus(buildWalkthroughStatus)
+  const canChangeMode = (phase === ROUND_PHASE.READY || phase === ROUND_PHASE.GAME_OVER)
+    && !isGameOnboardingActive
   const isTimedRound = roundMode.isTimedRound !== false
   const allowsCoinRewards = roundMode.allowsCoinRewards !== false
   const allowsLevelProgression = roundMode.allowsLevelProgression !== false
@@ -347,14 +399,14 @@ export function useGameScreenController({
 
   const queueButtonReposition = useCallback(
     (nextButtonSize) => {
-      if (performance.now() < freezeMovementUntilRef.current) return
+      if (getElapsedMs() < freezeMovementUntilRef.current) return
 
       setTimeout(() => {
-        if (performance.now() < freezeMovementUntilRef.current) return
+        if (getElapsedMs() < freezeMovementUntilRef.current) return
         randomizeButtonPosition(nextButtonSize)
       }, 0)
     },
-    [randomizeButtonPosition]
+    [getElapsedMs, randomizeButtonPosition]
   )
 
   const addClickFeedback = useCallback((clientX, clientY, value, type) => {
@@ -440,14 +492,19 @@ export function useGameScreenController({
 
   const startRoundWithCountdown = useCallback((
     nextModeId = selectedModeId,
-    nextLoadoutId = activeLoadoutId
+    nextLoadoutId = activeLoadoutId,
+    nextDrillId = selectedDrillId
   ) => {
     const nextResolvedLoadout = getResolvedLoadout(
       savedLoadouts,
       nextLoadoutId,
       nextLoadoutId === activeLoadoutId ? activeLoadout : null
     )
-    const nextRoundMode = buildRoundRules(getModeById(nextModeId), nextResolvedLoadout)
+    const baseMode = nextModeId === DIFFICULTY_IDS.EASY && nextDrillId
+      ? buildDrillMode(nextDrillId, getModeById(nextModeId))
+      : getModeById(nextModeId)
+    const nextRoundMode = buildRoundRules(baseMode, nextResolvedLoadout)
+    activeDrillIdRef.current = baseMode.drillId ?? null
 
     if (nextModeId !== selectedModeId) {
       onModeChange?.(nextModeId)
@@ -471,14 +528,57 @@ export function useGameScreenController({
 
     simulationRef.current = createRoundSimulation(nextRoundMode)
 
-    // Seed geometry locally right away, then try to upgrade to a server-issued
-    // seed + round token during the countdown. If the request loses the race
-    // (or fails), the round still plays with the local seed and no token.
     roundNonceRef.current += 1
     const startedRoundNonce = roundNonceRef.current
     roundTokenRef.current = null
-    roundSeedRef.current = createRandomSeed()
-    rngRef.current = createSeededRng(roundSeedRef.current)
+    arenaDimensionsRef.current = null
+    const activeGhostReplay = ghostReplayRef.current
+    const requiresRoundToken = nextRoundMode.allowsRankProgression === true
+      && !activeGhostReplay?.seed
+
+    const beginCountdown = () => {
+      setRoundStartBestScore(playerBestScore)
+      setRoundStartLevel(playerLevel)
+      setRoundStartXpIntoLevel(playerXpIntoLevel)
+      setRoundStartXpToNextLevel(playerXpToNextLevel)
+      setRoundStartRankMmr(playerRankMmr)
+      setRoundStartRankedState(playerRankedState)
+      setRoundStartHasRankedHistory(playerHasRankedHistory)
+      setRoundStartLoadoutSnapshot(buildLoadoutSnapshot(nextResolvedLoadout))
+      setCountdownValue(READY_COUNTDOWN_START)
+      setPhase(ROUND_PHASE.COUNTDOWN)
+    }
+
+    const applyRoundSeed = (seed, roundToken = null) => {
+      roundSeedRef.current = Number(seed) >>> 0
+      rngRef.current = createSeededRng(roundSeedRef.current)
+      roundTokenRef.current = roundToken
+    }
+
+    setGhostScore(0)
+
+    if (activeGhostReplay?.seed) {
+      applyRoundSeed(activeGhostReplay.seed)
+      beginCountdown()
+      return
+    }
+
+    if (requiresRoundToken) {
+      requestRoundStart(nextModeId)
+        .then(({ roundToken, seed }) => {
+          if (roundNonceRef.current !== startedRoundNonce || !roundToken) return
+          applyRoundSeed(seed, roundToken)
+          beginCountdown()
+        })
+        .catch(() => {
+          // Ranked rounds cannot start without a server-issued token.
+        })
+      return
+    }
+
+    // Non-ranked modes seed locally and upgrade to a server token when available.
+    applyRoundSeed(createRandomSeed())
+    beginCountdown()
 
     requestRoundStart(nextModeId)
       .then(({ roundToken, seed }) => {
@@ -486,24 +586,11 @@ export function useGameScreenController({
         const hasRoundStarted = roundStartTimeRef.current > 0
         if (!isSameRound || hasRoundStarted || !roundToken) return
 
-        roundTokenRef.current = roundToken
-        roundSeedRef.current = Number(seed) >>> 0
-        rngRef.current = createSeededRng(roundSeedRef.current)
+        applyRoundSeed(seed, roundToken)
       })
       .catch(() => {
-        // Round tokens are best-effort for now; unauthenticated or offline
-        // rounds simply submit without one.
+        // Non-ranked rounds can still submit without a token.
       })
-    setRoundStartBestScore(playerBestScore)
-    setRoundStartLevel(playerLevel)
-    setRoundStartXpIntoLevel(playerXpIntoLevel)
-    setRoundStartXpToNextLevel(playerXpToNextLevel)
-    setRoundStartRankMmr(playerRankMmr)
-    setRoundStartRankedState(playerRankedState)
-    setRoundStartHasRankedHistory(playerHasRankedHistory)
-    setRoundStartLoadoutSnapshot(buildLoadoutSnapshot(nextResolvedLoadout))
-    setCountdownValue(READY_COUNTDOWN_START)
-    setPhase(ROUND_PHASE.COUNTDOWN)
   }, [
     activeLoadout,
     activeLoadoutId,
@@ -519,6 +606,7 @@ export function useGameScreenController({
     resetRoundState,
     savedLoadouts,
     selectedModeId,
+    selectedDrillId,
   ])
 
   const returnToReadyOverlay = useCallback(() => {
@@ -542,7 +630,7 @@ export function useGameScreenController({
 
   // Visual/geometry side effects of a powerup. Score-relevant semantics
   // (charge consumption, combo surge, guard) live in the shared engine.
-  const applyPowerupPresentation = useCallback((powerup) => {
+  const applyPowerupPresentation = useCallback((powerup, eventTimeMs = 0) => {
     if (powerup.effectType === "time_boost") {
       setTimeLeft((currentTime) =>
         Math.min(roundMode.maxTimeBufferSeconds, currentTime + 2)
@@ -561,13 +649,13 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "freeze_movement") {
-      freezeMovementUntilRef.current = performance.now() + FREEZE_MOVEMENT_DURATION_MS
+      freezeMovementUntilRef.current = eventTimeMs + FREEZE_MOVEMENT_DURATION_MS
       addCenterFeedback("Freeze", "positive")
       return
     }
 
     if (powerup.effectType === "magnet_center") {
-      freezeMovementUntilRef.current = performance.now() + MAGNET_CENTER_FREEZE_MS
+      freezeMovementUntilRef.current = eventTimeMs + MAGNET_CENTER_FREEZE_MS
       setButtonSize((currentButtonSize) => {
         const nextButtonSize = Math.min(roundMode.initialButtonSize, currentButtonSize + 6)
         centerButtonPosition(nextButtonSize)
@@ -615,7 +703,7 @@ export function useGameScreenController({
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
-    applyPowerupPresentation(powerup)
+    applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, getElapsedMs, isPlaying])
 
   const tryUsePowerupKey = useCallback((key) => {
@@ -635,7 +723,14 @@ export function useGameScreenController({
       ? Math.max(0, Math.round(performance.now() - buttonSpawnedAtRef.current))
       : null
 
-    roundEventsRef.current.push({ type: "hit", t: eventTimeMs })
+    const arenaElement = arenaRef.current
+    const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
+
+    roundEventsRef.current.push({
+      type: "hit",
+      t: eventTimeMs,
+      ...(clickCoordinates ?? {}),
+    })
     buttonSpawnedAtRef.current = 0
 
     if (hitReactionMs !== null) {
@@ -681,7 +776,14 @@ export function useGameScreenController({
     if (!isPlaying || !simulationRef.current) return
 
     const eventTimeMs = getElapsedMs()
-    roundEventsRef.current.push({ type: "miss", t: eventTimeMs })
+    const arenaElement = arenaRef.current
+    const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
+
+    roundEventsRef.current.push({
+      type: "miss",
+      t: eventTimeMs,
+      ...(clickCoordinates ?? {}),
+    })
 
     const result = simulationRef.current.applyMiss(eventTimeMs)
     syncSimulationState(result)
@@ -708,6 +810,9 @@ export function useGameScreenController({
   ])
 
   const handleModeSelect = useCallback((modeId) => {
+    if (modeId !== DIFFICULTY_IDS.EASY) {
+      setSelectedDrillId(null)
+    }
     onModeChange?.(modeId)
   }, [onModeChange])
 
@@ -719,6 +824,16 @@ export function useGameScreenController({
         if (currentCountdown <= 1) {
           clearInterval(countdownInterval)
           roundStartTimeRef.current = Date.now()
+
+          const arenaElement = arenaRef.current
+          if (arenaElement) {
+            const arenaRect = arenaElement.getBoundingClientRect()
+            arenaDimensionsRef.current = {
+              arenaWidth: Math.round(arenaRect.width),
+              arenaHeight: Math.round(arenaRect.height),
+            }
+          }
+
           setPhase(ROUND_PHASE.PLAYING)
           return 0
         }
@@ -728,6 +843,40 @@ export function useGameScreenController({
 
     return () => clearInterval(countdownInterval)
   }, [phase])
+
+  useEffect(() => {
+    if (!isPlaying || !ghostReplayRef.current) return undefined
+
+    const ghostInterval = setInterval(() => {
+      setGhostScore(
+        computeGhostScoreAtElapsed(
+          ghostReplayRef.current,
+          getElapsedMs(),
+          playerLevel
+        )
+      )
+    }, TIMER_TICK_MS)
+
+    return () => clearInterval(ghostInterval)
+  }, [getElapsedMs, isPlaying, playerLevel])
+
+  useEffect(() => {
+    if (!autoStartGhostDuel || !ghostReplay?.seed) return undefined
+    if (phase !== ROUND_PHASE.READY) return undefined
+
+    const timeoutId = window.setTimeout(() => {
+      startRoundWithCountdown(ghostReplay.modeId || selectedModeId, activeLoadoutId)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [
+    activeLoadoutId,
+    autoStartGhostDuel,
+    ghostReplay,
+    phase,
+    selectedModeId,
+    startRoundWithCountdown,
+  ])
 
   useEffect(() => {
     if (!isPlaying || !isTimedRound) return
@@ -765,6 +914,12 @@ export function useGameScreenController({
   }, [getElapsedMs, guardActiveUntilMs])
 
   useEffect(() => {
+    if (!gameOnboardingStep?.modeId) return
+    if (selectedModeId === gameOnboardingStep.modeId) return
+    onModeChange?.(gameOnboardingStep.modeId)
+  }, [gameOnboardingStep, onModeChange, selectedModeId])
+
+  useEffect(() => {
     if (phase !== ROUND_PHASE.GAME_OVER) return
     if (hasAwardedRoundRef.current) return
 
@@ -787,6 +942,10 @@ export function useGameScreenController({
       loadoutSnapshot: roundStartLoadoutSnapshot,
       roundToken: roundTokenRef.current,
       seed: roundSeedRef.current,
+      arenaWidth: arenaDimensionsRef.current?.arenaWidth ?? null,
+      arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
+      challengeId: challengeIdRef.current,
+      drillId: activeDrillIdRef.current,
     })
 
     setSessionStats((prev) => ({
@@ -794,12 +953,22 @@ export function useGameScreenController({
       bestScore: Math.max(prev.bestScore, score),
       netRR: prev.netRR + (roundMode.allowsRankProgression === true ? projectedRankOutcome.appliedRankDelta : 0),
     }))
+
+    const nextOnboardingStatus = getNextOnboardingStatusAfterRound(
+      buildWalkthroughStatus,
+      roundMode.id
+    )
+    if (nextOnboardingStatus !== buildWalkthroughStatus) {
+      onBuildWalkthroughChange?.({ status: nextOnboardingStatus })
+    }
   }, [
     avgReactionMs,
     bestReactionMs,
     bestStreak,
+    buildWalkthroughStatus,
     hits,
     misses,
+    onBuildWalkthroughChange,
     onRoundComplete,
     phase,
     projectedRankOutcome,
@@ -856,12 +1025,70 @@ export function useGameScreenController({
     previewPowerupCharges,
   ])
 
+  const activeDrill = useMemo(
+    () => getTrainingDrillById(roundMode.drillId ?? activeDrillIdRef.current),
+    [roundMode.drillId]
+  )
+
+  const drillGoal = useMemo(() => {
+    if (!activeDrill || phase !== ROUND_PHASE.PLAYING) {
+      return null
+    }
+
+    const metric = evaluateDrillMetric(activeDrill, {
+      hits,
+      misses,
+      bestStreak,
+      avgReactionMs,
+    })
+    const personalBest = lifetimeStats?.drillStats?.[activeDrill.id]?.bestMetric ?? null
+
+    let progressLabel = activeDrill.goalLabel
+    let isComplete = false
+
+    if (activeDrill.goalType === "accuracy" && metric !== null) {
+      progressLabel = `${metric}% / ${activeDrill.goalValue}%`
+      isComplete = metric >= activeDrill.goalValue
+    } else if (activeDrill.goalType === "streak") {
+      progressLabel = `${bestStreak} / ${activeDrill.goalValue} streak`
+      isComplete = bestStreak >= activeDrill.goalValue
+    } else if (activeDrill.goalType === "reaction" && metric !== null) {
+      progressLabel = personalBest
+        ? `Avg ${metric}ms · Best ${personalBest}ms`
+        : `Avg ${metric}ms`
+      isComplete = personalBest !== null && metric <= personalBest
+    }
+
+    return {
+      label: activeDrill.label,
+      progressLabel,
+      isComplete,
+    }
+  }, [
+    activeDrill,
+    avgReactionMs,
+    bestStreak,
+    hits,
+    lifetimeStats,
+    misses,
+    phase,
+  ])
+
+  const warmupSuggestion = useMemo(
+    () => getWarmupSuggestion(lifetimeStats, selectedModeId),
+    [lifetimeStats, selectedModeId]
+  )
+
   return {
     phase,
     allowsCoinRewards,
     gameScreenClassName,
     hudProps: {
       score,
+      ghostScore: ghostReplay ? ghostScore : null,
+      ghostUsername: ghostReplay?.username ?? null,
+      ghostTargetScore: ghostReplay?.score ?? null,
+      isGhostDuel: Boolean(ghostReplay),
       timeLeft: phase === ROUND_PHASE.READY ? displayMode.durationSeconds : timeLeft,
       isTimedRound: displayMode.isTimedRound !== false,
       modeLabel: displayMode.label,
@@ -878,6 +1105,7 @@ export function useGameScreenController({
       pbPaceStatus,
       playerBestScore,
       onEndRound: endCurrentRound,
+      drillGoal,
     },
     arenaProps: {
       arenaRef,
@@ -905,8 +1133,23 @@ export function useGameScreenController({
       onSelectMode: handleModeSelect,
       canChangeMode,
       activeLoadoutName: resolvedLoadout?.name ?? "Loadout",
-      showArmoryWalkthroughBadge: buildWalkthrough?.status === "not_started",
+      showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus),
+      onboardingCoach: gameOnboardingStep
+        ? {
+            stepLabel: `Step ${gameOnboardingStep.stepNumber} of 3`,
+            title: gameOnboardingStep.title,
+            instruction: gameOnboardingStep.instruction,
+            note: gameOnboardingStep.note,
+            startLabel: gameOnboardingStep.startLabel,
+          }
+        : null,
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,
+      showTrainingSuite: selectedModeId === DIFFICULTY_IDS.EASY && !isGameOnboardingActive,
+      trainingDrills: TRAINING_DRILLS,
+      selectedDrillId,
+      onSelectDrill: setSelectedDrillId,
+      drillStats: lifetimeStats?.drillStats ?? {},
+      warmupSuggestion,
     },
     countdownOverlayProps: {
       countdownValue,
@@ -935,7 +1178,11 @@ export function useGameScreenController({
       bestReactionMs,
       loadoutSnapshot: roundStartLoadoutSnapshot,
       loadoutPresentation: activeRoundLoadoutPresentation,
-      onRematch: () => startRoundWithCountdown(roundMode.id, activeLoadoutId),
+      onRematch: () => startRoundWithCountdown(
+        roundMode.id,
+        activeLoadoutId,
+        activeDrillIdRef.current
+      ),
       onPlayAgain: returnToReadyOverlay,
       onChooseMode: returnToReadyOverlay,
       achievementStats,

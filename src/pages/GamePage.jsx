@@ -1,10 +1,15 @@
 ﻿import { AnimatePresence, motion } from "motion/react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
+
 import { ROUND_PHASE } from "../constants/gameConstants.js"
 import GameArena from "../features/game/components/GameArena.jsx"
 import GameHud from "../features/game/components/GameHud.jsx"
 import PowerupTray from "../features/game/components/PowerupTray.jsx"
 import { CountdownOverlay, GameOverFlow, ReadyOverlay } from "../features/game/components/gameRoundOverlayExports.jsx"
 import { useGameScreenController } from "../features/game/hooks/useGameScreenController.js"
+import { fetchReplay } from "../services/clickAwayHttpApiClient.js"
+import { normalizeReplayRecord } from "../utils/replayUtils.js"
 
 const MotionDiv = motion.div
 
@@ -15,7 +20,59 @@ const stageVariants = {
 }
 
 export default function GamePage(props) {
-  const game = useGameScreenController(props)
+  const [searchParams] = useSearchParams()
+  const challengeId = Number(searchParams.get("challengeId")) || null
+  const replayId = Number(searchParams.get("replayId")) || null
+  const [loadState, setLoadState] = useState({
+    replayId: null,
+    replay: null,
+    error: "",
+  })
+
+  useEffect(() => {
+    if (!replayId) {
+      return undefined
+    }
+
+    let isCancelled = false
+
+    async function loadGhostReplay() {
+      setLoadState({ replayId, replay: null, error: "" })
+
+      try {
+        const response = await fetchReplay(replayId)
+        if (isCancelled) return
+        setLoadState({
+          replayId,
+          replay: normalizeReplayRecord(response?.replay),
+          error: "",
+        })
+      } catch (error) {
+        if (isCancelled) return
+        setLoadState({
+          replayId,
+          replay: null,
+          error: error.message || "Unable to load ghost replay.",
+        })
+      }
+    }
+
+    loadGhostReplay()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [replayId])
+
+  const ghostReplay = loadState.replayId === replayId ? loadState.replay : null
+  const ghostLoadError = loadState.replayId === replayId ? loadState.error : ""
+
+  const game = useGameScreenController({
+    ...props,
+    ghostReplay,
+    challengeId,
+    autoStartGhostDuel: Boolean(replayId && challengeId && ghostReplay?.seed),
+  })
   let activeOverlay = null
 
   if (game.phase === ROUND_PHASE.READY) {
@@ -28,6 +85,12 @@ export default function GamePage(props) {
 
   return (
     <div className={game.gameScreenClassName}>
+      {ghostLoadError ? (
+        <div className="ghostDuelError" role="alert">
+          {ghostLoadError}
+        </div>
+      ) : null}
+
       <GameHud {...game.hudProps} />
 
       <GameArena {...game.arenaProps} />

@@ -12,7 +12,6 @@ export function useAchievementSync({
   unlockedAchievementIds,
   setUnlockedAchievementIds,
   unlockedAchievementIdsFromStats,
-  persistProgress,
 }) {
   useEffect(() => {
     const mergedIds = mergeUnlockedAchievementIds(
@@ -35,11 +34,7 @@ export function useAchievementSync({
     })
 
     setUnlockedAchievementIds(mergedIds)
-    void persistProgress({
-      unlockedAchievementIds: mergedIds,
-    })
   }, [
-    persistProgress,
     setUnlockedAchievementIds,
     unlockedAchievementIds,
     unlockedAchievementIdsFromStats,

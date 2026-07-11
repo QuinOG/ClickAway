@@ -1,7 +1,6 @@
-import { lazy, useCallback, useEffect, useRef } from "react"
+import { lazy, useCallback } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { MotionConfig } from "motion/react"
-import toast from "react-hot-toast"
 
 import { isValidModeId } from "./app/appAccountStateHelpers.js"
 import { useAchievementSync } from "./app/useAchievementSync.js"
@@ -9,8 +8,8 @@ import { useAppDerivedState } from "./app/useAppDerivedState.js"
 import { useAppPlayerState } from "./app/useAppPlayerState.js"
 import { useAuthSession } from "./app/useAuthSession.js"
 import { usePlayerProgressionUpdates } from "./app/usePlayerProgressionUpdates.js"
+import { useProgressSync } from "./app/useProgressSync.js"
 import { useShopActions } from "./app/useShopActions.js"
-import { updatePlayerProgress } from "./services/clickAwayHttpApiClient.js"
 import { DIFFICULTIES as MODES } from "./constants/gameModesConfig.js"
 import { normalizeBuildWalkthrough } from "./constants/buildWalkthrough.js"
 
@@ -24,27 +23,10 @@ const GamePage = lazy(() => import("./pages/GamePage.jsx"))
 const HelpPage = lazy(() => import("./pages/HelpPage.jsx"))
 const HistoryPage = lazy(() => import("./pages/HistoryPage.jsx"))
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage.jsx"))
+const ChallengesPage = lazy(() => import("./pages/ChallengesPage.jsx"))
 const ArmoryPage = lazy(() => import("./pages/ArmoryPage.jsx"))
 const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"))
 const ShopPage = lazy(() => import("./pages/ShopPage.jsx"))
-
-const PROGRESS_SYNC_TOAST_ID = "progress-sync"
-
-const PROGRESS_ERROR_TOAST_STYLE = {
-  background: "rgba(11, 18, 36, 0.97)",
-  color: "#ddeeff",
-  border: "1px solid rgba(255, 106, 117, 0.4)",
-  borderRadius: "12px",
-  fontSize: "13px",
-  fontFamily: "inherit",
-  fontWeight: 600,
-  padding: "10px 14px",
-  boxShadow: "0 12px 28px rgba(4, 8, 20, 0.52)",
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  maxWidth: "min(380px, 92vw)",
-}
 
 function SessionLoadingScreen() {
   return (
@@ -130,101 +112,10 @@ export default function App() {
     resetPlayerState,
   })
 
-  const persistQueueRef = useRef(Promise.resolve(null))
-  // Bumped on every login/logout transition so an in-flight response from a
-  // session that has since ended can't clobber the next session's state.
-  const sessionEpochRef = useRef(0)
-  const progressSnapshotRef = useRef({})
-
-  useEffect(() => {
-    sessionEpochRef.current += 1
-    persistQueueRef.current = Promise.resolve(null)
-  }, [isAuthed])
-
-  useEffect(() => {
-    progressSnapshotRef.current = {
-      coins,
-      levelXp,
-      rankMmr,
-      rankedState,
-      ownedItemIds,
-      equippedButtonSkinId,
-      equippedArenaThemeId,
-      equippedProfileImageId,
-      roundHistory,
-      unlockedAchievementIds,
-      savedLoadouts,
-      activeLoadoutId,
-      buildWalkthrough,
-    }
-  }, [
-    activeLoadoutId,
-    buildWalkthrough,
-    coins,
-    equippedArenaThemeId,
-    equippedButtonSkinId,
-    equippedProfileImageId,
-    levelXp,
-    ownedItemIds,
-    rankMmr,
-    rankedState,
-    roundHistory,
-    savedLoadouts,
-    unlockedAchievementIds,
-  ])
-
-  const persistProgress = useCallback((nextProgress = {}) => {
-    if (!isAuthed) {
-      return Promise.resolve(null)
-    }
-
-    // progressSnapshotRef.current is kept fresh (including buildWalkthrough) by the
-    // sync effect above, so the spread below already carries the latest values for
-    // any field the caller doesn't explicitly override.
-    const progressPayload = {
-      ...progressSnapshotRef.current,
-      ...nextProgress,
-    }
-
-    progressSnapshotRef.current = progressPayload
-
-    const requestEpoch = sessionEpochRef.current
-
-    persistQueueRef.current = persistQueueRef.current
-      .catch(() => null)
-      .then(async () => {
-        const response = await updatePlayerProgress(progressPayload)
-        if (sessionEpochRef.current !== requestEpoch) {
-          return null
-        }
-        applyProgress(response.progress)
-        return response.progress
-      })
-      .catch((error) => {
-        console.error("Unable to sync player progress:", error)
-        toast.error("Couldn't save your progress. Check your connection.", {
-          id: PROGRESS_SYNC_TOAST_ID,
-          style: PROGRESS_ERROR_TOAST_STYLE,
-        })
-        return null
-      })
-
-    return persistQueueRef.current
-  }, [applyProgress, isAuthed])
-
-  const waitForPendingProgress = useCallback(
-    () => persistQueueRef.current.catch(() => null),
-    []
-  )
-
-  const syncProgressSnapshot = useCallback((nextProgress = {}) => {
-    progressSnapshotRef.current = {
-      ...progressSnapshotRef.current,
-      ...nextProgress,
-    }
-
-    return progressSnapshotRef.current
-  }, [])
+  const { persistIntent, waitForPendingProgress } = useProgressSync({
+    isAuthed,
+    applyProgress,
+  })
 
   const handleLoadoutStateChange = useCallback((nextState = {}) => {
     const nextSavedLoadouts = Array.isArray(nextState.savedLoadouts)
@@ -234,44 +125,34 @@ export default function App() {
 
     setSavedLoadouts(nextSavedLoadouts)
     setActiveLoadoutId(nextActiveLoadoutId)
-    syncProgressSnapshot({
-      savedLoadouts: nextSavedLoadouts,
-      activeLoadoutId: nextActiveLoadoutId,
-    })
-    void persistProgress({
+    void persistIntent({
       savedLoadouts: nextSavedLoadouts,
       activeLoadoutId: nextActiveLoadoutId,
     })
   }, [
     activeLoadoutId,
-    persistProgress,
+    persistIntent,
     savedLoadouts,
     setActiveLoadoutId,
     setSavedLoadouts,
-    syncProgressSnapshot,
   ])
 
   const handleBuildWalkthroughChange = useCallback((nextBuildWalkthrough = {}) => {
     const normalizedBuildWalkthrough = normalizeBuildWalkthrough(nextBuildWalkthrough)
 
     setBuildWalkthrough(normalizedBuildWalkthrough)
-    syncProgressSnapshot({
-      buildWalkthrough: normalizedBuildWalkthrough,
-    })
-    void persistProgress({
+    void persistIntent({
       buildWalkthrough: normalizedBuildWalkthrough,
     })
   }, [
-    persistProgress,
+    persistIntent,
     setBuildWalkthrough,
-    syncProgressSnapshot,
   ])
 
   useAchievementSync({
     unlockedAchievementIds,
     setUnlockedAchievementIds,
     unlockedAchievementIdsFromStats,
-    persistProgress,
   })
 
   const { handleRoundComplete } = usePlayerProgressionUpdates({
@@ -283,18 +164,15 @@ export default function App() {
     isAuthed,
     coins,
     ownedItemIds,
-    equippedButtonSkinId,
-    equippedArenaThemeId,
-    equippedProfileImageId,
     applyProgress,
     waitForPendingProgress,
-    syncProgressSnapshot,
   })
 
   const handleModeChange = useCallback((nextModeId) => {
     if (!isValidModeId(nextModeId)) return
     setSelectedModeId(nextModeId)
-  }, [setSelectedModeId])
+    void persistIntent({ selectedModeId: nextModeId })
+  }, [persistIntent, setSelectedModeId])
 
   if (!authReady) {
     return <SessionLoadingScreen />
@@ -365,11 +243,13 @@ export default function App() {
                 playerRankedState={rankedState}
                 playerHasRankedHistory={hasRankedHistory}
                 playerBestScore={playerLeaderboardStats.bestScore}
+                lifetimeStats={lifetimeStats}
                 savedLoadouts={savedLoadouts}
                 activeLoadoutId={activeLoadoutId}
                 activeLoadout={activeLoadout}
                 onLoadoutStateChange={handleLoadoutStateChange}
                 buildWalkthrough={buildWalkthrough}
+                onBuildWalkthroughChange={handleBuildWalkthroughChange}
                 buttonSkinClass={equippedButtonSkin?.effectClass}
                 buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
                 buttonSkinImageScale={
@@ -444,6 +324,15 @@ export default function App() {
                 currentRankProgress={rankProgress}
                 roundHistory={roundHistory}
               />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/challenges"
+          element={
+            <ProtectedRoute isAuthed={isAuthed}>
+              <ChallengesPage currentUserId={playerUserId} />
             </ProtectedRoute>
           }
         />

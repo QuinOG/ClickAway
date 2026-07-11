@@ -9,7 +9,7 @@ import {
   getPassiveModuleById,
   getPowerupById,
 } from "../../../constants/buildcraft.js"
-import { BUILD_WALKTHROUGH_STATUS } from "../../../constants/buildWalkthrough.js"
+import { BUILD_WALKTHROUGH_STATUS, shouldAutoStartArmoryWalkthrough } from "../../../constants/buildWalkthrough.js"
 import {
   buildLoadoutPresentation,
   getModuleOptionPresentation,
@@ -21,6 +21,7 @@ import {
   getStepSummary,
   measureSpotlightRect,
 } from "../armoryUtils.js"
+import { useArmoryUrlState } from "../useArmoryUrlState.js"
 
 export function useArmoryScreenController({
   modes = [],
@@ -56,6 +57,17 @@ export function useArmoryScreenController({
   const currentWalkthroughStep = isWalkthroughVisible
     ? WALKTHROUGH_STEPS[walkthroughStepIndex] ?? WALKTHROUGH_STEPS[0]
     : null
+
+  useArmoryUrlState({
+    buildWalkthroughStatus,
+    isWalkthroughVisible,
+    activeStepId,
+    setActiveStepId,
+    activeModuleSlotId,
+    setActiveModuleSlotId,
+    editingPowerSlotIndex,
+    setEditingPowerSlotIndex,
+  })
 
   useEffect(() => {
     setLocalSavedLoadouts(savedLoadouts)
@@ -273,10 +285,7 @@ export function useArmoryScreenController({
   }, [navigate])
 
   useEffect(() => {
-    if (
-      buildWalkthroughStatus === BUILD_WALKTHROUGH_STATUS.NOT_STARTED &&
-      !isWalkthroughVisible
-    ) {
+    if (shouldAutoStartArmoryWalkthrough(buildWalkthroughStatus) && !isWalkthroughVisible) {
       openWalkthrough("auto")
     }
   }, [buildWalkthroughStatus, isWalkthroughVisible, openWalkthrough])
@@ -293,7 +302,7 @@ export function useArmoryScreenController({
       currentWalkthroughStep.id === "review" &&
       buildWalkthroughStatus === BUILD_WALKTHROUGH_STATUS.NOT_STARTED
     ) {
-      onBuildWalkthroughChange?.({ status: BUILD_WALKTHROUGH_STATUS.COMPLETED })
+      onBuildWalkthroughChange?.({ status: BUILD_WALKTHROUGH_STATUS.PRACTICE_PENDING })
     }
   }, [buildWalkthroughStatus, currentWalkthroughStep, onBuildWalkthroughChange])
 

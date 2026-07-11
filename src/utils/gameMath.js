@@ -13,9 +13,10 @@ function clampPercentage(value) {
   return Math.max(0, Math.min(100, value))
 }
 
-function clampToArena(arenaSize, itemSize) {
-  return Math.max(0, arenaSize - itemSize)
-}
+import {
+  getCenteredPosition as getCenteredPositionPure,
+  getRandomPosition as getRandomPositionPure,
+} from "../game/engine/roundGeometry.js"
 
 /**
  * Returns centered x/y coordinates for an item inside a rectangle.
@@ -24,10 +25,7 @@ function clampToArena(arenaSize, itemSize) {
  * @returns {{x: number, y: number}}
  */
 export function getCenteredPosition(arenaRect, itemSize) {
-  return {
-    x: Math.max(0, Math.floor((arenaRect.width - itemSize) / 2)),
-    y: Math.max(0, Math.floor((arenaRect.height - itemSize) / 2)),
-  }
+  return getCenteredPositionPure(arenaRect.width, arenaRect.height, itemSize)
 }
 
 /**
@@ -40,13 +38,7 @@ export function getCenteredPosition(arenaRect, itemSize) {
  * @returns {{x: number, y: number}}
  */
 export function getRandomPosition(arenaRect, itemSize, random = Math.random) {
-  const maxX = clampToArena(arenaRect.width, itemSize)
-  const maxY = clampToArena(arenaRect.height, itemSize)
-
-  return {
-    x: Math.floor(random() * (maxX + 1)),
-    y: Math.floor(random() * (maxY + 1)),
-  }
+  return getRandomPositionPure(arenaRect.width, arenaRect.height, itemSize, random)
 }
 
 /**

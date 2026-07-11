@@ -28,6 +28,7 @@ import {
   normalizeLifetimeStats,
   normalizeLoadoutStatsEntry,
 } from "../src/utils/lifetimeStatsUtils.js"
+import { applyRoundToDrillStats } from "../src/utils/drillStatsUtils.js"
 import {
   DEFAULT_PLAYER_STATE,
   getCatalogItemById,
@@ -223,6 +224,8 @@ export async function initializeSchema() {
       FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
 
+  await addColumnIfMissing("user_lifetime_stats", "drill_stats_json", "json DEFAULT NULL")
+
   await pool.query(`CREATE TABLE IF NOT EXISTS \`user_loadout_stats\` (
     \`user_id\` bigint(20) UNSIGNED NOT NULL,
     \`loadout_id\` varchar(60) NOT NULL,
@@ -256,7 +259,102 @@ export async function initializeSchema() {
       FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
 
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`seasons\` (
+    \`id\` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    \`slug\` varchar(60) NOT NULL,
+    \`name\` varchar(100) NOT NULL,
+    \`starts_at\` timestamp NOT NULL,
+    \`ends_at\` timestamp NOT NULL,
+    \`status\` varchar(20) NOT NULL DEFAULT 'active',
+    PRIMARY KEY (\`id\`),
+    UNIQUE KEY \`uq_season_slug\` (\`slug\`),
+    KEY \`idx_season_status_dates\` (\`status\`, \`starts_at\`, \`ends_at\`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_season_stats\` (
+    \`user_id\` bigint(20) UNSIGNED NOT NULL,
+    \`season_id\` bigint(20) UNSIGNED NOT NULL,
+    \`ranked_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`peak_mmr\` int(11) NOT NULL DEFAULT 0,
+    \`reward_tier\` int(11) NOT NULL DEFAULT 0,
+    PRIMARY KEY (\`user_id\`, \`season_id\`),
+    KEY \`idx_user_season_peak_mmr\` (\`season_id\`, \`peak_mmr\`),
+    CONSTRAINT \`fk_user_season_user\`
+      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE,
+    CONSTRAINT \`fk_user_season_season\`
+      FOREIGN KEY (\`season_id\`) REFERENCES \`seasons\` (\`id\`) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`round_replays\` (
+    \`id\` bigint(20) NOT NULL AUTO_INCREMENT,
+    \`user_id\` bigint(20) UNSIGNED NOT NULL,
+    \`username\` varchar(50) NOT NULL,
+    \`mode_id\` varchar(50) NOT NULL,
+    \`seed\` int(10) UNSIGNED NOT NULL,
+    \`events_json\` json NOT NULL,
+    \`loadout_snapshot_json\` json DEFAULT NULL,
+    \`score\` int(11) NOT NULL DEFAULT 0,
+    \`hits\` int(11) NOT NULL DEFAULT 0,
+    \`misses\` int(11) NOT NULL DEFAULT 0,
+    \`best_streak\` int(11) NOT NULL DEFAULT 0,
+    \`visibility\` varchar(20) NOT NULL DEFAULT 'public',
+    \`round_history_id\` bigint(20) DEFAULT NULL,
+    \`played_at\` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (\`id\`),
+    KEY \`idx_replays_user_played\` (\`user_id\`, \`played_at\`),
+    KEY \`idx_replays_visibility_score\` (\`visibility\`, \`score\`),
+    CONSTRAINT \`fk_replays_user\`
+      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`challenges\` (
+    \`id\` bigint(20) NOT NULL AUTO_INCREMENT,
+    \`challenger_user_id\` bigint(20) UNSIGNED NOT NULL,
+    \`challenger_username\` varchar(50) NOT NULL,
+    \`opponent_user_id\` bigint(20) UNSIGNED NOT NULL,
+    \`opponent_username\` varchar(50) NOT NULL,
+    \`replay_id\` bigint(20) NOT NULL,
+    \`mode_id\` varchar(50) NOT NULL,
+    \`status\` varchar(20) NOT NULL DEFAULT 'pending',
+    \`message\` varchar(280) DEFAULT NULL,
+    \`opponent_replay_id\` bigint(20) DEFAULT NULL,
+    \`challenger_won\` tinyint(1) DEFAULT NULL,
+    \`created_at\` timestamp NOT NULL DEFAULT current_timestamp(),
+    \`responded_at\` timestamp NULL DEFAULT NULL,
+    \`completed_at\` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (\`id\`),
+    KEY \`idx_challenges_opponent_status\` (\`opponent_user_id\`, \`status\`, \`created_at\`),
+    KEY \`idx_challenges_challenger_status\` (\`challenger_user_id\`, \`status\`, \`created_at\`),
+    CONSTRAINT \`fk_challenges_challenger\`
+      FOREIGN KEY (\`challenger_user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE,
+    CONSTRAINT \`fk_challenges_opponent\`
+      FOREIGN KEY (\`opponent_user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE,
+    CONSTRAINT \`fk_challenges_replay\`
+      FOREIGN KEY (\`replay_id\`) REFERENCES \`round_replays\` (\`id\`) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+
+  await ensureActiveSeason()
+
   console.log("Database schema initialized.")
+}
+
+async function ensureActiveSeason() {
+  const [rows] = await pool.query(
+    "SELECT id FROM seasons WHERE status = 'active' LIMIT 1"
+  )
+  if (rows.length > 0) {
+    return
+  }
+
+  const startsAt = new Date()
+  const endsAt = new Date(startsAt)
+  endsAt.setDate(endsAt.getDate() + 90)
+
+  await pool.query(
+    `INSERT INTO seasons (slug, name, starts_at, ends_at, status)
+     VALUES (?, ?, ?, ?, 'active')`,
+    ["season-1", "Season 1", startsAt, endsAt]
+  )
 }
 
 function toNonNegativeNumber(value, fallback = 0) {
@@ -484,6 +582,13 @@ function buildHistoryEntry(row) {
 }
 
 function mapLifetimeStatsRow(row = {}) {
+  let drillStats = {}
+  if (row.drillStatsJson) {
+    drillStats = typeof row.drillStatsJson === "string"
+      ? JSON.parse(row.drillStatsJson)
+      : row.drillStatsJson
+  }
+
   return normalizeLifetimeStats({
     totalRounds: row.totalRounds,
     rankedRounds: row.rankedRounds,
@@ -500,6 +605,7 @@ function mapLifetimeStatsRow(row = {}) {
     reactionRounds: row.reactionRounds,
     totalReactionMs: row.totalReactionMs,
     bestReactionMs: row.bestReactionMs,
+    drillStats,
   })
 }
 
@@ -536,7 +642,8 @@ async function getLifetimeStatsRow(executor, userId, options = {}) {
        current_consecutive_ranked_wins AS currentConsecutiveRankedWins,
        reaction_rounds AS reactionRounds,
        total_reaction_ms AS totalReactionMs,
-       best_reaction_ms AS bestReactionMs
+       best_reaction_ms AS bestReactionMs,
+       drill_stats_json AS drillStatsJson
      FROM user_lifetime_stats
      WHERE user_id = ?
      LIMIT 1${lockClause}`,
@@ -809,7 +916,8 @@ async function persistLifetimeStats(executor, userId, lifetimeStats) {
          current_consecutive_ranked_wins = ?,
          reaction_rounds = ?,
          total_reaction_ms = ?,
-         best_reaction_ms = ?
+         best_reaction_ms = ?,
+         drill_stats_json = ?
      WHERE user_id = ?`,
     [
       lifetimeStats.totalRounds,
@@ -827,6 +935,7 @@ async function persistLifetimeStats(executor, userId, lifetimeStats) {
       lifetimeStats.reactionRounds,
       lifetimeStats.totalReactionMs,
       lifetimeStats.bestReactionMs,
+      JSON.stringify(lifetimeStats.drillStats ?? {}),
       userId,
     ]
   )
@@ -1218,49 +1327,67 @@ export async function findUserProgressByUserId(userId) {
   return buildProgressRecord(pool, userId)
 }
 
-export async function findLeaderboardRows({ limit = 25 } = {}) {
-  const normalizedLimit = Math.max(1, Math.min(100, Math.floor(Number(limit) || 25)))
-  const [rows] = await pool.query(
-    `SELECT
-       users.id AS userId,
-       users.username AS username,
-       users.mmr AS mmr,
-       users.coins AS coins,
-       users.xp AS levelXp,
-       ranked_stats.rankedRounds AS rankedRounds,
-       ranked_stats.bestScore AS bestScore,
-       ranked_stats.bestStreak AS bestStreak,
-       ranked_stats.accuracyPercent AS accuracyPercent
-     FROM users
-     INNER JOIN (
-       SELECT
-         user_id AS userId,
-         COUNT(*) AS rankedRounds,
-         MAX(score) AS bestScore,
-         MAX(best_streak) AS bestStreak,
-         COALESCE(
-           ROUND(100 * SUM(hits) / NULLIF(SUM(hits) + SUM(misses), 0)),
-           0
-         ) AS accuracyPercent
-       FROM round_history
-       WHERE progression_mode = 'ranked'
-       GROUP BY user_id
-     ) AS ranked_stats
-       ON ranked_stats.userId = users.id
-     WHERE users.placement_matches_played >= ?
-     ORDER BY
-       users.mmr DESC,
-       ranked_stats.bestScore DESC,
-       ranked_stats.bestStreak DESC,
-       ranked_stats.accuracyPercent DESC,
-       users.username ASC,
-       users.id ASC
-     LIMIT ?`,
-    [PLACEMENT_MATCH_COUNT, normalizedLimit]
-  )
+export const LEADERBOARD_BOARDS = {
+  MMR: "mmr",
+  BEST_SCORE: "bestScore",
+  BEST_STREAK: "bestStreak",
+  ACCURACY: "accuracy",
+  REACTION: "reaction",
+}
 
-  return rows.map((row, index) => ({
-    rank: index + 1,
+const LEADERBOARD_DEFAULT_LIMIT = 25
+const LEADERBOARD_MAX_LIMIT = 50
+const LEADERBOARD_AROUND_WINDOW = 5
+
+function buildLeaderboardOrderClause(board = LEADERBOARD_BOARDS.MMR) {
+  switch (board) {
+    case LEADERBOARD_BOARDS.BEST_SCORE:
+      return `
+        bestScore DESC,
+        mmr DESC,
+        bestStreak DESC,
+        accuracyPercent DESC,
+        username ASC,
+        userId ASC`
+    case LEADERBOARD_BOARDS.BEST_STREAK:
+      return `
+        bestStreak DESC,
+        mmr DESC,
+        bestScore DESC,
+        accuracyPercent DESC,
+        username ASC,
+        userId ASC`
+    case LEADERBOARD_BOARDS.ACCURACY:
+      return `
+        accuracyPercent DESC,
+        rankedRounds DESC,
+        mmr DESC,
+        bestScore DESC,
+        username ASC,
+        userId ASC`
+    case LEADERBOARD_BOARDS.REACTION:
+      return `
+        bestReactionMs IS NULL ASC,
+        bestReactionMs ASC,
+        mmr DESC,
+        bestScore DESC,
+        username ASC,
+        userId ASC`
+    case LEADERBOARD_BOARDS.MMR:
+    default:
+      return `
+        mmr DESC,
+        bestScore DESC,
+        bestStreak DESC,
+        accuracyPercent DESC,
+        username ASC,
+        userId ASC`
+  }
+}
+
+function mapLeaderboardRow(row = {}) {
+  return {
+    rank: Math.max(1, Number(row.rank) || 0),
     userId: Number(row.userId),
     username: String(row.username || ""),
     mmr: toNonNegativeNumber(row.mmr, 0),
@@ -1270,7 +1397,179 @@ export async function findLeaderboardRows({ limit = 25 } = {}) {
     bestScore: toNonNegativeNumber(row.bestScore, 0),
     bestStreak: toNonNegativeNumber(row.bestStreak, 0),
     accuracyPercent: toNonNegativeNumber(row.accuracyPercent, 0),
-  }))
+    bestReactionMs: toNullableNonNegativeNumber(row.bestReactionMs),
+  }
+}
+
+async function queryRankedLeaderboardRows({
+  board = LEADERBOARD_BOARDS.MMR,
+  page = 1,
+  limit = LEADERBOARD_DEFAULT_LIMIT,
+  search = "",
+  userId = null,
+  view = "top",
+} = {}) {
+  const normalizedBoard = Object.values(LEADERBOARD_BOARDS).includes(board)
+    ? board
+    : LEADERBOARD_BOARDS.MMR
+  const normalizedLimit = Math.max(
+    1,
+    Math.min(LEADERBOARD_MAX_LIMIT, Math.floor(Number(limit) || LEADERBOARD_DEFAULT_LIMIT))
+  )
+  const normalizedPage = Math.max(1, Math.floor(Number(page) || 1))
+  const normalizedSearch = String(search || "").trim().toLowerCase()
+  const orderClause = buildLeaderboardOrderClause(normalizedBoard)
+  const reactionFilter = normalizedBoard === LEADERBOARD_BOARDS.REACTION
+    ? "AND ls.best_reaction_ms IS NOT NULL"
+    : ""
+
+  const baseCte = `
+    WITH ranked_players AS (
+      SELECT
+        u.id AS userId,
+        u.username AS username,
+        u.mmr AS mmr,
+        u.coins AS coins,
+        u.xp AS levelXp,
+        COALESCE(ls.ranked_rounds, 0) AS rankedRounds,
+        COALESCE(ls.best_single_score, 0) AS bestScore,
+        COALESCE(ls.best_ranked_streak, 0) AS bestStreak,
+        CASE
+          WHEN COALESCE(ls.total_hits, 0) + COALESCE(ls.total_misses, 0) > 0
+            THEN ROUND(100 * ls.total_hits / (ls.total_hits + ls.total_misses))
+          ELSE 0
+        END AS accuracyPercent,
+        ls.best_reaction_ms AS bestReactionMs
+      FROM users u
+      LEFT JOIN user_lifetime_stats ls
+        ON ls.user_id = u.id
+      WHERE u.placement_matches_played >= ?
+        ${reactionFilter}
+        ${normalizedSearch ? "AND LOWER(u.username) LIKE ?" : ""}
+    ),
+    ranked_ladder AS (
+      SELECT
+        ranked_players.*,
+        RANK() OVER (ORDER BY ${orderClause}) AS rank
+      FROM ranked_players
+    )`
+
+  const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
+
+  if (view === "aroundMe" && userId) {
+    const [[selfRow]] = await pool.query(
+      `${baseCte}
+       SELECT rank
+       FROM ranked_ladder
+       WHERE userId = ?
+       LIMIT 1`,
+      [PLACEMENT_MATCH_COUNT, ...searchParams, userId]
+    )
+
+    if (!selfRow) {
+      return {
+        rows: [],
+        page: 1,
+        limit: normalizedLimit,
+        totalCount: 0,
+        totalPages: 0,
+        selfRank: null,
+        board: normalizedBoard,
+      }
+    }
+
+    const selfRank = Math.max(1, Number(selfRow.rank) || 1)
+    const minRank = Math.max(1, selfRank - LEADERBOARD_AROUND_WINDOW)
+    const maxRank = selfRank + LEADERBOARD_AROUND_WINDOW
+
+    const [rows] = await pool.query(
+      `${baseCte}
+       SELECT *
+       FROM ranked_ladder
+       WHERE rank BETWEEN ? AND ?
+       ORDER BY rank ASC`,
+      [PLACEMENT_MATCH_COUNT, ...searchParams, minRank, maxRank]
+    )
+
+    const [[countRow]] = await pool.query(
+      `${baseCte}
+       SELECT COUNT(*) AS totalCount
+       FROM ranked_ladder`,
+      [PLACEMENT_MATCH_COUNT, ...searchParams]
+    )
+
+    const totalCount = toNonNegativeNumber(countRow?.totalCount, 0)
+
+    return {
+      rows: rows.map(mapLeaderboardRow),
+      page: 1,
+      limit: rows.length,
+      totalCount,
+      totalPages: 1,
+      selfRank,
+      board: normalizedBoard,
+      view: "aroundMe",
+    }
+  }
+
+  const offset = (normalizedPage - 1) * normalizedLimit
+  const [rows] = await pool.query(
+    `${baseCte}
+     SELECT *
+     FROM ranked_ladder
+     ORDER BY rank ASC
+     LIMIT ? OFFSET ?`,
+    [PLACEMENT_MATCH_COUNT, ...searchParams, normalizedLimit, offset]
+  )
+
+  const [[countRow]] = await pool.query(
+    `${baseCte}
+     SELECT COUNT(*) AS totalCount
+     FROM ranked_ladder`,
+    [PLACEMENT_MATCH_COUNT, ...searchParams]
+  )
+
+  const totalCount = toNonNegativeNumber(countRow?.totalCount, 0)
+  const totalPages = totalCount > 0 ? Math.ceil(totalCount / normalizedLimit) : 0
+
+  let selfRank = null
+  if (userId) {
+    const [[selfRow]] = await pool.query(
+      `${baseCte}
+       SELECT rank
+       FROM ranked_ladder
+       WHERE userId = ?
+       LIMIT 1`,
+      [PLACEMENT_MATCH_COUNT, ...searchParams, userId]
+    )
+    selfRank = selfRow ? Math.max(1, Number(selfRow.rank) || 1) : null
+  }
+
+  return {
+    rows: rows.map(mapLeaderboardRow),
+    page: normalizedPage,
+    limit: normalizedLimit,
+    totalCount,
+    totalPages,
+    selfRank,
+    board: normalizedBoard,
+    view: "top",
+  }
+}
+
+export async function findLeaderboardPage(options = {}) {
+  return queryRankedLeaderboardRows(options)
+}
+
+export async function findLeaderboardRows({ limit = 25 } = {}) {
+  const page = await queryRankedLeaderboardRows({
+    board: LEADERBOARD_BOARDS.MMR,
+    page: 1,
+    limit,
+    view: "top",
+  })
+
+  return page.rows
 }
 
 export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_PAGE_SIZE } = {}) {
@@ -1384,10 +1683,20 @@ export async function completeUserRound({
     const insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, historyEntry)
 
     const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
-    const nextLifetimeStats = applyRoundToLifetimeStats(
+    let nextLifetimeStats = applyRoundToLifetimeStats(
       existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
       historyEntry
     )
+    if (historyEntry?.drillId) {
+      nextLifetimeStats = {
+        ...nextLifetimeStats,
+        drillStats: applyRoundToDrillStats(
+          nextLifetimeStats.drillStats,
+          historyEntry.drillId,
+          historyEntry
+        ),
+      }
+    }
     await persistLifetimeStats(connection, userId, nextLifetimeStats)
 
     const loadoutId = historyEntry?.loadoutSnapshot?.loadoutId
@@ -1515,6 +1824,425 @@ export async function saveUserProgress({ userId, ...progress }) {
   }
 
   return findUserProgressByUserId(userId)
+}
+
+function mapSeasonRow(row = {}) {
+  if (!row?.id) {
+    return null
+  }
+
+  return {
+    id: Number(row.id),
+    slug: String(row.slug || ""),
+    name: String(row.name || ""),
+    status: String(row.status || "active"),
+    startsAt: row.startsAt ?? row.starts_at ?? null,
+    endsAt: row.endsAt ?? row.ends_at ?? null,
+  }
+}
+
+function mapReplayRow(row = {}) {
+  if (!row?.id) {
+    return null
+  }
+
+  return {
+    id: Number(row.id),
+    userId: Number(row.userId),
+    username: String(row.username || ""),
+    modeId: String(row.modeId || ""),
+    seed: Number(row.seed) >>> 0,
+    events: typeof row.eventsJson === "string"
+      ? JSON.parse(row.eventsJson)
+      : (row.eventsJson ?? []),
+    loadoutSnapshot: row.loadoutSnapshotJson
+      ? (typeof row.loadoutSnapshotJson === "string"
+        ? JSON.parse(row.loadoutSnapshotJson)
+        : row.loadoutSnapshotJson)
+      : null,
+    score: toNonNegativeNumber(row.score, 0),
+    hits: toNonNegativeNumber(row.hits, 0),
+    misses: toNonNegativeNumber(row.misses, 0),
+    bestStreak: toNonNegativeNumber(row.bestStreak, 0),
+    visibility: String(row.visibility || "public"),
+    playedAt: row.playedAt ?? null,
+  }
+}
+
+function mapChallengeRow(row = {}) {
+  if (!row?.id) {
+    return null
+  }
+
+  return {
+    id: Number(row.id),
+    challengerUserId: Number(row.challengerUserId),
+    challengerUsername: String(row.challengerUsername || ""),
+    opponentUserId: Number(row.opponentUserId),
+    opponentUsername: String(row.opponentUsername || ""),
+    replayId: Number(row.replayId),
+    opponentReplayId: row.opponentReplayId ? Number(row.opponentReplayId) : null,
+    modeId: String(row.modeId || ""),
+    status: String(row.status || "pending"),
+    message: row.message ? String(row.message) : null,
+    challengerWon: row.challengerWon === null || row.challengerWon === undefined
+      ? null
+      : Boolean(row.challengerWon),
+    createdAt: row.createdAt ?? null,
+    respondedAt: row.respondedAt ?? null,
+    completedAt: row.completedAt ?? null,
+    replayScore: toNonNegativeNumber(row.replayScore, 0),
+    opponentReplayScore: row.opponentReplayScore === null || row.opponentReplayScore === undefined
+      ? null
+      : toNonNegativeNumber(row.opponentReplayScore, 0),
+  }
+}
+
+export async function findCurrentSeason() {
+  const [rows] = await pool.query(
+    `SELECT
+       id,
+       slug,
+       name,
+       status,
+       starts_at AS startsAt,
+       ends_at AS endsAt
+     FROM seasons
+     WHERE status = 'active'
+     ORDER BY starts_at DESC
+     LIMIT 1`
+  )
+
+  return mapSeasonRow(rows[0])
+}
+
+export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound = false } = {}) {
+  const season = await findCurrentSeason()
+  if (!season?.id || !isRankedRound) {
+    return null
+  }
+
+  const normalizedMmr = toNonNegativeNumber(rankMmr, 0)
+  const rewardTier = Math.min(
+    5,
+    Math.floor(normalizedMmr / 400)
+  )
+
+  await pool.execute(
+    `INSERT INTO user_season_stats (user_id, season_id, ranked_rounds, peak_mmr, reward_tier)
+     VALUES (?, ?, 1, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       ranked_rounds = ranked_rounds + 1,
+       peak_mmr = GREATEST(peak_mmr, VALUES(peak_mmr)),
+       reward_tier = GREATEST(reward_tier, VALUES(reward_tier))`,
+    [userId, season.id, normalizedMmr, rewardTier]
+  )
+
+  const [[statsRow]] = await pool.query(
+    `SELECT ranked_rounds AS rankedRounds, peak_mmr AS peakMmr, reward_tier AS rewardTier
+     FROM user_season_stats
+     WHERE user_id = ? AND season_id = ?
+     LIMIT 1`,
+    [userId, season.id]
+  )
+
+  return {
+    season,
+    rankedRounds: toNonNegativeNumber(statsRow?.rankedRounds, 0),
+    peakMmr: toNonNegativeNumber(statsRow?.peakMmr, 0),
+    rewardTier: toNonNegativeNumber(statsRow?.rewardTier, 0),
+  }
+}
+
+export async function insertRoundReplay({
+  userId,
+  username,
+  modeId,
+  seed,
+  events = [],
+  loadoutSnapshot = null,
+  score = 0,
+  hits = 0,
+  misses = 0,
+  bestStreak = 0,
+  roundHistoryId = null,
+  visibility = "public",
+} = {}) {
+  const normalizedEvents = Array.isArray(events) ? events : []
+  const [result] = await pool.execute(
+    `INSERT INTO round_replays (
+       user_id,
+       username,
+       mode_id,
+       seed,
+       events_json,
+       loadout_snapshot_json,
+       score,
+       hits,
+       misses,
+       best_streak,
+       visibility,
+       round_history_id
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      String(username || "Player"),
+      String(modeId || ""),
+      Number(seed) >>> 0,
+      JSON.stringify(normalizedEvents),
+      loadoutSnapshot ? JSON.stringify(loadoutSnapshot) : null,
+      toNonNegativeNumber(score, 0),
+      toNonNegativeNumber(hits, 0),
+      toNonNegativeNumber(misses, 0),
+      toNonNegativeNumber(bestStreak, 0),
+      visibility === "private" ? "private" : "public",
+      roundHistoryId,
+    ]
+  )
+
+  return findReplayById(result.insertId)
+}
+
+export async function findReplayById(replayId) {
+  const [rows] = await pool.query(
+    `SELECT
+       id,
+       user_id AS userId,
+       username,
+       mode_id AS modeId,
+       seed,
+       events_json AS eventsJson,
+       loadout_snapshot_json AS loadoutSnapshotJson,
+       score,
+       hits,
+       misses,
+       best_streak AS bestStreak,
+       visibility,
+       played_at AS playedAt
+     FROM round_replays
+     WHERE id = ?
+     LIMIT 1`,
+    [replayId]
+  )
+
+  return mapReplayRow(rows[0])
+}
+
+export async function findUserReplays(userId, { limit = 10 } = {}) {
+  const normalizedLimit = Math.max(1, Math.min(25, Math.floor(Number(limit) || 10)))
+  const [rows] = await pool.query(
+    `SELECT
+       id,
+       user_id AS userId,
+       username,
+       mode_id AS modeId,
+       seed,
+       events_json AS eventsJson,
+       loadout_snapshot_json AS loadoutSnapshotJson,
+       score,
+       hits,
+       misses,
+       best_streak AS bestStreak,
+       visibility,
+       played_at AS playedAt
+     FROM round_replays
+     WHERE user_id = ?
+     ORDER BY played_at DESC, id DESC
+     LIMIT ?`,
+    [userId, normalizedLimit]
+  )
+
+  return rows.map(mapReplayRow).filter(Boolean)
+}
+
+export async function findUserByUsernameForChallenge(username) {
+  const normalizedUsername = String(username || "").trim()
+  if (!normalizedUsername) {
+    return null
+  }
+
+  const [rows] = await pool.query(
+    `SELECT id, username
+     FROM users
+     WHERE LOWER(username) = LOWER(?)
+     LIMIT 1`,
+    [normalizedUsername]
+  )
+
+  if (!rows[0]) {
+    return null
+  }
+
+  return {
+    id: Number(rows[0].id),
+    username: String(rows[0].username || ""),
+  }
+}
+
+export async function createChallenge({
+  challengerUserId,
+  challengerUsername,
+  opponentUserId,
+  opponentUsername,
+  replayId,
+  modeId,
+  message = "",
+} = {}) {
+  const [result] = await pool.execute(
+    `INSERT INTO challenges (
+       challenger_user_id,
+       challenger_username,
+       opponent_user_id,
+       opponent_username,
+       replay_id,
+       mode_id,
+       message
+     ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      challengerUserId,
+      challengerUsername,
+      opponentUserId,
+      opponentUsername,
+      replayId,
+      modeId,
+      message ? String(message).slice(0, 280) : null,
+    ]
+  )
+
+  return findChallengeById(result.insertId)
+}
+
+export async function findChallengeById(challengeId) {
+  const [rows] = await pool.query(
+    `SELECT
+       c.id,
+       c.challenger_user_id AS challengerUserId,
+       c.challenger_username AS challengerUsername,
+       c.opponent_user_id AS opponentUserId,
+       c.opponent_username AS opponentUsername,
+       c.replay_id AS replayId,
+       c.opponent_replay_id AS opponentReplayId,
+       c.mode_id AS modeId,
+       c.status,
+       c.message,
+       c.challenger_won AS challengerWon,
+       c.created_at AS createdAt,
+       c.responded_at AS respondedAt,
+       c.completed_at AS completedAt,
+       replay.score AS replayScore,
+       opponent_replay.score AS opponentReplayScore
+     FROM challenges c
+     INNER JOIN round_replays replay
+       ON replay.id = c.replay_id
+     LEFT JOIN round_replays opponent_replay
+       ON opponent_replay.id = c.opponent_replay_id
+     WHERE c.id = ?
+     LIMIT 1`,
+    [challengeId]
+  )
+
+  return mapChallengeRow(rows[0])
+}
+
+export async function findChallengesForUser(userId, { role = "all" } = {}) {
+  const normalizedRole = ["incoming", "outgoing", "all"].includes(role) ? role : "all"
+  let whereClause = "c.challenger_user_id = ? OR c.opponent_user_id = ?"
+  if (normalizedRole === "incoming") {
+    whereClause = "c.opponent_user_id = ?"
+  } else if (normalizedRole === "outgoing") {
+    whereClause = "c.challenger_user_id = ?"
+  }
+
+  const params = normalizedRole === "all" ? [userId, userId] : [userId]
+  const [rows] = await pool.query(
+    `SELECT
+       c.id,
+       c.challenger_user_id AS challengerUserId,
+       c.challenger_username AS challengerUsername,
+       c.opponent_user_id AS opponentUserId,
+       c.opponent_username AS opponentUsername,
+       c.replay_id AS replayId,
+       c.opponent_replay_id AS opponentReplayId,
+       c.mode_id AS modeId,
+       c.status,
+       c.message,
+       c.challenger_won AS challengerWon,
+       c.created_at AS createdAt,
+       c.responded_at AS respondedAt,
+       c.completed_at AS completedAt,
+       replay.score AS replayScore,
+       opponent_replay.score AS opponentReplayScore
+     FROM challenges c
+     INNER JOIN round_replays replay
+       ON replay.id = c.replay_id
+     LEFT JOIN round_replays opponent_replay
+       ON opponent_replay.id = c.opponent_replay_id
+     WHERE ${whereClause}
+     ORDER BY c.created_at DESC, c.id DESC
+     LIMIT 50`,
+    params
+  )
+
+  return rows.map(mapChallengeRow).filter(Boolean)
+}
+
+export async function respondToChallenge({
+  challengeId,
+  userId,
+  action,
+} = {}) {
+  const challenge = await findChallengeById(challengeId)
+  if (!challenge) {
+    return { ok: false, reason: "Challenge not found." }
+  }
+  if (challenge.opponentUserId !== userId) {
+    return { ok: false, reason: "Only the challenged player can respond." }
+  }
+  if (challenge.status !== "pending") {
+    return { ok: false, reason: "Challenge is no longer pending." }
+  }
+
+  const nextStatus = action === "accept" ? "accepted" : "declined"
+  await pool.execute(
+    `UPDATE challenges
+     SET status = ?, responded_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [nextStatus, challengeId]
+  )
+
+  return { ok: true, challenge: await findChallengeById(challengeId) }
+}
+
+export async function completeChallenge({
+  challengeId,
+  userId,
+  opponentReplayId,
+  opponentScore = 0,
+} = {}) {
+  const challenge = await findChallengeById(challengeId)
+  if (!challenge) {
+    return { ok: false, reason: "Challenge not found." }
+  }
+  if (challenge.opponentUserId !== userId) {
+    return { ok: false, reason: "Only the challenged player can complete this duel." }
+  }
+  if (challenge.status !== "accepted") {
+    return { ok: false, reason: "Challenge must be accepted before completing." }
+  }
+
+  const challengerWon = toNonNegativeNumber(challenge.replayScore, 0) > toNonNegativeNumber(opponentScore, 0)
+
+  await pool.execute(
+    `UPDATE challenges
+     SET status = 'completed',
+         opponent_replay_id = ?,
+         challenger_won = ?,
+         completed_at = CURRENT_TIMESTAMP
+     WHERE id = ?`,
+    [opponentReplayId, challengerWon ? 1 : 0, challengeId]
+  )
+
+  return { ok: true, challenge: await findChallengeById(challengeId), challengerWon }
 }
 
 export default pool

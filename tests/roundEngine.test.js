@@ -169,7 +169,7 @@ test("combo surge boosts exactly the next four hits", () => {
 })
 
 test("client simulation and server simulateRound agree on loadout rounds", () => {
-  const modeId = "hard"
+  const modeId = "normal"
   const roundRules = buildRoundRules(getDifficultyById(modeId), GLASS_CANNON_LOADOUT)
   const clientSimulation = createRoundSimulation(roundRules)
   const events = []

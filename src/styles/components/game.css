@@ -35,6 +35,45 @@
     gap: 8px;
 }
 
+.ghostDuelBanner,
+.ghostDuelError {
+    width: min(720px, 94vw);
+    border: 1px solid rgba(241, 211, 132, 0.24);
+    border-radius: 14px;
+    background: rgba(241, 211, 132, 0.08);
+    padding: 10px 14px;
+    display: grid;
+    gap: 4px;
+}
+
+.ghostDuelLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 236, 188, 0.92);
+}
+
+.ghostDuelScores,
+.ghostDuelLead {
+    font-size: 13px;
+    color: rgba(235, 244, 255, 0.9);
+}
+
+.ghostDuelLead.isAhead {
+    color: #9ef0c8;
+}
+
+.ghostDuelLead.isBehind {
+    color: #ffb4bc;
+}
+
+.ghostDuelError {
+    border-color: rgba(255, 106, 117, 0.34);
+    background: rgba(255, 106, 117, 0.08);
+    color: #ffd8dc;
+}
+
 .hudTopBlock {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 14px;
@@ -1527,6 +1566,143 @@
     font-weight: 800;
     letter-spacing: 0.22px;
     text-transform: uppercase;
+}
+
+.readyOnboardingCoach {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(83, 215, 179, 0.28);
+    background: rgba(83, 215, 179, 0.08);
+    display: grid;
+    gap: 6px;
+}
+
+.readyOnboardingCoachStep {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+    color: rgba(176, 244, 214, 0.92);
+}
+
+.readyOnboardingCoachNote {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgba(220, 236, 228, 0.88);
+}
+
+.readyWarmupSuggestion {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 196, 113, 0.28);
+    background: rgba(255, 196, 113, 0.08);
+}
+
+.readyWarmupEyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+    color: rgba(255, 224, 170, 0.92);
+}
+
+.readyWarmupCopy {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgba(236, 228, 210, 0.9);
+}
+
+.readyTrainingSuite {
+    display: grid;
+    gap: 12px;
+}
+
+.readyTrainingHeader {
+    display: grid;
+    gap: 4px;
+}
+
+.readyTrainingEyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+    color: rgba(176, 244, 214, 0.92);
+}
+
+.readyTrainingLead {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(220, 236, 228, 0.82);
+}
+
+.readyTrainingGrid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.readyTrainingCard {
+    text-align: left;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 12px 14px;
+    display: grid;
+    gap: 6px;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+}
+
+.readyTrainingCard.isActive {
+    border-color: rgba(83, 215, 179, 0.42);
+    background: rgba(83, 215, 179, 0.1);
+}
+
+.readyTrainingCardTitle {
+    font-size: 14px;
+}
+
+.readyTrainingCardMeta,
+.readyTrainingCardBest {
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(220, 236, 228, 0.78);
+}
+
+.drillGoalBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(83, 215, 179, 0.24);
+    background: rgba(83, 215, 179, 0.08);
+}
+
+.drillGoalBanner.isComplete {
+    border-color: rgba(120, 230, 170, 0.42);
+    background: rgba(120, 230, 170, 0.14);
+}
+
+.drillGoalLabel {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.drillGoalProgress {
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .readyBuildButton:hover,

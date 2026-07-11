@@ -57,12 +57,90 @@ export async function fetchCurrentUser() {
   }
 }
 
-export async function fetchLeaderboard() {
+export async function fetchLeaderboard({
+  board = "mmr",
+  page = 1,
+  limit,
+  search = "",
+  view = "top",
+} = {}) {
   try {
-    const response = await apiClient.get("/leaderboard")
+    const response = await apiClient.get("/leaderboard", {
+      params: {
+        board,
+        page,
+        view,
+        ...(limit ? { limit } : {}),
+        ...(search ? { search } : {}),
+      },
+    })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error, "Unable to load leaderboard."))
+  }
+}
+
+export async function fetchCurrentSeason() {
+  try {
+    const response = await apiClient.get("/seasons/current")
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to load season."))
+  }
+}
+
+export async function fetchReplay(replayId) {
+  try {
+    const response = await apiClient.get(`/replays/${replayId}`)
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to load replay."))
+  }
+}
+
+export async function fetchUserReplays({ limit = 10 } = {}) {
+  try {
+    const response = await apiClient.get("/replays", {
+      params: { limit },
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to load replays."))
+  }
+}
+
+export async function fetchChallenges({ role = "all" } = {}) {
+  try {
+    const response = await apiClient.get("/challenges", {
+      params: { role },
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to load challenges."))
+  }
+}
+
+export async function sendChallenge({ opponentUsername, replayId, message = "" }) {
+  try {
+    const response = await apiClient.post("/challenges", {
+      opponentUsername,
+      replayId,
+      message,
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to send challenge."))
+  }
+}
+
+export async function respondToChallenge(challengeId, action) {
+  try {
+    const response = await apiClient.post(`/challenges/${challengeId}/respond`, {
+      action,
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to respond to challenge."))
   }
 }
 
@@ -123,6 +201,10 @@ export async function submitRound({
   avgReactionMs,
   bestReactionMs,
   roundToken,
+  arenaWidth,
+  arenaHeight,
+  challengeId,
+  drillId,
 }) {
   try {
     const response = await apiClient.post("/round/complete", {
@@ -132,6 +214,10 @@ export async function submitRound({
       avgReactionMs,
       bestReactionMs,
       roundToken,
+      arenaWidth,
+      arenaHeight,
+      challengeId,
+      drillId,
     })
     return response.data
   } catch (error) {

@@ -1,7 +1,17 @@
 # Moonshot Improvement Reconnaissance
 
 Date: 2026-07-10 (product direction answers folded in same day — see final section)
-Scope: full repository inspection (frontend `src/`, backend `server/`, schema, tests, docs). No code was modified.
+Last reviewed: 2026-07-11
+Scope: full repository inspection (frontend `src/`, backend `server/`, schema, tests, docs). Original reconnaissance did not modify code; Waves 1–3 have since been implemented (see status below).
+
+**Overall status: PARTIAL — Wave 1 close-out shipped (geometry + mandatory ranked tokens); Waves 2–3 partial; Wave 4 complete (#7, #8, #9).**
+
+| Wave | Scope | Status | Key evidence |
+|------|-------|--------|--------------|
+| 1 | #1 + #6 Engine + integrity | **Mostly done** | `roundEngine.js` + `roundGeometry.js`, mandatory ranked tokens, click-coordinate validation, `tests/roundGeometry.test.js` (56 tests passing) |
+| 2 | #3 + #2 Lifetime stats + build meta | **Partial** | `user_lifetime_stats`, `user_loadout_stats`, `GET /api/history?page=`, reaction + loadout columns populated |
+| 3 | #4 + #5 Ladder + async multiplayer | **Partial** | `findLeaderboardPage` (rank/pagination/around-me), `seasons`/`round_replays`/`challenges`, `ChallengesPage.jsx`, ghost HUD |
+| 4 | #7 + #8 + #9 Sync, armory, training | **Done** | See `docs/improvement-wave4-parallel.md` |
 
 ## Product Snapshot
 
@@ -9,11 +19,13 @@ ClickAway is a full-stack solo reaction/clicking game: React 19 + Vite frontend,
 
 The architecture is unusually mature in places (httpOnly-cookie JWT sessions, server-side round re-simulation from an event stream, transactional shop purchases, self-migrating schema) and prototype-grade in others (client-only gameplay modifiers the server ignores, a 100-round history blob feeding all stats, a duplicated mid-flight Armory refactor).
 
+> **2026-07-11 update:** Waves 1–3 have addressed the worst scoring divergence (shared `roundEngine.js`, loadout-aware server replay, lifetime aggregates, ladder/challenges). The sections below describe the **original baseline** that motivated each opportunity; see the status table at the top and "Remaining gaps" for current state.
+
 ---
 
 ## Ranked Moonshot Opportunities
 
-### 1. Unified Deterministic Round Engine (server understands loadouts, powerups, and geometry)
+### 1. Unified Deterministic Round Engine (server understands loadouts, powerups, and geometry) — **Mostly done**
 
 - **Current implementation:** The client simulates rounds with full buildcraft rules — `buildRoundRules()` in `src/constants/buildcraft.js` merges Tempo Core / Streak Lens / Power Rig effects (`scoreMultiplier`, `comboStep`, `missPenalty`, size/shrink) into the live mode, and `useGameScreenController.js` implements six active powerups (`time_boost`, `guard_charge`, `combo_surge`, etc.). The server independently re-simulates the round in `simulateRound()` (`server/roundRewards.js`) from a bare `{type, t}` hit/miss event stream using only the base mode from `getDifficultyById(modeId)`.
 - **Primary weakness:** The two simulations compute different games. Server-authoritative score/coins/XP/RR ignore every loadout modifier: `scoreMultiplier` is never applied, `combo_surge`'s +4 virtual streak is invisible, `guard_charge`-absorbed misses still reset the server streak and deduct penalty, and Power-Rig-modified `comboStep` diverges the combo math. The in-round HUD and `GameOverOverlay` show one score; the persisted history/leaderboard entry silently records another. The entire buildcraft system is therefore cosmetic at the persistence layer.
@@ -24,7 +36,7 @@ The architecture is unusually mature in places (httpOnly-cookie JWT sessions, se
 - **Risks/dependencies:** Requires careful determinism (no `Date.now()`/`Math.random()` inside the engine); anti-cheat rules must be re-derived per-loadout (max plausible score changes with modules).
 - **Priority:** **Highest.** Foundation for opportunities 2, 5, and 6.
 
-### 2. Buildcraft as a Real Progression Meta
+### 2. Buildcraft as a Real Progression Meta — **Partial (persistence done, progression arc open)**
 
 - **Current implementation:** Three loadout slots persisted to `user_loadouts`; six powerups gated at levels 4/7/11; all passive modules unlocked at level 1 (`unlockLevel: 1` throughout `PASSIVE_MODULES`). Effects apply client-side only (see #1). No per-build statistics anywhere.
 - **Primary weakness:** The game's most original system has almost no progression arc, no persisted consequences, and no feedback loop — players cannot see whether a build performs better, and unlock scaffolding sits unused.
@@ -35,7 +47,7 @@ The architecture is unusually mature in places (httpOnly-cookie JWT sessions, se
 - **Risks/dependencies:** Balance work; depends on #1.
 - **Priority:** High (second wave, immediately after #1).
 
-### 3. Lifetime Stats Foundation (kill the 100-round blob)
+### 3. Lifetime Stats Foundation (kill the 100-round blob) — **Partial (aggregates done, auth cache open)**
 
 - **Current implementation:** `POST /api/round/complete` keeps only the last 100 rounds (`slice(0, 100)` in `server/index.js`). Everything downstream — profile stats, history insights, achievement metrics, career reaction stats — is client-computed from that truncated array. Reaction metrics (`avgReactionMs`/`bestReactionMs`) are computed client-side but never sent to the server, even though `round_history.avg_reaction_ms`/`best_reaction_ms` columns exist. A dead client constant `MAX_HISTORY_ENTRIES = 50` and unused `appendHistoryEntry()` add confusion.
 - **Primary weakness:** Career-scale features are built on a window that forgets. Achievements like `career-rounds-250` can only ever be satisfied via previously-persisted unlocks or luck; "total coins earned" is really "coins earned in the last 100 rounds"; profile reaction stats go blank after a session reload.
@@ -46,7 +58,7 @@ The architecture is unusually mature in places (httpOnly-cookie JWT sessions, se
 - **Risks/dependencies:** Migration/backfill of existing users' aggregates from their retained 100 rounds; independent of #1 but shares the round-completion write path.
 - **Priority:** High — co-equal second wave with #2, and a prerequisite for #4's richer boards.
 
-### 4. Leaderboard → Living Competitive Ladder
+### 4. Leaderboard → Living Competitive Ladder — **Partial (query model done, season lifecycle open)**
 
 - **Current implementation:** `GET /api/leaderboard` returns a fixed top-25 by MMR (`findLeaderboardRows({ limit: 25 })` in `server/playerMysqlDatabase.js`). The client "sorts" by re-ordering those same 25 rows. A player outside the top 25 gets a heuristic "Closest to You" panel computed from the visible rows' minimum MMR (`NearMeSection` in `src/pages/LeaderboardPage.jsx`), not their actual rank. No pagination, no time windows, no seasons, no per-mode or per-stat boards, no server-computed self-rank.
 - **Primary weakness:** For everyone below rank 25 — i.e., almost all players as the game grows — the leaderboard shows nothing about them. The core competitive surface is a static snapshot.
@@ -57,7 +69,7 @@ The architecture is unusually mature in places (httpOnly-cookie JWT sessions, se
 - **Risks/dependencies:** Seasonal MMR resets interact with placement logic in `src/utils/rankUtils.js`; benefits from #3.
 - **Priority:** High (raised — see product direction section: with a real playerbase intended, seasons are also the natural chassis for monetizable reward tracks).
 
-### 5. Asynchronous Multiplayer: Ghost Duels and Challenges
+### 5. Asynchronous Multiplayer: Ghost Duels and Challenges — **Partial (challenges done, spectate/arena ghost open)**
 
 - **Current implementation:** None. The game is entirely solo; the only inter-player surface is the leaderboard table.
 - **Primary weakness:** A skill-expression game with rankings but no way to directly compete is leaving its core motivation loop unfinished.
@@ -68,7 +80,7 @@ The architecture is unusually mature in places (httpOnly-cookie JWT sessions, se
 - **Risks/dependencies:** Hard dependency on #1; moderation/abuse surface for challenges.
 - **Priority:** High (raised — multiplayer is confirmed product intent; still strictly sequenced after #1, which is its data format).
 
-### 6. Ranked Integrity: Verifiable Rounds Instead of Heuristics
+### 6. Ranked Integrity: Verifiable Rounds Instead of Heuristics — **Mostly done (loadout-aware ceilings still open)**
 
 - **Current implementation:** Anti-cheat is three heuristics in `simulateRound()`: minimum 80ms between clicks (`MIN_CLICK_INTERVAL_MS`), a per-mode max event count, and an elapsed-time cap (`maxTimeBufferSeconds`). Button positions/sizes are generated client-side with unseeded randomness, so the server cannot verify that any "hit" was geometrically possible.
 - **Primary weakness:** A trivially scriptable client can submit a perfect legal-looking event stream (hits every 85ms for the full round) and climb the ranked ladder. For a game whose headline feature is Ranked, integrity is nearly absent.
@@ -79,36 +91,36 @@ The architecture is unusually mature in places (httpOnly-cookie JWT sessions, se
 - **Risks/dependencies:** False positives on legitimate fast players; piggybacks on #1.
 - **Priority:** High, bundled with #1's engine work (raised — a real playerbase with monetization makes ladder integrity non-negotiable).
 
-### 7. Progress Sync: From Snapshot Blob to Intentional State Machine
+### 7. Progress Sync: From Snapshot Blob to Intentional State Machine — **Done**
 
-- **Current implementation:** `src/App.jsx` maintains `progressSnapshotRef` (a full client snapshot of coins/XP/MMR/history/loadouts), a manually chained `persistQueueRef` promise queue, and a `sessionEpochRef` guard, pushing whole-snapshot payloads to `PUT /api/progress` — which then discards most fields (`normalizeProgressPayload` accepts only cosmetics/loadouts/mode/walkthrough). `useAchievementSync` persists achievement IDs the server recomputes and ignores. `useShopActions.hasFullProgressPayload()` falls back to optimistic client-side coin deduction on incomplete responses.
+- **Current implementation:** `src/app/useProgressSync.js` + `src/app/progressIntent.js` (`pickProgressIntent`) send only intent fields (loadouts, walkthrough, selected mode) via `PUT /api/progress`. `App.jsx` no longer maintains `progressSnapshotRef` or `persistQueueRef`. `useAchievementSync` updates local state and toasts only — no client push of achievement IDs. `useShopActions` trusts authoritative `session.progress` from shop responses.
 - **Primary weakness:** A hand-rolled, epoch-guarded, full-snapshot sync pipeline where the server accepts ~6 of the ~13 fields sent. It works, but it's the app's most fragile and hardest-to-extend seam — every new persisted field must thread through snapshot refs, normalizers, and merge logic on both sides.
 - **Moonshot version:** Server-owned state with narrow intent endpoints (equip, select-mode, save-loadout — several already exist), a thin client cache keyed by server responses, offline queueing with retry, and multi-tab consistency. Delete the snapshot/queue machinery from `App.jsx`.
 - **User/business impact:** Fewer lost-progress edge cases and "Couldn't save your progress" toasts; dramatically faster feature development for everything above.
 - **Architectural implications:** Refactor of `App.jsx`, `useAppPlayerState.js`, `useShopActions.js`; API additions are small since intent endpoints mostly exist.
-- **Evidence:** `src/App.jsx` (`persistProgress`, `sessionEpochRef`, `progressSnapshotRef`); `server/index.js` (`normalizeProgressPayload`); `src/app/useAchievementSync.js` (persists ignored IDs); `src/app/useShopActions.js` (optimistic fallback).
+- **Evidence:** `src/app/useProgressSync.js`, `src/app/progressIntent.js`, `tests/progressIntent.test.js`; snapshot refs removed from `src/App.jsx`.
 - **Risks/dependencies:** Pure refactor risk; touches every page's props.
 - **Priority:** Medium — high architectural leverage, low direct user visibility.
 
-### 8. Armory Convergence and First-Session Experience
+### 8. Armory Convergence and First-Session Experience — **Done**
 
-- **Current implementation:** The live `/armory` route renders `src/pages/ArmoryPage.jsx` (~1,300 lines, monolithic) while a completed refactor — `src/features/armory/components/ArmoryScreen.jsx` + `useArmoryScreenController.js` + shared components — sits unused. Walkthrough step definitions are duplicated in `armoryConstants.js`, `walkthroughSteps.js`, and inline in `ArmoryPage.jsx`.
+- **Current implementation:** Live `/armory` route is a thin `ArmoryPage.jsx` wrapper over `ArmoryScreen` + `useArmoryScreenController`. Walkthrough steps are single-sourced in `armoryConstants.js`. URL state syncs via `useArmoryUrlState`. First-session onboarding extends into the game: Armory → Practice → Casual via `buildWalkthrough` statuses (`practice_pending`, `casual_pending`) and `gameOnboarding.js`.
 - **Primary weakness:** A mid-flight refactor frozen in duplication: any Armory change must be made twice or silently diverges. The walkthrough (the game's only onboarding) is welded to the legacy monolith.
 - **Moonshot version:** Complete the migration to `ArmoryScreen`, delete the monolith, single-source the walkthrough, then extend onboarding beyond the Armory into a first-session flow (guided first Practice round → first Casual round → first build edit) driven by the existing `buildWalkthrough` persistence.
 - **User/business impact:** New-player conversion is the top of every other funnel; today onboarding covers only build configuration, not the game itself.
 - **Architectural implications:** Mostly deletion plus route swap in `src/App.jsx`; walkthrough state model (`src/constants/buildWalkthrough.js`, `users.build_walkthrough_status`) generalizes to multi-flow onboarding.
-- **Evidence:** `src/App.jsx` lazy-loads `pages/ArmoryPage.jsx`; parallel tree under `src/features/armory/`; triplicated `WALKTHROUGH_STEPS`.
+- **Evidence:** `src/pages/ArmoryPage.jsx` (thin wrapper), `src/features/armory/**`, `src/constants/gameOnboarding.js`, `tests/gameOnboarding.test.js`.
 - **Risks/dependencies:** Verifying the refactored screen reaches feature parity before deleting the monolith.
 - **Priority:** Medium.
 
-### 9. Practice Mode → Training Suite
+### 9. Practice Mode → Training Suite — **Done**
 
-- **Current implementation:** Practice is Casual with the timer, rewards, and penalties turned off (`easy` in `src/constants/gameModesConfig.js`). No goals, drills, or feedback beyond the standard game-over stats.
+- **Current implementation:** `src/constants/drillConfig.js` defines three drills (Accuracy Shooter, Streak Hold, Reaction Sprint). Practice ready overlay shows a drill selector with persisted personal bests (`drill_stats_json` on `user_lifetime_stats`). Ranked ready overlay suggests warm-up drills from lifetime performance gaps. In-round HUD shows drill goal progress via `GameHud.jsx`.
 - **Primary weakness:** The mode explicitly designed for improvement gives the player no structure for improving — no target-size drills, no reaction-time benchmarks, no session goals, no comparison to their ranked performance.
 - **Moonshot version:** An aim-trainer-grade training suite: focused drills (small-target, streak-hold, reaction-only), per-drill personal bests and percentile feedback, warm-up routines suggested before Ranked, and reaction analytics tied into #3's lifetime stats.
 - **User/business impact:** Deepens the skill loop and gives lapsed-ranked players a low-stakes re-entry point; strong differentiation versus generic clicker games.
 - **Architectural implications:** New drill configs extend the data-driven `DIFFICULTIES` pattern cleanly; needs #3 for meaningful benchmarks.
-- **Evidence:** `src/constants/gameModesConfig.js` (`easy` mode flags); no drill/goal code anywhere in `src/features/game/`.
+- **Evidence:** `src/constants/drillConfig.js`, `src/utils/drillStatsUtils.js`, `src/utils/trainingRecommendations.js`, `tests/drillConfig.test.js`, `tests/drillStatsUtils.test.js`.
 - **Risks/dependencies:** Scope creep; benefits from #1 (engine variants) and #3 (stats).
 - **Priority:** Lower — valuable, but after the foundations.
 
@@ -144,17 +156,17 @@ The number on the game-over screen is the number in your history, on your profil
 2. **Determinism audit of the controller:** find all `Math.random()`, `Date.now()`, and `performance.now()` uses that leak into scoring-relevant state; decide the seedable RNG and timebase.
 3. **Powerup event semantics:** decide whether activations are client-reported events the server validates against charge rules, or server-granted at simulation time (the former preserves current feel).
 4. **Validation envelope per loadout:** recompute max-plausible score/event ceilings as functions of the build, replacing the flat per-mode caps.
-5. **Compatibility window:** how old clients' bare `{modeId, events}` submissions are handled during rollout (dual-accept vs forced refresh).
+5. **Compatibility window:** how old clients' bare `{modeId, events}` submissions are handled during rollout (dual-accept vs forced refresh). **Decision (Wave 1):** dual-accept — `simulateRound` still accepts bare legacy streams; round tokens are best-effort with local fallback seed until geometry verification lands.
 6. **Test baseline:** extend `tests/buildcraft.test.js` and add engine golden-file tests (fixed seed + event log → exact expected outcome) before any swap.
 
 ### Independently verifiable slices
 
-1. **Extract the pure engine** from `useGameScreenController` with zero behavior change; client consumes it; golden-file tests lock its outputs. (Verify: existing gameplay identical; tests pass.)
-2. **Server adopts the engine for base modes** — replace `simulateRound` internals with the shared engine, still ignoring loadouts. (Verify: identical results on a corpus of recorded event streams.)
-3. **Enrich the submission payload** — send loadout snapshot + reaction metrics; persist them into the existing dormant columns; History/Profile display them. (Verify: DB rows populated; profile reaction stats survive reload.)
-4. **Server applies passive modules** — loadout-aware scoring server-side; client and server totals now match for passive-only builds. (Verify: end-to-end equality assertion in an integration test.)
-5. **Powerup activation events** — add activation events with server-side charge-legality validation; full parity for active powerups. (Verify: guard/surge rounds persist the same score the overlay showed.)
-6. **Seeded round tokens** — server issues seed at round start; button geometry derives from it; groundwork for replays and geometric validation. (Verify: same seed + events reproduce the identical round in a headless replay.)
+1. ✅ **Extract the pure engine** from `useGameScreenController` with zero behavior change; client consumes it; golden-file tests lock its outputs. (Verify: existing gameplay identical; tests pass.)
+2. ✅ **Server adopts the engine for base modes** — replace `simulateRound` internals with the shared engine, still ignoring loadouts. (Verify: identical results on a corpus of recorded event streams.)
+3. ✅ **Enrich the submission payload** — send loadout snapshot + reaction metrics; persist them into the existing dormant columns; History/Profile display them. (Verify: DB rows populated; profile reaction stats survive reload.)
+4. ✅ **Server applies passive modules** — loadout-aware scoring server-side; client and server totals now match for passive-only builds. (Verify: end-to-end equality assertion in an integration test.)
+5. ✅ **Powerup activation events** — add activation events with server-side charge-legality validation; full parity for active powerups. (Verify: guard/surge rounds persist the same score the overlay showed.)
+6. ✅ **Seeded round tokens** — server issues seed at round start; button geometry derives from it; groundwork for replays and geometric validation. (Verify: same seed + events reproduce the identical round in a headless replay.) **Done:** `POST /api/round/start`, mandatory tokens for ranked, `roundGeometry.js` click validation, arena dimensions in payload. **Remaining:** loadout-aware anti-cheat ceilings; statistical anomaly screening.
 
 ---
 
@@ -176,14 +188,37 @@ The repo already contains the correct monetization substrate, which shapes where
 
 - **Cosmetics are the natural storefront.** The shop is cosmetic-only, server-priced, and transactionally validated (`server/playerStateStore.js`, `server/serverShopCatalogIdMappings.js`) — the right foundation for premium cosmetics or a premium currency alongside coins. Keeping buildcraft (gameplay-affecting) out of paid paths avoids pay-to-win in a skill game.
 - **Seasons (#4) are the recurring-revenue chassis.** A seasonal ladder with a free/premium reward track is the standard model for this genre and reuses the existing rank/placement machinery in `src/utils/rankUtils.js`.
-- **Prerequisites before charging money:** account durability (#3 lifetime stats — paying users must never see stats vanish past 100 rounds), ladder integrity (#6), and an email/recovery story for accounts (current auth is username+password only, `server/auth.js` — no recovery path exists; this becomes a hard requirement once purchases are attached to accounts).
+- **Prerequisites before charging money:** account durability (#3 — lifetime aggregates now exist, but auth still caches a 50-round window and lacks long-horizon analytics), ladder integrity (#6 — scoring parity done, geometry verification still open), and an email/recovery story for accounts (current auth is username+password only, `server/auth.js` — no recovery path exists; hard requirement once purchases attach to accounts).
 
 ### Revised sequencing
 
-1. **Wave 1 — Engine + integrity (#1, #6):** shared deterministic simulation, enriched submissions, seeded round tokens. Everything else stands on this.
-2. **Wave 2 — Durable identity (#3, #2):** lifetime aggregates, unbounded history, per-build stats, achievement counters. Makes accounts worth investing in.
-3. **Wave 3 — Competition + social (#4, #5):** full ladder with seasons, then ghost duels/challenges built on the replay format from Wave 1. This wave is where the "multiplayer feel" lands and where a season pass becomes sellable.
-4. **Ongoing/parallel — #7 (sync refactor), #8 (armory convergence), #9 (training suite)** as capacity allows; #8's onboarding half rises in importance the moment user acquisition starts.
+1. **Wave 1 — Engine + integrity (#1, #6):** shared deterministic simulation, enriched submissions, seeded round tokens. Everything else stands on this. **Status: mostly done** — scoring/loadout/powerup/geometry parity shipped; loadout-aware ceilings and anomaly screening remain.
+2. **Wave 2 — Durable identity (#3, #2):** lifetime aggregates, unbounded history, per-build stats, achievement counters. Makes accounts worth investing in. **Status: partial** — aggregates and paginated history live; auth still ships a 50-round recent window (`RECENT_HISTORY_LIMIT`); build unlock progression still flat.
+3. **Wave 3 — Competition + social (#4, #5):** full ladder with seasons, then ghost duels/challenges built on the replay format from Wave 1. This wave is where the "multiplayer feel" lands and where a season pass becomes sellable. **Status: partial** — ladder/challenges/ghost-score duels work; season MMR resets and premium reward tracks not built; ghost is HUD-only (no rival button in arena).
+4. **Wave 4 — Ongoing/parallel (#7, #8, #9)** as capacity allows; #8's onboarding half rises in importance the moment user acquisition starts. **Status: done** — see `docs/improvement-wave4-parallel.md`.
+
+### Remaining gaps (priority order within each wave)
+
+**Wave 1 close-out**
+- Loadout-aware anti-cheat ceilings (max plausible score/events as functions of build).
+- Statistical anomaly screening (reaction-time distributions, inhuman consistency).
+
+**Wave 2 close-out**
+- Stop embedding recent history in every auth response; client fetches history on demand only.
+- Staged module unlocks beyond level 1; per-build analytics surface beyond profile top-3.
+- Remove dead `appendHistoryEntry()` / `MAX_HISTORY_ENTRIES` confusion.
+
+**Wave 3 close-out**
+- Season lifecycle: MMR reset on season rollover, `user_season_stats` reward claiming.
+- Premium/free season reward track (display tiers exist in `seasonUtils.js`; no claim flow).
+- Spectate top leaderboard rounds; visual ghost button in `GameArena.jsx`.
+- Per-mode leaderboard boards (current boards are stat-type, not mode-specific).
+
+**Wave 4 (complete)**
+- ✅ #7: intent-only progress sync via `useProgressSync` / `pickProgressIntent`.
+- ✅ #8: `ArmoryScreen` cutover + first-session onboarding into Practice/Casual.
+- ✅ #9: drill configs, persisted bests, warm-up suggestions, in-round goal HUD.
+- 🔶 Future: percentile benchmark feedback on drills.
 
 ### Armory refactor disposition (question 3)
 

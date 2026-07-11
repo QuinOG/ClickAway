@@ -2,6 +2,10 @@
 
 export default function GameHud({
   score,
+  ghostScore = null,
+  ghostUsername = null,
+  ghostTargetScore = null,
+  isGhostDuel = false,
   timeLeft,
   isTimedRound = true,
   modeLabel = "",
@@ -15,6 +19,7 @@ export default function GameHud({
   pbPaceStatus = null,
   playerBestScore = 0,
   onEndRound,
+  drillGoal = null,
 }) {
   const timerDisplay = isTimedRound ? `${timeLeft}s` : "No Limit"
   const timerStateClassName = !isTimedRound
@@ -25,8 +30,37 @@ export default function GameHud({
         ? " timerUrgent"
         : ""
   const scoreClassName = `scoreNumber${comboActive ? " comboActive" : ""}`
+  const ghostLead = isGhostDuel && ghostScore !== null && ghostTargetScore !== null
+    ? ghostScore >= ghostTargetScore
+    : null
+
   return (
     <>
+      {isGhostDuel ? (
+        <div className="ghostDuelBanner" aria-label="Ghost duel status">
+          <span className="ghostDuelLabel">Ghost Duel vs {ghostUsername || "Rival"}</span>
+          <span className="ghostDuelScores">
+            You: {score.toLocaleString()} · Ghost: {Number(ghostScore || 0).toLocaleString()}
+            {ghostTargetScore ? ` / ${Number(ghostTargetScore).toLocaleString()}` : ""}
+          </span>
+          {ghostLead !== null ? (
+            <span className={`ghostDuelLead${ghostLead ? " isAhead" : " isBehind"}`}>
+              {ghostLead ? "Ahead of ghost pace" : "Behind ghost pace"}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
+      {drillGoal ? (
+        <div
+          className={`drillGoalBanner${drillGoal.isComplete ? " isComplete" : ""}`}
+          aria-label="Training drill goal"
+        >
+          <span className="drillGoalLabel">{drillGoal.label}</span>
+          <span className="drillGoalProgress">{drillGoal.progressLabel}</span>
+        </div>
+      ) : null}
+
       <div className="hudTopRow">
         <div className="hudTopBlock">
           <span className="hudTopLabel">Score</span>

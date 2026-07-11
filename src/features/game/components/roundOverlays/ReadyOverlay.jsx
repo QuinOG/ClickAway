@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
+import { formatDrillBestMetric } from "../../../utils/drillStatsUtils.js"
 
 const MotionSection = motion.section
 const MotionDiv = motion.div
@@ -122,6 +123,13 @@ export function ReadyOverlay({
   canChangeMode = true,
   activeLoadoutName = "Loadout",
   showArmoryWalkthroughBadge = false,
+  onboardingCoach = null,
+  showTrainingSuite = false,
+  trainingDrills = [],
+  selectedDrillId = null,
+  onSelectDrill,
+  drillStats = {},
+  warmupSuggestion = null,
   sessionStats = null,
   onClose,
 }) {
@@ -196,8 +204,12 @@ export function ReadyOverlay({
     }
   }
 
-  const startButtonLabel = selectedMode ? `Start ${selectedMode.label}` : "Start Round"
+  const startButtonLabel = onboardingCoach?.startLabel
+    ?? (selectedMode ? `Start ${selectedMode.label}` : "Start Round")
   const currentModePosition = modeCount ? activeModeIndex + 1 : 0
+  const readyTitle = onboardingCoach?.title ?? "Choose Round"
+  const readyLead = onboardingCoach?.instruction
+    ?? "Pick your mode and start. Armory is where you change the build."
 
   return (
     <MotionDiv
@@ -222,11 +234,19 @@ export function ReadyOverlay({
       >
         <MotionDiv variants={prefersReducedMotion ? undefined : readySectionVariants}>
           <h2 id="round-ready-title" className="readyTitle">
-            Choose Round
+            {readyTitle}
           </h2>
           <p className="readyLead">
-            Pick your mode and start. Armory is where you change the build.
+            {readyLead}
           </p>
+          {onboardingCoach ? (
+            <div className="readyOnboardingCoach" aria-label="First session onboarding">
+              <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span>
+              {onboardingCoach.note ? (
+                <p className="readyOnboardingCoachNote">{onboardingCoach.note}</p>
+              ) : null}
+            </div>
+          ) : null}
         </MotionDiv>
 
         <MotionDiv
@@ -298,6 +318,57 @@ export function ReadyOverlay({
           </button>
         </MotionDiv>
 
+        {warmupSuggestion ? (
+          <MotionDiv
+            className="readyWarmupSuggestion"
+            variants={prefersReducedMotion ? undefined : readySectionVariants}
+          >
+            <span className="readyWarmupEyebrow">Warm-up suggestion</span>
+            <p className="readyWarmupCopy">
+              Try <strong>{warmupSuggestion.label}</strong> in Practice before Ranked.{" "}
+              {warmupSuggestion.description}
+            </p>
+          </MotionDiv>
+        ) : null}
+
+        {showTrainingSuite ? (
+          <MotionDiv
+            className="readyTrainingSuite"
+            variants={prefersReducedMotion ? undefined : readySectionVariants}
+            aria-label="Training drills"
+          >
+            <div className="readyTrainingHeader">
+              <span className="readyTrainingEyebrow">Training drills</span>
+              <p className="readyTrainingLead">Pick a focused drill or run free Practice.</p>
+            </div>
+            <div className="readyTrainingGrid">
+              <button
+                type="button"
+                className={`readyTrainingCard ${selectedDrillId ? "" : "isActive"}`}
+                onClick={() => onSelectDrill?.(null)}
+              >
+                <strong className="readyTrainingCardTitle">Free Practice</strong>
+                <span className="readyTrainingCardMeta">No timer pressure or drill goal.</span>
+              </button>
+              {trainingDrills.map((drill) => {
+                const bestLabel = formatDrillBestMetric(drill, drillStats[drill.id])
+                return (
+                  <button
+                    key={drill.id}
+                    type="button"
+                    className={`readyTrainingCard ${selectedDrillId === drill.id ? "isActive" : ""}`}
+                    onClick={() => onSelectDrill?.(drill.id)}
+                  >
+                    <strong className="readyTrainingCardTitle">{drill.label}</strong>
+                    <span className="readyTrainingCardMeta">{drill.description}</span>
+                    <span className="readyTrainingCardBest">Best: {bestLabel}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </MotionDiv>
+        ) : null}
+
         {sessionStats ? (
           <MotionDiv
             className="readySessionStrip"
@@ -346,9 +417,11 @@ export function ReadyOverlay({
             <p className="readyPassiveBuildLabel" aria-label="Current active build">
               Active build: <strong>{activeLoadoutName || "Loadout"}</strong>
             </p>
-            <Link className="secondaryButton readyHelpLink" to="/help">
-              How To Play
-            </Link>
+            {!onboardingCoach ? (
+              <Link className="secondaryButton readyHelpLink" to="/help">
+                How To Play
+              </Link>
+            ) : null}
           </div>
         </MotionDiv>
       </MotionSection>

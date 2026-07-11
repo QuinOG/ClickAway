@@ -1219,5 +1219,190 @@
     }
 }
 
+.leaderboardSeasonBanner {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border: 1px solid rgba(241, 211, 132, 0.22);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 214, 120, 0.08), rgba(118, 166, 224, 0.08));
+}
+
+.leaderboardSeasonProgress {
+    margin-top: 12px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.leaderboardSeasonProgress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(255, 214, 120, 0.95), rgba(118, 166, 224, 0.95));
+}
+
+.leaderboardControls {
+    margin-top: 18px;
+    display: grid;
+    gap: 14px;
+}
+
+.leaderboardBoardTabs,
+.leaderboardViewToggle,
+.challengeFilterRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.leaderboardBoardTab,
+.leaderboardViewToggle .secondaryButton.isActive {
+    border: 1px solid rgba(165, 205, 246, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(220, 235, 250, 0.88);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.leaderboardBoardTab.isActive,
+.leaderboardViewToggle .secondaryButton.isActive {
+    border-color: rgba(241, 211, 132, 0.34);
+    background: rgba(241, 211, 132, 0.12);
+    color: #fff6df;
+}
+
+.leaderboardControlRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.leaderboardSearchInput {
+    min-width: min(100%, 260px);
+    flex: 1 1 220px;
+    border: 1px solid rgba(165, 205, 246, 0.18);
+    border-radius: 10px;
+    background: rgba(8, 14, 28, 0.72);
+    color: #eef6ff;
+    padding: 10px 12px;
+}
+
+.leaderboardPagination {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.challengePageHeader,
+.challengeCardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.challengePendingBadge,
+.challengeStatusBadge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.challengePendingBadge {
+    background: rgba(255, 214, 120, 0.14);
+    color: #ffe7a8;
+}
+
+.challengeStatusBadge.is-pending {
+    background: rgba(255, 214, 120, 0.14);
+    color: #ffe7a8;
+}
+
+.challengeStatusBadge.is-accepted {
+    background: rgba(118, 166, 224, 0.18);
+    color: #d7ebff;
+}
+
+.challengeStatusBadge.is-completed {
+    background: rgba(120, 214, 160, 0.16);
+    color: #d7ffe8;
+}
+
+.challengeStatusBadge.is-declined,
+.challengeStatusBadge.is-expired {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(220, 235, 250, 0.72);
+}
+
+.challengeSendForm,
+.challengeCard,
+.challengeList {
+    margin-top: 18px;
+}
+
+.challengeSendGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.challengeField {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.challengeField input,
+.challengeField select {
+    border: 1px solid rgba(165, 205, 246, 0.18);
+    border-radius: 10px;
+    background: rgba(8, 14, 28, 0.72);
+    color: #eef6ff;
+    padding: 10px 12px;
+}
+
+.challengeList {
+    display: grid;
+    gap: 14px;
+}
+
+.challengeCard {
+    padding: 16px;
+    border: 1px solid rgba(165, 205, 246, 0.16);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.challengeCardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.challengeCardMeta,
+.challengeCardTimestamp,
+.challengeCardMessage,
+.challengeCardResult {
+    margin: 8px 0 0;
+}
+
+@media (max-width: 720px) {
+    .challengeSendGrid {
+        grid-template-columns: 1fr;
+    }
+}
 
 

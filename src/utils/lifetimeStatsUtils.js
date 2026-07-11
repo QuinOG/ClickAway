@@ -1,4 +1,5 @@
 import { isRankedModeEntry } from "./gameModeLabelsAndRankedFilters.js"
+import { normalizeDrillStats } from "./drillStatsUtils.js"
 
 export const RECENT_HISTORY_LIMIT = 50
 export const HISTORY_PAGE_SIZE = 25
@@ -19,6 +20,7 @@ export const DEFAULT_LIFETIME_STATS = {
   reactionRounds: 0,
   totalReactionMs: 0,
   bestReactionMs: null,
+  drillStats: {},
 }
 
 function toNonNegativeNumber(value) {
@@ -57,6 +59,7 @@ export function normalizeLifetimeStats(stats = {}) {
     reactionRounds: toNonNegativeNumber(stats.reactionRounds) ?? 0,
     totalReactionMs: toNonNegativeNumber(stats.totalReactionMs) ?? 0,
     bestReactionMs,
+    drillStats: normalizeDrillStats(stats.drillStats),
   }
 }
 

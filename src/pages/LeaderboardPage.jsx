@@ -8,20 +8,30 @@ import { formatPercent, normalizePercentValue } from "../utils/gameMath.js"
 import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
+import { normalizeSeasonRecord, getSeasonRewardTier } from "../utils/seasonUtils.js"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankProgressWithPlacement,
 } from "../utils/rankUtils.js"
+
+const BOARD_OPTIONS = [
+  { key: "mmr", label: "Rating" },
+  { key: "bestScore", label: "Best Score" },
+  { key: "bestStreak", label: "Best Streak" },
+  { key: "accuracy", label: "Accuracy" },
+  { key: "reaction", label: "Reaction" },
+]
 
 const SORTABLE_COLUMNS = [
   { key: "mmr", label: "Rating" },
   { key: "bestScore", label: "Best Score" },
   { key: "bestStreak", label: "Best Streak" },
   { key: "accuracyPercent", label: "Accuracy" },
+  { key: "bestReactionMs", label: "Reaction" },
 ]
 
 const DEFAULT_SORT = { key: "mmr", direction: "desc" }
-const VISIBLE_LEADERBOARD_LIMIT = 25
+const LEADERBOARD_PAGE_SIZE = 25
 const LEADERBOARD_SKELETON_ROW_COUNT = 8
 
 function formatNumericValue(value) {
@@ -79,15 +89,30 @@ function normalizeLeaderboardRow(row = {}, rowIndex = 0) {
     bestScore: Math.max(0, Number(row.bestScore) || 0),
     bestStreak: Math.max(0, Number(row.bestStreak) || 0),
     accuracyPercent,
+    bestReactionMs: row.bestReactionMs ?? null,
     rankedRounds,
     rankProgress,
     rankLabel: rankProgress.tierLabel,
   }
 }
 
-async function requestLeaderboardRows() {
-  const response = await fetchLeaderboard()
-  return (Array.isArray(response?.rows) ? response.rows : []).map(normalizeLeaderboardRow)
+async function requestLeaderboardPage({
+  board = "mmr",
+  page = 1,
+  search = "",
+  view = "top",
+} = {}) {
+  const response = await fetchLeaderboard({ board, page, limit: LEADERBOARD_PAGE_SIZE, search, view })
+  return {
+    rows: (Array.isArray(response?.rows) ? response.rows : []).map(normalizeLeaderboardRow),
+    page: Math.max(1, Number(response?.page) || 1),
+    totalPages: Math.max(0, Number(response?.totalPages) || 0),
+    totalCount: Math.max(0, Number(response?.totalCount) || 0),
+    selfRank: response?.selfRank ?? null,
+    board: response?.board || board,
+    view: response?.view || view,
+    season: normalizeSeasonRecord(response?.season),
+  }
 }
 
 function LeaderboardTableSkeleton() {
@@ -187,6 +212,9 @@ function LeaderboardStandingPanel({
   currentRankProgress = null,
   currentLeaderboardStats = {},
   rankedRounds = 0,
+  selfRank = null,
+  totalCount = 0,
+  season = null,
 }) {
   const normalizedRankedRounds = Math.max(0, Number(rankedRounds) || 0)
   const placementMatchesRemaining = Math.max(
@@ -195,18 +223,22 @@ function LeaderboardStandingPanel({
   )
   const displaySpot = currentVisiblePlayer
     ? `#${currentVisiblePlayer.rank}`
-    : currentRankProgress?.isPlacement
-      ? "PLACEMENT"
-      : currentRankProgress?.isUnranked
-        ? "--"
-        : `TOP ${VISIBLE_LEADERBOARD_LIMIT}+`
+    : selfRank
+      ? `#${selfRank}`
+      : currentRankProgress?.isPlacement
+        ? "PLACEMENT"
+        : currentRankProgress?.isUnranked
+          ? "--"
+          : "UNRANKED"
 
-  let title = "Outside the visible ladder"
-  let lead = `You have a placed rank, but only the top ${VISIBLE_LEADERBOARD_LIMIT} players are visible right now.`
+  let title = "Your ladder rank"
+  let lead = totalCount > 0
+    ? `You are ranked #${formatNumericValue(selfRank ?? 0)} out of ${formatNumericValue(totalCount)} placed players.`
+    : "Complete placement to appear on the global ladder."
 
   if (currentVisiblePlayer) {
     title = `Visible at #${formatNumericValue(currentVisiblePlayer.rank)}`
-    lead = `You are currently in the visible top ${VISIBLE_LEADERBOARD_LIMIT} and your ladder rank is easy to track here.`
+    lead = "You are in the current results window."
   } else if (currentRankProgress?.isPlacement) {
     title = "Placement in progress"
     lead = placementMatchesRemaining > 0
@@ -215,7 +247,12 @@ function LeaderboardStandingPanel({
   } else if (currentRankProgress?.isUnranked) {
     title = "Play Ranked to place"
     lead = `Complete ${PLACEMENT_MATCH_COUNT} placement matches to unlock your visible ladder standing.`
+  } else if (!selfRank) {
+    title = "Outside the placed ladder"
+    lead = "Finish placement to receive a global rank."
   }
+
+  const rewardTier = getSeasonRewardTier(currentRankProgress?.mmr)
 
   const statItems = [
     {
@@ -270,24 +307,137 @@ function LeaderboardStandingPanel({
             <strong className="leaderboardStandingStatValue">{item.value}</strong>
           </article>
         ))}
+        {season ? (
+          <article className="leaderboardStandingStat">
+            <span className="leaderboardStandingStatLabel">Season Tier</span>
+            <strong className="leaderboardStandingStatValue">{rewardTier.label}</strong>
+          </article>
+        ) : null}
       </div>
     </section>
   )
 }
 
-function NearMeSection({ gatewayRows = [], mmrGap = 0 }) {
+function SeasonBanner({ season = null }) {
+  if (!season) return null
+
   return (
-    <section className="leaderboardNearMeSection" aria-label="Your path to the top 25">
+    <section className="leaderboardSeasonBanner" aria-label="Current season">
+      <div>
+        <p className="leaderboardSectionEyebrow">Current Season</p>
+        <h2 className="cardH2">{season.name}</h2>
+        <p className="muted">
+          {season.daysRemaining > 0
+            ? `${season.daysRemaining} days remaining · ${season.progressPercent}% complete`
+            : "Season ending soon"}
+        </p>
+      </div>
+      <div className="leaderboardSeasonProgress" aria-hidden="true">
+        <span style={{ width: `${season.progressPercent}%` }} />
+      </div>
+    </section>
+  )
+}
+
+function LeaderboardControls({
+  board,
+  onBoardChange,
+  search,
+  onSearchChange,
+  view,
+  onViewChange,
+  page,
+  totalPages,
+  onPageChange,
+}) {
+  return (
+    <div className="leaderboardControls">
+      <div className="leaderboardBoardTabs" role="tablist" aria-label="Leaderboard boards">
+        {BOARD_OPTIONS.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            role="tab"
+            aria-selected={board === option.key}
+            className={`leaderboardBoardTab${board === option.key ? " isActive" : ""}`}
+            onClick={() => onBoardChange(option.key)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="leaderboardControlRow">
+        <input
+          type="search"
+          className="leaderboardSearchInput"
+          placeholder="Search players"
+          value={search}
+          onChange={(event) => onSearchChange(event.target.value)}
+          aria-label="Search leaderboard players"
+        />
+
+        <div className="leaderboardViewToggle" role="group" aria-label="Leaderboard view">
+          <button
+            type="button"
+            className={`secondaryButton${view === "top" ? " isActive" : ""}`}
+            onClick={() => onViewChange("top")}
+          >
+            Top Players
+          </button>
+          <button
+            type="button"
+            className={`secondaryButton${view === "aroundMe" ? " isActive" : ""}`}
+            onClick={() => onViewChange("aroundMe")}
+          >
+            Around Me
+          </button>
+        </div>
+      </div>
+
+      {view === "top" && totalPages > 1 ? (
+        <div className="leaderboardPagination" aria-label="Leaderboard pagination">
+          <button
+            type="button"
+            className="secondaryButton"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+          >
+            Previous
+          </button>
+          <span className="muted">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            type="button"
+            className="secondaryButton"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function NearMeSection({ rows = [], selfRank = null, mmrGap = 0 }) {
+  return (
+    <section className="leaderboardNearMeSection" aria-label="Players around your rank">
       <div className="leaderboardNearMeHeader">
-        <p className="leaderboardSectionEyebrow">Closest to You</p>
+        <p className="leaderboardSectionEyebrow">Around You</p>
         <p className="leaderboardNearMeLead">
+          {selfRank
+            ? `Your global rank is #${formatNumericValue(selfRank)}`
+            : "Your rank window"}
           {mmrGap > 0
-            ? `${formatNumericValue(mmrGap)} more RR to enter the visible top ${VISIBLE_LEADERBOARD_LIMIT}`
-            : `You are at the edge of the top ${VISIBLE_LEADERBOARD_LIMIT}`}
+            ? ` · ${formatNumericValue(mmrGap)} RR to the next spot above`
+            : ""}
         </p>
       </div>
       <div className="leaderboardNearMeRows">
-        {gatewayRows.map((player) => (
+        {rows.map((player) => (
           <div key={`${player.userId}-near`} className="leaderboardNearMeRow">
             <span className="leaderboardNearMeRank">#{formatNumericValue(player.rank)}</span>
             <span className="leaderboardNearMeName">{player.username}</span>
@@ -310,8 +460,26 @@ export default function LeaderboardPage({
   const navigate = useNavigate()
   const [sortConfig, setSortConfig] = useState(DEFAULT_SORT)
   const [leaderboardRows, setLeaderboardRows] = useState([])
+  const [board, setBoard] = useState("mmr")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
+  const [selfRank, setSelfRank] = useState(null)
+  const [season, setSeason] = useState(null)
+  const [searchInput, setSearchInput] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [view, setView] = useState("top")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSearchQuery(searchInput.trim())
+      setPage(1)
+    }, 250)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [searchInput])
 
   const loadLeaderboard = useCallback(async () => {
     if (!isAuthed) {
@@ -325,52 +493,28 @@ export default function LeaderboardPage({
     setLoadError("")
 
     try {
-      setLeaderboardRows(await requestLeaderboardRows())
+      const response = await requestLeaderboardPage({
+        board,
+        page,
+        search: searchQuery,
+        view,
+      })
+      setLeaderboardRows(response.rows)
+      setTotalPages(response.totalPages)
+      setTotalCount(response.totalCount)
+      setSelfRank(response.selfRank)
+      setSeason(response.season)
     } catch (error) {
       setLeaderboardRows([])
       setLoadError(error.message || "Unable to load leaderboard.")
     } finally {
       setIsLoading(false)
     }
-  }, [isAuthed])
+  }, [board, isAuthed, page, searchQuery, view])
 
   useEffect(() => {
-    let isCancelled = false
-
-    async function syncLeaderboard() {
-      if (!isAuthed) {
-        if (!isCancelled) {
-          setLeaderboardRows([])
-          setLoadError("You must be logged in to view the leaderboard.")
-          setIsLoading(false)
-        }
-        return
-      }
-
-      setIsLoading(true)
-      setLoadError("")
-
-      try {
-        const rows = await requestLeaderboardRows()
-        if (isCancelled) return
-        setLeaderboardRows(rows)
-      } catch (error) {
-        if (isCancelled) return
-        setLeaderboardRows([])
-        setLoadError(error.message || "Unable to load leaderboard.")
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    syncLeaderboard()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [isAuthed])
+    loadLeaderboard()
+  }, [loadLeaderboard])
 
   const sortedRows = useMemo(() => {
     return [...leaderboardRows].sort((firstRow, secondRow) => {
@@ -402,18 +546,30 @@ export default function LeaderboardPage({
   const isDefaultLadderSort = sortConfig.key === DEFAULT_SORT.key && sortConfig.direction === DEFAULT_SORT.direction
 
   const nearMeData = useMemo(() => {
-    if (currentVisiblePlayer) return null
-    if (!currentRankProgress || currentRankProgress.isUnranked || currentRankProgress.isPlacement) return null
-    if (leaderboardRows.length === 0) return null
+    if (view !== "aroundMe") return null
+    if (!selfRank || leaderboardRows.length === 0) return null
 
-    const rowsByMmr = [...leaderboardRows].sort((a, b) => b.mmr - a.mmr)
-    const gatewayRows = rowsByMmr.slice(-3)
-    const lowestVisibleMmr = rowsByMmr[rowsByMmr.length - 1]?.mmr ?? 0
-    const userMmr = currentRankProgress.mmr ?? 0
-    const mmrGap = lowestVisibleMmr - userMmr
+    const sortedRows = [...leaderboardRows].sort((a, b) => a.rank - b.rank)
+    const rowAbove = sortedRows.find((player) => player.rank === selfRank - 1)
+    const userRow = sortedRows.find((player) => isCurrentUserRow(player, currentUserId, currentUsername))
+    const mmrGap = rowAbove && userRow ? Math.max(0, rowAbove.mmr - userRow.mmr) : 0
 
-    return { gatewayRows, mmrGap: Math.max(0, mmrGap), lowestVisibleMmr }
-  }, [currentVisiblePlayer, currentRankProgress, leaderboardRows])
+    return { rows: sortedRows, selfRank, mmrGap }
+  }, [currentUserId, currentUsername, leaderboardRows, selfRank, view])
+
+  function handleBoardChange(nextBoard) {
+    setBoard(nextBoard)
+    setPage(1)
+    setSortConfig({
+      key: nextBoard === "reaction" ? "bestReactionMs" : nextBoard === "accuracy" ? "accuracyPercent" : nextBoard,
+      direction: nextBoard === "reaction" ? "asc" : "desc",
+    })
+  }
+
+  function handleViewChange(nextView) {
+    setView(nextView)
+    setPage(1)
+  }
 
   function handleSort(columnKey) {
     setSortConfig((currentSort) => {
@@ -445,11 +601,28 @@ export default function LeaderboardPage({
       <section className="card">
         <h1 className="cardTitle">Leaderboard</h1>
 
+        <SeasonBanner season={season} />
+
+        <LeaderboardControls
+          board={board}
+          onBoardChange={handleBoardChange}
+          search={searchInput}
+          onSearchChange={setSearchInput}
+          view={view}
+          onViewChange={handleViewChange}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
+
         <LeaderboardStandingPanel
           currentVisiblePlayer={currentVisiblePlayer}
           currentRankProgress={currentRankProgress}
           currentLeaderboardStats={currentLeaderboardStats}
           rankedRounds={rankedRounds.length}
+          selfRank={selfRank}
+          totalCount={totalCount}
+          season={season}
         />
 
         {isLoading ? <LeaderboardTableSkeleton /> : null}
@@ -473,7 +646,8 @@ export default function LeaderboardPage({
 
         {nearMeData ? (
           <NearMeSection
-            gatewayRows={nearMeData.gatewayRows}
+            rows={nearMeData.rows}
+            selfRank={nearMeData.selfRank}
             mmrGap={nearMeData.mmrGap}
           />
         ) : null}
@@ -554,6 +728,9 @@ export default function LeaderboardPage({
                       <td className="leaderboardNumeric">{formatNumericValue(player.bestStreak)}</td>
                       <td className="leaderboardNumeric">
                         {formatPercent(player.accuracyPercent)}
+                      </td>
+                      <td className="leaderboardNumeric">
+                        {player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"}
                       </td>
                     </tr>
                   )

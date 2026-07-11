@@ -1,6 +1,8 @@
 export const BUILD_WALKTHROUGH_STATUS = {
   NOT_STARTED: "not_started",
   DISMISSED: "dismissed",
+  PRACTICE_PENDING: "practice_pending",
+  CASUAL_PENDING: "casual_pending",
   COMPLETED: "completed",
 }
 
@@ -23,4 +25,12 @@ export function normalizeBuildWalkthrough(
   return {
     status: normalizedStatus,
   }
+}
+
+export function shouldShowArmoryOnboardingBadge(status) {
+  return status === BUILD_WALKTHROUGH_STATUS.NOT_STARTED
+}
+
+export function shouldAutoStartArmoryWalkthrough(status) {
+  return status === BUILD_WALKTHROUGH_STATUS.NOT_STARTED
 }

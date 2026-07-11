@@ -5,6 +5,8 @@ export const ARMORY_STEPS = [
   { id: "review", label: "Review Sim", lead: "See how the build feels in the current mode." },
 ]
 
+export const ARMORY_STEP_IDS = new Set(ARMORY_STEPS.map((step) => step.id))
+
 export const WALKTHROUGH_STEPS = [
   {
     id: "welcome",

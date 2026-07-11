@@ -4,6 +4,7 @@ import {
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
+import { validateRoundGeometry } from "../src/game/engine/roundGeometry.js"
 import { calculateRoundCoins } from "../src/utils/roundRewards.js"
 import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
@@ -102,7 +103,13 @@ function validateEventStream(events, mode) {
  * `{ modeId, events }` submissions replay against the base mode exactly as
  * before.
  */
-export function simulateRound(events, modeId, { loadoutSnapshot = null, playerLevel = 1 } = {}) {
+export function simulateRound(events, modeId, {
+  loadoutSnapshot = null,
+  playerLevel = 1,
+  roundSeed = null,
+  arenaWidth = null,
+  arenaHeight = null,
+} = {}) {
   const mode = getDifficultyById(modeId)
   if (!mode || mode.id !== modeId) return { valid: false, reason: "Invalid modeId." }
 
@@ -127,6 +134,31 @@ export function simulateRound(events, modeId, { loadoutSnapshot = null, playerLe
 
   const replay = replayRoundEvents(roundRules, events)
   if (!replay.valid) return replay
+
+  if (mode.allowsRankProgression) {
+    if (roundSeed === null || roundSeed === undefined) {
+      return { valid: false, reason: "Ranked rounds require a round seed." }
+    }
+
+    const geometryCheck = validateRoundGeometry(roundRules, events, {
+      seed: roundSeed,
+      arenaWidth,
+      arenaHeight,
+    })
+    if (!geometryCheck.valid) return geometryCheck
+  } else if (
+    roundSeed !== null
+    && roundSeed !== undefined
+    && arenaWidth !== null
+    && arenaHeight !== null
+  ) {
+    const geometryCheck = validateRoundGeometry(roundRules, events, {
+      seed: roundSeed,
+      arenaWidth,
+      arenaHeight,
+    })
+    if (!geometryCheck.valid) return geometryCheck
+  }
 
   return {
     valid: true,

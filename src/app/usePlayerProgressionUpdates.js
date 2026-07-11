@@ -15,6 +15,10 @@ export function usePlayerProgressionUpdates({
         avgReactionMs = null,
         bestReactionMs = null,
         roundToken = null,
+        arenaWidth = null,
+        arenaHeight = null,
+        challengeId = null,
+        drillId = null,
       } = roundResult
 
       if (!isAuthed) return
@@ -27,6 +31,10 @@ export function usePlayerProgressionUpdates({
           avgReactionMs,
           bestReactionMs,
           roundToken,
+          arenaWidth,
+          arenaHeight,
+          challengeId,
+          drillId,
         })
         applyProgress(response.progress)
       } catch (error) {

@@ -20,44 +20,12 @@ function buildEquipError(item, ownedItemIds) {
   return "Could not equip that item."
 }
 
-function hasFullProgressPayload(response) {
-  const progress = response?.progress
-  return Boolean(
-    progress &&
-    typeof progress === "object" &&
-    Array.isArray(progress.ownedItemIds) &&
-    progress.equippedButtonSkinId &&
-    progress.equippedArenaThemeId &&
-    progress.equippedProfileImageId
-  )
-}
-
-function buildEquipProgressPatch(item, equippedIds) {
-  if (item.type === "button_skin") {
-    return { equippedButtonSkinId: item.id }
-  }
-
-  if (item.type === "arena_theme") {
-    return { equippedArenaThemeId: item.id }
-  }
-
-  if (item.type === "profile_image") {
-    return { equippedProfileImageId: item.id }
-  }
-
-  return equippedIds
-}
-
 export function useShopActions({
   isAuthed,
   coins,
   ownedItemIds,
-  equippedButtonSkinId,
-  equippedArenaThemeId,
-  equippedProfileImageId,
   applyProgress,
   waitForPendingProgress,
-  syncProgressSnapshot,
 }) {
   const handlePurchase = useCallback(async (item) => {
     const canPurchase = canPurchaseShopItem(item, coins, ownedItemIds)
@@ -78,19 +46,7 @@ export function useShopActions({
     try {
       await waitForPendingProgress?.()
       const session = await purchaseShopItem(item.id)
-      const nextProgress = applyProgress({
-        ...syncProgressSnapshot?.(),
-        ...(hasFullProgressPayload(session)
-          ? {
-              coins: session.progress.coins,
-              ownedItemIds: session.progress.ownedItemIds,
-            }
-          : {
-              coins: Math.max(0, coins - (Number(item.cost) || 0)),
-              ownedItemIds: Array.from(new Set([...ownedItemIds, item.id])),
-            }),
-      })
-      syncProgressSnapshot?.(nextProgress)
+      applyProgress(session.progress)
       return { ok: true }
     } catch (error) {
       return {
@@ -103,7 +59,6 @@ export function useShopActions({
     isAuthed,
     coins,
     ownedItemIds,
-    syncProgressSnapshot,
     waitForPendingProgress,
   ])
 
@@ -133,23 +88,7 @@ export function useShopActions({
     try {
       await waitForPendingProgress?.()
       const session = await equipShopItem(item.id)
-      const nextProgress = applyProgress({
-        ...syncProgressSnapshot?.(),
-        ...(hasFullProgressPayload(session)
-          ? {
-              coins: session.progress.coins,
-              ownedItemIds: session.progress.ownedItemIds,
-              equippedButtonSkinId: session.progress.equippedButtonSkinId,
-              equippedArenaThemeId: session.progress.equippedArenaThemeId,
-              equippedProfileImageId: session.progress.equippedProfileImageId,
-            }
-          : buildEquipProgressPatch(item, {
-              equippedButtonSkinId,
-              equippedArenaThemeId,
-              equippedProfileImageId,
-            })),
-      })
-      syncProgressSnapshot?.(nextProgress)
+      applyProgress(session.progress)
       return { ok: true }
     } catch (error) {
       return {
@@ -160,11 +99,7 @@ export function useShopActions({
   }, [
     applyProgress,
     isAuthed,
-    equippedArenaThemeId,
-    equippedButtonSkinId,
-    equippedProfileImageId,
     ownedItemIds,
-    syncProgressSnapshot,
     waitForPendingProgress,
   ])
 

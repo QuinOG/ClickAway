@@ -22,15 +22,26 @@ import {
 import {
   createUser,
   completeUserRound,
-  findLeaderboardRows,
+  createChallenge,
+  findChallengesForUser,
+  findCurrentSeason,
+  findLeaderboardPage,
+  findReplayById,
   findRoundHistoryPage,
+  findUserByUsernameForChallenge,
   findUserProgressByUserId,
   findUserById,
   findUserByUsername,
+  findUserReplays,
+  insertRoundReplay,
+  applyUserSeasonProgress,
+  completeChallenge,
+  respondToChallenge,
   saveUserProgress,
   updateUserPassword,
   updateUserRole,
   initializeSchema,
+  LEADERBOARD_BOARDS,
 } from "./playerMysqlDatabase.js"
 import { calculateRoundRewards, simulateRound } from "./roundRewards.js"
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
@@ -382,8 +393,219 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
   }
 
   try {
+    const board = String(request.query?.board || LEADERBOARD_BOARDS.MMR)
+    const page = Number(request.query?.page) || 1
+    const limit = Number(request.query?.limit) || undefined
+    const search = String(request.query?.search || "")
+    const view = String(request.query?.view || "top")
+
+    const [leaderboard, season] = await Promise.all([
+      findLeaderboardPage({
+        board,
+        page,
+        limit,
+        search,
+        userId: user.id,
+        view,
+      }),
+      findCurrentSeason(),
+    ])
+
     response.json({
-      rows: await findLeaderboardRows({ limit: 25 }),
+      ...leaderboard,
+      season,
+    })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.get("/api/seasons/current", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    response.json({
+      season: await findCurrentSeason(),
+    })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.get("/api/replays/:replayId", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const replay = await findReplayById(Number(request.params.replayId))
+    if (!replay) {
+      response.status(404).json({ error: "Replay not found." })
+      return
+    }
+
+    if (replay.visibility === "private" && replay.userId !== user.id) {
+      response.status(403).json({ error: "Replay is private." })
+      return
+    }
+
+    response.json({ replay })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.get("/api/replays", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const limit = Number(request.query?.limit) || 10
+    response.json({
+      replays: await findUserReplays(user.id, { limit }),
+    })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.get("/api/challenges", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const role = String(request.query?.role || "all")
+    response.json({
+      challenges: await findChallengesForUser(user.id, { role }),
+    })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.post("/api/challenges", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const opponentUsername = String(request.body?.opponentUsername || "").trim()
+    const replayId = Number(request.body?.replayId)
+    const message = String(request.body?.message || "").trim()
+
+    if (!opponentUsername || !replayId) {
+      response.status(400).json({ error: "opponentUsername and replayId are required." })
+      return
+    }
+
+    const opponent = await findUserByUsernameForChallenge(opponentUsername)
+    if (!opponent) {
+      response.status(404).json({ error: "Opponent not found." })
+      return
+    }
+    if (opponent.id === user.id) {
+      response.status(400).json({ error: "You cannot challenge yourself." })
+      return
+    }
+
+    const replay = await findReplayById(replayId)
+    if (!replay || replay.userId !== user.id) {
+      response.status(400).json({ error: "Replay not found or does not belong to you." })
+      return
+    }
+
+    const challenge = await createChallenge({
+      challengerUserId: user.id,
+      challengerUsername: user.username,
+      opponentUserId: opponent.id,
+      opponentUsername: opponent.username,
+      replayId: replay.id,
+      modeId: replay.modeId,
+      message,
+    })
+
+    response.json({ challenge })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const action = String(request.body?.action || "")
+    if (action !== "accept" && action !== "decline") {
+      response.status(400).json({ error: "action must be accept or decline." })
+      return
+    }
+
+    const result = await respondToChallenge({
+      challengeId: Number(request.params.challengeId),
+      userId: user.id,
+      action,
+    })
+
+    if (!result.ok) {
+      response.status(400).json({ error: result.reason })
+      return
+    }
+
+    response.json({ challenge: result.challenge })
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
+app.post("/api/challenges/:challengeId/complete", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const opponentReplayId = Number(request.body?.opponentReplayId)
+    const opponentScore = Number(request.body?.opponentScore) || 0
+
+    if (!opponentReplayId) {
+      response.status(400).json({ error: "opponentReplayId is required." })
+      return
+    }
+
+    const result = await completeChallenge({
+      challengeId: Number(request.params.challengeId),
+      userId: user.id,
+      opponentReplayId,
+      opponentScore,
+    })
+
+    if (!result.ok) {
+      response.status(400).json({ error: result.reason })
+      return
+    }
+
+    response.json({
+      challenge: result.challenge,
+      challengerWon: result.challengerWon,
     })
   } catch (error) {
     handleRouteError(error, response)
@@ -476,11 +698,22 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     return
   }
 
-  const { modeId, events, loadoutSnapshot, roundToken } = request.body ?? {}
+  const { modeId, events, loadoutSnapshot, roundToken, arenaWidth, arenaHeight, drillId } = request.body ?? {}
+  const mode = getDifficultyById(String(modeId || ""))
 
-  // Round tokens are optional during rollout (older clients submit without
-  // one), but when present they must verify — a forged/expired token means a
-  // tampering client, not an honest legacy one.
+  if (!mode || mode.id !== String(modeId || "")) {
+    response.status(400).json({ error: "Invalid modeId." })
+    return
+  }
+
+  if (mode.allowsRankProgression && !roundToken) {
+    response.status(400).json({ error: "Ranked rounds require a round token." })
+    return
+  }
+
+  // Round tokens are optional for non-ranked modes during rollout, but when
+  // present they must verify — a forged/expired token means a tampering client.
+  let roundSeed = null
   if (roundToken) {
     const tokenCheck = verifyRoundToken(String(roundToken), {
       userId: request.auth.userId,
@@ -491,6 +724,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       response.status(400).json({ error: tokenCheck.reason })
       return
     }
+
+    roundSeed = tokenCheck.seed
   }
 
   try {
@@ -502,6 +737,9 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const simulation = simulateRound(events, modeId, {
       loadoutSnapshot: loadoutSnapshot ?? null,
       playerLevel,
+      roundSeed,
+      arenaWidth,
+      arenaHeight,
     })
     if (!simulation.valid) {
       response.status(400).json({ error: simulation.reason })
@@ -547,6 +785,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       rankDelta,
       modeId,
       progressionMode,
+      drillId: typeof drillId === "string" ? drillId : null,
       loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }
@@ -578,7 +817,51 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       historyEntry,
     })
 
-    response.json({ progress, earnedCoins, earnedXp, rankDelta })
+    let replay = null
+    const submittedEvents = Array.isArray(events) ? events : []
+    if (roundSeed !== null && submittedEvents.length > 0) {
+      replay = await insertRoundReplay({
+        userId: user.id,
+        username: user.username,
+        modeId,
+        seed: roundSeed,
+        events: submittedEvents,
+        loadoutSnapshot: simulation.loadoutSnapshot,
+        score,
+        hits,
+        misses,
+        bestStreak,
+      })
+    }
+
+    const seasonProgress = await applyUserSeasonProgress(user.id, {
+      rankMmr: nextRankMmr,
+      isRankedRound: progressionMode === "ranked",
+    })
+
+    const challengeId = Number(request.body?.challengeId) || null
+    let completedChallenge = null
+    if (challengeId && replay?.id) {
+      const completion = await completeChallenge({
+        challengeId,
+        userId: user.id,
+        opponentReplayId: replay.id,
+        opponentScore: score,
+      })
+      if (completion.ok) {
+        completedChallenge = completion.challenge
+      }
+    }
+
+    response.json({
+      progress,
+      earnedCoins,
+      earnedXp,
+      rankDelta,
+      replay,
+      seasonProgress,
+      completedChallenge,
+    })
   } catch (error) {
     handleRouteError(error, response)
   }

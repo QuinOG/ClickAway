@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import { BUILD_WALKTHROUGH_STATUS } from "../../constants/buildWalkthrough.js"
-import { ARMORY_STEP_IDS } from "./armorySteps.js"
+import { ARMORY_STEP_IDS } from "./armoryConstants.js"
 
 const LANE_IDS = new Set(["tempoCore", "streakLens", "powerRig"])
 
