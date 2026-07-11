@@ -419,26 +419,75 @@ app.post("/api/shop/equip", requireAuth, async (request, response) => {
   }
 })
 
-app.post("/api/round/complete", requireAuth, async (request, response) => {
+// Reaction metrics are client-measured (they depend on button spawn times the
+// server cannot reconstruct yet), so they are display-only stats: sanitized to
+// plausible bounds and never fed into rewards or rank.
+const MAX_REACTION_MS = 60_000
+
+function sanitizeReactionMs(value) {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n < 0) return null
+  return Math.min(MAX_REACTION_MS, Math.round(n))
+}
+
+app.post("/api/round/start", requireAuth, roundRateLimiter, (request, response) => {
+  const modeId = String(request.body?.modeId || "")
+  const mode = getDifficultyById(modeId)
+  if (!mode || mode.id !== modeId) {
+    response.status(400).json({ error: "Invalid modeId." })
+    return
+  }
+
+  const seed = createRoundSeed()
+  const roundToken = signRoundToken(
+    { userId: request.auth.userId, modeId, seed },
+    JWT_SECRET
+  )
+
+  response.json({ roundToken, seed })
+})
+
+app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, response) => {
   const user = await findUserById(request.auth.userId)
   if (!user) {
     response.status(401).json({ error: "Session is no longer valid." })
     return
   }
 
-  const { modeId, events } = request.body ?? {}
+  const { modeId, events, loadoutSnapshot, roundToken } = request.body ?? {}
 
-  const simulation = simulateRound(events, modeId)
-  if (!simulation.valid) {
-    response.status(400).json({ error: simulation.reason })
-    return
+  // Round tokens are optional during rollout (older clients submit without
+  // one), but when present they must verify — a forged/expired token means a
+  // tampering client, not an honest legacy one.
+  if (roundToken) {
+    const tokenCheck = verifyRoundToken(String(roundToken), {
+      userId: request.auth.userId,
+      modeId: String(modeId || ""),
+    }, JWT_SECRET)
+
+    if (!tokenCheck.valid) {
+      response.status(400).json({ error: tokenCheck.reason })
+      return
+    }
   }
-
-  const { hits, misses, score, bestStreak } = simulation
 
   try {
     const currentProgress = await findUserProgressByUserId(user.id)
     const hasRankedHistory = currentProgress.roundHistory.some(isRankedModeEntry)
+    const playerLevel = getLevelProgress(currentProgress.levelXp).level
+
+    const simulation = simulateRound(events, modeId, {
+      loadoutSnapshot: loadoutSnapshot ?? null,
+      playerLevel,
+    })
+    if (!simulation.valid) {
+      response.status(400).json({ error: simulation.reason })
+      return
+    }
+
+    const { hits, misses, score, bestStreak } = simulation
+    const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
+    const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
 
     const { earnedCoins, earnedXp, progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } =
       calculateRoundRewards({
@@ -468,11 +517,14 @@ app.post("/api/round/complete", requireAuth, async (request, response) => {
       hits,
       misses,
       bestStreak,
+      avgReactionMs,
+      bestReactionMs,
       coinsEarned: earnedCoins,
       xpEarned: earnedXp,
       rankDelta,
       modeId,
       progressionMode,
+      loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }
 
