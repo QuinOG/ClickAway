@@ -21,7 +21,9 @@ import {
 } from "./auth.js"
 import {
   createUser,
+  completeUserRound,
   findLeaderboardRows,
+  findRoundHistoryPage,
   findUserProgressByUserId,
   findUserById,
   findUserByUsername,
@@ -36,11 +38,14 @@ import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
 import { sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import {
-  buildAchievementStats,
   evaluateAchievements,
   getUnlockedAchievementIds,
 } from "../src/game/achievements/evaluateAchievements.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
+import {
+  applyRoundToLifetimeStats,
+  buildAchievementStatsFromLifetime,
+} from "../src/utils/lifetimeStatsUtils.js"
 import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
@@ -155,9 +160,9 @@ function normalizeProgressPayload(body = {}) {
 }
 
 function resolveUnlockedAchievementIds(currentProgress) {
-  const achievementStats = buildAchievementStats({
+  const achievementStats = buildAchievementStatsFromLifetime({
+    lifetimeStats: currentProgress.lifetimeStats,
     levelProgress: getLevelProgress(currentProgress.levelXp),
-    roundHistory: currentProgress.roundHistory,
     coins: currentProgress.coins,
   })
   const evaluatedAchievements = evaluateAchievements(achievementStats, {
@@ -385,6 +390,23 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
   }
 })
 
+app.get("/api/history", requireAuth, async (request, response) => {
+  const user = await findUserById(request.auth.userId)
+  if (!user) {
+    response.status(401).json({ error: "Session is no longer valid." })
+    return
+  }
+
+  try {
+    const page = Number(request.query?.page) || 1
+    const limit = Number(request.query?.limit) || undefined
+    const historyPage = await findRoundHistoryPage(user.id, { page, limit })
+    response.json(historyPage)
+  } catch (error) {
+    handleRouteError(error, response)
+  }
+})
+
 app.post("/api/shop/purchase", requireAuth, async (request, response) => {
   const user = await findUserById(request.auth.userId)
   if (!user) {
@@ -473,7 +495,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
 
   try {
     const currentProgress = await findUserProgressByUserId(user.id)
-    const hasRankedHistory = currentProgress.roundHistory.some(isRankedModeEntry)
+    const hasRankedHistory = (currentProgress.lifetimeStats?.rankedRounds ?? 0) > 0
+      || currentProgress.roundHistory.some(isRankedModeEntry)
     const playerLevel = getLevelProgress(currentProgress.levelXp).level
 
     const simulation = simulateRound(events, modeId, {
@@ -527,10 +550,12 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }
+    const nextLifetimeStats = applyRoundToLifetimeStats(
+      currentProgress.lifetimeStats,
+      historyEntry
+    )
 
-    const nextRoundHistory = [historyEntry, ...currentProgress.roundHistory].slice(0, 100)
-
-    const progress = await saveUserProgress({
+    const { progress } = await completeUserRound({
       userId: user.id,
       coins: nextCoins,
       levelXp: nextLevelXp,
@@ -540,14 +565,17 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       equippedButtonSkinId: currentProgress.equippedButtonSkinId,
       equippedArenaThemeId: currentProgress.equippedArenaThemeId,
       equippedProfileImageId: currentProgress.equippedProfileImageId,
+      activeLoadoutId: currentProgress.activeLoadoutId,
+      savedLoadouts: currentProgress.savedLoadouts,
       selectedModeId: modeId,
-      roundHistory: nextRoundHistory,
       unlockedAchievementIds: resolveUnlockedAchievementIds({
         ...currentProgress,
         coins: nextCoins,
         levelXp: nextLevelXp,
-        roundHistory: nextRoundHistory,
+        lifetimeStats: nextLifetimeStats,
       }),
+      buildWalkthrough: currentProgress.buildWalkthrough,
+      historyEntry,
     })
 
     response.json({ progress, earnedCoins, earnedXp, rankDelta })

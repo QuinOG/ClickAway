@@ -7,8 +7,10 @@ import {
   DEFAULT_ACHIEVEMENT_CATEGORY_KEY,
 } from "../game/achievements/achievementsList.js"
 import { evaluateAchievements } from "../game/achievements/evaluateAchievements.js"
-import { calculateAccuracyPercent } from "../utils/gameMath.js"
-import { buildCareerReactionStats } from "../utils/historyUtils.js"
+import {
+  buildCareerReactionStatsFromLifetime,
+  buildProfileStatsFromLifetime,
+} from "../utils/lifetimeStatsUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
 import {
@@ -16,52 +18,6 @@ import {
   getRankImageSrc,
   getRankToneClassName,
 } from "../utils/rankUtils.js"
-
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
-
-function buildProfileStats(roundHistory = []) {
-  const rows = Array.isArray(roundHistory) ? roundHistory : []
-  const now = Date.now()
-
-  let totalHits = 0
-  let totalMisses = 0
-  let bestScore = 0
-  let bestStreak = 0
-  let rankedRounds = 0
-  let roundsThisWeek = 0
-
-  rows.forEach((round) => {
-    const hits = Number(round.hits) || 0
-    const misses = Number(round.misses) || 0
-    const score = Number(round.score) || 0
-    const streak = Number(round.bestStreak) || 0
-
-    totalHits += hits
-    totalMisses += misses
-    bestScore = Math.max(bestScore, score)
-    bestStreak = Math.max(bestStreak, streak)
-
-    if (isRankedModeEntry(round)) {
-      rankedRounds += 1
-    }
-
-    if (round.playedAtIso) {
-      const playedAt = new Date(round.playedAtIso).getTime()
-      if (!Number.isNaN(playedAt) && now - playedAt <= ONE_WEEK_MS) {
-        roundsThisWeek += 1
-      }
-    }
-  })
-
-  return {
-    totalRounds: rows.length,
-    rankedRounds,
-    bestScore,
-    bestStreak,
-    overallAccuracyPercent: calculateAccuracyPercent(totalHits, totalMisses),
-    roundsThisWeek,
-  }
-}
 
 function buildRankedInsights(roundHistory = []) {
   const rankedRounds = (Array.isArray(roundHistory) ? roundHistory : [])
@@ -186,6 +142,8 @@ export default function ProfilePage({
   levelProgress = {},
   rankProgress = {},
   roundHistory = [],
+  lifetimeStats = null,
+  loadoutStats = [],
   equippedProfileImage = null,
   achievementStats = {},
   persistedAchievementIds = [],
@@ -264,9 +222,12 @@ export default function ProfilePage({
     )
   }, [categoryMasterAchievements, evaluatedAchievements, selectedCategoryKey])
 
-  const profileStats = buildProfileStats(roundHistory)
-  const reactionStats = buildCareerReactionStats(roundHistory)
+  const profileStats = buildProfileStatsFromLifetime(lifetimeStats, roundHistory)
+  const reactionStats = buildCareerReactionStatsFromLifetime(lifetimeStats)
   const rankedInsights = buildRankedInsights(roundHistory)
+  const buildPerformanceStats = (Array.isArray(loadoutStats) ? loadoutStats : [])
+    .filter((entry) => entry.totalRounds > 0)
+    .slice(0, 3)
   const rankLabel = rankProgress.tierLabel ?? "Unranked"
   const rankIconSrc = getRankImageSrc(rankLabel)
   const rankToneClass = getRankToneClassName(rankProgress)
@@ -466,6 +427,44 @@ export default function ProfilePage({
             stats={combinedSummaryStats}
             gridClassName="isSummaryGrid"
           />
+
+          {buildPerformanceStats.length > 0 ? (
+            <section className="profileStatsSection" aria-label="Build performance">
+              <div className="profileStatsSectionHeader">
+                <h2 className="profileStatsSectionTitle">Build Performance</h2>
+                <p className="profileStatsSectionLead">
+                  Lifetime results by saved loadout.
+                </p>
+              </div>
+              <div className="profileBuildStatsGrid">
+                {buildPerformanceStats.map((buildStat) => {
+                  const attempts = buildStat.totalHits + buildStat.totalMisses
+                  const winRate = buildStat.rankedRounds > 0
+                    ? Math.round((buildStat.rankedWins / buildStat.rankedRounds) * 100)
+                    : null
+
+                  return (
+                    <article key={buildStat.loadoutId} className="profileBuildStatCard">
+                      <p className="profileBuildStatEyebrow">{buildStat.loadoutName}</p>
+                      <strong className="profileBuildStatValue">
+                        {formatNumber(buildStat.bestScore)} peak score
+                      </strong>
+                      <p className="profileBuildStatMeta">
+                        {formatNumber(buildStat.totalRounds)} rounds
+                        {winRate !== null ? ` · ${winRate}% ranked wins` : ""}
+                      </p>
+                      <p className="profileBuildStatDetail">
+                        {formatNumber(buildStat.bestStreak)} best streak
+                        {attempts > 0
+                          ? ` · ${Math.round((buildStat.totalHits / attempts) * 100)}% accuracy`
+                          : ""}
+                      </p>
+                    </article>
+                  )
+                })}
+              </div>
+            </section>
+          ) : null}
 
           <section className="profileStatsSection profileAchievementsSection" aria-label="Achievements">
             <div className="achievementHeaderRow">

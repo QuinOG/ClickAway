@@ -19,6 +19,16 @@ import {
   migrateLegacyRankData,
 } from "../src/utils/rankUtils.js"
 import {
+  DEFAULT_LIFETIME_STATS,
+  RECENT_HISTORY_LIMIT,
+  HISTORY_PAGE_SIZE,
+  applyRoundToLifetimeStats,
+  applyRoundToLoadoutStats,
+  buildLifetimeStatsFromRounds,
+  normalizeLifetimeStats,
+  normalizeLoadoutStatsEntry,
+} from "../src/utils/lifetimeStatsUtils.js"
+import {
   DEFAULT_PLAYER_STATE,
   getCatalogItemById,
   getDefaultItemIdForType,
@@ -39,6 +49,9 @@ const DEFAULT_PROGRESS = {
   savedLoadouts: DEFAULT_SAVED_LOADOUTS,
   selectedModeId: "normal",
   roundHistory: [],
+  lifetimeStats: normalizeLifetimeStats(DEFAULT_LIFETIME_STATS),
+  loadoutStats: [],
+  totalRoundCount: 0,
   unlockedAchievementIds: [],
   buildWalkthrough: normalizeBuildWalkthrough(
     {},
@@ -187,6 +200,46 @@ export async function initializeSchema() {
   await addColumnIfMissing("round_history", "powerup_slot_1_id", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("round_history", "powerup_slot_2_id", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("round_history", "powerup_slot_3_id", "varchar(60) DEFAULT NULL")
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_lifetime_stats\` (
+    \`user_id\` bigint(20) UNSIGNED NOT NULL,
+    \`total_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`ranked_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`best_streak\` int(11) NOT NULL DEFAULT 0,
+    \`best_single_score\` int(11) NOT NULL DEFAULT 0,
+    \`best_ranked_streak\` int(11) NOT NULL DEFAULT 0,
+    \`best_single_round_accuracy\` int(11) NOT NULL DEFAULT 0,
+    \`clean_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`total_coins_earned\` bigint(20) NOT NULL DEFAULT 0,
+    \`total_hits\` bigint(20) NOT NULL DEFAULT 0,
+    \`total_misses\` bigint(20) NOT NULL DEFAULT 0,
+    \`max_consecutive_ranked_wins\` int(11) NOT NULL DEFAULT 0,
+    \`current_consecutive_ranked_wins\` int(11) NOT NULL DEFAULT 0,
+    \`reaction_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`total_reaction_ms\` bigint(20) NOT NULL DEFAULT 0,
+    \`best_reaction_ms\` int(11) DEFAULT NULL,
+    PRIMARY KEY (\`user_id\`),
+    CONSTRAINT \`fk_lifetime_stats_user\`
+      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_loadout_stats\` (
+    \`user_id\` bigint(20) UNSIGNED NOT NULL,
+    \`loadout_id\` varchar(60) NOT NULL,
+    \`loadout_name\` varchar(100) NOT NULL DEFAULT 'Loadout',
+    \`total_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`ranked_rounds\` int(11) NOT NULL DEFAULT 0,
+    \`ranked_wins\` int(11) NOT NULL DEFAULT 0,
+    \`best_score\` int(11) NOT NULL DEFAULT 0,
+    \`best_streak\` int(11) NOT NULL DEFAULT 0,
+    \`best_ranked_streak\` int(11) NOT NULL DEFAULT 0,
+    \`total_hits\` bigint(20) NOT NULL DEFAULT 0,
+    \`total_misses\` bigint(20) NOT NULL DEFAULT 0,
+    PRIMARY KEY (\`user_id\`, \`loadout_id\`),
+    KEY \`idx_loadout_stats_user_rounds\` (\`user_id\`, \`total_rounds\`),
+    CONSTRAINT \`fk_loadout_stats_user\`
+      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
 
   await pool.query(`CREATE TABLE IF NOT EXISTS \`user_loadouts\` (
     \`slot_id\` varchar(60) NOT NULL,
@@ -430,6 +483,401 @@ function buildHistoryEntry(row) {
   }
 }
 
+function mapLifetimeStatsRow(row = {}) {
+  return normalizeLifetimeStats({
+    totalRounds: row.totalRounds,
+    rankedRounds: row.rankedRounds,
+    bestStreak: row.bestStreak,
+    bestSingleScore: row.bestSingleScore,
+    bestRankedStreak: row.bestRankedStreak,
+    bestSingleRoundAccuracy: row.bestSingleRoundAccuracy,
+    cleanRounds: row.cleanRounds,
+    totalCoinsEarned: row.totalCoinsEarned,
+    totalHits: row.totalHits,
+    totalMisses: row.totalMisses,
+    maxConsecutiveRankedWins: row.maxConsecutiveRankedWins,
+    currentConsecutiveRankedWins: row.currentConsecutiveRankedWins,
+    reactionRounds: row.reactionRounds,
+    totalReactionMs: row.totalReactionMs,
+    bestReactionMs: row.bestReactionMs,
+  })
+}
+
+function mapLoadoutStatsRow(row = {}) {
+  return normalizeLoadoutStatsEntry({
+    loadoutId: row.loadoutId,
+    loadoutName: row.loadoutName,
+    totalRounds: row.totalRounds,
+    rankedRounds: row.rankedRounds,
+    rankedWins: row.rankedWins,
+    bestScore: row.bestScore,
+    bestStreak: row.bestStreak,
+    bestRankedStreak: row.bestRankedStreak,
+    totalHits: row.totalHits,
+    totalMisses: row.totalMisses,
+  })
+}
+
+async function getLifetimeStatsRow(executor, userId, options = {}) {
+  const lockClause = options.forUpdate ? " FOR UPDATE" : ""
+  const [rows] = await executor.query(
+    `SELECT
+       total_rounds AS totalRounds,
+       ranked_rounds AS rankedRounds,
+       best_streak AS bestStreak,
+       best_single_score AS bestSingleScore,
+       best_ranked_streak AS bestRankedStreak,
+       best_single_round_accuracy AS bestSingleRoundAccuracy,
+       clean_rounds AS cleanRounds,
+       total_coins_earned AS totalCoinsEarned,
+       total_hits AS totalHits,
+       total_misses AS totalMisses,
+       max_consecutive_ranked_wins AS maxConsecutiveRankedWins,
+       current_consecutive_ranked_wins AS currentConsecutiveRankedWins,
+       reaction_rounds AS reactionRounds,
+       total_reaction_ms AS totalReactionMs,
+       best_reaction_ms AS bestReactionMs
+     FROM user_lifetime_stats
+     WHERE user_id = ?
+     LIMIT 1${lockClause}`,
+    [userId]
+  )
+
+  return rows[0] || null
+}
+
+async function ensureLifetimeStatsRow(executor, userId) {
+  await executor.query(
+    `INSERT IGNORE INTO user_lifetime_stats (user_id) VALUES (?)`,
+    [userId]
+  )
+}
+
+async function getLoadoutStatsRows(executor, userId) {
+  const [rows] = await executor.query(
+    `SELECT
+       loadout_id AS loadoutId,
+       loadout_name AS loadoutName,
+       total_rounds AS totalRounds,
+       ranked_rounds AS rankedRounds,
+       ranked_wins AS rankedWins,
+       best_score AS bestScore,
+       best_streak AS bestStreak,
+       best_ranked_streak AS bestRankedStreak,
+       total_hits AS totalHits,
+       total_misses AS totalMisses
+     FROM user_loadout_stats
+     WHERE user_id = ?
+     ORDER BY total_rounds DESC, loadout_id ASC`,
+    [userId]
+  )
+
+  return rows
+    .map(mapLoadoutStatsRow)
+    .filter(Boolean)
+}
+
+async function getRoundHistoryCount(executor, userId) {
+  const [rows] = await executor.query(
+    `SELECT COUNT(*) AS totalCount
+     FROM round_history
+     WHERE user_id = ?`,
+    [userId]
+  )
+
+  return toNonNegativeNumber(rows[0]?.totalCount, 0)
+}
+
+async function backfillLifetimeStatsFromHistory(executor, userId) {
+  const existingStats = await getLifetimeStatsRow(executor, userId)
+  if (existingStats && toNonNegativeNumber(existingStats.totalRounds, 0) > 0) {
+    return mapLifetimeStatsRow(existingStats)
+  }
+
+  const [historyRows] = await executor.query(
+    `SELECT
+       id,
+       mode AS modeId,
+       progression_mode AS progressionMode,
+       score,
+       hits,
+       misses,
+       best_streak AS bestStreak,
+       avg_reaction_ms AS avgReactionMs,
+       best_reaction_ms AS bestReactionMs,
+       coins_earned AS coinsEarned,
+       xp_earned AS xpEarned,
+       rank_delta AS rankDelta,
+       loadout_name AS loadoutName,
+       loadout_id AS loadoutId,
+       tempo_core_id AS tempoCoreId,
+       streak_lens_id AS streakLensId,
+       power_rig_id AS powerRigId,
+       powerup_slot_1_id AS powerupSlot1Id,
+       powerup_slot_2_id AS powerupSlot2Id,
+       powerup_slot_3_id AS powerupSlot3Id,
+       played_at AS playedAt
+     FROM round_history
+     WHERE user_id = ?
+     ORDER BY played_at ASC, id ASC`,
+    [userId]
+  )
+
+  const chronologicalRounds = historyRows.map(buildHistoryEntry)
+  const lifetimeStats = buildLifetimeStatsFromRounds(chronologicalRounds)
+  const loadoutStatsById = new Map()
+
+  chronologicalRounds.forEach((round) => {
+    const loadoutId = round?.loadoutSnapshot?.loadoutId
+    if (!loadoutId) return
+
+    const nextStats = applyRoundToLoadoutStats(
+      loadoutStatsById.get(loadoutId) ?? {},
+      round
+    )
+    loadoutStatsById.set(loadoutId, nextStats)
+  })
+
+  await ensureLifetimeStatsRow(executor, userId)
+  await executor.execute(
+    `UPDATE user_lifetime_stats
+     SET total_rounds = ?,
+         ranked_rounds = ?,
+         best_streak = ?,
+         best_single_score = ?,
+         best_ranked_streak = ?,
+         best_single_round_accuracy = ?,
+         clean_rounds = ?,
+         total_coins_earned = ?,
+         total_hits = ?,
+         total_misses = ?,
+         max_consecutive_ranked_wins = ?,
+         current_consecutive_ranked_wins = ?,
+         reaction_rounds = ?,
+         total_reaction_ms = ?,
+         best_reaction_ms = ?
+     WHERE user_id = ?`,
+    [
+      lifetimeStats.totalRounds,
+      lifetimeStats.rankedRounds,
+      lifetimeStats.bestStreak,
+      lifetimeStats.bestSingleScore,
+      lifetimeStats.bestRankedStreak,
+      lifetimeStats.bestSingleRoundAccuracy,
+      lifetimeStats.cleanRounds,
+      lifetimeStats.totalCoinsEarned,
+      lifetimeStats.totalHits,
+      lifetimeStats.totalMisses,
+      lifetimeStats.maxConsecutiveRankedWins,
+      lifetimeStats.currentConsecutiveRankedWins,
+      lifetimeStats.reactionRounds,
+      lifetimeStats.totalReactionMs,
+      lifetimeStats.bestReactionMs,
+      userId,
+    ]
+  )
+
+  await executor.query("DELETE FROM user_loadout_stats WHERE user_id = ?", [userId])
+
+  const loadoutRows = Array.from(loadoutStatsById.values()).map((stats) => [
+    userId,
+    stats.loadoutId,
+    stats.loadoutName,
+    stats.totalRounds,
+    stats.rankedRounds,
+    stats.rankedWins,
+    stats.bestScore,
+    stats.bestStreak,
+    stats.bestRankedStreak,
+    stats.totalHits,
+    stats.totalMisses,
+  ])
+
+  if (loadoutRows.length > 0) {
+    await executor.query(
+      `INSERT INTO user_loadout_stats (
+         user_id,
+         loadout_id,
+         loadout_name,
+         total_rounds,
+         ranked_rounds,
+         ranked_wins,
+         best_score,
+         best_streak,
+         best_ranked_streak,
+         total_hits,
+         total_misses
+       ) VALUES ?`,
+      [loadoutRows]
+    )
+  }
+
+  return lifetimeStats
+}
+
+async function insertRoundHistoryEntry(executor, userId, entry = {}) {
+  const normalizedEntry = normalizeRoundHistoryEntry(entry)
+  const [result] = await executor.execute(
+    `INSERT INTO round_history (
+       user_id,
+       mode,
+       progression_mode,
+       score,
+       hits,
+       misses,
+       best_streak,
+       avg_reaction_ms,
+       best_reaction_ms,
+       coins_earned,
+       xp_earned,
+       rank_delta,
+       loadout_name,
+       loadout_id,
+       tempo_core_id,
+       streak_lens_id,
+       power_rig_id,
+       powerup_slot_1_id,
+       powerup_slot_2_id,
+       powerup_slot_3_id,
+       played_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      normalizedEntry.modeId,
+      normalizedEntry.progressionMode,
+      normalizedEntry.score,
+      normalizedEntry.hits,
+      normalizedEntry.misses,
+      normalizedEntry.bestStreak,
+      normalizedEntry.avgReactionMs,
+      normalizedEntry.bestReactionMs,
+      normalizedEntry.coinsEarned,
+      normalizedEntry.xpEarned,
+      normalizedEntry.rankDelta,
+      normalizedEntry.loadoutSnapshot?.loadoutName || null,
+      normalizedEntry.loadoutSnapshot?.loadoutId || null,
+      normalizedEntry.loadoutSnapshot?.moduleIds?.tempoCoreId || null,
+      normalizedEntry.loadoutSnapshot?.moduleIds?.streakLensId || null,
+      normalizedEntry.loadoutSnapshot?.moduleIds?.powerRigId || null,
+      normalizedEntry.loadoutSnapshot?.powerupIds?.[0] || null,
+      normalizedEntry.loadoutSnapshot?.powerupIds?.[1] || null,
+      normalizedEntry.loadoutSnapshot?.powerupIds?.[2] || null,
+      normalizedEntry.playedAtDate,
+    ]
+  )
+
+  return buildHistoryEntry({
+    id: result.insertId,
+    modeId: normalizedEntry.modeId,
+    progressionMode: normalizedEntry.progressionMode,
+    score: normalizedEntry.score,
+    hits: normalizedEntry.hits,
+    misses: normalizedEntry.misses,
+    bestStreak: normalizedEntry.bestStreak,
+    avgReactionMs: normalizedEntry.avgReactionMs,
+    bestReactionMs: normalizedEntry.bestReactionMs,
+    coinsEarned: normalizedEntry.coinsEarned,
+    xpEarned: normalizedEntry.xpEarned,
+    rankDelta: normalizedEntry.rankDelta,
+    loadoutName: normalizedEntry.loadoutSnapshot?.loadoutName,
+    loadoutId: normalizedEntry.loadoutSnapshot?.loadoutId,
+    tempoCoreId: normalizedEntry.loadoutSnapshot?.moduleIds?.tempoCoreId,
+    streakLensId: normalizedEntry.loadoutSnapshot?.moduleIds?.streakLensId,
+    powerRigId: normalizedEntry.loadoutSnapshot?.moduleIds?.powerRigId,
+    powerupSlot1Id: normalizedEntry.loadoutSnapshot?.powerupIds?.[0],
+    powerupSlot2Id: normalizedEntry.loadoutSnapshot?.powerupIds?.[1],
+    powerupSlot3Id: normalizedEntry.loadoutSnapshot?.powerupIds?.[2],
+    playedAt: normalizedEntry.playedAtDate,
+  })
+}
+
+async function persistLifetimeStats(executor, userId, lifetimeStats) {
+  await ensureLifetimeStatsRow(executor, userId)
+  await executor.execute(
+    `UPDATE user_lifetime_stats
+     SET total_rounds = ?,
+         ranked_rounds = ?,
+         best_streak = ?,
+         best_single_score = ?,
+         best_ranked_streak = ?,
+         best_single_round_accuracy = ?,
+         clean_rounds = ?,
+         total_coins_earned = ?,
+         total_hits = ?,
+         total_misses = ?,
+         max_consecutive_ranked_wins = ?,
+         current_consecutive_ranked_wins = ?,
+         reaction_rounds = ?,
+         total_reaction_ms = ?,
+         best_reaction_ms = ?
+     WHERE user_id = ?`,
+    [
+      lifetimeStats.totalRounds,
+      lifetimeStats.rankedRounds,
+      lifetimeStats.bestStreak,
+      lifetimeStats.bestSingleScore,
+      lifetimeStats.bestRankedStreak,
+      lifetimeStats.bestSingleRoundAccuracy,
+      lifetimeStats.cleanRounds,
+      lifetimeStats.totalCoinsEarned,
+      lifetimeStats.totalHits,
+      lifetimeStats.totalMisses,
+      lifetimeStats.maxConsecutiveRankedWins,
+      lifetimeStats.currentConsecutiveRankedWins,
+      lifetimeStats.reactionRounds,
+      lifetimeStats.totalReactionMs,
+      lifetimeStats.bestReactionMs,
+      userId,
+    ]
+  )
+}
+
+async function persistLoadoutStats(executor, userId, loadoutStats = {}) {
+  const normalizedStats = normalizeLoadoutStatsEntry(loadoutStats)
+  if (!normalizedStats) {
+    return
+  }
+
+  await executor.execute(
+    `INSERT INTO user_loadout_stats (
+       user_id,
+       loadout_id,
+       loadout_name,
+       total_rounds,
+       ranked_rounds,
+       ranked_wins,
+       best_score,
+       best_streak,
+       best_ranked_streak,
+       total_hits,
+       total_misses
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       loadout_name = VALUES(loadout_name),
+       total_rounds = VALUES(total_rounds),
+       ranked_rounds = VALUES(ranked_rounds),
+       ranked_wins = VALUES(ranked_wins),
+       best_score = VALUES(best_score),
+       best_streak = VALUES(best_streak),
+       best_ranked_streak = VALUES(best_ranked_streak),
+       total_hits = VALUES(total_hits),
+       total_misses = VALUES(total_misses)`,
+    [
+      userId,
+      normalizedStats.loadoutId,
+      normalizedStats.loadoutName,
+      normalizedStats.totalRounds,
+      normalizedStats.rankedRounds,
+      normalizedStats.rankedWins,
+      normalizedStats.bestScore,
+      normalizedStats.bestStreak,
+      normalizedStats.bestRankedStreak,
+      normalizedStats.totalHits,
+      normalizedStats.totalMisses,
+    ]
+  )
+}
+
 async function getUserStateRow(executor, userId, options = {}) {
   const lockClause = options.forUpdate ? " FOR UPDATE" : ""
   const [rows] = await executor.query(
@@ -509,8 +957,9 @@ async function buildProgressRecord(executor, userId) {
        played_at AS playedAt
      FROM round_history
      WHERE user_id = ?
-     ORDER BY played_at DESC, id DESC`,
-    [userId]
+     ORDER BY played_at DESC, id DESC
+     LIMIT ?`,
+    [userId, RECENT_HISTORY_LIMIT]
   )
   const [achievementRows] = await executor.query(
     `SELECT achievement_id AS achievementId
@@ -554,6 +1003,9 @@ async function buildProgressRecord(executor, userId) {
     userRow.activeLoadoutId
   )
   const normalizedRoundHistory = historyRows.map(buildHistoryEntry)
+  const totalRoundCount = await getRoundHistoryCount(executor, userId)
+  const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
+  const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
     rankMmr: userRow.mmr,
     rankedState: {
@@ -592,6 +1044,9 @@ async function buildProgressRecord(executor, userId) {
     savedLoadouts: normalizedLoadoutState.savedLoadouts,
     selectedModeId: DEFAULT_PROGRESS.selectedModeId,
     roundHistory: normalizedRoundHistory,
+    lifetimeStats,
+    loadoutStats,
+    totalRoundCount,
     unlockedAchievementIds: normalizeStringList(
       achievementRows.map((row) => row.achievementId)
     ),
@@ -661,72 +1116,6 @@ async function syncUserLoadouts(executor, userId, progress) {
        powerup_slot_1_id,
        powerup_slot_2_id,
        powerup_slot_3_id
-     ) VALUES ?`,
-    [rows]
-  )
-}
-
-async function syncRoundHistory(executor, userId, progress) {
-  await executor.query("DELETE FROM round_history WHERE user_id = ?", [userId])
-
-  if (progress.roundHistory.length === 0) {
-    return
-  }
-
-  const chronologicalEntries = [...progress.roundHistory].sort(
-    (leftEntry, rightEntry) => leftEntry.playedAtDate - rightEntry.playedAtDate
-  )
-  const rows = []
-
-  for (const entry of chronologicalEntries) {
-    rows.push([
-      userId,
-      entry.modeId,
-      entry.progressionMode,
-      entry.score,
-      entry.hits,
-      entry.misses,
-      entry.bestStreak,
-      entry.avgReactionMs,
-      entry.bestReactionMs,
-      entry.coinsEarned,
-      entry.xpEarned,
-      entry.rankDelta,
-      entry.loadoutSnapshot?.loadoutName || null,
-      entry.loadoutSnapshot?.loadoutId || null,
-      entry.loadoutSnapshot?.moduleIds?.tempoCoreId || null,
-      entry.loadoutSnapshot?.moduleIds?.streakLensId || null,
-      entry.loadoutSnapshot?.moduleIds?.powerRigId || null,
-      entry.loadoutSnapshot?.powerupIds?.[0] || null,
-      entry.loadoutSnapshot?.powerupIds?.[1] || null,
-      entry.loadoutSnapshot?.powerupIds?.[2] || null,
-      entry.playedAtDate,
-    ])
-  }
-
-  await executor.query(
-    `INSERT INTO round_history (
-       user_id,
-       mode,
-       progression_mode,
-       score,
-       hits,
-       misses,
-       best_streak,
-       avg_reaction_ms,
-       best_reaction_ms,
-       coins_earned,
-       xp_earned,
-       rank_delta,
-       loadout_name,
-       loadout_id,
-       tempo_core_id,
-       streak_lens_id,
-       power_rig_id,
-       powerup_slot_1_id,
-       powerup_slot_2_id,
-       powerup_slot_3_id,
-       played_at
      ) VALUES ?`,
     [rows]
   )
@@ -884,6 +1273,186 @@ export async function findLeaderboardRows({ limit = 25 } = {}) {
   }))
 }
 
+export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_PAGE_SIZE } = {}) {
+  const normalizedLimit = Math.max(1, Math.min(100, Math.floor(Number(limit) || HISTORY_PAGE_SIZE)))
+  const normalizedPage = Math.max(1, Math.floor(Number(page) || 1))
+  const offset = (normalizedPage - 1) * normalizedLimit
+  const totalCount = await getRoundHistoryCount(pool, userId)
+  const totalPages = totalCount > 0 ? Math.ceil(totalCount / normalizedLimit) : 0
+
+  const [historyRows] = await pool.query(
+    `SELECT
+       id,
+       mode AS modeId,
+       progression_mode AS progressionMode,
+       score,
+       hits,
+       misses,
+       best_streak AS bestStreak,
+       avg_reaction_ms AS avgReactionMs,
+       best_reaction_ms AS bestReactionMs,
+       coins_earned AS coinsEarned,
+       xp_earned AS xpEarned,
+       rank_delta AS rankDelta,
+       loadout_name AS loadoutName,
+       loadout_id AS loadoutId,
+       tempo_core_id AS tempoCoreId,
+       streak_lens_id AS streakLensId,
+       power_rig_id AS powerRigId,
+       powerup_slot_1_id AS powerupSlot1Id,
+       powerup_slot_2_id AS powerupSlot2Id,
+       powerup_slot_3_id AS powerupSlot3Id,
+       played_at AS playedAt
+     FROM round_history
+     WHERE user_id = ?
+     ORDER BY played_at DESC, id DESC
+     LIMIT ? OFFSET ?`,
+    [userId, normalizedLimit, offset]
+  )
+
+  return {
+    entries: historyRows.map(buildHistoryEntry),
+    page: normalizedPage,
+    limit: normalizedLimit,
+    totalCount,
+    totalPages,
+    hasMore: normalizedPage < totalPages,
+  }
+}
+
+export async function completeUserRound({
+  userId,
+  coins,
+  levelXp,
+  rankMmr,
+  rankedState,
+  ownedItemIds,
+  equippedButtonSkinId,
+  equippedArenaThemeId,
+  equippedProfileImageId,
+  activeLoadoutId,
+  savedLoadouts,
+  selectedModeId,
+  unlockedAchievementIds,
+  buildWalkthrough,
+  historyEntry,
+}) {
+  const connection = await pool.getConnection()
+
+  try {
+    await connection.beginTransaction()
+
+    const userRow = await getUserStateRow(connection, userId, { forUpdate: true })
+    if (!userRow) {
+      throw new Error(`User ${userId} was not found.`)
+    }
+
+    const buttonSkin = getMappedShopItemById(equippedButtonSkinId)
+    const arenaTheme = getMappedShopItemById(equippedArenaThemeId)
+    const profileImage = getMappedShopItemById(equippedProfileImageId)
+
+    await connection.execute(
+      `UPDATE users
+       SET coins = ?,
+           xp = ?,
+           mmr = ?,
+           rank_system_version = ?,
+           placement_matches_played = ?,
+           demotion_protection_rounds = ?,
+           current_button_skin_id = ?,
+           current_arena_theme_id = ?,
+           current_profile_theme_id = ?,
+           active_loadout_slot = ?,
+           build_walkthrough_status = ?
+       WHERE id = ?`,
+      [
+        coins,
+        levelXp,
+        rankMmr,
+        rankedState.rankSystemVersion,
+        rankedState.placementMatchesPlayed,
+        rankedState.demotionProtectionRounds,
+        buttonSkin?.dbItemId ?? null,
+        arenaTheme?.dbItemId ?? null,
+        profileImage?.dbItemId ?? null,
+        activeLoadoutId,
+        buildWalkthrough.status,
+        userId,
+      ]
+    )
+
+    const insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, historyEntry)
+
+    const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
+    const nextLifetimeStats = applyRoundToLifetimeStats(
+      existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
+      historyEntry
+    )
+    await persistLifetimeStats(connection, userId, nextLifetimeStats)
+
+    const loadoutId = historyEntry?.loadoutSnapshot?.loadoutId
+    if (loadoutId) {
+      const [existingLoadoutRows] = await connection.query(
+        `SELECT
+           loadout_id AS loadoutId,
+           loadout_name AS loadoutName,
+           total_rounds AS totalRounds,
+           ranked_rounds AS rankedRounds,
+           ranked_wins AS rankedWins,
+           best_score AS bestScore,
+           best_streak AS bestStreak,
+           best_ranked_streak AS bestRankedStreak,
+           total_hits AS totalHits,
+           total_misses AS totalMisses
+         FROM user_loadout_stats
+         WHERE user_id = ? AND loadout_id = ?
+         LIMIT 1
+         FOR UPDATE`,
+        [userId, loadoutId]
+      )
+      const nextLoadoutStats = applyRoundToLoadoutStats(
+        existingLoadoutRows[0] ? mapLoadoutStatsRow(existingLoadoutRows[0]) : {},
+        historyEntry
+      )
+      await persistLoadoutStats(connection, userId, nextLoadoutStats)
+    }
+
+    const normalizedProgress = normalizeProgressInput({
+      coins,
+      levelXp,
+      rankMmr,
+      rankedState,
+      ownedItemIds,
+      equippedButtonSkinId,
+      equippedArenaThemeId,
+      equippedProfileImageId,
+      activeLoadoutId,
+      savedLoadouts,
+      selectedModeId,
+      unlockedAchievementIds,
+      buildWalkthrough,
+      roundHistory: [insertedHistoryEntry],
+    })
+
+    await syncUserCollection(connection, userId, normalizedProgress)
+    await syncUserLoadouts(connection, userId, normalizedProgress)
+    await syncUnlockedAchievements(connection, userId, normalizedProgress)
+
+    await connection.commit()
+
+    const progress = await findUserProgressByUserId(userId)
+    return {
+      progress,
+      historyEntry: insertedHistoryEntry,
+    }
+  } catch (error) {
+    await connection.rollback()
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
 export async function saveUserProgress({ userId, ...progress }) {
   const connection = await pool.getConnection()
 
@@ -935,7 +1504,6 @@ export async function saveUserProgress({ userId, ...progress }) {
 
     await syncUserCollection(connection, userId, normalizedProgress)
     await syncUserLoadouts(connection, userId, normalizedProgress)
-    await syncRoundHistory(connection, userId, normalizedProgress)
     await syncUnlockedAchievements(connection, userId, normalizedProgress)
 
     await connection.commit()

@@ -1,4 +1,8 @@
 ﻿import { isRankedModeEntry } from "../../utils/gameModeLabelsAndRankedFilters.js"
+import {
+  buildAchievementStatsFromLifetime,
+  normalizeLifetimeStats,
+} from "../../utils/lifetimeStatsUtils.js"
 import { ACHIEVEMENTS } from "./achievementsList.js"
 
 function clamp(value, min, max) {
@@ -48,8 +52,17 @@ function isMasterOfMastersAchievement(achievement = {}) {
 export function buildAchievementStats({
   levelProgress = {},
   roundHistory = [],
+  lifetimeStats = null,
   coins = 0,
 } = {}) {
+  if (lifetimeStats) {
+    return buildAchievementStatsFromLifetime({
+      lifetimeStats: normalizeLifetimeStats(lifetimeStats),
+      levelProgress,
+      coins,
+    })
+  }
+
   const rounds = Array.isArray(roundHistory) ? roundHistory : []
   let rankedRounds = 0
   let bestStreak = 0

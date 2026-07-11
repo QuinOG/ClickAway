@@ -1,1 +1,1 @@
-export const MAX_HISTORY_ENTRIES = 50
+export const RECENT_HISTORY_LIMIT = 50

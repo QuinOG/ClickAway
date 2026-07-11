@@ -1,9 +1,11 @@
-﻿import { useMemo } from "react"
+﻿import { useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { HISTORY_PREVIEW_FIELDS } from "../features/history/historyPageTableFieldsAndInsights.js"
 import { buildHistorySnapshot } from "../features/history/historyRoundsSnapshotBuilder.js"
+import { fetchHistoryPage } from "../services/clickAwayHttpApiClient.js"
 import { formatPercent } from "../utils/gameMath.js"
+import { normalizeHistoryEntry } from "../utils/historyUtils.js"
 import { formatPlayedAtLabel } from "../utils/historyUtils.js"
 import { getModeLabelFromHistoryEntry, isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 
@@ -102,11 +104,63 @@ function HighlightCard({ eyebrow, title, value, meta, stats = [], tone = "neutra
   )
 }
 
-export default function HistoryPage({ roundHistory = [] }) {
-  const historyRows = useMemo(
-    () => (Array.isArray(roundHistory) ? roundHistory : []),
-    [roundHistory]
+export default function HistoryPage({
+  roundHistory = [],
+  totalRoundCount = 0,
+}) {
+  const [extraHistoryRows, setExtraHistoryRows] = useState([])
+  const [historyPage, setHistoryPage] = useState(1)
+  const [hasMoreHistory, setHasMoreHistory] = useState(false)
+  const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState(false)
+  const [historyLoadError, setHistoryLoadError] = useState("")
+
+  const historyRows = useMemo(() => {
+    const baseRows = Array.isArray(roundHistory) ? roundHistory : []
+    const mergedRows = [...baseRows]
+
+    extraHistoryRows.forEach((entry) => {
+      if (!mergedRows.some((row) => row.id === entry.id)) {
+        mergedRows.push(entry)
+      }
+    })
+
+    return mergedRows
+  }, [extraHistoryRows, roundHistory])
+
+  const resolvedTotalRoundCount = Math.max(
+    totalRoundCount,
+    historyRows.length
   )
+  const canLoadMoreHistory = hasMoreHistory
+    || (resolvedTotalRoundCount > historyRows.length && historyPage === 1)
+
+  const handleLoadMoreHistory = useCallback(async () => {
+    const nextPage = historyPage + 1
+    setIsLoadingMoreHistory(true)
+    setHistoryLoadError("")
+
+    try {
+      const historyResponse = await fetchHistoryPage({ page: nextPage })
+      const nextEntries = (Array.isArray(historyResponse?.entries) ? historyResponse.entries : [])
+        .map(normalizeHistoryEntry)
+
+      setExtraHistoryRows((currentRows) => {
+        const mergedRows = [...currentRows]
+        nextEntries.forEach((entry) => {
+          if (!mergedRows.some((row) => row.id === entry.id)) {
+            mergedRows.push(entry)
+          }
+        })
+        return mergedRows
+      })
+      setHistoryPage(nextPage)
+      setHasMoreHistory(Boolean(historyResponse?.hasMore))
+    } catch (error) {
+      setHistoryLoadError(error?.message || "Unable to load older rounds.")
+    } finally {
+      setIsLoadingMoreHistory(false)
+    }
+  }, [historyPage])
   const hasHistory = historyRows.length > 0
   const historySnapshot = useMemo(
     () => buildHistorySnapshot(historyRows),
@@ -183,7 +237,7 @@ export default function HistoryPage({ roundHistory = [] }) {
           <div className="historyHeroText">
             <h1 className="cardTitle">Match History</h1>
             <p className="muted historyLead">
-              Score, accuracy, and ranked results across every saved round.
+              Score, accuracy, and ranked results across {formatNumber(resolvedTotalRoundCount)} saved rounds.
             </p>
           </div>
         </header>
@@ -326,6 +380,24 @@ export default function HistoryPage({ roundHistory = [] }) {
                   </tbody>
                 </table>
               </div>
+
+              {canLoadMoreHistory ? (
+                <div className="historyPagination">
+                  <button
+                    type="button"
+                    className="secondaryButton"
+                    onClick={handleLoadMoreHistory}
+                    disabled={isLoadingMoreHistory}
+                  >
+                    {isLoadingMoreHistory ? "Loading older rounds..." : "Load older rounds"}
+                  </button>
+                  {historyLoadError ? (
+                    <p className="historyPaginationError" role="alert">
+                      {historyLoadError}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </section>
           </main>
         )}

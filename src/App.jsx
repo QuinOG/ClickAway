@@ -80,6 +80,9 @@ export default function App() {
     selectedModeId,
     setSelectedModeId,
     roundHistory,
+    lifetimeStats,
+    loadoutStats,
+    totalRoundCount,
 
     // achievements
     unlockedAchievementIds,
@@ -114,6 +117,7 @@ export default function App() {
     rankMmr,
     rankedState,
     roundHistory,
+    lifetimeStats,
     coins,
     unlockedAchievementIds,
     savedLoadouts,
@@ -421,7 +425,10 @@ export default function App() {
           path="/history"
           element={
             <ProtectedRoute isAuthed={isAuthed}>
-              <HistoryPage roundHistory={roundHistory} />
+              <HistoryPage
+                roundHistory={roundHistory}
+                totalRoundCount={totalRoundCount}
+              />
             </ProtectedRoute>
           }
         />
@@ -452,6 +459,8 @@ export default function App() {
                 levelProgress={levelProgress}
                 rankProgress={rankProgress}
                 roundHistory={roundHistory}
+                lifetimeStats={lifetimeStats}
+                loadoutStats={loadoutStats}
                 equippedProfileImage={equippedProfileImage}
                 achievementStats={achievementStats}
                 persistedAchievementIds={unlockedAchievementIds}

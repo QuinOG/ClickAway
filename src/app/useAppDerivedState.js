@@ -7,7 +7,9 @@ import {
   evaluateAchievements,
   getUnlockedAchievementIds,
 } from "../game/achievements/evaluateAchievements.js"
-import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
+import {
+  buildPlayerLeaderboardStatsFromLifetime,
+} from "../utils/lifetimeStatsUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import { getRankProgressWithPlacement } from "../utils/rankUtils.js"
@@ -21,6 +23,7 @@ export function useAppDerivedState({
   rankMmr,
   rankedState,
   roundHistory,
+  lifetimeStats,
   coins,
   unlockedAchievementIds,
   savedLoadouts,
@@ -50,8 +53,9 @@ export function useAppDerivedState({
     [activeLoadoutId, levelProgress.level, savedLoadouts]
   )
   const hasRankedHistory = useMemo(
-    () => roundHistory.some((entry) => isRankedModeEntry(entry)),
-    [roundHistory]
+    () => (lifetimeStats?.rankedRounds ?? 0) > 0
+      || roundHistory.some((entry) => isRankedModeEntry(entry)),
+    [lifetimeStats?.rankedRounds, roundHistory]
   )
   const rankProgress = useMemo(
     () => getRankProgressWithPlacement({
@@ -62,16 +66,16 @@ export function useAppDerivedState({
     [hasRankedHistory, rankMmr, rankedState]
   )
   const playerLeaderboardStats = useMemo(
-    () => buildPlayerLeaderboardStats(roundHistory),
-    [roundHistory]
+    () => buildPlayerLeaderboardStatsFromLifetime(lifetimeStats),
+    [lifetimeStats]
   )
   const achievementStats = useMemo(
     () => buildAchievementStats({
       levelProgress,
-      roundHistory,
+      lifetimeStats,
       coins,
     }),
-    [coins, levelProgress, roundHistory]
+    [coins, levelProgress, lifetimeStats]
   )
   const unlockedAchievementIdsFromStats = useMemo(() => {
     const evaluatedAchievements = evaluateAchievements(achievementStats, {

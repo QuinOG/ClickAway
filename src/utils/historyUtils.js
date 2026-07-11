@@ -1,4 +1,4 @@
-import { MAX_HISTORY_ENTRIES } from "../constants/historyConstants.js"
+import { RECENT_HISTORY_LIMIT } from "../constants/historyConstants.js"
 import {
   calculateAccuracyPercent,
   normalizePercentValue,
@@ -197,7 +197,7 @@ export function createHistoryEntry({
  * @returns {Object[]}
  */
 export function appendHistoryEntry(currentHistory, nextEntry) {
-  return [nextEntry, ...currentHistory].slice(0, MAX_HISTORY_ENTRIES)
+  return [nextEntry, ...currentHistory].slice(0, RECENT_HISTORY_LIMIT)
 }
 
 /**

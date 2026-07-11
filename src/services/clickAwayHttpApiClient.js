@@ -102,6 +102,20 @@ export async function requestRoundStart(modeId) {
   }
 }
 
+export async function fetchHistoryPage({ page = 1, limit } = {}) {
+  try {
+    const response = await apiClient.get("/history", {
+      params: {
+        page,
+        ...(limit ? { limit } : {}),
+      },
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to load round history."))
+  }
+}
+
 export async function submitRound({
   modeId,
   events,

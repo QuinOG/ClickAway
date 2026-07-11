@@ -12,6 +12,11 @@ import {
 import { DEFAULT_EQUIPPED_IDS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
 import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/gameModesConfig.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
+import {
+  DEFAULT_LIFETIME_STATS,
+  normalizeLifetimeStats,
+  normalizeLoadoutStatsEntry,
+} from "../utils/lifetimeStatsUtils.js"
 import { normalizeHistoryEntry } from "../utils/historyUtils.js"
 import {
   buildDefaultRankedState,
@@ -30,6 +35,9 @@ const DEFAULT_PROGRESS = {
   equippedArenaThemeId: DEFAULT_EQUIPPED_IDS.arenaTheme,
   equippedProfileImageId: DEFAULT_EQUIPPED_IDS.profileImage,
   roundHistory: [],
+  lifetimeStats: normalizeLifetimeStats(DEFAULT_LIFETIME_STATS),
+  loadoutStats: [],
+  totalRoundCount: 0,
   unlockedAchievementIds: [],
   savedLoadouts: DEFAULT_SAVED_LOADOUTS,
   activeLoadoutId: ACTIVE_LOADOUT_ID_DEFAULT,
@@ -65,6 +73,12 @@ function normalizeProgress(progress = {}) {
     progress.savedLoadouts,
     progress.activeLoadoutId
   )
+  const normalizedLifetimeStats = normalizeLifetimeStats(
+    progress.lifetimeStats ?? DEFAULT_LIFETIME_STATS
+  )
+  const normalizedLoadoutStats = (Array.isArray(progress.loadoutStats) ? progress.loadoutStats : [])
+    .map(normalizeLoadoutStatsEntry)
+    .filter(Boolean)
 
   return {
     coins: Math.max(0, Number(progress.coins) || 0),
@@ -82,6 +96,9 @@ function normalizeProgress(progress = {}) {
       progress.equippedProfileImageId || DEFAULT_EQUIPPED_IDS.profileImage
     ),
     roundHistory: normalizedRoundHistory,
+    lifetimeStats: normalizedLifetimeStats,
+    loadoutStats: normalizedLoadoutStats,
+    totalRoundCount: Math.max(0, Number(progress.totalRoundCount) || normalizedRoundHistory.length),
     unlockedAchievementIds: normalizeStringList(progress.unlockedAchievementIds),
     savedLoadouts: normalizedLoadouts.savedLoadouts,
     activeLoadoutId: normalizedLoadouts.activeLoadoutId,
@@ -128,6 +145,9 @@ export function useAppPlayerState() {
   )
   const [selectedModeId, setSelectedModeId] = useState(DEFAULT_MODE_ID)
   const [roundHistory, setRoundHistory] = useState(DEFAULT_PROGRESS.roundHistory)
+  const [lifetimeStats, setLifetimeStats] = useState(DEFAULT_PROGRESS.lifetimeStats)
+  const [loadoutStats, setLoadoutStats] = useState(DEFAULT_PROGRESS.loadoutStats)
+  const [totalRoundCount, setTotalRoundCount] = useState(DEFAULT_PROGRESS.totalRoundCount)
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState(
     DEFAULT_PROGRESS.unlockedAchievementIds
   )
@@ -147,6 +167,9 @@ export function useAppPlayerState() {
     setEquippedArenaThemeId(normalizedProgress.equippedArenaThemeId)
     setEquippedProfileImageId(normalizedProgress.equippedProfileImageId)
     setRoundHistory(normalizedProgress.roundHistory)
+    setLifetimeStats(normalizedProgress.lifetimeStats)
+    setLoadoutStats(normalizedProgress.loadoutStats)
+    setTotalRoundCount(normalizedProgress.totalRoundCount)
     setUnlockedAchievementIds(normalizedProgress.unlockedAchievementIds)
     setSavedLoadouts(normalizedProgress.savedLoadouts)
     setActiveLoadoutId(normalizedProgress.activeLoadoutId)
@@ -221,6 +244,12 @@ export function useAppPlayerState() {
     setSelectedModeId,
     roundHistory,
     setRoundHistory,
+    lifetimeStats,
+    setLifetimeStats,
+    loadoutStats,
+    setLoadoutStats,
+    totalRoundCount,
+    setTotalRoundCount,
     unlockedAchievementIds,
     setUnlockedAchievementIds,
     savedLoadouts,
