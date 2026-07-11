@@ -39,31 +39,16 @@ npm install
 
 ### 2. Create the MySQL database
 
-The backend does not create the schema automatically. You need to:
+The backend creates and migrates its own schema automatically on startup
+(`initializeSchema()` in `server/playerMysqlDatabase.js`). You only need to:
 
-1. Create a database named `clickaway` in MySQL, or choose another name and update `DB_NAME` in `.env`.
-2. Import the bootstrap schema from `server/data/clickaway.sql`.
+1. Create an empty database named `clickaway` in MySQL, or choose another name and update `DB_NAME` in `.env`.
+2. Start the backend once — it creates every table it needs and backfills any missing
+   columns on older databases.
 
-That SQL file creates the tables the app currently expects:
-
-- `users`
-- `round_history`
-- `user_collection`
-- `user_achievement_progress`
-- lookup tables for cosmetics and achievements
-
-### 2a. Apply incremental migrations when needed
-
-Fresh databases created from `server/data/clickaway.sql` already include the
-current reaction-time columns on `round_history`.
-
-If you are upgrading an older local database instead of bootstrapping a new one,
-check `server/data/MIGRATIONS.md` and run any numbered scripts in
-`server/data/migrations/` that your database is missing.
-
-The first tracked migration is:
-
-- `001_add_round_reaction_metrics.sql`
+No manual SQL import is required. `server/data/clickaway.sql` is kept only as a
+convenience snapshot for reading the schema by eye; see `server/data/MIGRATIONS.md`
+for details and why it should not be treated as the source of truth.
 
 ### 3. Create your environment file
 
@@ -145,8 +130,9 @@ All main pages are behind authentication. A normal first pass through the app lo
 ### Authentication
 
 - `LoginPage` and `SignupPage` call the backend auth routes.
-- The JWT token is stored locally in the browser.
-- On refresh, the app checks `/api/auth/me` to restore the session.
+- The session is a JWT held in an httpOnly, `SameSite=Lax` cookie set by the server — page JS never sees or stores the token, which keeps it safe from theft via XSS.
+- On refresh, the app checks `/api/auth/me` (cookie sent automatically by the browser) to restore the session.
+- Logging out calls `POST /api/auth/logout`, which clears the cookie server-side.
 
 ### Game
 
@@ -252,8 +238,8 @@ At a high level, the app works like this:
 A common path looks like this:
 
 - user logs in
-- backend returns a token and the user's saved progress
-- frontend stores only the auth token in `localStorage` and hydrates coins, XP, MMR, inventory, and history from the server response
+- backend sets the session cookie and returns the user's saved progress in the response body
+- frontend hydrates coins, XP, MMR, inventory, and history from that response (no token bookkeeping on the client)
 - completing rounds updates local state
 - the frontend persists that state back to the backend through `PUT /api/progress`
 
@@ -272,7 +258,7 @@ If you are changing a specific part of the app, these are the main entry points:
 
 These are useful to know before making deeper changes:
 
-- The MySQL schema is bootstrapped from `server/data/clickaway.sql`; there is no migration system yet.
+- The MySQL schema is created and migrated automatically by `initializeSchema()` on every server boot — no manual SQL import or migration step is needed.
 - The leaderboard is backend-driven through `GET /api/leaderboard`.
 - Shop metadata lives in the frontend, while the backend only knows item ids and mappings.
 - Achievement rules are evaluated in the frontend, while unlocked achievement ids are persisted in MySQL.
@@ -286,8 +272,7 @@ Check:
 
 - `JWT_SECRET` is set
 - MySQL is running
-- the database in `DB_NAME` exists
-- the schema from `server/data/clickaway (3).sql` has been imported
+- the database in `DB_NAME` exists (it can be empty — the server creates its own schema on startup)
 
 ### Login/signup requests fail from the browser
 
@@ -312,5 +297,4 @@ If you only want the shortest path to understanding the repo:
 1. Read `src/App.jsx` to see the routes and the top-level state wiring.
 2. Read `src/pages/GamePage.jsx` and `src/features/game/` to understand the core gameplay loop.
 3. Read `server/index.js` to see the API surface.
-4. Read `server/playerMysqlDatabase.js` to see what data is persisted.
-5. Read `MYSQL_AUDIT.md` to understand what is fully implemented versus still frontend-owned or mocked.
+4. Read `server/playerMysqlDatabase.js` to see what data is persisted and how the schema self-migrates on boot.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react"
+import { lazy, useCallback, useEffect, useRef } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { MotionConfig } from "motion/react"
 import toast from "react-hot-toast"
@@ -61,8 +61,6 @@ export default function App() {
     // auth + identity
     isAuthed,
     setIsAuthed,
-    authToken,
-    setAuthToken,
     playerUserId,
     playerUsername,
 
@@ -123,22 +121,21 @@ export default function App() {
   })
 
   const { authReady, handleLogin, handleSignup, handleLogout } = useAuthSession({
-    authToken,
-    setAuthToken,
     setIsAuthed,
     applyAuthenticatedSession,
     resetPlayerState,
   })
 
   const persistQueueRef = useRef(Promise.resolve(null))
-  const activeAuthTokenRef = useRef(authToken)
+  // Bumped on every login/logout transition so an in-flight response from a
+  // session that has since ended can't clobber the next session's state.
+  const sessionEpochRef = useRef(0)
   const progressSnapshotRef = useRef({})
-  const persistProgressRef = useRef(null)
 
   useEffect(() => {
-    activeAuthTokenRef.current = authToken
+    sessionEpochRef.current += 1
     persistQueueRef.current = Promise.resolve(null)
-  }, [authToken])
+  }, [isAuthed])
 
   useEffect(() => {
     progressSnapshotRef.current = {
@@ -173,26 +170,27 @@ export default function App() {
   ])
 
   const persistProgress = useCallback((nextProgress = {}) => {
-    if (!authToken) {
+    if (!isAuthed) {
       return Promise.resolve(null)
     }
 
+    // progressSnapshotRef.current is kept fresh (including buildWalkthrough) by the
+    // sync effect above, so the spread below already carries the latest values for
+    // any field the caller doesn't explicitly override.
     const progressPayload = {
       ...progressSnapshotRef.current,
       ...nextProgress,
     }
 
-    if (nextProgress.buildWalkthrough === undefined) {
-      progressPayload.buildWalkthrough = buildWalkthrough
-    }
-
     progressSnapshotRef.current = progressPayload
+
+    const requestEpoch = sessionEpochRef.current
 
     persistQueueRef.current = persistQueueRef.current
       .catch(() => null)
       .then(async () => {
-        const response = await updatePlayerProgress(authToken, progressPayload)
-        if (activeAuthTokenRef.current !== authToken) {
+        const response = await updatePlayerProgress(progressPayload)
+        if (sessionEpochRef.current !== requestEpoch) {
           return null
         }
         applyProgress(response.progress)
@@ -200,11 +198,15 @@ export default function App() {
       })
       .catch((error) => {
         console.error("Unable to sync player progress:", error)
+        toast.error("Couldn't save your progress. Check your connection.", {
+          id: PROGRESS_SYNC_TOAST_ID,
+          style: PROGRESS_ERROR_TOAST_STYLE,
+        })
         return null
       })
 
     return persistQueueRef.current
-  }, [applyProgress, authToken])
+  }, [applyProgress, isAuthed])
 
   const waitForPendingProgress = useCallback(
     () => persistQueueRef.current.catch(() => null),
@@ -269,12 +271,12 @@ export default function App() {
   })
 
   const { handleRoundComplete } = usePlayerProgressionUpdates({
-    authToken,
+    isAuthed,
     applyProgress,
   })
 
   const { handlePurchase, handleEquip } = useShopActions({
-    authToken,
+    isAuthed,
     coins,
     ownedItemIds,
     equippedButtonSkinId,
@@ -429,7 +431,7 @@ export default function App() {
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <LeaderboardPage
-                authToken={authToken}
+                isAuthed={isAuthed}
                 currentUserId={playerUserId}
                 currentUsername={playerUsername}
                 currentRankProgress={rankProgress}

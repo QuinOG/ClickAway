@@ -20,7 +20,7 @@ import {
   BuildIdentityGlyph,
   ModuleSlotGlyph,
   PowerupGlyph,
-} from "../features/buildcraft/buildcraftGlyphs.jsx"
+} from "../features/buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 
 const ARMORY_STEPS = [
   { id: "slot", label: "Build Slot", lead: "Name it, make it active, or reset it." },

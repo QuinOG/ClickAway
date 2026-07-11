@@ -77,6 +77,7 @@ export default function PlayerHoverCard({
       <section className="profileHoverStats" aria-label="Player quick stats">
         <table className="profileHoverStatsTable">
           <tbody>
+            <HoverStatRow label="Coins" value={formattedCoins} tone="coins" />
             <HoverStatRow label="XP Level" value={`Lv ${normalizedLevel}`} tone="level" />
             <HoverStatRow label="Accuracy" value={formattedAccuracy} tone="accuracy" />
             {bestScore !== null ? (

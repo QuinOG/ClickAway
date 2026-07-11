@@ -12,7 +12,13 @@ const __dirname = dirname(__filename)
 
 import rateLimit from "express-rate-limit"
 
-import { extractBearerToken, signAuthToken, verifyAuthToken } from "./auth.js"
+import {
+  AUTH_COOKIE_MAX_AGE_MS,
+  AUTH_COOKIE_NAME,
+  extractCookieToken,
+  signAuthToken,
+  verifyAuthToken,
+} from "./auth.js"
 import {
   createUser,
   findLeaderboardRows,
@@ -21,12 +27,22 @@ import {
   findUserByUsername,
   saveUserProgress,
   updateUserPassword,
+  updateUserRole,
   initializeSchema,
-  default as pool,
 } from "./playerMysqlDatabase.js"
-import { calculateRewards, simulateRound } from "./roundRewards.js"
+import { calculateRoundRewards, simulateRound } from "./roundRewards.js"
+import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
 import { sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
+import { getDifficultyById } from "../src/constants/gameModesConfig.js"
+import {
+  buildAchievementStats,
+  evaluateAchievements,
+  getUnlockedAchievementIds,
+} from "../src/game/achievements/evaluateAchievements.js"
+import { getLevelProgress } from "../src/utils/progressionUtils.js"
+import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
+import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
 const app = express()
 app.set("trust proxy", 1)
@@ -34,9 +50,39 @@ const playerStateStore = createPlayerStateStore()
 
 const PORT = Number(process.env.PORT || 4000)
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173"
+// Don't rely solely on NODE_ENV being set correctly by the deployment platform:
+// an https:// CLIENT_ORIGIN on its own already implies the cookie must be Secure
+// to ever reach the browser over that connection.
+const IS_PRODUCTION = process.env.NODE_ENV === "production" || CLIENT_ORIGIN.startsWith("https://")
 const JWT_SECRET = process.env.JWT_SECRET || ""
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin"
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || ""
+
+// Sanity ceilings for server-owned progression numbers. Both rank and level are
+// designed to be uncapped in normal play, so these exist only to stop a corrupted
+// or malicious payload from producing unbounded/overflowing values.
+const MAX_COINS = 10_000_000
+const MAX_XP = 10_000_000
+const MAX_MMR = 100_000
+
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please try again later." },
+})
+
+// A legitimate round takes at least ~15 seconds plus countdown, so even a
+// generous ceiling blocks scripted submission floods without ever touching
+// real players (or several players behind one NAT).
+const roundRateLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  limit: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many rounds submitted. Please slow down." },
+})
 
 if (!JWT_SECRET) {
   throw new Error("Missing JWT_SECRET. Set it in your environment before starting the server.")
@@ -44,26 +90,9 @@ if (!JWT_SECRET) {
 
 app.use(cors({
   origin: CLIENT_ORIGIN,
-  credentials: false,
+  credentials: true,
 }))
-app.use(express.json())
-
-function sanitizeUsername(username = "") {
-  return String(username).trim()
-}
-
-function validateUsername(username) {
-  if (!username) return "Username is required."
-  if (username.length < 3) return "Username must be at least 3 characters."
-  if (username.length > 32) return "Username must be 32 characters or less."
-  return ""
-}
-
-function validatePassword(password = "") {
-  if (!password) return "Password is required."
-  if (password.length < 8) return "Password must be at least 8 characters."
-  return ""
-}
+app.use(express.json({ limit: "64kb" }))
 
 function buildAuthPayload(user) {
   return {
@@ -73,9 +102,33 @@ function buildAuthPayload(user) {
   }
 }
 
-async function createAuthResponse(user) {
+// The session token lives in an httpOnly cookie (never readable by page JS) instead
+// of localStorage + an Authorization header, so it can't be exfiltrated by an XSS
+// payload. SameSite=Lax also means the browser won't attach it to cross-site
+// fetch/XHR requests, which is the main CSRF vector for a JSON-only API like this one.
+function setAuthCookie(response, token) {
+  response.cookie(AUTH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: IS_PRODUCTION,
+    sameSite: "lax",
+    path: "/",
+    maxAge: AUTH_COOKIE_MAX_AGE_MS,
+  })
+}
+
+function clearAuthCookie(response) {
+  response.clearCookie(AUTH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: IS_PRODUCTION,
+    sameSite: "lax",
+    path: "/",
+  })
+}
+
+async function createAuthResponse(user, response) {
+  setAuthCookie(response, signAuthToken(buildAuthPayload(user), JWT_SECRET))
+
   return {
-    token: signAuthToken(buildAuthPayload(user), JWT_SECRET),
     user: {
       id: user.id,
       username: user.username,
@@ -87,7 +140,9 @@ async function createAuthResponse(user) {
 
 function normalizeProgressPayload(body = {}) {
   // Only allow safe client-controlled fields.
-  // coins, levelXp, rankMmr, and roundHistory are server-owned and never accepted from client.
+  // coins, levelXp, rankMmr, roundHistory, and unlockedAchievementIds are server-owned
+  // and never accepted from the client — achievements are recomputed from trusted
+  // progress data on every save (see resolveUnlockedAchievementIds).
   return {
     equippedButtonSkinId: body.equippedButtonSkinId,
     equippedArenaThemeId: body.equippedArenaThemeId,
@@ -95,9 +150,21 @@ function normalizeProgressPayload(body = {}) {
     activeLoadoutId: body.activeLoadoutId,
     savedLoadouts: body.savedLoadouts,
     selectedModeId: body.selectedModeId,
-    unlockedAchievementIds: body.unlockedAchievementIds,
     buildWalkthrough: body.buildWalkthrough,
   }
+}
+
+function resolveUnlockedAchievementIds(currentProgress) {
+  const achievementStats = buildAchievementStats({
+    levelProgress: getLevelProgress(currentProgress.levelXp),
+    roundHistory: currentProgress.roundHistory,
+    coins: currentProgress.coins,
+  })
+  const evaluatedAchievements = evaluateAchievements(achievementStats, {
+    persistedUnlockedIds: currentProgress.unlockedAchievementIds,
+  })
+
+  return getUnlockedAchievementIds(evaluatedAchievements)
 }
 
 function mergeProgressPayload(existingProgress = {}, nextProgress = {}) {
@@ -111,6 +178,27 @@ function mergeProgressPayload(existingProgress = {}, nextProgress = {}) {
   )
 }
 
+function clampCoins(value) {
+  return Math.min(MAX_COINS, Math.max(0, Number(value) || 0))
+}
+
+function clampXp(value) {
+  return Math.min(MAX_XP, Math.max(0, Number(value) || 0))
+}
+
+function clampMmr(value) {
+  return Math.min(MAX_MMR, Math.max(0, Number(value) || 0))
+}
+
+function clampProgressBounds(progress = {}) {
+  return {
+    ...progress,
+    coins: clampCoins(progress.coins),
+    levelXp: clampXp(progress.levelXp),
+    rankMmr: clampMmr(progress.rankMmr),
+  }
+}
+
 function handleRouteError(error, response) {
   if (error instanceof PlayerStateError) {
     response.status(error.status).json({ error: error.message })
@@ -122,7 +210,7 @@ function handleRouteError(error, response) {
 }
 
 function requireAuth(request, response, next) {
-  const token = extractBearerToken(request.headers.authorization || "")
+  const token = extractCookieToken(request.headers.cookie || "")
   if (!token) {
     response.status(401).json({ error: "Missing authentication token." })
     return
@@ -164,6 +252,9 @@ async function seedAdminAccount() {
     id: existingAdmin.id,
     passwordHash,
   })
+  if (existingAdmin.role !== "admin") {
+    await updateUserRole({ id: existingAdmin.id, role: "admin" })
+  }
   console.log(`Admin password refreshed for username "${existingAdmin.username}".`)
 }
 
@@ -171,7 +262,7 @@ app.get("/api/health", (_request, response) => {
   response.json({ ok: true })
 })
 
-app.post("/api/auth/signup", async (request, response) => {
+app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
   const username = sanitizeUsername(request.body?.username)
   const password = String(request.body?.password || "")
 
@@ -202,13 +293,13 @@ app.post("/api/auth/signup", async (request, response) => {
 
   try {
     await playerStateStore.ensurePlayerUser(createdUser)
-    response.status(201).json(await createAuthResponse(createdUser))
+    response.status(201).json(await createAuthResponse(createdUser, response))
   } catch (error) {
     handleRouteError(error, response)
   }
 })
 
-app.post("/api/auth/login", async (request, response) => {
+app.post("/api/auth/login", authRateLimiter, async (request, response) => {
   const username = sanitizeUsername(request.body?.username)
   const password = String(request.body?.password || "")
 
@@ -231,10 +322,15 @@ app.post("/api/auth/login", async (request, response) => {
 
   try {
     await playerStateStore.ensurePlayerUser(user)
-    response.json(await createAuthResponse(user))
+    response.json(await createAuthResponse(user, response))
   } catch (error) {
     handleRouteError(error, response)
   }
+})
+
+app.post("/api/auth/logout", (_request, response) => {
+  clearAuthCookie(response)
+  response.status(204).end()
 })
 
 app.get("/api/auth/me", requireAuth, async (request, response) => {
@@ -341,19 +437,31 @@ app.post("/api/round/complete", requireAuth, async (request, response) => {
   const { hits, misses, score, bestStreak } = simulation
 
   try {
-    const { earnedCoins, earnedXp, rankDelta, progressionMode } = calculateRewards({
-      modeId,
-      hits,
-      misses,
-      score,
-      bestStreak,
+    const currentProgress = await findUserProgressByUserId(user.id)
+    const hasRankedHistory = currentProgress.roundHistory.some(isRankedModeEntry)
+
+    const { earnedCoins, earnedXp, progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } =
+      calculateRoundRewards({
+        modeId,
+        hits,
+        misses,
+        score,
+        bestStreak,
+      })
+
+    const rankOutcome = applyRankedMatchResult({
+      currentMmr: currentProgress.rankMmr,
+      currentRankedState: currentProgress.rankedState,
+      hasRankedHistory,
+      baseRankDelta,
+      placementMatchScore,
+      allowsRankProgression,
     })
 
-    const currentProgress = await findUserProgressByUserId(user.id)
-
-    const nextCoins = Math.min(MAX_COINS, Math.max(0, currentProgress.coins + earnedCoins))
-    const nextLevelXp = Math.min(MAX_XP, Math.max(0, currentProgress.levelXp + earnedXp))
-    const nextRankMmr = Math.min(MAX_MMR, Math.max(0, currentProgress.rankMmr + rankDelta))
+    const nextCoins = clampCoins(currentProgress.coins + earnedCoins)
+    const nextLevelXp = clampXp(currentProgress.levelXp + earnedXp)
+    const nextRankMmr = clampMmr(rankOutcome.nextMmr)
+    const rankDelta = rankOutcome.appliedRankDelta
 
     const historyEntry = {
       score,
@@ -375,13 +483,19 @@ app.post("/api/round/complete", requireAuth, async (request, response) => {
       coins: nextCoins,
       levelXp: nextLevelXp,
       rankMmr: nextRankMmr,
+      rankedState: rankOutcome.nextRankedState,
       ownedItemIds: currentProgress.ownedItemIds,
       equippedButtonSkinId: currentProgress.equippedButtonSkinId,
       equippedArenaThemeId: currentProgress.equippedArenaThemeId,
       equippedProfileImageId: currentProgress.equippedProfileImageId,
       selectedModeId: modeId,
       roundHistory: nextRoundHistory,
-      unlockedAchievementIds: currentProgress.unlockedAchievementIds,
+      unlockedAchievementIds: resolveUnlockedAchievementIds({
+        ...currentProgress,
+        coins: nextCoins,
+        levelXp: nextLevelXp,
+        roundHistory: nextRoundHistory,
+      }),
     })
 
     response.json({ progress, earnedCoins, earnedXp, rankDelta })
@@ -401,18 +515,10 @@ app.put("/api/progress", requireAuth, async (request, response) => {
     const currentProgress = await findUserProgressByUserId(user.id)
     const incoming = normalizeProgressPayload(request.body)
 
-    // Whitelist achievement IDs against the catalog
-    if (Array.isArray(incoming.unlockedAchievementIds)) {
-      const [catalogRows] = await pool.query("SELECT id FROM achievements_catalog")
-      const validIds = new Set(catalogRows.map((r) => r.id))
-      incoming.unlockedAchievementIds = incoming.unlockedAchievementIds.filter(
-        (id) => validIds.has(id)
-      )
-    }
-
     const nextProgress = clampProgressBounds(
       mergeProgressPayload(currentProgress, incoming)
     )
+    nextProgress.unlockedAchievementIds = resolveUnlockedAchievementIds(currentProgress)
 
     const progress = await saveUserProgress({
       userId: user.id,

@@ -49,7 +49,7 @@ function buildEquipProgressPatch(item, equippedIds) {
 }
 
 export function useShopActions({
-  authToken,
+  isAuthed,
   coins,
   ownedItemIds,
   equippedButtonSkinId,
@@ -68,7 +68,7 @@ export function useShopActions({
       }
     }
 
-    if (!authToken) {
+    if (!isAuthed) {
       return {
         ok: false,
         error: "You must be logged in to unlock items.",
@@ -77,7 +77,7 @@ export function useShopActions({
 
     try {
       await waitForPendingProgress?.()
-      const session = await purchaseShopItem(authToken, item.id)
+      const session = await purchaseShopItem(item.id)
       const nextProgress = applyProgress({
         ...syncProgressSnapshot?.(),
         ...(hasFullProgressPayload(session)
@@ -100,7 +100,7 @@ export function useShopActions({
     }
   }, [
     applyProgress,
-    authToken,
+    isAuthed,
     coins,
     ownedItemIds,
     syncProgressSnapshot,
@@ -123,7 +123,7 @@ export function useShopActions({
       }
     }
 
-    if (!authToken) {
+    if (!isAuthed) {
       return {
         ok: false,
         error: "You must be logged in to equip items.",
@@ -132,7 +132,7 @@ export function useShopActions({
 
     try {
       await waitForPendingProgress?.()
-      const session = await equipShopItem(authToken, item.id)
+      const session = await equipShopItem(item.id)
       const nextProgress = applyProgress({
         ...syncProgressSnapshot?.(),
         ...(hasFullProgressPayload(session)
@@ -159,7 +159,7 @@ export function useShopActions({
     }
   }, [
     applyProgress,
-    authToken,
+    isAuthed,
     equippedArenaThemeId,
     equippedButtonSkinId,
     equippedProfileImageId,

@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { Toaster } from "react-hot-toast"
-import { useOutlet, useLocation } from "react-router-dom"
-import { useState } from "react"
+import { Outlet, useLocation } from "react-router-dom"
+import { AnimatePresence, motion } from "motion/react"
 import Navbar from "./Navbar.jsx"
 import { useBodyClass } from "../hooks/useBodyClass.js"
 
@@ -10,6 +10,7 @@ const GAME_ROUTE_PREFIX = "/game"
 const GAME_ROUTE_BODY_CLASS = "gameRouteActive"
 const ARMORY_ROUTE_PREFIX = "/armory"
 const ARMORY_ROUTE_BODY_CLASS = "armoryRouteActive"
+const PAGE_EASE = [0.22, 1, 0.36, 1]
 
 function RouteFallback() {
   return (
@@ -62,8 +63,8 @@ export default function Layout({
       <main className={`mainContent ${isGameRoute ? "gameMain" : ""} ${isArmoryRoute ? "armoryMain" : ""}`.trim()}>
         <AnimatePresence mode="wait" initial={false}>
           <MotionDiv
-            key={location.pathname}
-            style={isGameRoute ? gamePageStyle : undefined}
+            key={pathname}
+            className="routeOutlet"
             initial={isGameRoute ? { opacity: 0, y: 4 } : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             exit={isGameRoute ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.993 }}
@@ -72,7 +73,9 @@ export default function Layout({
               ease: PAGE_EASE,
             }}
           >
-            <Outlet />
+            <Suspense fallback={<RouteFallback />}>
+              <Outlet />
+            </Suspense>
           </MotionDiv>
         </AnimatePresence>
       </main>

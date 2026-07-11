@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { getDifficultyById } from "../src/constants/difficultyConfig.js"
+import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { canPurchaseShopItem } from "../src/utils/shopUtils.js"
 
 test("F-G05 / F-G06: Casual uses 30s timer; Ranked uses 15s", () => {

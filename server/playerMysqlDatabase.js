@@ -11,6 +11,7 @@ import {
   BUILD_WALKTHROUGH_STATUS,
   normalizeBuildWalkthrough,
 } from "../src/constants/buildWalkthrough.js"
+import { ACHIEVEMENTS } from "../src/game/achievements/achievementsList.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import {
   buildDefaultRankedState,
@@ -45,7 +46,6 @@ const DEFAULT_PROGRESS = {
   ),
 }
 
-const DEFAULT_ADMIN_USERNAME = "admin"
 const DEFAULT_DATABASE_PORT = 3306
 const DEFAULT_PROGRESSION_MODE = "non_ranked"
 
@@ -141,13 +141,6 @@ export async function initializeSchema() {
         FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-    INSERT IGNORE INTO \`achievements_catalog\` (\`id\`) VALUES
-      ('career-coins-100000'),('career-coins-25000'),('career-level-30'),('career-level-50'),
-      ('career-ranked-1000'),('career-ranked-250'),('career-rounds-1000'),('career-rounds-250'),
-      ('easy-coins-500'),('easy-level-5'),('easy-ranked-1'),('easy-rounds-1'),('easy-rounds-10'),
-      ('hard-coins-5000'),('hard-level-15'),('hard-ranked-10'),('hard-ranked-50'),('hard-rounds-50'),
-      ('master-economy'),('master-level'),('master-of-masters'),('master-ranked'),('master-rounds');
-
     INSERT IGNORE INTO \`arena_themes\` (\`id\`) VALUES (1),(2),(3),(4);
 
     INSERT IGNORE INTO \`button_skins\` (\`id\`) VALUES
@@ -155,6 +148,14 @@ export async function initializeSchema() {
 
     INSERT IGNORE INTO \`profile_images\` (\`id\`) VALUES (1),(2),(3),(4),(5),(6),(7);
   `)
+
+  // The achievement catalog is seeded from ACHIEVEMENTS (the single source of truth
+  // shared with the frontend) instead of a hand-maintained id list, so the two can
+  // never drift out of sync again.
+  await pool.query(
+    "INSERT IGNORE INTO `achievements_catalog` (`id`) VALUES ?",
+    [ACHIEVEMENTS.map((achievement) => [achievement.id])]
+  )
 
   // Migrations: add columns that may be missing from older deployments.
   // MySQL 5.7 does not support ALTER TABLE ADD COLUMN IF NOT EXISTS,
@@ -382,15 +383,11 @@ function normalizeProgressInput(record = {}) {
 function mapUserRow(row) {
   if (!row) return null
 
-  const adminUsername = String(
-    process.env.ADMIN_USERNAME || DEFAULT_ADMIN_USERNAME
-  ).trim().toLowerCase()
-
   return {
     id: Number(row.id),
     username: String(row.username || ""),
     passwordHash: String(row.passwordHash || ""),
-    role: String(row.username || "").trim().toLowerCase() === adminUsername ? "admin" : "player",
+    role: row.role === "admin" ? "admin" : "player",
   }
 }
 
@@ -765,7 +762,7 @@ async function syncUnlockedAchievements(executor, userId, progress) {
 
 export async function findUserByUsername(username) {
   const [rows] = await pool.query(
-    `SELECT id, username, password_hash AS passwordHash
+    `SELECT id, username, password_hash AS passwordHash, role
      FROM users
      WHERE username = ?
      LIMIT 1`,
@@ -777,7 +774,7 @@ export async function findUserByUsername(username) {
 
 export async function findUserById(id) {
   const [rows] = await pool.query(
-    `SELECT id, username, password_hash AS passwordHash
+    `SELECT id, username, password_hash AS passwordHash, role
      FROM users
      WHERE id = ?
      LIMIT 1`,
@@ -787,16 +784,18 @@ export async function findUserById(id) {
   return mapUserRow(rows[0])
 }
 
-export async function createUser({ username, passwordHash }) {
+export async function createUser({ username, passwordHash, role = "player" }) {
   const [result] = await pool.execute(
     `INSERT INTO users (
        username,
        password_hash,
+       role,
        build_walkthrough_status
-     ) VALUES (?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?)`,
     [
       String(username || "").trim(),
       String(passwordHash || ""),
+      role === "admin" ? "admin" : "player",
       BUILD_WALKTHROUGH_STATUS.NOT_STARTED,
     ]
   )
@@ -808,6 +807,15 @@ export async function updateUserPassword({ id, passwordHash }) {
   await pool.execute(
     "UPDATE users SET password_hash = ? WHERE id = ?",
     [String(passwordHash || ""), id]
+  )
+
+  return findUserById(id)
+}
+
+export async function updateUserRole({ id, role }) {
+  await pool.execute(
+    "UPDATE users SET role = ? WHERE id = ?",
+    [role === "admin" ? "admin" : "player", id]
   )
 
   return findUserById(id)

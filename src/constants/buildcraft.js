@@ -321,6 +321,20 @@ export function getLoadoutById(loadouts = [], loadoutId = DEFAULT_ACTIVE_LOADOUT
   return loadoutList.find((loadout) => loadout.id === loadoutId) ?? loadoutList[0] ?? null
 }
 
+// Server-side variant of buildLoadoutSnapshot: clamps a client-submitted
+// snapshot to what the player's level has actually unlocked, so a forged
+// payload can't claim locked modules or powerups.
+export function normalizeLoadoutSnapshotForLevel(level = 1, snapshot = {}) {
+  const baseSnapshot = buildLoadoutSnapshot(snapshot)
+  const fallbackLoadout = STARTER_LOADOUTS[0]
+
+  return {
+    ...baseSnapshot,
+    moduleIds: normalizeModuleIds(level, baseSnapshot.moduleIds, fallbackLoadout),
+    powerupIds: fillPowerupIds(level, baseSnapshot.powerupIds, fallbackLoadout.powerupIds),
+  }
+}
+
 export function buildLoadoutSnapshot(loadout = {}) {
   return {
     loadoutId: String(loadout.id || loadout.loadoutId || DEFAULT_ACTIVE_LOADOUT_ID),

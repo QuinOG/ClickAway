@@ -30,6 +30,9 @@ import {
   getRandomPosition,
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
+import { createRoundSimulation } from "../../../game/engine/roundEngine.js"
+import { createRandomSeed, createSeededRng } from "../../../game/engine/seededRng.js"
+import { requestRoundStart } from "../../../services/clickAwayHttpApiClient.js"
 import { calculateRoundXp } from "../../../utils/progressionUtils.js"
 import {
   applyRankedMatchResult,
@@ -38,10 +41,7 @@ import {
 } from "../../../utils/rankUtils.js"
 import { calculateRoundCoins } from "../../../utils/roundRewards.js"
 
-const COMBO_SURGE_STREAK_BONUS = 4
-const COMBO_SURGE_HIT_COUNT = 4
 const MAGNET_CENTER_FREEZE_MS = 400
-const GUARD_CHARGE_DURATION_MS = 8000
 const FREEZE_MOVEMENT_DURATION_MS = 1000
 
 function buildGameScreenClassName(atmosphereTier, isShakeActive) {
@@ -106,6 +106,15 @@ export function useGameScreenController({
   const buttonSpawnedAtRef = useRef(0)
   const reactionTotalMsRef = useRef(0)
   const reactionSampleCountRef = useRef(0)
+  // The deterministic simulation owns all score-relevant state (score, streak,
+  // combo surge, guard, powerup charges). React state below only mirrors it
+  // for rendering, so the submitted event stream replays to the exact same
+  // totals on the server.
+  const simulationRef = useRef(null)
+  const roundNonceRef = useRef(0)
+  const roundSeedRef = useRef(0)
+  const roundTokenRef = useRef(null)
+  const rngRef = useRef(Math.random)
 
   const resolvedLoadout = useMemo(
     () => getResolvedLoadout(savedLoadouts, activeLoadoutId, activeLoadout),
@@ -303,6 +312,12 @@ export function useGameScreenController({
     buttonSpawnedAtRef.current = performance.now()
   }, [])
 
+  // Milliseconds since the round started playing — the canonical timebase for
+  // every recorded event (and therefore for the server replay).
+  const getElapsedMs = useCallback(() => (
+    roundStartTimeRef.current > 0 ? Date.now() - roundStartTimeRef.current : 0
+  ), [])
+
   const triggerScreenShake = useCallback(() => {
     clearShakeTimeout()
     setIsShakeActive(true)
@@ -326,7 +341,7 @@ export function useGameScreenController({
     if (!arenaElement) return
 
     const arenaRect = arenaElement.getBoundingClientRect()
-    setButtonPosition(getRandomPosition(arenaRect, nextButtonSize))
+    setButtonPosition(getRandomPosition(arenaRect, nextButtonSize, rngRef.current))
     markButtonSpawned()
   }, [markButtonSpawned])
 
@@ -381,21 +396,16 @@ export function useGameScreenController({
     )
   }, [addClickFeedback])
 
-  const grantPowerupCharge = useCallback((powerup) => {
-    setPowerupCharges((currentCharges) => ({
-      ...currentCharges,
-      [powerup.id]: (currentCharges[powerup.id] ?? 0) + 1,
-    }))
-    addCenterFeedback(`${powerup.slotKey}+`, "positive")
-  }, [addCenterFeedback])
-
-  const awardPowerupCharges = useCallback((nextStreak) => {
-    roundMode.equippedPowerups.forEach((powerup) => {
-      if (nextStreak > 0 && nextStreak % powerup.awardEvery === 0) {
-        grantPowerupCharge(powerup)
-      }
-    })
-  }, [grantPowerupCharge, roundMode.equippedPowerups])
+  const syncSimulationState = useCallback((simulationState) => {
+    setScore(simulationState.score)
+    setStreak(simulationState.streak)
+    setBestStreak(simulationState.bestStreak)
+    setHits(simulationState.hits)
+    setMisses(simulationState.misses)
+    setPowerupCharges(simulationState.powerupCharges)
+    setComboSurgeHitsRemaining(simulationState.comboSurgeHitsRemaining)
+    setGuardActiveUntilMs(simulationState.guardActiveUntilMs)
+  }, [])
 
   const resetRoundState = useCallback((modeSettings) => {
     clearRoundEndTimeout()
@@ -458,6 +468,32 @@ export function useGameScreenController({
     reactionTotalMsRef.current = 0
     reactionSampleCountRef.current = 0
     buttonSpawnedAtRef.current = 0
+
+    simulationRef.current = createRoundSimulation(nextRoundMode)
+
+    // Seed geometry locally right away, then try to upgrade to a server-issued
+    // seed + round token during the countdown. If the request loses the race
+    // (or fails), the round still plays with the local seed and no token.
+    roundNonceRef.current += 1
+    const startedRoundNonce = roundNonceRef.current
+    roundTokenRef.current = null
+    roundSeedRef.current = createRandomSeed()
+    rngRef.current = createSeededRng(roundSeedRef.current)
+
+    requestRoundStart(nextModeId)
+      .then(({ roundToken, seed }) => {
+        const isSameRound = roundNonceRef.current === startedRoundNonce
+        const hasRoundStarted = roundStartTimeRef.current > 0
+        if (!isSameRound || hasRoundStarted || !roundToken) return
+
+        roundTokenRef.current = roundToken
+        roundSeedRef.current = Number(seed) >>> 0
+        rngRef.current = createSeededRng(roundSeedRef.current)
+      })
+      .catch(() => {
+        // Round tokens are best-effort for now; unauthenticated or offline
+        // rounds simply submit without one.
+      })
     setRoundStartBestScore(playerBestScore)
     setRoundStartLevel(playerLevel)
     setRoundStartXpIntoLevel(playerXpIntoLevel)
@@ -504,36 +540,30 @@ export function useGameScreenController({
     }, ROUND_END_SETTLE_MS)
   }, [clearRoundEndTimeout, isRoundEnding, phase])
 
-  const applyPowerup = useCallback((powerup) => {
-    if (!powerup) return false
-
+  // Visual/geometry side effects of a powerup. Score-relevant semantics
+  // (charge consumption, combo surge, guard) live in the shared engine.
+  const applyPowerupPresentation = useCallback((powerup) => {
     if (powerup.effectType === "time_boost") {
-      if (!isTimedRound) {
-        addCenterFeedback("No Timer", "negative")
-        return false
-      }
-
       setTimeLeft((currentTime) =>
         Math.min(roundMode.maxTimeBufferSeconds, currentTime + 2)
       )
       addCenterFeedback("+2s", "positive")
-      return true
+      return
     }
 
     if (powerup.effectType === "size_boost") {
-      setButtonSize((currentButtonSize) => {
-        const nextButtonSize = Math.min(roundMode.initialButtonSize, currentButtonSize + 10)
-        return nextButtonSize
-      })
+      setButtonSize((currentButtonSize) => (
+        Math.min(roundMode.initialButtonSize, currentButtonSize + 10)
+      ))
       markButtonSpawned()
       addCenterFeedback("Grow", "positive")
-      return true
+      return
     }
 
     if (powerup.effectType === "freeze_movement") {
       freezeMovementUntilRef.current = performance.now() + FREEZE_MOVEMENT_DURATION_MS
       addCenterFeedback("Freeze", "positive")
-      return true
+      return
     }
 
     if (powerup.effectType === "magnet_center") {
@@ -545,90 +575,67 @@ export function useGameScreenController({
       })
       markButtonSpawned()
       addCenterFeedback("Center", "positive")
-      return true
+      return
     }
 
     if (powerup.effectType === "combo_surge") {
-      setComboSurgeHitsRemaining((currentHitsRemaining) => (
-        currentHitsRemaining + COMBO_SURGE_HIT_COUNT
-      ))
       addCenterFeedback("Surge", "positive")
-      return true
+      return
     }
 
     if (powerup.effectType === "guard_charge") {
-      setGuardActiveUntilMs(performance.now() + GUARD_CHARGE_DURATION_MS)
       addCenterFeedback("Guard", "positive")
-      return true
     }
-
-    return false
   }, [
     addCenterFeedback,
     centerButtonPosition,
-    isTimedRound,
     markButtonSpawned,
     roundMode.initialButtonSize,
     roundMode.maxTimeBufferSeconds,
   ])
 
+  const tryUsePowerup = useCallback((powerup) => {
+    if (!powerup || !isPlaying || !simulationRef.current) return
+
+    const eventTimeMs = getElapsedMs()
+    const outcome = simulationRef.current.applyPowerup(powerup.id, eventTimeMs)
+
+    if (!outcome.applied) {
+      if (outcome.reason === "untimed_round") {
+        addCenterFeedback("No Timer", "negative")
+      }
+      return
+    }
+
+    roundEventsRef.current.push({
+      type: "powerup",
+      powerupId: powerup.id,
+      t: eventTimeMs,
+    })
+    setPowerupCharges(outcome.powerupCharges)
+    setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
+    setGuardActiveUntilMs(outcome.guardActiveUntilMs)
+    applyPowerupPresentation(powerup)
+  }, [addCenterFeedback, applyPowerupPresentation, getElapsedMs, isPlaying])
+
   const tryUsePowerupKey = useCallback((key) => {
-    if (!isPlaying) return
-
-    const powerup = roundMode.equippedPowerups.find((item) => item.slotKey === key)
-    if (!powerup) return
-
-    const availableCharges = powerupCharges[powerup.id] ?? 0
-    if (availableCharges <= 0) return
-
-    const wasApplied = applyPowerup(powerup)
-    if (!wasApplied) return
-
-    setPowerupCharges((currentCharges) => ({
-      ...currentCharges,
-      [powerup.id]: Math.max(0, (currentCharges[powerup.id] ?? 0) - 1),
-    }))
-  }, [applyPowerup, isPlaying, powerupCharges, roundMode.equippedPowerups])
+    tryUsePowerup(roundMode.equippedPowerups.find((item) => item.slotKey === key))
+  }, [roundMode.equippedPowerups, tryUsePowerup])
 
   const handleUsePowerup = useCallback((powerupId) => {
-    if (!isPlaying) return
-
-    const powerup = roundMode.equippedPowerups.find((item) => item.id === powerupId)
-    if (!powerup) return
-
-    const availableCharges = powerupCharges[powerup.id] ?? 0
-    if (availableCharges <= 0) return
-
-    const wasApplied = applyPowerup(powerup)
-    if (!wasApplied) return
-
-    setPowerupCharges((currentCharges) => ({
-      ...currentCharges,
-      [powerup.id]: Math.max(0, (currentCharges[powerup.id] ?? 0) - 1),
-    }))
-  }, [applyPowerup, isPlaying, powerupCharges, roundMode.equippedPowerups])
+    tryUsePowerup(roundMode.equippedPowerups.find((item) => item.id === powerupId))
+  }, [roundMode.equippedPowerups, tryUsePowerup])
 
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()
-    if (!isPlaying) return
+    if (!isPlaying || !simulationRef.current) return
 
-    const nextStreak = streak + 1
-    const effectiveStreak = comboSurgeHitsRemaining > 0
-      ? nextStreak + COMBO_SURGE_STREAK_BONUS
-      : nextStreak
-    const pointsEarned = Math.max(
-      1,
-      Math.round(
-        roundMode.basePointsPerHit *
-        getComboMultiplier(effectiveStreak, roundMode.comboStep) *
-        (roundMode.scoreMultiplier ?? 1)
-      )
-    )
+    const eventTimeMs = getElapsedMs()
     const hitReactionMs = buttonSpawnedAtRef.current > 0
       ? Math.max(0, Math.round(performance.now() - buttonSpawnedAtRef.current))
       : null
 
-    roundEventsRef.current.push({ type: "hit", t: Date.now() - roundStartTimeRef.current })
+    roundEventsRef.current.push({ type: "hit", t: eventTimeMs })
     buttonSpawnedAtRef.current = 0
 
     if (hitReactionMs !== null) {
@@ -647,17 +654,13 @@ export function useGameScreenController({
       ))
     }
 
-    if (comboSurgeHitsRemaining > 0) {
-      setComboSurgeHitsRemaining((currentHitsRemaining) => Math.max(0, currentHitsRemaining - 1))
-    }
+    const result = simulationRef.current.applyHit(eventTimeMs)
+    syncSimulationState(result)
 
-    setStreak(nextStreak)
-    setBestStreak((currentBestStreak) => Math.max(currentBestStreak, nextStreak))
-    setHits((currentHits) => currentHits + 1)
-    setScore((currentScore) => currentScore + pointsEarned)
-
-    addClickFeedback(event.clientX, event.clientY, `+${pointsEarned}`, "positive")
-    awardPowerupCharges(nextStreak)
+    addClickFeedback(event.clientX, event.clientY, `+${result.pointsEarned}`, "positive")
+    result.grantedPowerups.forEach((powerup) => {
+      addCenterFeedback(`${powerup.slotKey}+`, "positive")
+    })
 
     setButtonSize((currentButtonSize) => {
       const nextButtonSize = getNextButtonSize(currentButtonSize, roundMode)
@@ -665,39 +668,44 @@ export function useGameScreenController({
       return nextButtonSize
     })
   }, [
+    addCenterFeedback,
     addClickFeedback,
-    awardPowerupCharges,
-    comboSurgeHitsRemaining,
+    getElapsedMs,
     isPlaying,
     queueButtonReposition,
     roundMode,
-    streak,
+    syncSimulationState,
   ])
 
   const handleArenaClick = useCallback((event) => {
-    if (!isPlaying) return
+    if (!isPlaying || !simulationRef.current) return
 
-    roundEventsRef.current.push({ type: "miss", t: Date.now() - roundStartTimeRef.current })
-    setMisses((currentMisses) => currentMisses + 1)
+    const eventTimeMs = getElapsedMs()
+    roundEventsRef.current.push({ type: "miss", t: eventTimeMs })
 
-    if (guardActiveUntilMs > performance.now()) {
-      setGuardActiveUntilMs(0)
+    const result = simulationRef.current.applyMiss(eventTimeMs)
+    syncSimulationState(result)
+
+    if (result.guarded) {
       addClickFeedback(event.clientX, event.clientY, "Guarded", "positive")
       return
     }
 
-    const missPenalty = roundMode.missPenalty
-    setStreak(0)
     triggerScreenShake()
 
-    if (missPenalty > 0) {
-      setScore((currentScore) => Math.max(0, currentScore - missPenalty))
-      addClickFeedback(event.clientX, event.clientY, `-${missPenalty}`, "negative")
+    if (result.penaltyApplied > 0) {
+      addClickFeedback(event.clientX, event.clientY, `-${result.penaltyApplied}`, "negative")
       return
     }
 
     addClickFeedback(event.clientX, event.clientY, "Miss", "negative")
-  }, [addClickFeedback, guardActiveUntilMs, isPlaying, roundMode.missPenalty, triggerScreenShake])
+  }, [
+    addClickFeedback,
+    getElapsedMs,
+    isPlaying,
+    syncSimulationState,
+    triggerScreenShake,
+  ])
 
   const handleModeSelect = useCallback((modeId) => {
     onModeChange?.(modeId)
@@ -746,13 +754,15 @@ export function useGameScreenController({
   useEffect(() => {
     if (guardActiveUntilMs <= 0) return undefined
 
-    const remainingMs = Math.max(0, guardActiveUntilMs - performance.now())
+    // guardActiveUntilMs is in round-elapsed milliseconds (the event timebase),
+    // matching how the engine decides whether a miss is guarded.
+    const remainingMs = Math.max(0, guardActiveUntilMs - getElapsedMs())
     const timeoutId = window.setTimeout(() => {
       setGuardActiveUntilMs(0)
     }, remainingMs)
 
     return () => window.clearTimeout(timeoutId)
-  }, [guardActiveUntilMs])
+  }, [getElapsedMs, guardActiveUntilMs])
 
   useEffect(() => {
     if (phase !== ROUND_PHASE.GAME_OVER) return
@@ -775,6 +785,8 @@ export function useGameScreenController({
       allowsRankProgression: roundMode.allowsRankProgression === true,
       events: roundEventsRef.current,
       loadoutSnapshot: roundStartLoadoutSnapshot,
+      roundToken: roundTokenRef.current,
+      seed: roundSeedRef.current,
     })
 
     setSessionStats((prev) => ({

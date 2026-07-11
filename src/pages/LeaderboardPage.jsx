@@ -85,8 +85,8 @@ function normalizeLeaderboardRow(row = {}, rowIndex = 0) {
   }
 }
 
-async function requestLeaderboardRows(authToken) {
-  const response = await fetchLeaderboard(authToken)
+async function requestLeaderboardRows() {
+  const response = await fetchLeaderboard()
   return (Array.isArray(response?.rows) ? response.rows : []).map(normalizeLeaderboardRow)
 }
 
@@ -301,7 +301,7 @@ function NearMeSection({ gatewayRows = [], mmrGap = 0 }) {
 }
 
 export default function LeaderboardPage({
-  authToken = "",
+  isAuthed = false,
   currentUserId = "",
   currentUsername = "",
   currentRankProgress = null,
@@ -314,9 +314,9 @@ export default function LeaderboardPage({
   const [loadError, setLoadError] = useState("")
 
   const loadLeaderboard = useCallback(async () => {
-    if (!authToken) {
+    if (!isAuthed) {
       setLeaderboardRows([])
-      setLoadError("Missing authentication token.")
+      setLoadError("You must be logged in to view the leaderboard.")
       setIsLoading(false)
       return
     }
@@ -325,23 +325,23 @@ export default function LeaderboardPage({
     setLoadError("")
 
     try {
-      setLeaderboardRows(await requestLeaderboardRows(authToken))
+      setLeaderboardRows(await requestLeaderboardRows())
     } catch (error) {
       setLeaderboardRows([])
       setLoadError(error.message || "Unable to load leaderboard.")
     } finally {
       setIsLoading(false)
     }
-  }, [authToken])
+  }, [isAuthed])
 
   useEffect(() => {
     let isCancelled = false
 
     async function syncLeaderboard() {
-      if (!authToken) {
+      if (!isAuthed) {
         if (!isCancelled) {
           setLeaderboardRows([])
-          setLoadError("Missing authentication token.")
+          setLoadError("You must be logged in to view the leaderboard.")
           setIsLoading(false)
         }
         return
@@ -351,7 +351,7 @@ export default function LeaderboardPage({
       setLoadError("")
 
       try {
-        const rows = await requestLeaderboardRows(authToken)
+        const rows = await requestLeaderboardRows()
         if (isCancelled) return
         setLeaderboardRows(rows)
       } catch (error) {
@@ -370,7 +370,7 @@ export default function LeaderboardPage({
     return () => {
       isCancelled = true
     }
-  }, [authToken])
+  }, [isAuthed])
 
   const sortedRows = useMemo(() => {
     return [...leaderboardRows].sort((firstRow, secondRow) => {

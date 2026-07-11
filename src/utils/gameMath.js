@@ -32,17 +32,20 @@ export function getCenteredPosition(arenaRect, itemSize) {
 
 /**
  * Returns a random valid x/y coordinate for an item inside a rectangle.
+ * Accepts an injectable random source so button geometry can be derived from
+ * a seeded RNG (server-issued round seeds) instead of ambient randomness.
  * @param {DOMRect} arenaRect
  * @param {number} itemSize
+ * @param {() => number} [random]
  * @returns {{x: number, y: number}}
  */
-export function getRandomPosition(arenaRect, itemSize) {
+export function getRandomPosition(arenaRect, itemSize, random = Math.random) {
   const maxX = clampToArena(arenaRect.width, itemSize)
   const maxY = clampToArena(arenaRect.height, itemSize)
 
   return {
-    x: Math.floor(Math.random() * (maxX + 1)),
-    y: Math.floor(Math.random() * (maxY + 1)),
+    x: Math.floor(random() * (maxX + 1)),
+    y: Math.floor(random() * (maxY + 1)),
   }
 }
 

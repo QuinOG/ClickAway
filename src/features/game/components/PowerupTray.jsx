@@ -57,6 +57,8 @@ export default function PowerupTray({ powerupSlots = [], streak = 0, onUsePoweru
             onClick={() => onUsePowerup?.(powerup.id)}
             role="button"
             tabIndex={0}
+            aria-label={`${powerup.label}: ${powerupState.label}`}
+            aria-disabled={charges <= 0 && powerupState.tone !== "active"}
             onKeyDown={(e) => e.key === "Enter" && onUsePowerup?.(powerup.id)}
           >
             <div className="powerupTop">

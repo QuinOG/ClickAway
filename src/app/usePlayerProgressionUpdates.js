@@ -3,7 +3,7 @@ import { useCallback } from "react"
 import { submitRound } from "../services/clickAwayHttpApiClient.js"
 
 export function usePlayerProgressionUpdates({
-  authToken,
+  isAuthed,
   applyProgress,
 }) {
   const handleRoundComplete = useCallback(
@@ -11,18 +11,29 @@ export function usePlayerProgressionUpdates({
       const {
         modeId = "",
         events = [],
+        loadoutSnapshot = null,
+        avgReactionMs = null,
+        bestReactionMs = null,
+        roundToken = null,
       } = roundResult
 
-      if (!authToken) return
+      if (!isAuthed) return
 
       try {
-        const response = await submitRound(authToken, { modeId, events })
+        const response = await submitRound({
+          modeId,
+          events,
+          loadoutSnapshot,
+          avgReactionMs,
+          bestReactionMs,
+          roundToken,
+        })
         applyProgress(response.progress)
       } catch (error) {
         console.error("Unable to submit round:", error)
       }
     },
-    [authToken, applyProgress]
+    [isAuthed, applyProgress]
   )
 
   return {

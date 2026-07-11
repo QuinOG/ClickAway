@@ -182,14 +182,5 @@ export function createPlayerStateStore() {
       const progress = await findUserProgressByUserId(existingUser.id)
       return buildPlayerProgressResponse(existingUser, progress)
     },
-
-    async syncCoins({ user, coins }) {
-      const existingUser = await resolveExistingUser(user)
-
-      await pool.execute(
-        "UPDATE users SET coins = ? WHERE id = ?",
-        [Math.max(0, Number(coins) || 0), existingUser.id]
-      )
-    },
   }
 }

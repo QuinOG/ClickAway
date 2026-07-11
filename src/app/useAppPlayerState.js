@@ -9,12 +9,10 @@ import {
   BUILD_WALKTHROUGH_STATUS,
   normalizeBuildWalkthrough,
 } from "../constants/buildWalkthrough.js"
-import { DEFAULT_EQUIPPED_IDS, STORAGE_KEYS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
+import { DEFAULT_EQUIPPED_IDS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
 import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/gameModesConfig.js"
-import { useLocalStorageState } from "../hooks/useLocalStorageState.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import { normalizeHistoryEntry } from "../utils/historyUtils.js"
-import { readStringFromStorage } from "../utils/browserLocalStorageRead.js"
 import {
   buildDefaultRankedState,
   INITIAL_RANK_MMR,
@@ -112,10 +110,6 @@ function normalizePlayerState(playerState = {}) {
 
 export function useAppPlayerState() {
   const [isAuthed, setIsAuthed] = useState(false)
-  const [authToken, setAuthToken] = useLocalStorageState({
-    key: STORAGE_KEYS.authToken,
-    readValue: () => readStringFromStorage(STORAGE_KEYS.authToken, ""),
-  })
   const [playerUserId, setPlayerUserId] = useState("")
   const [playerUsername, setPlayerUsername] = useState(DEFAULT_PLAYER_NAME)
   const [coins, setCoins] = useState(DEFAULT_PROGRESS.coins)
@@ -203,8 +197,6 @@ export function useAppPlayerState() {
   return {
     isAuthed,
     setIsAuthed,
-    authToken,
-    setAuthToken,
     playerUserId,
     setPlayerUserId,
     playerUsername,

@@ -3,8 +3,9 @@ import { motion } from "motion/react"
 import { useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
-import { getDifficultyById as getModeById } from "../../../../constants/difficultyConfig.js"
-import { useCountUpNumber, usePrefersReducedMotion } from "./useOverlayMotion.js"
+import { getDifficultyById as getModeById } from "../../../../constants/gameModesConfig.js"
+import { evaluateAchievements } from "../../../../game/achievements/evaluateAchievements.js"
+import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
 const MotionSection = motion.section
@@ -266,7 +267,7 @@ export function GameOverOverlay({
         <button className="primaryButton primaryButton-lg" onClick={onRematch ?? onPlayAgain}>
           Play Again
         </button>
-        <button className="secondaryButton" type="button" onClick={onPlayAgain}>
+        <button className="secondaryButton" type="button" onClick={onChooseMode ?? onPlayAgain}>
           Choose Mode
         </button>
         {!isPracticeMode ? (

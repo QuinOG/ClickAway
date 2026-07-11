@@ -286,9 +286,10 @@ Current examples:
 - `JWT_SECRET` and admin credentials are read from environment variables in [server/index.js](server/index.js).
 
 Recommended improvement:
-- Prefer HTTPS in deployment.
-- Consider moving auth tokens to a more secure storage strategy than browser-accessible storage if the project scope allows it.
+- Prefer HTTPS in deployment (the session cookie is only marked `Secure` when `CLIENT_ORIGIN` is `https://` or `NODE_ENV=production`, so HTTPS is required for that protection to actually apply).
 - Avoid logging tokens, passwords, or raw secret-bearing request bodies.
+
+Update: the session token now lives in an httpOnly, `SameSite=Lax` cookie (`server/index.js`, `server/auth.js`) instead of `localStorage` plus a manually-attached `Authorization` header. Page JavaScript can no longer read or exfiltrate the token, and `SameSite=Lax` means the browser won't attach it to cross-site fetch/XHR requests, which covers CSRF for this JSON-only API without needing a separate CSRF token scheme.
 
 ## Secure Programming Paradigms
 

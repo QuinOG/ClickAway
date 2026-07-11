@@ -54,7 +54,12 @@ export default function AuthInputField({
       </div>
 
       {helperText ? (
-        <p id={hintId} className={`authHint ${hintToneClassName}`}>
+        <p
+          id={hintId}
+          className={`authHint ${hintToneClassName}`}
+          role={error ? "alert" : "status"}
+          aria-live={error ? "assertive" : "polite"}
+        >
           {helperText}
         </p>
       ) : null}

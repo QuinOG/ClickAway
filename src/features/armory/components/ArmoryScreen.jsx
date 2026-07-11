@@ -39,7 +39,6 @@ export default function ArmoryScreen({
   loadoutPresentations,
   localActiveLoadoutId,
   activeStepId,
-  activeModuleSlotId,
   setActiveModuleSlotId,
   editingPowerSlotIndex,
   setEditingPowerSlotIndex,

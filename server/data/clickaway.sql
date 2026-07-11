@@ -1,6 +1,12 @@
 -- Minimal MySQL schema for the current Clickaway app.
 -- Frontend cosmetic metadata and progression/rank formulas live in the frontend code.
 -- MySQL stores authentication, persisted player state, round history, and unlocked achievement ids.
+--
+-- NOTE: This file is a convenience snapshot for exploring the schema by eye. It is not
+-- required to run the app and it is not guaranteed to match the live schema exactly.
+-- `initializeSchema()` in server/playerMysqlDatabase.js is the single authoritative,
+-- idempotent schema definition — it creates every table/column (if missing) on every
+-- server boot, including against a completely empty database. See server/data/MIGRATIONS.md.
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;

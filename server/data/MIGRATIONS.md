@@ -1,9 +1,19 @@
 # Database Migrations
 
-`server/data/clickaway.sql` is the bootstrap schema for fresh local databases.
+**`initializeSchema()` in `server/playerMysqlDatabase.js` is the authoritative migration
+system.** It runs on every server boot, creates every table with `CREATE TABLE IF NOT
+EXISTS`, and adds any missing column with `information_schema`-checked `ALTER TABLE`
+statements. Pointing the app at a brand-new, empty database is enough — no manual SQL
+needs to be run first or after a deploy.
 
-`server/data/migrations/` contains incremental patches for existing databases that
-were created before the bootstrap schema picked up a given change.
+`server/data/clickaway.sql` and the numbered files below are historical snapshots kept
+for reference only. They are not run automatically, they are not required, and they can
+drift from the live schema (defaults, constraints, and seed data have already diverged
+in places). Do not treat them as the source of truth — read `initializeSchema()` instead.
+
+`server/data/migrations/` contains the incremental patches that existed before
+`initializeSchema()` grew the ability to add missing columns itself. They are superseded
+by that self-migrating logic and are kept only as a historical record.
 
 ## Applied Status Ledger
 
