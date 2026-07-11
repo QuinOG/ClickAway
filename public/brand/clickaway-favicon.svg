@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="clickawayFaviconTitle">
+  <title id="clickawayFaviconTitle">ClickAway</title>
+  <path d="M8 2h40l14 14v40l-6 6H14L2 50V8z" fill="#050912"/>
+  <circle cx="40" cy="22" r="15" fill="none" stroke="#55d9ff" stroke-width="4"/>
+  <circle cx="40" cy="22" r="5" fill="#f3efe6"/>
+  <path d="m8 58 31-37 2 18 15 7-9 10-14-8-8 14z" fill="#f3efe6" stroke="#050912" stroke-width="3" stroke-linejoin="miter"/>
+</svg>

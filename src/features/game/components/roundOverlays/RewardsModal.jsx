@@ -1,5 +1,7 @@
-﻿import { motion } from "motion/react"
+import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
+import { FEEDBACK_EVENTS } from "../../../../constants/feedbackEvents.js"
 import TierBadge from "../../../../components/TierBadge.jsx"
 import { getLevelProgress, getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
 import {
@@ -235,9 +237,23 @@ export default function RewardsModal({
   isPlacementReveal = false,
   onContinue,
 }) {
+  const { emitFeedback } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
   const buttonRef = useRef(null)
   const cardVariants = useMemo(() => getCardVariants(prefersReducedMotion), [prefersReducedMotion])
+
+  useEffect(() => {
+    emitFeedback(FEEDBACK_EVENTS.REWARD, {
+      eventId: `reward-${roundXpEarned}-${roundCoinsEarned}-${roundRankDelta}-${projectedRankLabel}`,
+      scope: "round-result",
+    })
+  }, [
+    emitFeedback,
+    projectedRankLabel,
+    roundCoinsEarned,
+    roundRankDelta,
+    roundXpEarned,
+  ])
 
   const isPlacementMatch = allowsRankProgression && (
     previousRankProgress?.isPlacement || isPlacementReveal

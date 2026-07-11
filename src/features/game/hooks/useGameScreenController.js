@@ -24,8 +24,10 @@ import {
   ROUND_END_SETTLE_MS,
   ROUND_PHASE,
   SHAKE_DURATION_MS,
+  SHAKE_STREAK_MILESTONE,
   TIMER_TICK_MS,
 } from "../../../constants/gameConstants.js"
+import { FEEDBACK_EVENTS } from "../../../constants/feedbackEvents.js"
 import {
   formatAccuracy,
   getButtonLabel,
@@ -129,6 +131,8 @@ export function useGameScreenController({
   ghostReplay = null,
   challengeId = null,
   autoStartGhostDuel = false,
+  emitFeedback = null,
+  allowScreenShake = true,
 }) {
   const arenaRef = useRef(null)
   const feedbackTimeoutIdsRef = useRef([])
@@ -371,6 +375,8 @@ export function useGameScreenController({
   ), [])
 
   const triggerScreenShake = useCallback(() => {
+    if (!allowScreenShake) return
+
     clearShakeTimeout()
     setIsShakeActive(true)
 
@@ -378,7 +384,7 @@ export function useGameScreenController({
       setIsShakeActive(false)
       shakeTimeoutRef.current = null
     }, SHAKE_DURATION_MS)
-  }, [clearShakeTimeout])
+  }, [allowScreenShake, clearShakeTimeout])
 
   const centerButtonPosition = useCallback((nextButtonSize) => {
     const arenaElement = arenaRef.current
@@ -689,6 +695,9 @@ export function useGameScreenController({
     const outcome = simulationRef.current.applyPowerup(powerup.id, eventTimeMs)
 
     if (!outcome.applied) {
+      emitFeedback?.(FEEDBACK_EVENTS.ACTION_DENY, {
+        eventId: `round-${roundNonceRef.current}-power-denied-${powerup.id}-${eventTimeMs}`,
+      })
       if (outcome.reason === "untimed_round") {
         addCenterFeedback("No Timer", "negative")
       }
@@ -700,11 +709,14 @@ export function useGameScreenController({
       powerupId: powerup.id,
       t: eventTimeMs,
     })
+    emitFeedback?.(FEEDBACK_EVENTS.POWER_ACTIVATE, {
+      eventId: `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`,
+    })
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
     applyPowerupPresentation(powerup, eventTimeMs)
-  }, [addCenterFeedback, applyPowerupPresentation, getElapsedMs, isPlaying])
+  }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
 
   const tryUsePowerupKey = useCallback((key) => {
     tryUsePowerup(roundMode.equippedPowerups.find((item) => item.slotKey === key))
@@ -752,9 +764,25 @@ export function useGameScreenController({
     const result = simulationRef.current.applyHit(eventTimeMs)
     syncSimulationState(result)
 
+    const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
+    emitFeedback?.(FEEDBACK_EVENTS.HIT, {
+      eventId: feedbackEventId,
+      pitch: 1 + Math.min(0.36, result.streak * 0.012),
+      strength: 1 + Math.min(0.25, result.streak * 0.008),
+    })
+    if (result.streak > 0 && result.streak % SHAKE_STREAK_MILESTONE === 0) {
+      emitFeedback?.(FEEDBACK_EVENTS.STREAK_MILESTONE, {
+        eventId: `${feedbackEventId}-streak-${result.streak}`,
+        strength: 1.12,
+      })
+    }
+
     addClickFeedback(event.clientX, event.clientY, `+${result.pointsEarned}`, "positive")
     result.grantedPowerups.forEach((powerup) => {
       addCenterFeedback(`${powerup.slotKey}+`, "positive")
+      emitFeedback?.(FEEDBACK_EVENTS.POWER_READY, {
+        eventId: `${feedbackEventId}-power-${powerup.id}`,
+      })
     })
 
     setButtonSize((currentButtonSize) => {
@@ -765,6 +793,7 @@ export function useGameScreenController({
   }, [
     addCenterFeedback,
     addClickFeedback,
+    emitFeedback,
     getElapsedMs,
     isPlaying,
     queueButtonReposition,
@@ -788,12 +817,16 @@ export function useGameScreenController({
     const result = simulationRef.current.applyMiss(eventTimeMs)
     syncSimulationState(result)
 
+    const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
+
     if (result.guarded) {
+      emitFeedback?.(FEEDBACK_EVENTS.GUARDED_MISS, { eventId: feedbackEventId })
       addClickFeedback(event.clientX, event.clientY, "Guarded", "positive")
       return
     }
 
     triggerScreenShake()
+    emitFeedback?.(FEEDBACK_EVENTS.MISS, { eventId: feedbackEventId })
 
     if (result.penaltyApplied > 0) {
       addClickFeedback(event.clientX, event.clientY, `-${result.penaltyApplied}`, "negative")
@@ -803,6 +836,7 @@ export function useGameScreenController({
     addClickFeedback(event.clientX, event.clientY, "Miss", "negative")
   }, [
     addClickFeedback,
+    emitFeedback,
     getElapsedMs,
     isPlaying,
     syncSimulationState,
@@ -843,6 +877,30 @@ export function useGameScreenController({
 
     return () => clearInterval(countdownInterval)
   }, [phase])
+
+  useEffect(() => {
+    if (phase === ROUND_PHASE.COUNTDOWN && countdownValue > 0) {
+      emitFeedback?.(FEEDBACK_EVENTS.COUNTDOWN_TICK, {
+        eventId: `round-${roundNonceRef.current}-countdown-${countdownValue}`,
+        pitch: 1 + (READY_COUNTDOWN_START - countdownValue) * 0.08,
+      })
+      return
+    }
+
+    if (phase === ROUND_PHASE.PLAYING) {
+      emitFeedback?.(FEEDBACK_EVENTS.COUNTDOWN_GO, {
+        eventId: `round-${roundNonceRef.current}-go`,
+      })
+    }
+  }, [countdownValue, emitFeedback, phase])
+
+  useEffect(() => {
+    if (!isPlaying || !isTimedRound || timeLeft <= 0 || timeLeft > 5) return
+    emitFeedback?.(FEEDBACK_EVENTS.TIME_WARNING, {
+      eventId: `round-${roundNonceRef.current}-time-${timeLeft}`,
+      pitch: timeLeft <= 2 ? 1.15 : 1,
+    })
+  }, [emitFeedback, isPlaying, isTimedRound, timeLeft])
 
   useEffect(() => {
     if (!isPlaying || !ghostReplayRef.current) return undefined
@@ -920,47 +978,59 @@ export function useGameScreenController({
   }, [gameOnboardingStep, onModeChange, selectedModeId])
 
   useEffect(() => {
-    if (phase !== ROUND_PHASE.GAME_OVER) return
-    if (hasAwardedRoundRef.current) return
+    if (phase !== ROUND_PHASE.GAME_OVER || hasAwardedRoundRef.current) return undefined
 
-    hasAwardedRoundRef.current = true
-    onRoundComplete?.({
-      clicksScored: hits,
-      hits,
-      misses,
-      score,
-      bestStreak,
-      avgReactionMs,
-      bestReactionMs,
-      modeId: roundMode.id,
-      progressionMode: roundMode.progressionMode,
-      coinMultiplier: roundMode.coinMultiplier,
-      allowsCoinRewards: roundMode.allowsCoinRewards !== false,
-      allowsLevelProgression: roundMode.allowsLevelProgression !== false,
-      allowsRankProgression: roundMode.allowsRankProgression === true,
-      events: roundEventsRef.current,
-      loadoutSnapshot: roundStartLoadoutSnapshot,
-      roundToken: roundTokenRef.current,
-      seed: roundSeedRef.current,
-      arenaWidth: arenaDimensionsRef.current?.arenaWidth ?? null,
-      arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
-      challengeId: challengeIdRef.current,
-      drillId: activeDrillIdRef.current,
-    })
+    // Defer progression writes until after the phase commit. Keeping this work
+    // out of endCurrentRound also keeps the gameplay timer callback stable while
+    // score and reaction state continue to update during a round.
+    const timeoutId = window.setTimeout(() => {
+      if (hasAwardedRoundRef.current) return
+      hasAwardedRoundRef.current = true
 
-    setSessionStats((prev) => ({
-      rounds: prev.rounds + 1,
-      bestScore: Math.max(prev.bestScore, score),
-      netRR: prev.netRR + (roundMode.allowsRankProgression === true ? projectedRankOutcome.appliedRankDelta : 0),
-    }))
+      onRoundComplete?.({
+        clicksScored: hits,
+        hits,
+        misses,
+        score,
+        bestStreak,
+        avgReactionMs,
+        bestReactionMs,
+        modeId: roundMode.id,
+        progressionMode: roundMode.progressionMode,
+        coinMultiplier: roundMode.coinMultiplier,
+        allowsCoinRewards: roundMode.allowsCoinRewards !== false,
+        allowsLevelProgression: roundMode.allowsLevelProgression !== false,
+        allowsRankProgression: roundMode.allowsRankProgression === true,
+        events: roundEventsRef.current,
+        loadoutSnapshot: roundStartLoadoutSnapshot,
+        roundToken: roundTokenRef.current,
+        seed: roundSeedRef.current,
+        arenaWidth: arenaDimensionsRef.current?.arenaWidth ?? null,
+        arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
+        challengeId: challengeIdRef.current,
+        drillId: activeDrillIdRef.current,
+      })
 
-    const nextOnboardingStatus = getNextOnboardingStatusAfterRound(
-      buildWalkthroughStatus,
-      roundMode.id
-    )
-    if (nextOnboardingStatus !== buildWalkthroughStatus) {
-      onBuildWalkthroughChange?.({ status: nextOnboardingStatus })
-    }
+      setSessionStats((previousStats) => ({
+        rounds: previousStats.rounds + 1,
+        bestScore: Math.max(previousStats.bestScore, score),
+        netRR: previousStats.netRR + (
+          roundMode.allowsRankProgression === true
+            ? projectedRankOutcome.appliedRankDelta
+            : 0
+        ),
+      }))
+
+      const nextOnboardingStatus = getNextOnboardingStatusAfterRound(
+        buildWalkthroughStatus,
+        roundMode.id
+      )
+      if (nextOnboardingStatus !== buildWalkthroughStatus) {
+        onBuildWalkthroughChange?.({ status: nextOnboardingStatus })
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [
     avgReactionMs,
     bestReactionMs,
@@ -971,7 +1041,7 @@ export function useGameScreenController({
     onBuildWalkthroughChange,
     onRoundComplete,
     phase,
-    projectedRankOutcome,
+    projectedRankOutcome.appliedRankDelta,
     roundMode.allowsCoinRewards,
     roundMode.allowsLevelProgression,
     roundMode.allowsRankProgression,

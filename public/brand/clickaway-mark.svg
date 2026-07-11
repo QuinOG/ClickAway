@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="clickawayMarkTitle clickawayMarkDescription">
+  <title id="clickawayMarkTitle">ClickAway pointer impact mark</title>
+  <desc id="clickawayMarkDescription">A precision pointer meeting an offset target with calibration ticks.</desc>
+  <path d="M14 4h64l14 14v62L80 92H18L4 78V18z" fill="#050912"/>
+  <path d="M14 4h64l14 14v62L80 92H18L4 78V18z" fill="none" stroke="#55d9ff" stroke-width="2"/>
+  <path d="M8 78 31 55" fill="none" stroke="#55d9ff" stroke-width="2" stroke-dasharray="3 5" opacity=".72"/>
+  <circle cx="58" cy="35" r="25" fill="none" stroke="#f3efe6" stroke-width="2" opacity=".38"/>
+  <circle cx="58" cy="35" r="14" fill="none" stroke="#55d9ff" stroke-width="3"/>
+  <circle cx="58" cy="35" r="4" fill="#f3efe6"/>
+  <path d="M58 4v9M58 57v9M27 35h9M80 35h9" fill="none" stroke="#f3efe6" stroke-width="3" stroke-linecap="square"/>
+  <path d="m18 79 39-44 2 23 19 8-10 12-18-10-12 20z" fill="#f3efe6" stroke="#050912" stroke-width="3" stroke-linejoin="miter"/>
+  <path d="m47 62 11 12" fill="none" stroke="#55d9ff" stroke-width="3" stroke-linecap="square"/>
+</svg>

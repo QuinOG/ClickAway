@@ -1,0 +1,179 @@
+.feedbackSettingsForm {
+    display: grid;
+    gap: var(--ca-space-5, 20px);
+}
+
+.feedbackSettingsSection {
+    display: grid;
+    gap: var(--ca-space-3, 12px);
+    padding: var(--ca-space-4, 16px);
+    border: 1px solid var(--ca-color-line-subtle, rgb(226 234 243 / 10%));
+    border-radius: var(--ca-radius-panel, 12px);
+    background: rgb(226 234 243 / 3%);
+}
+
+.feedbackSettingsSectionHeader,
+.feedbackSettingHeading,
+.feedbackToggleSetting,
+.feedbackSettingsActions,
+.feedbackSettingsStatus {
+    display: flex;
+    align-items: center;
+}
+
+.feedbackSettingsSectionHeader,
+.feedbackSettingHeading,
+.feedbackToggleSetting {
+    justify-content: space-between;
+    gap: var(--ca-space-4, 16px);
+}
+
+.feedbackSettingsEyebrow {
+    margin: 0 0 4px;
+    color: var(--ca-color-accent, #55d9ff);
+    font-size: var(--ca-type-caption, 0.75rem);
+    font-weight: 800;
+    letter-spacing: var(--ca-tracking-label, 0.055em);
+    text-transform: uppercase;
+}
+
+.feedbackSettingsSection h3 {
+    margin: 0;
+    color: var(--ca-color-ink-strong, #f3efe6);
+    font-family: var(--ca-font-display, sans-serif);
+    font-size: var(--ca-type-title-sm, 1.25rem);
+}
+
+.feedbackRangeSetting {
+    display: grid;
+    gap: 8px;
+    color: var(--ca-color-ink, #e2eaf3);
+    font-size: var(--ca-type-body-sm, 0.875rem);
+    font-weight: 650;
+}
+
+.feedbackRangeSetting output {
+    color: var(--ca-color-ink-muted, #9baabd);
+    font-family: var(--ca-font-numeric, monospace);
+    font-variant-numeric: tabular-nums;
+}
+
+.feedbackRangeSetting input[type="range"] {
+    width: 100%;
+    min-height: 28px;
+    accent-color: var(--ca-color-accent, #55d9ff);
+}
+
+.feedbackToggleSetting {
+    min-height: 54px;
+    cursor: pointer;
+}
+
+.feedbackToggleSetting:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: var(--ca-state-disabled-opacity, 0.52);
+}
+
+.feedbackToggleCopy {
+    display: grid;
+    gap: 3px;
+}
+
+.feedbackToggleCopy strong {
+    color: var(--ca-color-ink, #e2eaf3);
+    font-size: var(--ca-type-body-sm, 0.875rem);
+}
+
+.feedbackToggleCopy > span {
+    color: var(--ca-color-ink-muted, #9baabd);
+    font-size: var(--ca-type-caption, 0.75rem);
+    line-height: 1.45;
+}
+
+.feedbackToggleControl {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.feedbackToggleControl input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+}
+
+.feedbackToggleControl > span {
+    width: 46px;
+    height: 26px;
+    display: block;
+    position: relative;
+    border: 1px solid var(--ca-state-default-line, rgb(226 234 243 / 20%));
+    border-radius: 999px;
+    background: var(--ca-state-default-fill, rgb(226 234 243 / 5%));
+    transition: background var(--ca-motion-duration-fast, 120ms), border-color var(--ca-motion-duration-fast, 120ms);
+}
+
+.feedbackToggleControl > span::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: 3px;
+    left: 3px;
+    border-radius: 50%;
+    background: var(--ca-color-ink-muted, #9baabd);
+    transition: transform var(--ca-motion-duration-fast, 120ms), background var(--ca-motion-duration-fast, 120ms);
+}
+
+.feedbackToggleControl input:checked + span {
+    border-color: var(--ca-state-selected-line, #55d9ff);
+    background: var(--ca-state-selected-fill, rgb(85 217 255 / 14%));
+}
+
+.feedbackToggleControl input:checked + span::after {
+    transform: translateX(20px);
+    background: var(--ca-color-accent, #55d9ff);
+}
+
+.feedbackToggleControl input:focus-visible + span {
+    outline: var(--ca-focus-width, 2px) solid var(--ca-focus-color, #55d9ff);
+    outline-offset: var(--ca-focus-offset, 3px);
+}
+
+.feedbackSettingsStatus {
+    min-height: 42px;
+    gap: 9px;
+    color: var(--ca-color-ink-muted, #9baabd);
+    font-size: var(--ca-type-body-sm, 0.875rem);
+}
+
+.feedbackSettingsActions {
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.feedbackSettingsActionsSpacer {
+    flex: 1 1 auto;
+}
+
+@media (max-width: 520px) {
+    .feedbackSettingsActions .uiAction {
+        flex: 1 1 auto;
+    }
+
+    .feedbackSettingsActions .uiAction:first-child {
+        flex-basis: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feedbackToggleControl > span,
+    .feedbackToggleControl > span::after {
+        transition: none;
+    }
+}
+
+html[data-motion-reduced="true"] .feedbackToggleControl > span,
+html[data-motion-reduced="true"] .feedbackToggleControl > span::after {
+    transition: none;
+}

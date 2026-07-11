@@ -1,18 +1,28 @@
-import confetti from "canvas-confetti"
+import {
+  fireConfetti,
+} from "../../services/celebrationEffects.js"
 
 function prefersReducedMotion() {
   if (typeof window === "undefined") return true
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  return (typeof window.matchMedia === "function"
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    || document.documentElement.dataset.motionReduced === "true"
+}
+
+function allowsCelebration(enabled) {
+  return enabled
+    && !prefersReducedMotion()
+    && document.documentElement.dataset.flashes !== "reduced"
 }
 
 /** Short burst for a new cosmetic purchase (high-impact). */
-export function celebrateShopPurchase() {
-  if (prefersReducedMotion()) return
+export function celebrateShopPurchase({ enabled = true } = {}) {
+  if (!allowsCelebration(enabled)) return
 
   const colors = ["#6af5c8", "#4ab8ff", "#ffffff", "#c084fc", "#ffd76a"]
 
   const burst = (originX) => {
-    confetti({
+    fireConfetti({
       particleCount: 44,
       spread: 62,
       startVelocity: 36,
@@ -30,10 +40,10 @@ export function celebrateShopPurchase() {
 }
 
 /** Lighter sparkle when equipping an already-owned item. */
-export function celebrateShopEquip() {
-  if (prefersReducedMotion()) return
+export function celebrateShopEquip({ enabled = true } = {}) {
+  if (!allowsCelebration(enabled)) return
 
-  confetti({
+  fireConfetti({
     particleCount: 16,
     spread: 48,
     startVelocity: 24,

@@ -1,7 +1,12 @@
-﻿import confetti from "canvas-confetti"
+import {
+  cancelCelebrationEffects,
+  fireConfetti,
+} from "../../../../services/celebrationEffects.js"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef } from "react"
 import TierBadge from "../../../../components/TierBadge.jsx"
+import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
+import { FEEDBACK_EVENTS } from "../../../../constants/feedbackEvents.js"
 import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -111,6 +116,7 @@ function getNewBadgeVariants(prefersReducedMotion) {
 }
 
 export default function PromotionModal({ isPlacementReveal, currentRankLabel, projectedRankLabel, onContinue }) {
+  const { effectivePreferences, emitFeedback } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
   const buttonRef = useRef(null)
 
@@ -121,18 +127,28 @@ export default function PromotionModal({ isPlacementReveal, currentRankLabel, pr
   const arrowVariants = useMemo(() => getArrowVariants(prefersReducedMotion), [prefersReducedMotion])
   const newBadgeVariants = useMemo(() => getNewBadgeVariants(prefersReducedMotion), [prefersReducedMotion])
 
+  useEffect(() => {
+    emitFeedback(FEEDBACK_EVENTS.RANK_CHANGE, {
+      eventId: `rank-${currentRankLabel}-${projectedRankLabel}-${isPlacementReveal}`,
+      scope: "round-result",
+    })
+  }, [currentRankLabel, emitFeedback, isPlacementReveal, projectedRankLabel])
+
   // Delay focus until after badge reveal — don't interrupt the moment.
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => buttonRef.current?.focus(), 900)
+    const timeoutId = window.setTimeout(
+      () => buttonRef.current?.focus(),
+      prefersReducedMotion ? 0 : 900
+    )
     return () => window.clearTimeout(timeoutId)
-  }, [])
+  }, [prefersReducedMotion])
 
   // Confetti burst timed to land when the new rank badge springs in.
   useEffect(() => {
-    if (prefersReducedMotion) return undefined
+    if (prefersReducedMotion || !effectivePreferences.flashes) return undefined
 
     const fire = (angle, origin) =>
-      confetti({
+      fireConfetti({
         particleCount: 48,
         angle,
         spread: 62,
@@ -148,8 +164,11 @@ export default function PromotionModal({ isPlacementReveal, currentRankLabel, pr
       fire(110, { x: 0.78, y: 0.46 })
     }, 640)
 
-    return () => window.clearTimeout(timeoutId)
-  }, [prefersReducedMotion])
+    return () => {
+      window.clearTimeout(timeoutId)
+      cancelCelebrationEffects()
+    }
+  }, [effectivePreferences.flashes, prefersReducedMotion])
 
   return (
     <MotionSection

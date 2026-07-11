@@ -4058,37 +4058,6 @@
     }
 }
 
-@media (max-width: 960px) {
-    .topbarInner {
-        grid-template-columns: 1fr;
-        row-gap: 10px;
-    }
-
-    .brandTag {
-        display: none;
-    }
-
-    .navRail {
-        width: 100%;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .navMain {
-        flex-wrap: wrap;
-        row-gap: 6px;
-    }
-
-    .navMainGuest {
-        margin-left: 0;
-    }
-
-    .navMeta {
-        margin-left: auto;
-    }
-}
-
 @media (max-width: 820px) {
     .readyCard,
     .gameOverCardWithDifficulty {
@@ -4218,35 +4187,6 @@
 }
 
 @media (max-width: 700px) {
-    .topbarInner {
-        padding: 10px 12px;
-    }
-
-    .navRail {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .navMain {
-        justify-content: flex-start;
-    }
-
-    .navMeta {
-        justify-content: space-between;
-        margin-left: 0;
-    }
-
-    .navMain,
-    .navMeta {
-        --nav-pill-height: 34px;
-    }
-
-    .profileHoverCard {
-        left: 0;
-        right: auto;
-        min-width: min(86vw, 280px);
-    }
-
     .leaderboardEntryHoverCard .profileHoverCard {
         top: calc(100% + 8px);
         left: 0;
@@ -4255,14 +4195,6 @@
 
     .leaderboardTableRow:hover .leaderboardEntryHoverCard .profileHoverCard {
         transform: translateY(0);
-    }
-
-    .brandCluster {
-        justify-content: flex-start;
-    }
-
-    .mainContent {
-        padding-top: 16px;
     }
 
     .card,

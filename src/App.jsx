@@ -1,8 +1,11 @@
-import { lazy, useCallback } from "react"
+import { lazy, useCallback, useState } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { MotionConfig } from "motion/react"
 
 import { isValidModeId } from "./app/appAccountStateHelpers.js"
+import { useFeedbackPreferences } from "./app/useFeedbackPreferences.js"
+import { getMotionConfigPreference } from "./app/feedbackPreferences.js"
+import { APP_ROUTE } from "./app/routeMetadata.js"
 import { useAchievementSync } from "./app/useAchievementSync.js"
 import { useAppDerivedState } from "./app/useAppDerivedState.js"
 import { useAppPlayerState } from "./app/useAppPlayerState.js"
@@ -11,6 +14,7 @@ import { usePlayerProgressionUpdates } from "./app/usePlayerProgressionUpdates.j
 import { useProgressSync } from "./app/useProgressSync.js"
 import { useShopActions } from "./app/useShopActions.js"
 import { DIFFICULTIES as MODES } from "./constants/gameModesConfig.js"
+import { ROUND_PHASE } from "./constants/gameConstants.js"
 import { normalizeBuildWalkthrough } from "./constants/buildWalkthrough.js"
 
 import Layout from "./components/Layout.jsx"
@@ -27,6 +31,9 @@ const ChallengesPage = lazy(() => import("./pages/ChallengesPage.jsx"))
 const ArmoryPage = lazy(() => import("./pages/ArmoryPage.jsx"))
 const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"))
 const ShopPage = lazy(() => import("./pages/ShopPage.jsx"))
+const UiKitPage = import.meta.env.DEV
+  ? lazy(() => import("./pages/UiKitPage.jsx"))
+  : null
 
 function SessionLoadingScreen() {
   return (
@@ -39,6 +46,8 @@ function SessionLoadingScreen() {
 }
 
 export default function App() {
+  const { preferences } = useFeedbackPreferences()
+  const [gamePhase, setGamePhase] = useState(ROUND_PHASE.READY)
   const {
     // auth + identity
     isAuthed,
@@ -179,7 +188,7 @@ export default function App() {
   }
 
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion={getMotionConfigPreference(preferences)}>
     <Routes>
       <Route
         element={
@@ -191,34 +200,38 @@ export default function App() {
             rankProgress={rankProgress}
             rankLabel={rankProgress.tierLabel}
             rankMmr={rankProgress.mmr}
+            gamePhase={gamePhase}
+            playerName={playerUsername}
+            profileImageSrc={equippedProfileImage?.imageSrc}
+            profileImageClassName={equippedProfileImage?.effectClass}
           />
         }
       >
         <Route
-          path="/"
-          element={<Navigate to={isAuthed ? "/game" : "/login"} replace />}
+          path={APP_ROUTE.ROOT}
+          element={<Navigate to={isAuthed ? APP_ROUTE.PLAY : APP_ROUTE.LOGIN} replace />}
         />
 
         <Route
-          path="/login"
+          path={APP_ROUTE.LOGIN}
           element={
             isAuthed
-              ? <Navigate to="/game" replace />
+              ? <Navigate to={APP_ROUTE.PLAY} replace />
               : <LoginPage onLogin={handleLogin} />
           }
         />
 
         <Route
-          path="/signup"
+          path={APP_ROUTE.SIGNUP}
           element={
             isAuthed
-              ? <Navigate to="/game" replace />
+              ? <Navigate to={APP_ROUTE.PLAY} replace />
               : <SignupPage onSignup={handleSignup} />
           }
         />
 
         <Route
-          path="/help"
+          path={APP_ROUTE.HELP}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <HelpPage />
@@ -227,10 +240,11 @@ export default function App() {
         />
 
         <Route
-          path="/game"
+          path={APP_ROUTE.PLAY}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <GamePage
+                onPhaseChange={setGamePhase}
                 onRoundComplete={handleRoundComplete}
                 selectedModeId={selectedModeId}
                 onModeChange={handleModeChange}
@@ -265,7 +279,7 @@ export default function App() {
         />
 
         <Route
-          path="/armory"
+          path={APP_ROUTE.ARMORY}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <ArmoryPage
@@ -284,7 +298,7 @@ export default function App() {
         />
 
         <Route
-          path="/shop"
+          path={APP_ROUTE.SHOP}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <ShopPage
@@ -302,7 +316,7 @@ export default function App() {
         />
 
         <Route
-          path="/history"
+          path={APP_ROUTE.HISTORY}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <HistoryPage
@@ -314,7 +328,7 @@ export default function App() {
         />
 
         <Route
-          path="/leaderboard"
+          path={APP_ROUTE.LADDER}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <LeaderboardPage
@@ -329,7 +343,7 @@ export default function App() {
         />
 
         <Route
-          path="/challenges"
+          path={APP_ROUTE.DUELS}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <ChallengesPage currentUserId={playerUserId} />
@@ -338,7 +352,7 @@ export default function App() {
         />
 
         <Route
-          path="/profile"
+          path={APP_ROUTE.PROFILE}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <ProfilePage
@@ -357,9 +371,11 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        {UiKitPage ? <Route path="/__ui-kit" element={<UiKitPage />} /> : null}
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to={APP_ROUTE.ROOT} replace />} />
     </Routes>
     </MotionConfig>
   )

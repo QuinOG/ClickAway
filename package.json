@@ -9,11 +9,15 @@
     "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
-    "test": "node --test tests/*.test.js",
+    "test": "npm run test:unit && npm run test:ui",
+    "test:unit": "node --test tests/*.test.js",
+    "test:ui": "vitest run --config vitest.config.js",
     "preview": "vite preview"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
+    "@fontsource-variable/sora": "^5.2.8",
+    "@fontsource-variable/space-grotesk": "^5.2.10",
     "@phosphor-icons/react": "^2.1.10",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.2",
@@ -32,6 +36,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
@@ -40,6 +46,8 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "vite": "^7.3.1"
+    "jsdom": "^29.1.1",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.10"
   }
 }

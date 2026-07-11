@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
+import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
 
 export function usePrefersReducedMotion() {
+  const { effectivePreferences } = useFeedbackPreferences()
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return false
@@ -29,7 +31,7 @@ export function usePrefersReducedMotion() {
     return () => mediaQuery.removeListener(handleChange)
   }, [])
 
-  return prefersReducedMotion
+  return effectivePreferences.reduceMotion || prefersReducedMotion
 }
 
 export function easeOutCubic(progress) {
@@ -79,5 +81,5 @@ export function useCountUpNumber(targetValue, { durationMs, delayMs = 0, disable
     }
   }, [delayMs, disabled, durationMs, targetValue])
 
-  return displayValue
+  return disabled ? targetValue : displayValue
 }

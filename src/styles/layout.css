@@ -1,12 +1,17 @@
 /* Layout and shared shell styles: app frame, nav bar, cards, and page scaffolding. */
 .appShell {
     height: 100dvh;
+    width: 100%;
+    min-width: 0;
     display: flex;
     flex-direction: column;
+    overflow-x: clip;
 }
 
 .mainContent {
     flex: 1;
+    width: 100%;
+    min-width: 0;
     min-height: 0;
     padding: 26px 18px 40px;
     overflow: auto;
@@ -31,23 +36,6 @@
     flex: 1;
 }
 
-/* Route change: subtle enter only (CSS; avoids AnimatePresence exit/sync issues). */
-.routeOutlet {
-    animation: routeOutletEnter 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes routeOutletEnter {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .mainContent.gameMain > .routeOutlet {
     min-height: 0;
     overflow: hidden;
@@ -56,12 +44,6 @@
 .mainContent.armoryMain > .routeOutlet {
     min-height: 0;
     min-width: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .routeOutlet {
-        animation: none;
-    }
 }
 
 .routeFallback {
@@ -96,347 +78,6 @@
     overflow: hidden;
 }
 
-.topbar {
-    position: sticky;
-    top: 0;
-    z-index: var(--z-sticky);
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-    backdrop-filter: blur(12px);
-    background:
-        linear-gradient(180deg, rgba(12, 18, 34, 0.9), rgba(10, 15, 28, 0.88)),
-        radial-gradient(circle at 12% -8%, rgba(88, 188, 255, 0.2), rgba(88, 188, 255, 0) 58%);
-}
-
-.topbarInner {
-    width: min(1200px, 100%);
-    margin: 0 auto;
-    padding: 12px 16px;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    column-gap: 14px;
-    row-gap: 8px;
-}
-
-.topbar.topbarArmory {
-    border-bottom-color: rgba(173, 210, 248, 0.12);
-    background:
-        linear-gradient(180deg, rgba(11, 17, 31, 0.94), rgba(10, 15, 28, 0.9)),
-        radial-gradient(circle at 8% -10%, rgba(95, 173, 255, 0.16), rgba(95, 173, 255, 0) 48%);
-}
-
-.topbar.topbarArmory .topbarInner {
-    width: min(1360px, 100%);
-    padding-block: 10px;
-}
-
-.topbar.topbarArmory .brandTag {
-    display: none;
-}
-
-.brandCluster {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    min-width: 0;
-}
-
-.brandLogoPlaceholder {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    padding: 4px;
-    display: block;
-    flex-shrink: 0;
-    border: 1px solid rgba(173, 206, 246, 0.42);
-    background:
-        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 54%),
-        linear-gradient(145deg, rgba(74, 168, 255, 0.24), rgba(45, 127, 238, 0.14));
-    box-shadow: 0 8px 16px rgba(18, 60, 122, 0.22);
-    overflow: hidden;
-}
-
-.brandLogoImage {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
-}
-
-.brandText {
-    min-width: 0;
-}
-
-.brand {
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-weight: 700;
-    font-size: clamp(19px, 1.9vw, 23px);
-    line-height: 1;
-    letter-spacing: 0.7px;
-    color: #ffffff;
-}
-
-.brandTag {
-    margin-top: 3px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.72px;
-    color: rgba(183, 203, 236, 0.84);
-}
-
-.navRail {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 0;
-}
-
-.navMain,
-.navMeta {
-    --nav-pill-height: 36px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.navMeta {
-    flex-wrap: wrap;
-}
-
-.navMain {
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    border-radius: var(--radius-md);
-    padding: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    flex-wrap: nowrap;
-    min-width: 0;
-}
-
-.navMainGuest {
-    margin-left: auto;
-}
-
-.navItem,
-.navButton {
-    border: 0;
-    border-radius: var(--radius-sm);
-    min-height: var(--nav-pill-height);
-    height: var(--nav-pill-height);
-    padding: 0 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.3px;
-    opacity: 0.9;
-    background: rgba(255, 255, 255, 0.02);
-    transition:
-        transform var(--dur-fast) ease,
-        opacity var(--dur-fast) ease,
-        background-color var(--dur-fast) ease,
-        box-shadow var(--dur-fast) ease,
-        border-color var(--dur-fast) ease;
-}
-
-.navItemIcon {
-    flex-shrink: 0;
-    display: block;
-}
-
-.navButton {
-    cursor: pointer;
-    font-family: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.navButton.active {
-    opacity: 1;
-    background: rgba(74, 168, 255, 0.22);
-    border-color: rgba(74, 168, 255, 0.4);
-    box-shadow: none;
-}
-
-.navItem:hover,
-.navButton:hover {
-    opacity: 1;
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.14);
-}
-
-.navItem.active {
-    opacity: 1;
-    background: rgba(74, 168, 255, 0.22);
-    border: 1px solid rgba(74, 168, 255, 0.4);
-    box-shadow: 0 0 10px rgba(74, 168, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    animation: navActiveGlow 2.4s ease-in-out infinite;
-}
-
-@keyframes navActiveGlow {
-    0%, 100% { box-shadow: 0 0 8px rgba(74, 168, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12); }
-    50% { box-shadow: 0 0 16px rgba(74, 168, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14); }
-}
-
-.navItem:focus-visible,
-.navButton:focus-visible {
-    outline: 2px solid rgba(123, 205, 255, 0.9);
-    outline-offset: 1px;
-}
-
-.profileHoverWrap {
-    position: relative;
-}
-
-.profileNavButton {
-    border-color: rgba(154, 215, 255, 0.65);
-    background: linear-gradient(135deg, rgba(82, 187, 255, 0.92), rgba(61, 132, 255, 0.9));
-    box-shadow: 0 6px 16px rgba(34, 111, 233, 0.35);
-    color: #f7fbff;
-    opacity: 1;
-}
-
-.profileNavButton:hover {
-    background: linear-gradient(135deg, rgba(97, 196, 255, 0.98), rgba(76, 143, 255, 0.96));
-    box-shadow: 0 8px 18px rgba(42, 122, 240, 0.4);
-}
-
-.profileHoverCard {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 8px);
-    z-index: var(--z-overlay);
-    min-width: 220px;
-    padding: 8px;
-    border-radius: 12px;
-    border: 1px solid rgba(173, 211, 250, 0.34);
-    background: linear-gradient(180deg, rgba(16, 25, 44, 0.98), rgba(13, 20, 38, 0.98));
-    box-shadow: 0 14px 30px rgba(4, 10, 20, 0.44);
-    display: grid;
-    gap: 7px;
-    opacity: 0;
-    transform: translateY(-4px);
-    pointer-events: none;
-    transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
-}
-
-.profileHoverWrap:hover .profileHoverCard {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-.profileHoverRankBlock {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 10px;
-    border: 1px solid rgba(180, 216, 255, 0.34);
-    border-radius: 10px;
-    padding: 6px 7px;
-    background: linear-gradient(140deg, rgba(96, 184, 255, 0.16), rgba(67, 121, 224, 0.12));
-}
-
-.profileHoverRankIconSlot {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-}
-
-.profileHoverRankIcon {
-    width: 84%;
-    height: 84%;
-    object-fit: contain;
-}
-
-.profileHoverRankText {
-    min-width: 0;
-    display: grid;
-    gap: 2px;
-}
-
-.profileHoverRankLabel {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.42px;
-    color: rgba(214, 230, 250, 0.86);
-}
-
-.profileHoverRankValue {
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 13px;
-    line-height: 1;
-    color: #f5faff;
-}
-
-.profileHoverRankMeta {
-    font-size: 9px;
-    color: rgba(209, 224, 247, 0.88);
-}
-
-.profileHoverStats {
-    border: 1px solid rgba(166, 201, 238, 0.22);
-    border-radius: 10px;
-    padding: 4px 7px;
-    background: linear-gradient(170deg, rgba(16, 26, 45, 0.48), rgba(13, 21, 36, 0.4));
-}
-
-.profileHoverStatsTable {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.profileHoverStatRow {
-    border-top: 1px solid rgba(176, 208, 242, 0.14);
-}
-
-.profileHoverStatRow:first-child {
-    border-top: 0;
-}
-
-.profileHoverStatLabel {
-    text-align: left;
-    padding: 5px 0;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.38px;
-    text-transform: uppercase;
-    color: rgba(196, 215, 238, 0.76);
-}
-
-.profileHoverStatValue {
-    text-align: right;
-    padding: 5px 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(223, 236, 252, 0.88);
-    font-variant-numeric: tabular-nums;
-}
-
-.profileHoverStatRow.tone-coins .profileHoverStatValue {
-    color: var(--gold);
-}
-
-.profileHoverStatRow.tone-level .profileHoverStatValue {
-    color: rgba(198, 223, 212, 0.9);
-}
-
-.profileHoverStatRow.tone-accuracy .profileHoverStatValue {
-    color: rgba(196, 218, 236, 0.9);
-}
 
 .pageCenter {
     width: min(1120px, 100%);
@@ -1008,17 +649,25 @@
 }
 
 .tierBadge {
+    --tier-badge-accent: var(--ca-rank-unranked);
+    --tier-badge-line: var(--ca-rank-unranked-line);
+    --tier-badge-wash: var(--ca-rank-unranked-wash);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid rgba(174, 206, 243, 0.36);
-    border-radius: 999px;
+    border: var(--ca-line-hairline) solid var(--tier-badge-line);
+    border-radius: var(--ca-radius-round);
     padding: 4px 10px;
     font-size: 11px;
-    font-weight: 700;
-    line-height: 1;
-    color: rgba(226, 239, 255, 0.94);
-    background: rgba(113, 150, 191, 0.12);
+    font-weight: var(--ca-font-weight-bold);
+    line-height: var(--ca-leading-tight);
+    color: var(--ca-color-ink);
+    background: var(--tier-badge-wash);
+}
+
+.routeOutlet {
+    width: 100%;
+    min-width: 0;
 }
 
 .tierBadgeIcon {
@@ -1028,39 +677,45 @@
 }
 
 .tierBadge.is-gold {
-    border-color: rgba(239, 207, 128, 0.45);
-    background: rgba(239, 207, 128, 0.14);
+    --tier-badge-accent: var(--ca-rank-gold);
+    --tier-badge-line: var(--ca-rank-gold-line);
+    --tier-badge-wash: var(--ca-rank-gold-wash);
 }
 
 .tierBadge.is-platinum {
-    border-color: rgba(131, 226, 220, 0.46);
-    background: rgba(96, 211, 205, 0.14);
+    --tier-badge-accent: var(--ca-rank-platinum);
+    --tier-badge-line: var(--ca-rank-platinum-line);
+    --tier-badge-wash: var(--ca-rank-platinum-wash);
 }
 
 .tierBadge.is-diamond {
-    border-color: rgba(144, 183, 255, 0.52);
-    background: rgba(109, 153, 255, 0.16);
+    --tier-badge-accent: var(--ca-rank-diamond);
+    --tier-badge-line: var(--ca-rank-diamond-line);
+    --tier-badge-wash: var(--ca-rank-diamond-wash);
 }
 
 .tierBadge.is-deadeye {
-    border-color: rgba(255, 117, 117, 0.5);
-    background:
-        linear-gradient(135deg, rgba(255, 117, 117, 0.18), rgba(255, 185, 82, 0.12));
+    --tier-badge-accent: var(--ca-rank-deadeye);
+    --tier-badge-line: var(--ca-rank-deadeye-line);
+    --tier-badge-wash: var(--ca-rank-deadeye-wash);
 }
 
 .tierBadge.is-silver {
-    border-color: rgba(194, 210, 230, 0.48);
-    background: rgba(194, 210, 230, 0.14);
+    --tier-badge-accent: var(--ca-rank-silver);
+    --tier-badge-line: var(--ca-rank-silver-line);
+    --tier-badge-wash: var(--ca-rank-silver-wash);
 }
 
 .tierBadge.is-bronze {
-    border-color: rgba(206, 162, 125, 0.48);
-    background: rgba(206, 162, 125, 0.14);
+    --tier-badge-accent: var(--ca-rank-bronze);
+    --tier-badge-line: var(--ca-rank-bronze-line);
+    --tier-badge-wash: var(--ca-rank-bronze-wash);
 }
 
 .tierBadge.is-placement {
-    border-color: rgba(134, 202, 255, 0.48);
-    background: rgba(110, 180, 255, 0.14);
+    --tier-badge-accent: var(--ca-rank-placement);
+    --tier-badge-line: var(--ca-rank-placement-line);
+    --tier-badge-wash: var(--ca-rank-placement-wash);
 }
 
 .leaderboardEntryHoverCard .profileHoverCard {
@@ -1402,6 +1057,980 @@
 @media (max-width: 720px) {
     .challengeSendGrid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Phase 1 application shell ------------------------------------------------ */
+.appShell {
+    --mobile-dock-height: 66px;
+    --toast-bottom-offset: 16px;
+}
+
+.routeAnnouncement {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(135, 199, 255, 0.18);
+    backdrop-filter: blur(12px);
+    background:
+        linear-gradient(180deg, rgba(7, 12, 23, 0.97), rgba(9, 16, 30, 0.94)),
+        radial-gradient(circle at 18% -50%, rgba(58, 189, 255, 0.2), transparent 60%);
+    box-shadow: 0 12px 34px rgba(0, 5, 14, 0.26);
+    transition:
+        opacity var(--dur-quick, 0.18s) ease,
+        transform var(--dur-quick, 0.18s) cubic-bezier(0.4, 0, 1, 1);
+}
+
+.topbarInner,
+.topbar.topbarArmory .topbarInner {
+    width: min(1480px, 100%);
+    min-height: 64px;
+    margin: 0 auto;
+    padding: 7px max(14px, env(safe-area-inset-right)) 7px max(14px, env(safe-area-inset-left));
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+}
+
+.topbar.topbarArmory {
+    border-bottom-color: rgba(173, 210, 248, 0.16);
+}
+
+.brandCluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.brandCluster:focus-visible {
+    outline-offset: 4px;
+}
+
+.brandLogo {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+}
+
+.brandLogo::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(119, 217, 255, 0.32);
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.brandLogoImage {
+    position: relative;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 11px rgba(61, 198, 255, 0.3));
+}
+
+.brandText {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.brand {
+    font-family: var(--font-display, "Space Grotesk", "Verdana", sans-serif);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.035em;
+    color: var(--ink, #edf3ff);
+}
+
+.brandTag {
+    margin: 0;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(173, 207, 234, 0.7);
+}
+
+.desktopNav {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.navGroup {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+}
+
+.navGroupLabel {
+    padding-inline: 7px;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(172, 199, 229, 0.56);
+}
+
+.navGroupLinks,
+.navUtility {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid rgba(157, 198, 238, 0.11);
+    background: rgba(255, 255, 255, 0.025);
+    clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+}
+
+.navUtility {
+    align-self: end;
+}
+
+.navItem,
+.navSettingsButton {
+    position: relative;
+    min-width: 36px;
+    min-height: 36px;
+    height: 36px;
+    padding: 0 9px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: rgba(222, 235, 250, 0.78);
+    background: transparent;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    text-decoration: none;
+    opacity: 1;
+    cursor: pointer;
+    transition:
+        color var(--dur-fast, 0.12s) ease,
+        background-color var(--dur-fast, 0.12s) ease,
+        border-color var(--dur-fast, 0.12s) ease,
+        transform var(--dur-fast, 0.12s) ease;
+}
+
+.navItem:hover,
+.navSettingsButton:hover {
+    color: #fff;
+    border-color: rgba(133, 211, 255, 0.18);
+    background: rgba(111, 198, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.navItem:active,
+.navSettingsButton:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.navItem.active {
+    border-color: rgba(102, 211, 255, 0.36);
+    color: #f7fcff;
+    background:
+        linear-gradient(180deg, rgba(68, 186, 255, 0.18), rgba(42, 133, 218, 0.08));
+    box-shadow: inset 0 -2px 0 rgba(91, 214, 255, 0.72);
+    animation: none;
+}
+
+.navItem:focus-visible,
+.navSettingsButton:focus-visible {
+    outline: 2px solid rgba(123, 219, 255, 0.92);
+    outline-offset: 2px;
+}
+
+.navItem:disabled,
+.navSettingsButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+    transform: none;
+}
+
+.navItemIcon {
+    min-width: 17px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+}
+
+.navPlay {
+    align-self: end;
+    min-width: 86px;
+    height: 42px;
+    padding-inline: 16px;
+    border-color: rgba(81, 220, 255, 0.46);
+    color: #f7fdff;
+    background:
+        linear-gradient(135deg, rgba(36, 181, 242, 0.34), rgba(41, 115, 221, 0.22));
+    box-shadow: 0 0 18px rgba(39, 180, 245, 0.14), inset 0 0 0 1px rgba(211, 246, 255, 0.05);
+    clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+
+.navPlay.active {
+    border-color: rgba(110, 228, 255, 0.72);
+    background: linear-gradient(135deg, rgba(35, 194, 255, 0.48), rgba(46, 120, 229, 0.3));
+    box-shadow: 0 0 24px rgba(49, 194, 255, 0.22), inset 0 -2px 0 rgba(162, 239, 255, 0.9);
+}
+
+.navPendingBadge {
+    min-width: 17px;
+    height: 17px;
+    padding-inline: 4px;
+    border: 1px solid rgba(255, 170, 104, 0.56);
+    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
+    font-size: 9px;
+    line-height: 1;
+    color: #fff4dc;
+    background: rgba(224, 105, 55, 0.58);
+}
+
+.guestNav {
+    grid-column: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guestNavLink {
+    min-height: 44px;
+    padding: 0 15px;
+    border: 1px solid rgba(139, 196, 238, 0.2);
+    display: inline-flex;
+    align-items: center;
+    color: rgba(223, 237, 252, 0.84);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+}
+
+.guestNavLink:hover,
+.guestNavLink.active {
+    border-color: rgba(100, 211, 255, 0.5);
+    color: #fff;
+    background: rgba(73, 178, 242, 0.12);
+}
+
+.shellIdentityWrap {
+    position: relative;
+    min-width: 0;
+}
+
+.shellIdentityButton {
+    min-width: 188px;
+    min-height: 48px;
+    padding: 5px 8px 5px 6px;
+    border: 1px solid rgba(147, 201, 243, 0.2);
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink, #edf3ff);
+    background:
+        linear-gradient(135deg, rgba(42, 90, 139, 0.2), rgba(17, 31, 54, 0.46));
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    transition:
+        border-color var(--dur-fast, 0.12s) ease,
+        background-color var(--dur-fast, 0.12s) ease;
+}
+
+.shellIdentityButton:hover,
+.shellIdentityButton[aria-expanded="true"] {
+    border-color: rgba(105, 215, 255, 0.46);
+    background: linear-gradient(135deg, rgba(48, 126, 182, 0.28), rgba(20, 39, 68, 0.6));
+}
+
+.shellAvatar {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(208, 239, 255, 0.42);
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #fff;
+    font-family: var(--font-display, "Space Grotesk", sans-serif);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.shellAvatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.shellIdentityText {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.shellIdentityName,
+.shellIdentityRank {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shellIdentityName {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f6fbff;
+}
+
+.shellIdentityRank {
+    font-size: 9px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(174, 206, 234, 0.72);
+}
+
+.shellIdentityProgress {
+    display: grid;
+    justify-items: end;
+    gap: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgba(210, 226, 243, 0.8);
+}
+
+.shellIdentityProgress span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.shellIdentityProgress span:first-child {
+    color: var(--gold, #f3c966);
+}
+
+.profileHoverCard {
+    position: absolute;
+    z-index: var(--z-overlay, 50);
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 252px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(141, 202, 245, 0.32);
+    background:
+        linear-gradient(160deg, rgba(12, 22, 38, 0.99), rgba(7, 14, 27, 0.99));
+    box-shadow: 0 20px 50px rgba(0, 5, 14, 0.58);
+    display: grid;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition:
+        opacity var(--dur-fast, 0.12s) ease,
+        transform var(--dur-fast, 0.12s) ease;
+}
+
+.shellIdentityPopover {
+    position: absolute;
+    z-index: var(--z-overlay, 50);
+    top: calc(100% + 9px);
+    right: 0;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.profileHoverIdentity {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    padding: 2px;
+}
+
+.profileHoverAvatar {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(209, 238, 255, 0.4);
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #fff;
+    font-family: var(--font-display, "Space Grotesk", sans-serif);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.profileHoverAvatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.profileHoverIdentityText {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.profileHoverIdentityLabel,
+.profileHoverRankLabel {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(171, 202, 230, 0.66);
+}
+
+.profileHoverIdentityName {
+    overflow: hidden;
+    font-family: var(--font-display, "Space Grotesk", sans-serif);
+    font-size: 14px;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #f5fbff;
+}
+
+.profileHoverRankBlock {
+    min-height: 52px;
+    padding: 7px 8px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(183, 216, 244, 0.17);
+    border-radius: 3px;
+    background: linear-gradient(135deg, rgba(69, 156, 220, 0.1), rgba(255, 190, 91, 0.04));
+}
+
+.profileHoverRankIconSlot {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+}
+
+.profileHoverRankIcon {
+    width: 84%;
+    height: 84%;
+    object-fit: contain;
+}
+
+.profileHoverRankText {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.profileHoverRankValue {
+    font-family: var(--font-display, "Space Grotesk", "Verdana", sans-serif);
+    font-size: 13px;
+    line-height: 1;
+    color: #f5faff;
+}
+
+.profileHoverRankMeta {
+    font-size: 9px;
+    line-height: 1.25;
+    color: rgba(209, 224, 247, 0.88);
+}
+
+.profileHoverStats {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    background: rgba(167, 207, 239, 0.12);
+}
+
+.profileHoverStat {
+    min-width: 0;
+    padding: 7px 6px;
+    display: grid;
+    gap: 4px;
+    background: rgba(9, 18, 33, 0.96);
+}
+
+.profileHoverStatLabel,
+.profileHoverStatValue {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+.profileHoverStatLabel {
+    overflow: hidden;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba(170, 196, 220, 0.64);
+}
+
+.profileHoverStatValue {
+    font-family: var(--font-display, "Space Grotesk", sans-serif);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgba(225, 238, 250, 0.9);
+}
+
+.profileHoverStat.tone-coins .profileHoverStatValue {
+    color: var(--gold, #f3c966);
+}
+
+.profileHoverStat.tone-level .profileHoverStatValue {
+    color: var(--positive, #53d7b3);
+}
+
+.profileHoverProfileLink {
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid rgba(91, 204, 255, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #dff7ff;
+    background: rgba(55, 165, 225, 0.1);
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+.profileHoverProfileLink:hover {
+    border-color: rgba(103, 218, 255, 0.5);
+    background: rgba(55, 165, 225, 0.18);
+}
+
+.mobileDock {
+    display: none;
+}
+
+.appShell.isLiveRound .topbar {
+    position: absolute;
+    inset: 0 0 auto;
+    opacity: 0;
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+
+@media (max-width: 1240px) and (min-width: 821px) {
+    .topbarInner,
+    .topbar.topbarArmory .topbarInner {
+        gap: 9px;
+    }
+
+    .desktopNav {
+        gap: 5px;
+    }
+
+    .navGroupLinks,
+    .navUtility {
+        gap: 1px;
+    }
+
+    .navGroupLinks .navItem:not(.navPlay) .navItemLabel,
+    .navUtility .navItemLabel {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+
+    .shellIdentityButton {
+        min-width: 168px;
+    }
+}
+
+@media (max-width: 960px) and (min-width: 821px) {
+    .brandTag,
+    .shellIdentityProgress {
+        display: none;
+    }
+
+    .shellIdentityButton {
+        min-width: 132px;
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 820px) {
+    .appShell.isAuthenticated:not(.isLiveRound) {
+        --toast-bottom-offset: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom) + 12px);
+    }
+
+    .topbar,
+    .topbar.topbarArmory {
+        position: sticky;
+        min-height: 58px;
+    }
+
+    .topbarInner,
+    .topbar.topbarArmory .topbarInner {
+        min-height: 58px;
+        padding: max(7px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 7px max(10px, env(safe-area-inset-left));
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 9px;
+    }
+
+    .desktopNav {
+        display: none;
+    }
+
+    .brandCluster {
+        min-width: 0;
+    }
+
+    .brandLogo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .brandLogoImage {
+        width: 31px;
+        height: 31px;
+    }
+
+    .brand {
+        font-size: 17px;
+    }
+
+    .brandTag {
+        display: none;
+    }
+
+    .guestNav {
+        grid-column: 2;
+    }
+
+    .guestNavLink {
+        min-height: 44px;
+        padding-inline: 11px;
+        font-size: 11px;
+    }
+
+    .shellIdentityButton {
+        min-width: 0;
+        width: min(184px, 52vw);
+        min-height: 44px;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .shellAvatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .shellIdentityProgress {
+        font-size: 8px;
+    }
+
+    .shellIdentityPopover {
+        width: min(284px, calc(100vw - 20px));
+        min-width: 0;
+    }
+
+    .mobileDock {
+        position: fixed;
+        z-index: var(--z-sticky, 40);
+        right: 0;
+        bottom: 0;
+        left: 0;
+        min-height: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom));
+        padding: 5px max(5px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(5px, env(safe-area-inset-left));
+        display: block;
+        border-top: 1px solid rgba(127, 203, 246, 0.22);
+        background: rgba(7, 13, 25, 0.97);
+        box-shadow: 0 -16px 36px rgba(0, 5, 15, 0.38);
+        backdrop-filter: blur(16px);
+        transition:
+            opacity var(--dur-quick, 0.18s) ease,
+            transform var(--dur-quick, 0.18s) cubic-bezier(0.4, 0, 1, 1);
+    }
+
+    .mobileDock.isCollapsed {
+        opacity: 0;
+        transform: translateY(100%);
+        pointer-events: none;
+    }
+
+    .mobileDockInner {
+        min-height: 56px;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 2px;
+    }
+
+    .mobileDockItem {
+        position: relative;
+        min-width: 0;
+        min-height: 54px;
+        padding: 5px 2px 4px;
+        border: 1px solid transparent;
+        border-radius: 3px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        color: rgba(185, 208, 231, 0.7);
+        background: transparent;
+        font: inherit;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .mobileDockItem .navItemLabel {
+        max-width: 100%;
+        overflow: hidden;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mobileDockItem .navPendingBadge {
+        position: absolute;
+        top: 3px;
+        right: max(5px, calc(50% - 24px));
+    }
+
+    .mobileDockItem:hover,
+    .mobileDockItem.active {
+        border-color: rgba(87, 210, 255, 0.18);
+        color: #f2fbff;
+        background: linear-gradient(180deg, rgba(56, 181, 236, 0.1), rgba(56, 181, 236, 0.025));
+        transform: none;
+    }
+
+    .mobileDockItem.active::after {
+        content: "";
+        position: absolute;
+        right: 18%;
+        bottom: -1px;
+        left: 18%;
+        height: 2px;
+        background: #65d6ff;
+        box-shadow: 0 0 10px rgba(84, 211, 255, 0.68);
+    }
+
+    .mainContent.hasMobileDock:not(.gameMain) {
+        padding-bottom: calc(40px + var(--mobile-dock-height) + env(safe-area-inset-bottom));
+    }
+
+    .mainContent.gameMain.hasMobileDock {
+        padding-bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom));
+    }
+
+    .mobileMoreBackdrop {
+        position: fixed;
+        z-index: var(--z-modal, 80);
+        inset: 0;
+        padding: 20px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        background: rgba(0, 5, 14, 0.68);
+        backdrop-filter: blur(5px);
+    }
+
+    .mobileMoreSheet {
+        width: min(520px, 100%);
+        max-height: min(620px, calc(100dvh - 30px - env(safe-area-inset-top)));
+        padding: 0;
+        border: 1px solid rgba(126, 207, 249, 0.3);
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 0;
+        overflow: hidden;
+        color: var(--ink, #edf3ff);
+        background:
+            linear-gradient(160deg, rgba(13, 25, 43, 0.99), rgba(7, 14, 27, 0.99));
+        box-shadow: 0 28px 70px rgba(0, 4, 12, 0.72);
+        clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+    }
+
+    .mobileMoreSheet .uiDialogBody {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .mobileMoreHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+    }
+
+    .mobileMoreEyebrow {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(112, 213, 255, 0.74);
+    }
+
+    .mobileMoreTitle {
+        margin: 0;
+        font-family: var(--font-display, "Space Grotesk", sans-serif);
+        font-size: 20px;
+        line-height: 1;
+        color: #f5fbff;
+    }
+
+    .mobileMoreClose {
+        width: 44px;
+        height: 44px;
+        border: 1px solid rgba(155, 204, 239, 0.2);
+        border-radius: 3px;
+        display: grid;
+        place-items: center;
+        color: rgba(226, 239, 251, 0.8);
+        background: rgba(255, 255, 255, 0.035);
+        cursor: pointer;
+    }
+
+    .mobileMoreGroups {
+        min-height: 0;
+        padding-right: 2px;
+        display: grid;
+        gap: 12px;
+        overflow: auto;
+        overscroll-behavior: contain;
+    }
+
+    .mobileMoreGroup {
+        display: grid;
+        gap: 5px;
+    }
+
+    .mobileMoreGroupLabel {
+        margin: 0;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(169, 198, 226, 0.6);
+    }
+
+    .mobileMoreLinks {
+        display: grid;
+        gap: 4px;
+    }
+
+    .mobileMoreLink {
+        width: 100%;
+        min-height: 48px;
+        padding: 0 12px;
+        border: 1px solid rgba(148, 195, 231, 0.14);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(225, 237, 249, 0.82);
+        background: rgba(255, 255, 255, 0.025);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .mobileMoreLink.active {
+        border-color: rgba(92, 211, 255, 0.42);
+        color: #fff;
+        background: rgba(55, 178, 232, 0.11);
+        box-shadow: inset 2px 0 0 #62d5ff;
+    }
+
+    .mobileMoreLink .navPendingBadge,
+    .mobileMoreLink > svg:last-child {
+        margin-left: auto;
+    }
+
+    .mobileMoreLink:disabled {
+        cursor: not-allowed;
+        opacity: 0.42;
+    }
+}
+
+@media (max-width: 380px) {
+    .brandText {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+
+    .shellIdentityButton {
+        width: min(210px, calc(100vw - 62px));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .topbar,
+    .mobileDock,
+    .navItem,
+    .navSettingsButton,
+    .shellIdentityButton {
+        transition: none;
     }
 }
 

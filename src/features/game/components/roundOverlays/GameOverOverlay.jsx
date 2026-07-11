@@ -1,7 +1,11 @@
-﻿import confetti from "canvas-confetti"
+import {
+  cancelCelebrationEffects,
+  fireConfetti,
+} from "../../../../services/celebrationEffects.js"
 import { motion } from "motion/react"
 import { useEffect, useMemo } from "react"
 import { Link } from "react-router-dom"
+import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
 import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
 import { getDifficultyById as getModeById } from "../../../../constants/gameModesConfig.js"
 import { evaluateAchievements } from "../../../../game/achievements/evaluateAchievements.js"
@@ -105,6 +109,7 @@ export function GameOverOverlay({
   onPlayAgain,
   onChooseMode,
 }) {
+  const { effectivePreferences } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
   const cardVariants = useMemo(() => getCardVariants(prefersReducedMotion), [prefersReducedMotion])
 
@@ -140,10 +145,10 @@ export function GameOverOverlay({
 
   // Confetti shower on new personal best — fires once after the score counts up.
   useEffect(() => {
-    if (!isNewBestScore || prefersReducedMotion) return undefined
+    if (!isNewBestScore || prefersReducedMotion || !effectivePreferences.flashes) return undefined
 
     const fire = (angle, origin) =>
-      confetti({
+      fireConfetti({
         particleCount: 36,
         angle,
         spread: 52,
@@ -159,8 +164,11 @@ export function GameOverOverlay({
       fire(115, { x: 0.9, y: 0.58 })
     }, 780)
 
-    return () => window.clearTimeout(timeoutId)
-  }, [isNewBestScore, prefersReducedMotion])
+    return () => {
+      window.clearTimeout(timeoutId)
+      cancelCelebrationEffects()
+    }
+  }, [effectivePreferences.flashes, isNewBestScore, prefersReducedMotion])
 
   const animatedScore = useCountUpNumber(score, {
     durationMs: 700,

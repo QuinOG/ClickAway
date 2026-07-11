@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from "react"
 import toast from "react-hot-toast"
+import { useFeedbackPreferences } from "../app/useFeedbackPreferences.js"
 import { SHOP_CATEGORIES, SHOP_ITEMS_BY_ID } from "../constants/shopCatalog.js"
 import { celebrateShopEquip, celebrateShopPurchase } from "../features/shop/shopPurchaseEquipCelebration.js"
 import ShopCategoryTabs from "../features/shop/components/ShopCategoryTabs.jsx"
@@ -23,6 +24,7 @@ export default function ShopPage({
   equippedArenaThemeId = "theme_default",
   equippedProfileImageId = "profile_default",
 }) {
+  const { effectivePreferences } = useFeedbackPreferences()
   const [activeCategoryId, setActiveCategoryId] = useState(ALL_TAB_ID)
   const [balancePulseKey, setBalancePulseKey] = useState(0)
 
@@ -70,7 +72,7 @@ export default function ShopPage({
   async function handlePurchase(item) {
     const purchaseResult = await onPurchase?.(item)
     if (purchaseResult?.ok) {
-      celebrateShopPurchase()
+      celebrateShopPurchase({ enabled: effectivePreferences.flashes })
       setBalancePulseKey((key) => key + 1)
       toast.success(
         (
@@ -92,7 +94,7 @@ export default function ShopPage({
   async function handleEquip(item) {
     const equipResult = await onEquip?.(item)
     if (equipResult?.ok) {
-      celebrateShopEquip()
+      celebrateShopEquip({ enabled: effectivePreferences.flashes })
       toast.success(`Equipped — ${item.name}`, {
         duration: 2600,
       })

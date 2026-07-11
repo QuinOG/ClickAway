@@ -1,50 +1,270 @@
-/* Design tokens: shared colors, shadows, radii, and global theme variables. */
+/*
+ * Precision Arena visual foundation.
+ *
+ * `--ca-*` properties are the canonical authored tokens. The legacy aliases at
+ * the end of this file intentionally remain available while existing screens
+ * migrate in later roadmap phases.
+ */
 :root {
-    --surface-0: #090f1d;
-    --surface-1: #111a30;
-    --surface-2: rgba(16, 24, 42, 0.92);
-    --surface-3: rgba(21, 33, 58, 0.88);
-    --bg: #090f1d;
-    --bg-soft: #111a30;
-    --panel: rgba(16, 24, 42, 0.92);
-    --panel-strong: rgba(21, 33, 58, 0.88);
-    --ink: #edf3ff;
-    --ink-soft: #a5b6d6;
-    --line: rgba(255, 255, 255, 0.16);
-    --brand: #4aa8ff;
-    --brand-strong: #2d7fee;
-    --positive: #53d7b3;
-    --negative: #ff6a75;
-    --caution: #f4ad47;
-    --special: #c084fc;
-    --gold: #f3c966;
-    --topbar-bg: rgba(10, 16, 31, 0.86);
-    --game-bg-1: #101426;
-    --game-bg-2: #242d4a;
-    --game-accent: #53d7b3;
-    --danger: #ff6a75;
-    --shadow-soft: 0 16px 34px rgba(6, 11, 21, 0.34);
-    --shadow-strong: 0 22px 52px rgba(4, 8, 16, 0.55);
-    --radius-sm: 12px;
+    /* Typography */
+    --ca-font-ui: "Sora", "Trebuchet MS", "Segoe UI", sans-serif;
+    --ca-font-display: "Space Grotesk", "Arial Narrow", "Verdana", sans-serif;
+    --ca-font-numeric: "Space Grotesk", "Arial Narrow", "Verdana", sans-serif;
+    --ca-font-weight-regular: 400;
+    --ca-font-weight-medium: 500;
+    --ca-font-weight-semibold: 600;
+    --ca-font-weight-bold: 700;
+    --ca-font-weight-black: 800;
+    --ca-type-caption: clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem);
+    --ca-type-label: clamp(0.75rem, 0.72rem + 0.14vw, 0.8125rem);
+    --ca-type-body-sm: clamp(0.8125rem, 0.78rem + 0.16vw, 0.875rem);
+    --ca-type-body: clamp(0.9375rem, 0.9rem + 0.18vw, 1rem);
+    --ca-type-title-sm: clamp(1.125rem, 1.03rem + 0.42vw, 1.375rem);
+    --ca-type-title: clamp(1.5rem, 1.3rem + 0.82vw, 2rem);
+    --ca-type-display: clamp(2rem, 1.55rem + 1.9vw, 3.5rem);
+    --ca-type-score: clamp(2.75rem, 1.85rem + 3.8vw, 5.5rem);
+    --ca-leading-tight: 1;
+    --ca-leading-title: 1.12;
+    --ca-leading-body: 1.6;
+    --ca-leading-copy: 1.72;
+    --ca-tracking-label: 0.055em;
+    --ca-tracking-display: -0.025em;
+    --ca-tracking-score: -0.045em;
+
+    /* Environment, ink and lines */
+    --ca-color-env-void: #050912;
+    --ca-color-env-base: #08111e;
+    --ca-color-env-raised: #0f1b2a;
+    --ca-color-env-high: #142338;
+    --ca-color-surface-panel: rgb(15 27 42 / 92%);
+    --ca-color-surface-strong: rgb(20 35 56 / 94%);
+    --ca-color-surface-overlay: rgb(5 9 18 / 96%);
+    --ca-color-ink-strong: #f3efe6;
+    --ca-color-ink: #e2eaf3;
+    --ca-color-ink-muted: #9baabd;
+    --ca-color-ink-faint: #718196;
+    --ca-color-ink-inverse: #07111d;
+    --ca-color-line-subtle: rgb(226 234 243 / 10%);
+    --ca-color-line: rgb(226 234 243 / 20%);
+    --ca-color-line-strong: rgb(226 234 243 / 36%);
+
+    /* Identity and status */
+    --ca-color-accent: #55d9ff;
+    --ca-color-accent-rgb: 85 217 255;
+    --ca-color-accent-strong: #1da8d5;
+    --ca-color-accent-soft: #a5ecff;
+    --ca-color-special: #c69bff;
+    --ca-color-success: #4eddb8;
+    --ca-color-success-rgb: 78 221 184;
+    --ca-color-warning: #f3c45a;
+    --ca-color-warning-rgb: 243 196 90;
+    --ca-color-error: #ff665d;
+    --ca-color-error-rgb: 255 102 93;
+    --ca-color-info: #71b7ff;
+    --ca-color-info-rgb: 113 183 255;
+
+    /* Modes: accents are lighting, never whole-screen fills. */
+    --ca-mode-practice: #4eddb8;
+    --ca-mode-practice-rgb: 78 221 184;
+    --ca-mode-practice-line: rgb(78 221 184 / 52%);
+    --ca-mode-practice-wash: rgb(78 221 184 / 13%);
+    --ca-mode-casual: #55d9ff;
+    --ca-mode-casual-rgb: 85 217 255;
+    --ca-mode-casual-line: rgb(85 217 255 / 52%);
+    --ca-mode-casual-wash: rgb(85 217 255 / 13%);
+    --ca-mode-ranked: #f3c45a;
+    --ca-mode-ranked-rgb: 243 196 90;
+    --ca-mode-ranked-line: rgb(243 196 90 / 58%);
+    --ca-mode-ranked-wash: rgb(243 196 90 / 14%);
+    --ca-mode-pressure: #ff665d;
+    --ca-mode-pressure-rgb: 255 102 93;
+    --ca-mode-pressure-line: rgb(255 102 93 / 62%);
+    --ca-mode-pressure-wash: rgb(255 102 93 / 14%);
+
+    /* Rank accents. Text and crest imagery must accompany these colors. */
+    --ca-rank-unranked: #9baabd;
+    --ca-rank-unranked-line: rgb(155 170 189 / 42%);
+    --ca-rank-unranked-wash: rgb(155 170 189 / 11%);
+    --ca-rank-placement: #71b7ff;
+    --ca-rank-placement-line: rgb(113 183 255 / 52%);
+    --ca-rank-placement-wash: rgb(113 183 255 / 14%);
+    --ca-rank-bronze: #d58a55;
+    --ca-rank-bronze-line: rgb(213 138 85 / 54%);
+    --ca-rank-bronze-wash: rgb(213 138 85 / 14%);
+    --ca-rank-silver: #c4cedb;
+    --ca-rank-silver-line: rgb(196 206 219 / 52%);
+    --ca-rank-silver-wash: rgb(196 206 219 / 13%);
+    --ca-rank-gold: #f3c45a;
+    --ca-rank-gold-line: rgb(243 196 90 / 56%);
+    --ca-rank-gold-wash: rgb(243 196 90 / 14%);
+    --ca-rank-platinum: #67d9ce;
+    --ca-rank-platinum-line: rgb(103 217 206 / 54%);
+    --ca-rank-platinum-wash: rgb(103 217 206 / 14%);
+    --ca-rank-diamond: #8fb3ff;
+    --ca-rank-diamond-line: rgb(143 179 255 / 58%);
+    --ca-rank-diamond-wash: rgb(143 179 255 / 15%);
+    --ca-rank-deadeye: #ff7c6e;
+    --ca-rank-deadeye-line: rgb(255 124 110 / 60%);
+    --ca-rank-deadeye-wash: linear-gradient(135deg, rgb(255 124 110 / 18%), rgb(243 196 90 / 12%));
+
+    /* Interaction states */
+    --ca-state-default-fill: rgb(226 234 243 / 5%);
+    --ca-state-default-line: var(--ca-color-line);
+    --ca-state-hover-fill: rgb(85 217 255 / 10%);
+    --ca-state-hover-line: rgb(85 217 255 / 46%);
+    --ca-state-pressed-fill: rgb(85 217 255 / 16%);
+    --ca-state-pressed-line: rgb(85 217 255 / 66%);
+    --ca-state-selected-fill: rgb(85 217 255 / 14%);
+    --ca-state-selected-line: var(--ca-color-accent);
+    --ca-state-disabled-fill: rgb(155 170 189 / 7%);
+    --ca-state-disabled-line: rgb(155 170 189 / 18%);
+    --ca-state-disabled-ink: rgb(155 170 189 / 58%);
+    --ca-state-disabled-opacity: 0.52;
+    --ca-state-locked-fill: rgb(113 129 150 / 10%);
+    --ca-state-locked-line: rgb(113 129 150 / 30%);
+    --ca-state-loading-fill: rgb(226 234 243 / 7%);
+    --ca-state-loading-sheen: rgb(226 234 243 / 13%);
+    --ca-focus-color: var(--ca-color-accent);
+    --ca-focus-width: 2px;
+    --ca-focus-offset: 3px;
+    --ca-focus-radius: 6px;
+    --ca-selection-color: var(--ca-color-ink-strong);
+    --ca-selection-fill: rgb(29 168 213 / 55%);
+
+    /* Three intentional depth levels */
+    --ca-depth-0-surface: transparent;
+    --ca-depth-0-line: var(--ca-color-line-subtle);
+    --ca-depth-0-shadow: none;
+    --ca-depth-1-surface: var(--ca-color-surface-panel);
+    --ca-depth-1-line: var(--ca-color-line);
+    --ca-depth-1-shadow: 0 16px 34px rgb(2 7 14 / 36%);
+    --ca-depth-2-surface: var(--ca-color-surface-overlay);
+    --ca-depth-2-line: var(--ca-color-line-strong);
+    --ca-depth-2-shadow: 0 24px 64px rgb(1 4 10 / 62%);
+
+    /* Shape and line families */
+    --ca-radius-tight: 4px;
+    --ca-radius-control: 8px;
+    --ca-radius-panel: 12px;
+    --ca-radius-stage: 20px;
+    --ca-radius-round: 999px;
+    --ca-line-hairline: 1px;
+    --ca-line-emphasis: 2px;
+    --ca-line-impact: 3px;
+    --ca-corner-cut-sm: 8px;
+    --ca-corner-cut-md: 14px;
+    --ca-shape-cut-sm: polygon(0 0, calc(100% - var(--ca-corner-cut-sm)) 0, 100% var(--ca-corner-cut-sm), 100% 100%, var(--ca-corner-cut-sm) 100%, 0 calc(100% - var(--ca-corner-cut-sm)));
+    --ca-shape-cut-md: polygon(0 0, calc(100% - var(--ca-corner-cut-md)) 0, 100% var(--ca-corner-cut-md), 100% 100%, var(--ca-corner-cut-md) 100%, 0 calc(100% - var(--ca-corner-cut-md)));
+    --ca-impact-ring-sm: 18px;
+    --ca-impact-ring-md: 32px;
+    --ca-impact-ring-lg: 56px;
+    --ca-impact-tick: 7px;
+    --ca-impact-line: var(--ca-line-emphasis);
+
+    /* Spacing: a four-pixel base with larger compositional steps. */
+    --ca-space-0: 0;
+    --ca-space-1: 4px;
+    --ca-space-2: 8px;
+    --ca-space-3: 12px;
+    --ca-space-4: 16px;
+    --ca-space-5: 20px;
+    --ca-space-6: 24px;
+    --ca-space-8: 32px;
+    --ca-space-10: 40px;
+    --ca-space-12: 48px;
+    --ca-space-16: 64px;
+    --ca-space-20: 80px;
+
+    /* Motion and effect budgets */
+    --ca-motion-duration-instant: 80ms;
+    --ca-motion-duration-fast: 120ms;
+    --ca-motion-duration-quick: 180ms;
+    --ca-motion-duration-base: 220ms;
+    --ca-motion-duration-slow: 360ms;
+    --ca-motion-duration-ceremony: 480ms;
+    --ca-motion-duration-loading: 2000ms;
+    --ca-motion-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ca-motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+    --ca-motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --ca-motion-ease-impact: cubic-bezier(0.2, 0.9, 0.25, 1.2);
+    --ca-motion-distance-xs: 4px;
+    --ca-motion-distance-sm: 8px;
+    --ca-motion-distance-md: 16px;
+    --ca-motion-distance-lg: 24px;
+    --ca-effect-shadow-layer-max: 2;
+    --ca-effect-glow-control-max: 24px;
+    --ca-effect-glow-ambient-max: 64px;
+    --ca-effect-flash-opacity-max: 0.18;
+    --ca-effect-flash-duration-max: 120ms;
+    --ca-glow-accent-soft: 0 0 24px rgb(85 217 255 / 18%);
+    --ca-glow-accent-strong: 0 0 32px rgb(85 217 255 / 30%);
+
+    /* Cosmetic-independent target clarity */
+    --ca-target-ring-light: var(--ca-color-ink-strong);
+    --ca-target-ring-dark: var(--ca-color-env-void);
+    --ca-target-ring-light-width: 2px;
+    --ca-target-ring-dark-width: 5px;
+    --ca-target-contrast-shadow: 0 0 0 var(--ca-target-ring-light-width) var(--ca-target-ring-light), 0 0 0 var(--ca-target-ring-dark-width) var(--ca-target-ring-dark);
+
+    /* Layering */
+    --ca-z-base: 0;
+    --ca-z-raised: 1;
+    --ca-z-sticky: 40;
+    --ca-z-overlay: 50;
+    --ca-z-tooltip: 65;
+    --ca-z-modal: 80;
+
+    /* Stable short aliases for new work. */
+    --font-ui: var(--ca-font-ui);
+    --font-display: var(--ca-font-display);
+    --font-numeric: var(--ca-font-numeric);
+
+    /* Legacy aliases: keep these until every existing route is migrated. */
+    --surface-0: var(--ca-color-env-void);
+    --surface-1: var(--ca-color-env-base);
+    --surface-2: var(--ca-color-surface-panel);
+    --surface-3: var(--ca-color-surface-strong);
+    --bg: var(--ca-color-env-void);
+    --bg-soft: var(--ca-color-env-base);
+    --panel: var(--ca-color-surface-panel);
+    --panel-strong: var(--ca-color-surface-strong);
+    --ink: var(--ca-color-ink);
+    --ink-soft: var(--ca-color-ink-muted);
+    --line: var(--ca-color-line);
+    --brand: var(--ca-color-accent);
+    --brand-strong: var(--ca-color-accent-strong);
+    --positive: var(--ca-color-success);
+    --negative: var(--ca-color-error);
+    --caution: var(--ca-color-warning);
+    --special: var(--ca-color-special);
+    --gold: var(--ca-rank-gold);
+    --topbar-bg: rgb(5 9 18 / 88%);
+    --game-bg-1: var(--ca-color-env-raised);
+    --game-bg-2: var(--ca-color-env-high);
+    --game-accent: var(--ca-mode-practice);
+    --danger: var(--ca-color-error);
+    --shadow-soft: var(--ca-depth-1-shadow);
+    --shadow-strong: var(--ca-depth-2-shadow);
+    --radius-sm: var(--ca-radius-panel);
     --radius-md: 16px;
-    --radius-lg: 20px;
-    --radius-pill: 999px;
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-5: 20px;
-    --space-6: 24px;
-    --space-8: 32px;
-    --space-10: 40px;
-    --dur-fast: 0.12s;
-    --dur-quick: 0.18s;
-    --dur-base: 0.22s;
-    --dur-slow: 0.36s;
-    --z-base: 0;
-    --z-raised: 1;
-    --z-sticky: 40;
-    --z-overlay: 50;
-    --z-tooltip: 65;
-    --z-modal: 80;
+    --radius-lg: var(--ca-radius-stage);
+    --radius-pill: var(--ca-radius-round);
+    --space-1: var(--ca-space-1);
+    --space-2: var(--ca-space-2);
+    --space-3: var(--ca-space-3);
+    --space-4: var(--ca-space-4);
+    --space-5: var(--ca-space-5);
+    --space-6: var(--ca-space-6);
+    --space-8: var(--ca-space-8);
+    --space-10: var(--ca-space-10);
+    --dur-fast: var(--ca-motion-duration-fast);
+    --dur-quick: var(--ca-motion-duration-quick);
+    --dur-base: var(--ca-motion-duration-base);
+    --dur-slow: var(--ca-motion-duration-slow);
+    --z-base: var(--ca-z-base);
+    --z-raised: var(--ca-z-raised);
+    --z-sticky: var(--ca-z-sticky);
+    --z-overlay: var(--ca-z-overlay);
+    --z-tooltip: var(--ca-z-tooltip);
+    --z-modal: var(--ca-z-modal);
 }

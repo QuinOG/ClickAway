@@ -251,13 +251,56 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
-    animation: shimmer 2s ease-in-out infinite;
+    animation: shimmer var(--ca-motion-duration-loading) ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
+    :root {
+        --ca-motion-distance-xs: 0px;
+        --ca-motion-distance-sm: 0px;
+        --ca-motion-distance-md: 0px;
+        --ca-motion-distance-lg: 0px;
+        --ca-effect-flash-opacity-max: 0;
+        --ca-glow-accent-soft: none;
+        --ca-glow-accent-strong: none;
+    }
+
     .skeletonBlock::after {
         animation: none;
     }
+}
+
+/* The in-app preference mirrors the OS reduction without pretending to change
+   the browser media query. State still updates; travel, pulses, and sweeps do not. */
+html[data-motion-reduced="true"] *,
+html[data-motion-reduced="true"] *::before,
+html[data-motion-reduced="true"] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+}
+
+/* Hit/miss text is an essential sound-independent cue. Its authored animation
+   fades out with `forwards`, so reduced motion keeps the static state visible
+   for the controller-owned feedback lifetime instead of jumping to opacity 0. */
+html[data-motion-reduced="true"] .clickFeedback,
+html[data-motion-reduced="true"] .clickFeedback.positive,
+html[data-motion-reduced="true"] .clickFeedback.negative {
+    animation: none !important;
+}
+
+html[data-flashes="reduced"] .shopCommandValueMain--pulseOnce,
+html[data-flashes="reduced"] .gameOverScorePanel.isComplete {
+    animation: none !important;
+    filter: none !important;
+}
+
+html[data-feedback-intensity="reduced"] .gameScreen {
+    --pulse-duration: 3.4s;
+    --arena-saturation: 1.04;
 }
 
 .skeletonBlock--sm {

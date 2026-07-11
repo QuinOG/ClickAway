@@ -1,8 +1,9 @@
 ﻿import { AnimatePresence, motion } from "motion/react"
-import { useEffect, useState } from "react"
+import { useEffect, useLayoutEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import { ROUND_PHASE } from "../constants/gameConstants.js"
+import { useFeedbackPreferences } from "../app/useFeedbackPreferences.js"
 import GameArena from "../features/game/components/GameArena.jsx"
 import GameHud from "../features/game/components/GameHud.jsx"
 import PowerupTray from "../features/game/components/PowerupTray.jsx"
@@ -19,7 +20,12 @@ const stageVariants = {
   visible: { opacity: 1, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } },
 }
 
-export default function GamePage(props) {
+export default function GamePage({ onPhaseChange, ...props }) {
+  const {
+    effectivePreferences,
+    emitFeedback,
+    stopFeedback,
+  } = useFeedbackPreferences()
   const [searchParams] = useSearchParams()
   const challengeId = Number(searchParams.get("challengeId")) || null
   const replayId = Number(searchParams.get("replayId")) || null
@@ -72,7 +78,22 @@ export default function GamePage(props) {
     ghostReplay,
     challengeId,
     autoStartGhostDuel: Boolean(replayId && challengeId && ghostReplay?.seed),
+    emitFeedback,
+    allowScreenShake: effectivePreferences.screenShake,
   })
+
+  useLayoutEffect(() => {
+    onPhaseChange?.(game.phase)
+  }, [game.phase, onPhaseChange])
+
+  useEffect(() => () => {
+    onPhaseChange?.(ROUND_PHASE.READY)
+  }, [onPhaseChange])
+
+  useEffect(() => () => {
+    stopFeedback()
+  }, [game.phase, stopFeedback])
+
   let activeOverlay = null
 
   if (game.phase === ROUND_PHASE.READY) {
