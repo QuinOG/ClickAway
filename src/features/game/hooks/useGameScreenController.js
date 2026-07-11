@@ -1026,8 +1026,8 @@ export function useGameScreenController({
   ])
 
   const activeDrill = useMemo(
-    () => getTrainingDrillById(roundMode.drillId ?? activeDrillIdRef.current),
-    [roundMode.drillId]
+    () => getTrainingDrillById(roundMode.drillId ?? selectedDrillId),
+    [roundMode.drillId, selectedDrillId]
   )
 
   const drillGoal = useMemo(() => {

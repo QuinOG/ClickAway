@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
-import { formatDrillBestMetric } from "../../../utils/drillStatsUtils.js"
+import { formatDrillBestMetric } from "../../../../utils/drillStatsUtils.js"
 
 const MotionSection = motion.section
 const MotionDiv = motion.div

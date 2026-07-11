@@ -4,7 +4,7 @@ import {
   GameController,
   Question,
   ShoppingBag,
-  Swords,
+  Sword,
   Trophy,
   UserCircle,
 } from "@phosphor-icons/react"
@@ -16,7 +16,7 @@ const AUTHED_NAV_LINKS = [
   { to: "/armory", label: "Armory", Icon: Crosshair },
   { to: "/history", label: "History", Icon: ClockCounterClockwise },
   { to: "/leaderboard", label: "Ladder", Icon: Trophy },
-  { to: "/challenges", label: "Duels", Icon: Swords },
+  { to: "/challenges", label: "Duels", Icon: Sword },
   { to: "/shop", label: "Shop", Icon: ShoppingBag },
   { to: "/help", label: "Help", Icon: Question },
 ]
