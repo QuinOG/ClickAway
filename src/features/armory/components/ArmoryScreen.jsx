@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 import {
   LOADOUT_POWERUPS,
@@ -34,55 +34,18 @@ export default function ArmoryScreen({
   passiveLaneRef,
   hotbarEditorRef,
   reviewPanelRef,
-  ARMORY_STEPS,
-  localSavedLoadouts,
-  loadoutPresentations,
-  localActiveLoadoutId,
+  steps,
   activeStepId,
-  setActiveModuleSlotId,
-  editingPowerSlotIndex,
-  setEditingPowerSlotIndex,
-  nameDraft,
-  setNameDraft,
-  showReviewDetails,
-  setShowReviewDetails,
-  currentWalkthroughStep,
-  walkthroughStepIndex,
-  walkthroughSpotlightRect,
-  walkthroughSource,
-  walkthroughStepCount,
+  handleOpenStep,
+  playerLevel,
   selectedMode,
   activeLoadout,
   activePresentation,
-  selectedModuleSlot,
-  moduleOptionsBySlot,
-  selectedModule,
-  selectedModuleCopy,
-  selectedPowerupId,
-  selectedPowerup,
-  selectedPowerCopy,
-  selectedPowerSlotPresentation,
-  playerLevel,
-  modes,
-  onModeChange,
-  commitActiveLoadoutName,
-  handleOpenStep,
-  handleActivateLoadout,
-  handleResetLoadout,
-  handleSelectModule,
-  handleSelectPowerup,
-  openWalkthrough,
-  closeWalkthrough,
-  goToPreviousWalkthroughStep,
-  goToNextWalkthroughStep,
-  handleWalkthroughKeepCurrentName,
-  handleWalkthroughSaveName,
-  handleWalkthroughGoToReady,
-  handleWalkthroughKeepTuning,
-  slotStepSummary,
-  passiveStepSummary,
-  hotbarStepSummary,
-  reviewStepSummary,
+  slotApi,
+  passiveApi,
+  hotbarApi,
+  reviewApi,
+  walkthroughApi,
 }) {
   return (
     <div className="pageCenter armoryPage">
@@ -106,7 +69,7 @@ export default function ArmoryScreen({
           </div>
 
           <div className="armoryRailProgress" aria-label="Armory steps">
-            {ARMORY_STEPS.map((step, index) => (
+            {steps.map((step, index) => (
               <ArmoryRailStepButton
                 key={step.id}
                 step={step}
@@ -120,21 +83,21 @@ export default function ArmoryScreen({
           <div className="armoryRailSection">
             <span className="armoryRailSectionLabel">Saved builds</span>
             <div className="armorySlotRailList" aria-label="Saved build slots">
-              {localSavedLoadouts.map((loadout, index) => (
+              {slotApi.savedLoadouts.map((loadout, index) => (
                 <ArmorySlotRailButton
                   key={loadout.id}
                   loadout={loadout}
                   index={index}
-                  presentation={loadoutPresentations[loadout.id]}
-                  isActive={loadout.id === localActiveLoadoutId}
-                  onClick={() => handleActivateLoadout(loadout.id)}
+                  presentation={slotApi.loadoutPresentations[loadout.id]}
+                  isActive={loadout.id === slotApi.activeLoadoutId}
+                  onClick={() => slotApi.activateLoadout(loadout.id)}
                 />
               ))}
             </div>
           </div>
 
           <div className="armoryRailActions">
-            <button type="button" className="secondaryButton" onClick={() => openWalkthrough("manual")}>
+            <button type="button" className="secondaryButton" onClick={() => walkthroughApi.open("manual")}>
               Restart Walkthrough
             </button>
             <Link className="secondaryButton secondaryButton-lg" to="/game">
@@ -146,9 +109,9 @@ export default function ArmoryScreen({
         <div className="armoryWorkspace" ref={workspaceRef}>
           <div className="armoryStepStack">
             <ArmoryStepCard
-              step={ARMORY_STEPS[0]}
+              step={steps[0]}
               index={0}
-              summary={slotStepSummary}
+              summary={slotApi.summary}
               isActive={activeStepId === "slot"}
               onActivate={() => handleOpenStep("slot")}
             >
@@ -158,14 +121,14 @@ export default function ArmoryScreen({
                   <input
                     id="armory-build-name"
                     className="armoryNameInput"
-                    value={nameDraft}
+                    value={slotApi.nameDraft}
                     maxLength={24}
-                    onChange={(event) => setNameDraft(event.target.value)}
-                    onBlur={commitActiveLoadoutName}
+                    onChange={(event) => slotApi.setNameDraft(event.target.value)}
+                    onBlur={slotApi.commitName}
                     onKeyDown={(event) => {
                       if (event.key === "Enter") {
                         event.preventDefault()
-                        commitActiveLoadoutName()
+                        slotApi.commitName()
                         event.currentTarget.blur()
                       }
                     }}
@@ -178,7 +141,7 @@ export default function ArmoryScreen({
                 </div>
 
                 <div className="armoryActionRow">
-                  <button type="button" className="secondaryButton" onClick={handleResetLoadout}>
+                  <button type="button" className="secondaryButton" onClick={slotApi.resetLoadout}>
                     Reset This Slot
                   </button>
                 </div>
@@ -213,9 +176,9 @@ export default function ArmoryScreen({
             </ArmoryStepCard>
 
             <ArmoryStepCard
-              step={ARMORY_STEPS[1]}
+              step={steps[1]}
               index={1}
-              summary={passiveStepSummary}
+              summary={passiveApi.summary}
               isActive={activeStepId === "passives"}
               onActivate={() => handleOpenStep("passives")}
             >
@@ -228,8 +191,8 @@ export default function ArmoryScreen({
                     <button
                       key={slot.id}
                       type="button"
-                      className={`armoryLaneTab ${slot.id === selectedModuleSlot.id ? "isActive" : ""} tone-${slot.id}`}
-                      onClick={() => setActiveModuleSlotId(slot.id)}
+                      className={`armoryLaneTab ${slot.id === passiveApi.selectedModuleSlot.id ? "isActive" : ""} tone-${slot.id}`}
+                      onClick={() => passiveApi.setActiveModuleSlotId(slot.id)}
                     >
                       <span className={`armoryLaneTabIcon tone-${slot.id}`} aria-hidden="true">
                         <ModuleSlotGlyph slotId={slot.id} />
@@ -243,37 +206,37 @@ export default function ArmoryScreen({
                 })}
               </div>
 
-              <div className={`armoryLanePanel tone-${selectedModuleSlot.id}`} ref={passiveLaneRef}>
+              <div className={`armoryLanePanel tone-${passiveApi.selectedModuleSlot.id}`} ref={passiveLaneRef}>
                 <div className="armoryLanePanelHeader">
-                  <span className={`armoryLanePanelIcon tone-${selectedModuleSlot.id}`} aria-hidden="true">
-                    <ModuleSlotGlyph slotId={selectedModuleSlot.id} />
+                  <span className={`armoryLanePanelIcon tone-${passiveApi.selectedModuleSlot.id}`} aria-hidden="true">
+                    <ModuleSlotGlyph slotId={passiveApi.selectedModuleSlot.id} />
                   </span>
                   <div className="armoryLanePanelCopy">
-                    <h3 className="armoryLanePanelTitle">{selectedModuleSlot.label}</h3>
-                    <p className="armoryLanePanelLead">{selectedModuleSlot.description}</p>
+                    <h3 className="armoryLanePanelTitle">{passiveApi.selectedModuleSlot.label}</h3>
+                    <p className="armoryLanePanelLead">{passiveApi.selectedModuleSlot.description}</p>
                   </div>
                 </div>
 
                 <div className="armoryChoiceGrid">
-                  {moduleOptionsBySlot[selectedModuleSlot.id].map((module) => {
+                  {passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id].map((module) => {
                     const isLocked = playerLevel < module.unlockLevel
                     const hint = isLocked
                       ? getUnlockText(module.unlockLevel)
-                      : activeLoadout.moduleIds?.[selectedModuleSlot.key] === module.id
+                      : activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] === module.id
                         ? "Equipped"
                         : ""
 
                     return (
                       <ArmoryChoiceCard
                         key={module.id}
-                        tone={`tone-${selectedModuleSlot.id}`}
-                        icon={<ModuleSlotGlyph slotId={selectedModuleSlot.id} />}
+                        tone={`tone-${passiveApi.selectedModuleSlot.id}`}
+                        icon={<ModuleSlotGlyph slotId={passiveApi.selectedModuleSlot.id} />}
                         label={module.label}
                         impact={module.description}
                         hint={hint}
-                        isSelected={activeLoadout.moduleIds?.[selectedModuleSlot.key] === module.id}
+                        isSelected={activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] === module.id}
                         isDisabled={isLocked}
-                        onClick={() => handleSelectModule(selectedModuleSlot.key, module.id)}
+                        onClick={() => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, module.id)}
                       />
                     )
                   })}
@@ -281,21 +244,21 @@ export default function ArmoryScreen({
 
                 <ArmoryDetailPanel
                   eyebrow="Selected passive"
-                  title={selectedModule?.label ?? selectedModuleSlot.label}
-                  lead={selectedModuleCopy.youGet}
+                  title={passiveApi.selectedModule?.label ?? passiveApi.selectedModuleSlot.label}
+                  lead={passiveApi.selectedModuleCopy.youGet}
                   rows={[
-                    { label: "Tradeoff", value: selectedModuleCopy.youGiveUp },
-                    { label: "Best in", value: selectedModuleCopy.bestIn },
+                    { label: "Tradeoff", value: passiveApi.selectedModuleCopy.youGiveUp },
+                    { label: "Best in", value: passiveApi.selectedModuleCopy.bestIn },
                   ]}
-                  exactChips={getModuleExactChips(selectedModule)}
+                  exactChips={getModuleExactChips(passiveApi.selectedModule)}
                 />
               </div>
             </ArmoryStepCard>
 
             <ArmoryStepCard
-              step={ARMORY_STEPS[2]}
+              step={steps[2]}
               index={2}
-              summary={hotbarStepSummary}
+              summary={hotbarApi.summary}
               isActive={activeStepId === "hotbar"}
               onActivate={() => handleOpenStep("hotbar")}
             >
@@ -307,8 +270,8 @@ export default function ArmoryScreen({
                       powerupId={powerSlot.id}
                       index={index}
                       cadenceLabel={powerSlot.cadenceLabel}
-                      isActive={editingPowerSlotIndex === index}
-                      onClick={() => setEditingPowerSlotIndex(index)}
+                      isActive={hotbarApi.editingPowerSlotIndex === index}
+                      onClick={() => hotbarApi.setEditingPowerSlotIndex(index)}
                     />
                   ))}
                 </div>
@@ -317,12 +280,12 @@ export default function ArmoryScreen({
                   {LOADOUT_POWERUPS.map((powerup) => {
                     const isLocked = playerLevel < powerup.unlockLevel
                     const takenSlotIndex = activeLoadout.powerupIds.findIndex((equippedId, index) => (
-                      index !== editingPowerSlotIndex && equippedId === powerup.id
+                      index !== hotbarApi.editingPowerSlotIndex && equippedId === powerup.id
                     ))
-                    const isSelected = selectedPowerupId === powerup.id
+                    const isSelected = hotbarApi.selectedPowerupId === powerup.id
                     const isTakenElsewhere = takenSlotIndex !== -1
                     const isDisabled = isLocked || isTakenElsewhere
-                    let hint = `Key ${editingPowerSlotIndex + 1}`
+                    let hint = `Key ${hotbarApi.editingPowerSlotIndex + 1}`
 
                     if (isLocked) {
                       hint = getUnlockText(powerup.unlockLevel)
@@ -342,47 +305,47 @@ export default function ArmoryScreen({
                         hint={hint}
                         isSelected={isSelected}
                         isDisabled={isDisabled}
-                        onClick={() => handleSelectPowerup(powerup.id)}
+                        onClick={() => hotbarApi.selectPowerup(powerup.id)}
                       />
                     )
                   })}
                 </div>
 
                 <ArmoryDetailPanel
-                  eyebrow={`Key ${editingPowerSlotIndex + 1}`}
-                  title={selectedPowerup?.label ?? "Choose Power"}
-                  lead={selectedPowerCopy.youGet}
+                  eyebrow={`Key ${hotbarApi.editingPowerSlotIndex + 1}`}
+                  title={hotbarApi.selectedPowerup?.label ?? "Choose Power"}
+                  lead={hotbarApi.selectedPowerCopy.youGet}
                   rows={[
-                    { label: "Tradeoff", value: selectedPowerCopy.youGiveUp },
-                    { label: "Best in", value: selectedPowerCopy.bestIn },
+                    { label: "Tradeoff", value: hotbarApi.selectedPowerCopy.youGiveUp },
+                    { label: "Best in", value: hotbarApi.selectedPowerCopy.bestIn },
                     {
                       label: "Charge",
-                      value: selectedPowerSlotPresentation?.cadenceLabel ?? "No cadence",
+                      value: hotbarApi.selectedPowerSlotPresentation?.cadenceLabel ?? "No cadence",
                     },
                   ]}
                   exactChips={getPowerupExactChips(
-                    selectedPowerup,
-                    selectedPowerSlotPresentation?.awardEvery ?? selectedPowerup?.awardEvery ?? 0
+                    hotbarApi.selectedPowerup,
+                    hotbarApi.selectedPowerSlotPresentation?.awardEvery ?? hotbarApi.selectedPowerup?.awardEvery ?? 0
                   )}
                 />
               </div>
             </ArmoryStepCard>
 
             <ArmoryStepCard
-              step={ARMORY_STEPS[3]}
+              step={steps[3]}
               index={3}
-              summary={reviewStepSummary}
+              summary={reviewApi.summary}
               isActive={activeStepId === "review"}
               onActivate={() => handleOpenStep("review")}
             >
               <div ref={reviewPanelRef}>
                 <div className="armoryReviewModeRow" aria-label="Mode preview">
-                  {modes.map((mode) => (
+                  {reviewApi.modes.map((mode) => (
                     <ReviewModeButton
                       key={mode.id}
                       mode={mode}
                       isActive={mode.id === selectedMode.id}
-                      onClick={() => onModeChange?.(mode.id)}
+                      onClick={() => reviewApi.onModeChange?.(mode.id)}
                     />
                   ))}
                 </div>
@@ -399,10 +362,10 @@ export default function ArmoryScreen({
                   <button
                     type="button"
                     className="secondaryButton armoryReviewToggle"
-                    onClick={() => setShowReviewDetails((currentValue) => !currentValue)}
-                    aria-expanded={showReviewDetails}
+                    onClick={() => reviewApi.setShowDetails((currentValue) => !currentValue)}
+                    aria-expanded={reviewApi.showDetails}
                   >
-                    {showReviewDetails ? "Hide Exact Values" : "Show Exact Values"}
+                    {reviewApi.showDetails ? "Hide Exact Values" : "Show Exact Values"}
                   </button>
                 </section>
 
@@ -453,7 +416,7 @@ export default function ArmoryScreen({
                   </section>
                 </div>
 
-                {showReviewDetails ? (
+                {reviewApi.showDetails ? (
                   <section className="armoryReviewDetails">
                     <div className="armoryDetailRows">
                       <div className="armoryDetailRow">
@@ -497,19 +460,19 @@ export default function ArmoryScreen({
         </div>
 
         <ArmoryWalkthroughOverlay
-          step={currentWalkthroughStep}
-          stepIndex={walkthroughStepIndex}
-          stepCount={walkthroughStepCount}
-          spotlightRect={walkthroughSpotlightRect}
+          step={walkthroughApi.currentStep}
+          stepIndex={walkthroughApi.stepIndex}
+          stepCount={walkthroughApi.stepCount}
+          spotlightRect={walkthroughApi.spotlightRect}
           selectedModeLabel={selectedMode.label}
-          isManual={walkthroughSource === "manual"}
-          onSkip={closeWalkthrough}
-          onBack={goToPreviousWalkthroughStep}
-          onNext={goToNextWalkthroughStep}
-          onKeepCurrentName={handleWalkthroughKeepCurrentName}
-          onSaveName={handleWalkthroughSaveName}
-          onGoToReady={handleWalkthroughGoToReady}
-          onKeepTuning={handleWalkthroughKeepTuning}
+          isManual={walkthroughApi.source === "manual"}
+          onSkip={walkthroughApi.close}
+          onBack={walkthroughApi.goBack}
+          onNext={walkthroughApi.goNext}
+          onKeepCurrentName={walkthroughApi.keepCurrentName}
+          onSaveName={walkthroughApi.saveName}
+          onGoToReady={walkthroughApi.goToReady}
+          onKeepTuning={walkthroughApi.keepTuning}
         />
       </section>
     </div>

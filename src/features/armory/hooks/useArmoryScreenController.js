@@ -107,8 +107,17 @@ export function useArmoryScreenController({
   )
   const activePresentation = activeLoadout?.id ? loadoutPresentations[activeLoadout.id] : null
 
+  const hasSyncedActiveLoadoutRef = useRef(false)
+
   useEffect(() => {
     setNameDraft(activeLoadout?.name ?? "")
+
+    // Skip the initial run so a ?powerSlot= deep link isn't clobbered on mount.
+    if (!hasSyncedActiveLoadoutRef.current) {
+      hasSyncedActiveLoadoutRef.current = true
+      return
+    }
+
     setEditingPowerSlotIndex(0)
   }, [activeLoadout])
 
@@ -351,6 +360,10 @@ export function useArmoryScreenController({
   const hotbarStepSummary = getStepSummary("hotbar", activeLoadout, activePresentation, selectedMode)
   const reviewStepSummary = getStepSummary("review", activeLoadout, activePresentation, selectedMode)
 
+  // Grouped controller→screen contract: shared build context and DOM refs stay
+  // top-level (refs inside the grouped objects trip react-hooks/refs), while
+  // everything step- or overlay-specific lives on its API object so later
+  // phases can add capability without prop explosions.
   return {
     isReady,
     shellRef,
@@ -359,55 +372,64 @@ export function useArmoryScreenController({
     passiveLaneRef,
     hotbarEditorRef,
     reviewPanelRef,
-    ARMORY_STEPS,
-    localSavedLoadouts,
-    loadoutPresentations,
-    localActiveLoadoutId,
+    steps: ARMORY_STEPS,
     activeStepId,
-    activeModuleSlotId,
-    setActiveModuleSlotId,
-    editingPowerSlotIndex,
-    setEditingPowerSlotIndex,
-    nameDraft,
-    setNameDraft,
-    showReviewDetails,
-    setShowReviewDetails,
-    currentWalkthroughStep,
-    walkthroughStepIndex,
-    walkthroughSpotlightRect,
-    walkthroughSource,
-    walkthroughStepCount: WALKTHROUGH_STEPS.length,
+    handleOpenStep,
+    playerLevel,
     selectedMode,
     activeLoadout,
     activePresentation,
-    selectedModuleSlot,
-    moduleOptionsBySlot,
-    selectedModule,
-    selectedModuleCopy,
-    selectedPowerupId,
-    selectedPowerup,
-    selectedPowerCopy,
-    selectedPowerSlotPresentation,
-    playerLevel,
-    modes,
-    onModeChange,
-    commitActiveLoadoutName,
-    handleOpenStep,
-    handleActivateLoadout,
-    handleResetLoadout,
-    handleSelectModule,
-    handleSelectPowerup,
-    openWalkthrough,
-    closeWalkthrough,
-    goToPreviousWalkthroughStep,
-    goToNextWalkthroughStep,
-    handleWalkthroughKeepCurrentName,
-    handleWalkthroughSaveName,
-    handleWalkthroughGoToReady,
-    handleWalkthroughKeepTuning,
-    slotStepSummary,
-    passiveStepSummary,
-    hotbarStepSummary,
-    reviewStepSummary,
+    slotApi: {
+      savedLoadouts: localSavedLoadouts,
+      loadoutPresentations,
+      activeLoadoutId: localActiveLoadoutId,
+      nameDraft,
+      setNameDraft,
+      commitName: commitActiveLoadoutName,
+      activateLoadout: handleActivateLoadout,
+      resetLoadout: handleResetLoadout,
+      summary: slotStepSummary,
+    },
+    passiveApi: {
+      selectedModuleSlot,
+      setActiveModuleSlotId,
+      moduleOptionsBySlot,
+      selectedModule,
+      selectedModuleCopy,
+      selectModule: handleSelectModule,
+      summary: passiveStepSummary,
+    },
+    hotbarApi: {
+      editingPowerSlotIndex,
+      setEditingPowerSlotIndex,
+      selectedPowerupId,
+      selectedPowerup,
+      selectedPowerCopy,
+      selectedPowerSlotPresentation,
+      selectPowerup: handleSelectPowerup,
+      summary: hotbarStepSummary,
+    },
+    reviewApi: {
+      modes,
+      onModeChange,
+      showDetails: showReviewDetails,
+      setShowDetails: setShowReviewDetails,
+      summary: reviewStepSummary,
+    },
+    walkthroughApi: {
+      currentStep: currentWalkthroughStep,
+      stepIndex: walkthroughStepIndex,
+      stepCount: WALKTHROUGH_STEPS.length,
+      spotlightRect: walkthroughSpotlightRect,
+      source: walkthroughSource,
+      open: openWalkthrough,
+      close: closeWalkthrough,
+      goBack: goToPreviousWalkthroughStep,
+      goNext: goToNextWalkthroughStep,
+      keepCurrentName: handleWalkthroughKeepCurrentName,
+      saveName: handleWalkthroughSaveName,
+      goToReady: handleWalkthroughGoToReady,
+      keepTuning: handleWalkthroughKeepTuning,
+    },
   }
 }
