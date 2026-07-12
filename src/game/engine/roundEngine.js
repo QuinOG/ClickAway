@@ -6,6 +6,10 @@ import { getComboMultiplier } from "../../utils/gameMath.js"
 export const COMBO_SURGE_STREAK_BONUS = 4
 export const COMBO_SURGE_HIT_COUNT = 4
 export const GUARD_CHARGE_DURATION_MS = 8000
+export const SECOND_WIND_DURATION_MS = 5000
+export const OVERCLOCK_DURATION_MS = 5000
+export const OVERCLOCK_SCORE_MULTIPLIER = 1.5
+export const OVERCLOCK_MISS_PENALTY_MULTIPLIER = 2
 
 export const ROUND_EVENT_TYPES = {
   HIT: "hit",
@@ -53,6 +57,8 @@ export function createRoundSimulation(roundRules = {}) {
   let misses = 0
   let comboSurgeHitsRemaining = 0
   let guardActiveUntilMs = 0
+  let secondWindActiveUntilMs = 0
+  let overclockActiveUntilMs = 0
 
   function getState() {
     return {
@@ -63,21 +69,25 @@ export function createRoundSimulation(roundRules = {}) {
       misses,
       comboSurgeHitsRemaining,
       guardActiveUntilMs,
+      secondWindActiveUntilMs,
+      overclockActiveUntilMs,
       powerupCharges: { ...charges },
     }
   }
 
-  function applyHit() {
+  function applyHit(eventTimeMs = 0) {
     const nextStreak = streak + 1
     const effectiveStreak = comboSurgeHitsRemaining > 0
       ? nextStreak + COMBO_SURGE_STREAK_BONUS
       : nextStreak
+    const isOverclockActive = overclockActiveUntilMs > eventTimeMs
     const pointsEarned = Math.max(
       1,
       Math.round(
         basePointsPerHit *
         getComboMultiplier(effectiveStreak, comboStep) *
-        scoreMultiplier
+        scoreMultiplier *
+        (isOverclockActive ? OVERCLOCK_SCORE_MULTIPLIER : 1)
       )
     )
 
@@ -104,14 +114,23 @@ export function createRoundSimulation(roundRules = {}) {
     misses += 1
 
     const guarded = guardActiveUntilMs > eventTimeMs
+    const isOverclockActive = overclockActiveUntilMs > eventTimeMs
+    const effectiveMissPenalty = isOverclockActive
+      ? missPenalty * OVERCLOCK_MISS_PENALTY_MULTIPLIER
+      : missPenalty
     let penaltyApplied = 0
 
     if (guarded) {
       guardActiveUntilMs = 0
     } else {
-      streak = 0
-      penaltyApplied = missPenalty
-      score = Math.max(0, score - missPenalty)
+      penaltyApplied = effectiveMissPenalty
+      score = Math.max(0, score - effectiveMissPenalty)
+
+      if (secondWindActiveUntilMs > eventTimeMs) {
+        secondWindActiveUntilMs = 0
+      } else {
+        streak = 0
+      }
     }
 
     return { guarded, penaltyApplied, ...getState() }
@@ -136,6 +155,12 @@ export function createRoundSimulation(roundRules = {}) {
     }
     if (powerup.effectType === "guard_charge") {
       guardActiveUntilMs = eventTimeMs + GUARD_CHARGE_DURATION_MS
+    }
+    if (powerup.effectType === "second_wind") {
+      secondWindActiveUntilMs = eventTimeMs + SECOND_WIND_DURATION_MS
+    }
+    if (powerup.effectType === "overclock") {
+      overclockActiveUntilMs = eventTimeMs + OVERCLOCK_DURATION_MS
     }
 
     return {

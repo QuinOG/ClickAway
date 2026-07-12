@@ -3,7 +3,7 @@ import {
   fireConfetti,
 } from "../../../../services/celebrationEffects.js"
 import { motion } from "motion/react"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
 import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
@@ -103,6 +103,7 @@ export function GameOverOverlay({
   bestReactionMs = null,
   loadoutSnapshot = null,
   loadoutPresentation = null,
+  workshopNote = null,
   achievementStats = {},
   unlockedAchievementIds = [],
   onRematch,
@@ -112,6 +113,7 @@ export function GameOverOverlay({
   const { effectivePreferences } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
   const cardVariants = useMemo(() => getCardVariants(prefersReducedMotion), [prefersReducedMotion])
+  const [isWorkshopNoteDismissed, setIsWorkshopNoteDismissed] = useState(false)
 
   const isPracticeMode = !allowsCoinRewards && !allowsLevelProgression && !allowsRankProgression
   const hasCleanRun = misses === 0
@@ -262,6 +264,31 @@ export function GameOverOverlay({
             <span className="gameOverAchievementHintLabel">Next up</span>
             <span className="gameOverAchievementHintName">{nearestAchievement.title}</span>
             <span className="gameOverAchievementHintProgress">{nearestAchievement.progressText}</span>
+          </div>
+        ) : null}
+
+        {workshopNote && !isWorkshopNoteDismissed ? (
+          <div className="gameOverWorkshopHint" aria-label="Workshop notes">
+            <span className="gameOverWorkshopHintLabel">Workshop notes</span>
+            <span className="gameOverWorkshopHintText">{workshopNote}</span>
+            <div className="gameOverWorkshopHintActions">
+              {loadoutSnapshot?.loadoutId ? (
+                <Link
+                  className="gameOverWorkshopHintLink"
+                  to={`/armory?bay=${encodeURIComponent(loadoutSnapshot.loadoutId)}`}
+                >
+                  Open in Armory
+                </Link>
+              ) : null}
+              <button
+                type="button"
+                className="gameOverWorkshopHintDismiss"
+                onClick={() => setIsWorkshopNoteDismissed(true)}
+                aria-label="Dismiss workshop note"
+              >
+                ×
+              </button>
+            </div>
           </div>
         ) : null}
       </div>

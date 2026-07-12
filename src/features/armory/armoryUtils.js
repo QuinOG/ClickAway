@@ -52,6 +52,20 @@ export function getModuleExactChips(module = null) {
   return chips.length ? chips : ["No exact stat changes"]
 }
 
+// Installing a power that is already racked on another key swaps the two keys
+// instead of duplicating, so the exactly-3-unique-powers invariant holds by
+// construction. Also used to build the pre-commit preview arrangement.
+export function buildSwappedPowerupIds(powerupIds = [], targetIndex = 0, powerupId = "") {
+  const nextPowerupIds = [...powerupIds]
+  const existingIndex = nextPowerupIds.indexOf(powerupId)
+
+  if (existingIndex === targetIndex) return nextPowerupIds
+  if (existingIndex !== -1) nextPowerupIds[existingIndex] = nextPowerupIds[targetIndex]
+  nextPowerupIds[targetIndex] = powerupId
+
+  return nextPowerupIds
+}
+
 export function getPowerupExactChips(powerup = null, adjustedAwardEvery = 0) {
   if (!powerup) return ["Choose a power to see the exact behavior."]
 
@@ -68,6 +82,15 @@ export function getPowerupExactChips(powerup = null, adjustedAwardEvery = 0) {
   }
   if (powerup.effectType === "guard_charge") {
     return ["Next miss within 8 seconds is ignored", "Guard is consumed on miss", cadenceChip]
+  }
+  if (powerup.effectType === "second_wind") {
+    return ["Next miss within 5 seconds keeps your streak", "Miss penalty still applies", cadenceChip]
+  }
+  if (powerup.effectType === "size_lock") {
+    return ["No shrink on hits for 3 seconds", cadenceChip]
+  }
+  if (powerup.effectType === "overclock") {
+    return ["+50% score for 5 seconds", "Misses cost double while active", cadenceChip]
   }
 
   return [cadenceChip]

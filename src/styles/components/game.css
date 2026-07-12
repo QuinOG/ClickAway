@@ -1880,6 +1880,9 @@
 .clickFeedback.power-magnet_center { color: #e4a8ff; }
 .clickFeedback.power-combo_surge { color: #ffbd68; }
 .clickFeedback.power-guard_charge { color: #ffe083; }
+.clickFeedback.power-second_wind { color: #ffd6a0; }
+.clickFeedback.power-size_lock { color: #9be8d8; }
+.clickFeedback.power-overclock { color: #ff8f6b; }
 
 html[data-flashes="reduced"] .clickFeedbackLocus {
     animation: none;
@@ -1896,6 +1899,9 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .powerupItem.power-magnet_center { --power-signature: #e4a8ff; }
 .powerupItem.power-combo_surge { --power-signature: #ffbd68; }
 .powerupItem.power-guard_charge { --power-signature: #ffe083; }
+.powerupItem.power-second_wind { --power-signature: #ffd6a0; }
+.powerupItem.power-size_lock { --power-signature: #9be8d8; }
+.powerupItem.power-overclock { --power-signature: #ff8f6b; }
 
 .powerupItem .powerupIconWrap {
     color: var(--power-signature, rgba(255, 229, 159, 0.98));
@@ -5069,6 +5075,67 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     font-variant-numeric: tabular-nums;
     color: rgba(190, 215, 245, 0.7);
     white-space: nowrap;
+}
+
+.gameOverWorkshopHint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(83, 215, 179, 0.05);
+    border: 1px solid rgba(83, 215, 179, 0.16);
+    font-size: 12px;
+}
+
+.gameOverWorkshopHintLabel {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(83, 215, 179, 0.75);
+    white-space: nowrap;
+}
+
+.gameOverWorkshopHintText {
+    color: #ddeeff;
+    flex: 1;
+    min-width: 160px;
+}
+
+.gameOverWorkshopHintActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gameOverWorkshopHintLink {
+    color: #53d7b3;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.gameOverWorkshopHintLink:hover,
+.gameOverWorkshopHintLink:focus-visible {
+    text-decoration: underline;
+}
+
+.gameOverWorkshopHintDismiss {
+    background: none;
+    border: none;
+    color: rgba(208, 221, 242, 0.6);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+}
+
+.gameOverWorkshopHintDismiss:hover,
+.gameOverWorkshopHintDismiss:focus-visible {
+    color: #ddeeff;
 }
 
 .gameOverActions {

@@ -141,6 +141,32 @@ export function PowerupGlyph({ powerupId = "", className = "" }) {
     )
   }
 
+  if (powerupId === "second_wind") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4.5 6.5 7v4.7c0 3.1 2.2 5.9 5.5 7.8" />
+        <path d="M4.5 12.5h4l-1.5 3" />
+      </svg>
+    )
+  }
+
+  if (powerupId === "size_lock") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6" y="11" width="12" height="8" rx="2" />
+        <path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3" />
+      </svg>
+    )
+  }
+
+  if (powerupId === "overclock") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m13 3.5-7 10h5l-1 7 7-10h-5l1-7Z" />
+      </svg>
+    )
+  }
+
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path d="m12 3.5 2.1 5.4 5.4 2.1-5.4 2.1-2.1 5.4-2.1-5.4-5.4-2.1 5.4-2.1Z" />

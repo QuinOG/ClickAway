@@ -50,6 +50,36 @@ const MODULE_CARD_COPY_BY_ID = {
     youGiveUp: "Slower future charges and harsher misses.",
     bestIn: "Burst openings and recovery-first plans.",
   },
+  tempo_bastion: {
+    youGet: "The biggest, slowest-shrinking targets in the game.",
+    youGiveUp: "The steepest score cost of any tempo core.",
+    bestIn: "Deep recovery runs and pure accuracy drills.",
+  },
+  streak_rapidfire: {
+    youGet: "The fastest combo ramp available, plus a small score bonus.",
+    youGiveUp: "The harshest miss penalty of any streak lens.",
+    bestIn: "Clean-streak PB pushes where misses are rare.",
+  },
+  power_overcharge: {
+    youGet: "The fastest charge cadence in the game.",
+    youGiveUp: "Slower combo ramp and harsher misses.",
+    bestIn: "Utility-heavy builds leaning on constant power use.",
+  },
+  power_vault: {
+    youGet: "Two banked charges per power at round start.",
+    youGiveUp: "Much slower charges after that, and lower score.",
+    bestIn: "Burst openings that cash in immediately.",
+  },
+  tempo_flashpoint: {
+    youGet: "The highest score ceiling of any tempo core.",
+    youGiveUp: "The smallest, fastest-shrinking targets in the game.",
+    bestIn: "PB pushes with elite, already-clean aim.",
+  },
+  streak_ironnerve: {
+    youGet: "Misses that barely cost you anything.",
+    youGiveUp: "The slowest combo ramp of any streak lens.",
+    bestIn: "Long, steady sessions where survival beats burst score.",
+  },
 }
 
 const POWERUP_CARD_COPY_BY_ID = {
@@ -82,6 +112,21 @@ const POWERUP_CARD_COPY_BY_ID = {
     youGet: "One streak-saving miss shield.",
     youGiveUp: "The slowest charge cadence.",
     bestIn: "Ranked stabilizing and late-round survival.",
+  },
+  second_wind: {
+    youGet: "A cheaper streak-saving safety net.",
+    youGiveUp: "The miss penalty still lands.",
+    bestIn: "Keeping a streak alive without full Guard cadence.",
+  },
+  size_lock: {
+    youGet: "Three seconds of a target that refuses to shrink.",
+    youGiveUp: "No safety on misses or positioning.",
+    bestIn: "Riding out the tightest part of a shrink curve.",
+  },
+  overclock: {
+    youGet: "A five-second score spike.",
+    youGiveUp: "Misses cost double while it's live.",
+    bestIn: "Clean-streak windows and PB-push finishers.",
   },
 }
 

@@ -41,6 +41,7 @@ import { createRoundSimulation } from "../../../game/engine/roundEngine.js"
 import {
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
+  SIZE_LOCK_DURATION_MS,
 } from "../../../game/engine/roundGeometry.js"
 import { createRandomSeed, createSeededRng } from "../../../game/engine/seededRng.js"
 import { computeGhostScoreAtElapsed } from "../../../utils/replayUtils.js"
@@ -62,6 +63,7 @@ import {
   evaluateDrillMetric,
 } from "../../../utils/drillStatsUtils.js"
 import { getWarmupSuggestion } from "../../../utils/trainingRecommendations.js"
+import { buildWorkshopNote, selectLoadoutStatsEntry } from "../../../utils/armoryFieldDataUtils.js"
 
 function getArenaClickCoordinates(event, arenaElement) {
   if (!arenaElement) return null
@@ -123,6 +125,7 @@ export function useGameScreenController({
   playerRecentRounds = [],
   playerBestScore = 0,
   lifetimeStats = null,
+  loadoutStats = [],
   savedLoadouts = [],
   activeLoadoutId = "",
   activeLoadout = null,
@@ -150,6 +153,7 @@ export function useGameScreenController({
   const countdownEndsAtRef = useRef(0)
   const pendingRoundStartRef = useRef(null)
   const freezeMovementUntilRef = useRef(0)
+  const sizeLockUntilRef = useRef(0)
   const buttonSpawnedAtRef = useRef(0)
   const reactionTotalMsRef = useRef(0)
   const reactionSampleCountRef = useRef(0)
@@ -232,6 +236,12 @@ export function useGameScreenController({
   )
   const [roundStartLoadoutSnapshot, setRoundStartLoadoutSnapshot] = useState(() => (
     buildLoadoutSnapshot(resolvedLoadout)
+  ))
+  // Field Data (Phase 9): the loadout's round tally *before* this round, so
+  // the Game Over "Workshop notes" line only fires once the server's updated
+  // loadoutStats (applied via onRoundComplete) actually reflects this round.
+  const [roundStartLoadoutStatsTotalRounds, setRoundStartLoadoutStatsTotalRounds] = useState(() => (
+    selectLoadoutStatsEntry(loadoutStats, resolvedLoadout?.id)?.totalRounds ?? 0
   ))
   const [avgReactionMs, setAvgReactionMs] = useState(null)
   const [bestReactionMs, setBestReactionMs] = useState(null)
@@ -517,6 +527,7 @@ export function useGameScreenController({
     setComboSurgeHitsRemaining(0)
     setGuardActiveUntilMs(0)
     freezeMovementUntilRef.current = 0
+    sizeLockUntilRef.current = 0
     buttonSpawnedAtRef.current = 0
     reactionTotalMsRef.current = 0
     reactionSampleCountRef.current = 0
@@ -596,6 +607,9 @@ export function useGameScreenController({
       setRoundStartRankedState(playerRankedState)
       setRoundStartHasRankedHistory(playerHasRankedHistory)
       setRoundStartLoadoutSnapshot(buildLoadoutSnapshot(nextResolvedLoadout))
+      setRoundStartLoadoutStatsTotalRounds(
+        selectLoadoutStatsEntry(loadoutStats, nextResolvedLoadout?.id)?.totalRounds ?? 0
+      )
       setCountdownValue(READY_COUNTDOWN_START)
       countdownEndsAtRef.current = Date.now() + (READY_COUNTDOWN_START * TIMER_TICK_MS)
       setRoundStartStatus("countdown")
@@ -658,6 +672,7 @@ export function useGameScreenController({
   }, [
     activeLoadout,
     activeLoadoutId,
+    loadoutStats,
     onLoadoutStateChange,
     onModeChange,
     playerHasRankedHistory,
@@ -771,6 +786,22 @@ export function useGameScreenController({
 
     if (powerup.effectType === "guard_charge") {
       addCenterFeedback("Guard", "power power-guard_charge")
+      return
+    }
+
+    if (powerup.effectType === "second_wind") {
+      addCenterFeedback("Second Wind", "power power-second_wind")
+      return
+    }
+
+    if (powerup.effectType === "size_lock") {
+      sizeLockUntilRef.current = eventTimeMs + SIZE_LOCK_DURATION_MS
+      addCenterFeedback("Locked", "power power-size_lock")
+      return
+    }
+
+    if (powerup.effectType === "overclock") {
+      addCenterFeedback("Overclock", "power power-overclock")
     }
   }, [
     addCenterFeedback,
@@ -903,7 +934,9 @@ export function useGameScreenController({
     })
 
     setButtonSize((currentButtonSize) => {
-      const nextButtonSize = getNextButtonSize(currentButtonSize, roundMode)
+      const nextButtonSize = eventTimeMs < sizeLockUntilRef.current
+        ? currentButtonSize
+        : getNextButtonSize(currentButtonSize, roundMode)
       queueButtonReposition(nextButtonSize)
       return nextButtonSize
     })
@@ -1316,6 +1349,34 @@ export function useGameScreenController({
     [playerRankProgress, playerRankedState, playerRecentRounds]
   )
 
+  // Field Data (Phase 9): one quiet, advisory "Workshop notes" line on Game
+  // Over. Guarded on roundStartLoadoutStatsTotalRounds so it never fires
+  // against a stale, pre-round loadoutStats snapshot.
+  const workshopNote = useMemo(() => {
+    if (phase !== ROUND_PHASE.GAME_OVER) return null
+
+    return buildWorkshopNote({
+      loadoutStats,
+      loadoutSnapshot: roundStartLoadoutSnapshot,
+      baselineTotalRounds: roundStartLoadoutStatsTotalRounds,
+      roundResult: {
+        score,
+        bestStreak,
+        isRanked: allowsRankProgression,
+        rankDelta: projectedRankOutcome.appliedRankDelta,
+      },
+    })
+  }, [
+    allowsRankProgression,
+    bestStreak,
+    loadoutStats,
+    phase,
+    projectedRankOutcome.appliedRankDelta,
+    roundStartLoadoutSnapshot,
+    roundStartLoadoutStatsTotalRounds,
+    score,
+  ])
+
   const startRankedWarmup = useCallback(() => {
     rankedWarmupIntentRef.current = true
     setSelectedDrillId(warmupSuggestion?.id ?? null)
@@ -1451,6 +1512,7 @@ export function useGameScreenController({
       bestReactionMs,
       loadoutSnapshot: roundStartLoadoutSnapshot,
       loadoutPresentation: activeRoundLoadoutPresentation,
+      workshopNote,
       onRematch: () => startRoundWithCountdown(
         roundMode.id,
         activeLoadoutId,

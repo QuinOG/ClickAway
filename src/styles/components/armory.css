@@ -162,7 +162,6 @@
 .armoryRailIdentityCopy,
 .armoryRailProgress,
 .armoryRailStepBody,
-.armorySlotRailBody,
 .armoryWorkspace,
 .armoryStepStack,
 .armoryStepHeading,
@@ -180,7 +179,6 @@
 .armoryRailTop,
 .armoryRailIdentityCopy,
 .armoryRailStepBody,
-.armorySlotRailBody,
 .armoryStepHeading,
 .armoryChoiceBody,
 .armoryHotbarBody,
@@ -193,10 +191,7 @@
 
 .armoryRailEyebrow,
 .armoryDetailEyebrow,
-.armoryReviewEyebrow,
-.armorySnapshotLabel,
-.armoryFieldLabel,
-.armoryRailSectionLabel {
+.armoryReviewEyebrow {
     margin: 0;
     color: rgba(149, 204, 255, 0.72);
     font-size: 10px;
@@ -231,10 +226,10 @@
 }
 
 .armoryRailIdentityGlyphIcon,
-.armorySlotRailGlyphIcon,
 .armoryRailStepGlyphIcon,
 .armoryStepGlyphIcon,
-.armorySnapshotChipIcon,
+.armoryBayMiniModule svg,
+.armoryBayIdentityGlyph svg,
 .armoryReviewPowerGlyph svg,
 .armoryHotbarGlyph svg,
 .armoryChoiceIcon svg,
@@ -256,14 +251,13 @@
 .armoryRailLabel,
 .armoryStepLead,
 .armoryRailHint,
-.armorySlotRailLabel,
 .armoryChoiceHint,
 .armoryModeButtonMeta,
 .armoryHotbarMeta,
 .armoryReviewPowerMeta,
 .armoryLaneTabMeta,
 .armoryDetailLabel,
-.armoryMetricLabel {
+.armoryPartState {
     color: rgba(197, 219, 243, 0.72);
     font-size: 11px;
     line-height: 1.4;
@@ -318,7 +312,7 @@
 }
 
 .armoryRailStepButton:hover,
-.armorySlotRailButton:hover,
+.armoryBaySelect:hover,
 .armoryModeButton:hover,
 .armoryHotbarButton:hover,
 .armoryLaneTab:hover,
@@ -330,7 +324,7 @@
 }
 
 .armoryRailStepButton.isActive,
-.armorySlotRailButton.isActive,
+.armoryBay.isActive .armoryBaySelect,
 .armoryModeButton.isActive,
 .armoryHotbarButton.isActive,
 .armoryLaneTab.isActive {
@@ -342,10 +336,8 @@
 
 .armoryRailStepIndex,
 .armoryStepIndex,
-.armorySnapshotKey,
 .armoryReviewPowerKey,
-.armoryHotbarKey,
-.armorySlotRailIndex {
+.armoryHotbarKey {
     width: 24px;
     height: 24px;
     border-radius: var(--armory-radius-key);
@@ -365,7 +357,6 @@
 .armoryLaneTabIcon,
 .armoryChoiceIcon,
 .armoryHotbarGlyph,
-.armorySlotRailGlyph,
 .armoryReviewPowerGlyph {
     width: 34px;
     height: 34px;
@@ -395,33 +386,243 @@
     line-height: 1.2;
 }
 
-.armoryRailSection {
-    min-height: 0;
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: var(--armory-space-sm);
-}
+/* ---- Bay wall: saved-build bays (Phase 4) -------------------------------- */
 
-.armorySlotRailList {
+.armoryBayWall {
     min-height: 0;
     overflow-y: auto;
     display: grid;
     align-content: start;
-    gap: var(--armory-space-xs);
+    gap: var(--armory-space-sm);
 }
 
-.armorySlotRailButton {
-    border: 1px solid rgba(var(--armory-line), 0.12);
-    border-radius: var(--armory-radius-control);
-    padding: 10px 11px;
-    background: rgba(255, 255, 255, 0.035);
-    color: #eef6ff;
+.armoryBay {
+    display: grid;
+    gap: var(--armory-space-xs);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-line), 0.1);
+    background: rgba(255, 255, 255, 0.025);
+    transition:
+        border-color var(--armory-motion-fast) var(--armory-motion-ease),
+        background-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryBay[data-identity="control"] {
+    --armory-bay-glow: 95, 201, 169;
+}
+
+.armoryBay[data-identity="pressure"] {
+    --armory-bay-glow: 255, 143, 112;
+}
+
+.armoryBay[data-identity="utility"] {
+    --armory-bay-glow: 243, 196, 90;
+}
+
+.armoryBay[data-identity="balanced"] {
+    --armory-bay-glow: var(--armory-accent);
+}
+
+.armoryBaySelect {
+    width: 100%;
+    border: 0;
+    border-radius: var(--armory-radius-panel);
+    padding: var(--armory-space-md);
+    background: transparent;
+    color: inherit;
     font: inherit;
     text-align: left;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
     gap: var(--armory-space-sm);
+    cursor: pointer;
+    transition:
+        transform var(--armory-motion-fast) var(--armory-motion-ease),
+        background-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryBay.isActive {
+    border-color: rgba(var(--armory-accent), 0.42);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(var(--armory-accent), 0.12), rgba(255, 255, 255, 0) 42%),
+        rgba(82, 165, 255, 0.08);
+}
+
+.armoryBayHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--armory-space-xs);
+}
+
+.armoryBayLabel {
+    color: rgba(149, 204, 255, 0.72);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+}
+
+.armoryBayLamp {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--armory-radius-pill);
+    background: rgba(var(--armory-line), 0.3);
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.armoryBay.isActive .armoryBayLamp {
+    background: rgb(var(--armory-bay-glow, var(--armory-accent)));
+    box-shadow: 0 0 10px rgba(var(--armory-bay-glow, var(--armory-accent)), 0.6);
+}
+
+.armoryBayLampLabel {
+    margin-left: auto;
+    color: rgba(197, 219, 243, 0.62);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.armoryBay.isActive .armoryBayLampLabel {
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.armoryBayMini {
+    position: relative;
+    min-height: 72px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-line), 0.1);
+    background:
+        radial-gradient(circle at 50% 60%, rgba(var(--armory-bay-glow, var(--armory-accent)), 0.1), transparent 62%),
+        rgba(7, 12, 23, 0.32);
+}
+
+.armoryBayMiniTarget {
+    border-radius: var(--armory-radius-pill);
+    background: linear-gradient(145deg, #6af0ca, #34b892);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.armoryBayMiniModules {
+    position: absolute;
+    inset: var(--armory-space-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+.armoryBayMiniModule {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--armory-radius-key);
+    border: 1px solid rgba(var(--armory-line), 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(239, 246, 255, 0.9);
+}
+
+.armoryBayMiniModule svg {
+    width: 12px;
+    height: 12px;
+}
+
+.armoryBayMiniModule.tone-tempoCore {
+    color: rgb(var(--armory-tone-tempo));
+    background: rgba(var(--armory-tone-tempo), 0.14);
+}
+
+.armoryBayMiniModule.tone-streakLens {
+    color: rgb(var(--armory-tone-streak));
+    background: rgba(var(--armory-tone-streak), 0.14);
+}
+
+.armoryBayMiniModule.tone-powerRig {
+    color: rgb(var(--armory-tone-power));
+    background: rgba(var(--armory-tone-power), 0.14);
+}
+
+.armoryBayNameplate {
+    display: grid;
+    gap: 2px;
+}
+
+.armoryBayName {
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.armoryBayIdentity {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(149, 204, 255, 0.72);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.24px;
+    text-transform: uppercase;
+}
+
+.armoryBayIdentityGlyph {
+    display: grid;
+    place-items: center;
+    color: var(--armory-key-light);
+}
+
+.armoryBayIdentityGlyph svg {
+    width: 11px;
+    height: 11px;
+}
+
+.armoryBayServicePlate {
+    margin: 4px 0 0;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(190, 215, 245, 0.72);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1px;
+}
+
+.armoryBayServicePlate.isEmpty {
+    color: rgba(190, 215, 245, 0.45);
+    font-style: italic;
+}
+
+.armoryBayFooter {
+    display: grid;
+    gap: var(--armory-space-xs);
+    padding: 0 var(--armory-space-md) var(--armory-space-md);
+}
+
+.armoryBayConfirmText {
+    color: rgba(225, 239, 255, 0.86);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.armoryBayConfirmActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--armory-space-xs);
+}
+
+.armoryBayAction {
+    flex: 1;
+    min-height: 32px;
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(235, 244, 255, 0.92);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
     cursor: pointer;
     transition:
         transform var(--armory-motion-fast) var(--armory-motion-ease),
@@ -429,24 +630,16 @@
         background-color var(--armory-motion-fast) var(--armory-motion-ease);
 }
 
-.armorySlotRailLabel {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.28px;
-    text-transform: uppercase;
+.armoryBayAction:hover {
+    transform: translateY(-1px);
+    border-color: rgba(145, 210, 255, 0.34);
+    background: rgba(255, 255, 255, 0.06);
 }
 
-.armorySlotRailName {
-    color: #f4f9ff;
-    font-size: 14px;
-    line-height: 1.2;
-}
-
-.armorySlotRailGlyphIcon {
-    width: 20px;
-    height: 20px;
-    color: rgba(239, 246, 255, 0.96);
-    stroke-width: 7;
+.armoryBayAction.isDanger {
+    border-color: rgba(var(--armory-tone-risk), 0.42);
+    background: rgba(var(--armory-tone-risk), 0.12);
+    color: rgba(255, 220, 200, 0.96);
 }
 
 .armoryRailActions {
@@ -492,6 +685,35 @@
     display: grid;
     gap: var(--armory-space-lg);
     justify-items: center;
+    animation: armoryMachineRollIn 0.42s var(--armory-motion-ease) both;
+}
+
+@keyframes armoryMachineRollIn {
+    from {
+        opacity: 0;
+        transform: translateX(-18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .armoryMachine {
+        animation: armoryMachineCrossfade 0.28s var(--armory-motion-ease) both;
+    }
+}
+
+@keyframes armoryMachineCrossfade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .armoryMachineCore {
@@ -730,7 +952,7 @@
     text-overflow: ellipsis;
 }
 
-/* Nameplate: display only in this phase (inline editing arrives with the bays). */
+/* Nameplate: click the plate to rename in place. */
 .armoryMachineNameplate {
     display: grid;
     gap: 2px;
@@ -739,6 +961,81 @@
     border-radius: var(--armory-radius-field);
     border: 1px solid rgba(var(--armory-line), 0.16);
     background: linear-gradient(180deg, rgba(20, 29, 49, 0.82), rgba(13, 19, 33, 0.7));
+}
+
+.armoryMachineNameButton {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--armory-space-xs);
+    border: 0;
+    padding: 2px 6px;
+    border-radius: var(--armory-radius-key);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryMachineNameButton:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.armoryMachineNameHint {
+    color: rgba(149, 204, 255, 0.58);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+}
+
+.armoryNameplateInput {
+    width: min(280px, 100%);
+    min-height: 40px;
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-accent), 0.42);
+    background: rgba(7, 12, 23, 0.52);
+    color: #eef5ff;
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 18px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.armoryNameplateInput:focus {
+    outline: none;
+    border-color: rgba(var(--armory-accent), 0.62);
+    box-shadow: 0 0 0 2px rgba(var(--armory-accent), 0.18);
+}
+
+.armoryMachineActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--armory-space-xs);
+}
+
+.armoryMachineActions.isConfirming {
+    padding: var(--armory-space-sm) var(--armory-space-md);
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-tone-risk), 0.28);
+    background: rgba(var(--armory-tone-risk), 0.08);
+}
+
+.armoryMachineConfirmText {
+    width: 100%;
+    color: rgba(255, 220, 200, 0.92);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.armoryDangerButton {
+    border-color: rgba(var(--armory-tone-risk), 0.46) !important;
+    background: rgba(var(--armory-tone-risk), 0.14) !important;
+    color: rgba(255, 220, 200, 0.96) !important;
 }
 
 .armoryMachineName {
@@ -772,12 +1069,11 @@
 
 .armoryStepCard,
 .armoryLanePanel,
-.armorySnapshotPanel,
 .armoryDetailPanel,
 .armoryReviewHero,
 .armoryReviewPanel,
 .armoryReviewDetails,
-.armoryMetricCard {
+.armoryInstrument {
     border: 1px solid rgba(var(--armory-line), 0.12);
     border-radius: var(--armory-radius-card);
     background:
@@ -786,10 +1082,9 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.armoryReviewMetrics,
-.armorySnapshotGrid,
 .armoryChoiceGrid,
-.armoryReviewGrid {
+.armoryReviewGrid,
+.armoryPartsShelf {
     display: grid;
     gap: var(--armory-space-md);
 }
@@ -798,6 +1093,7 @@
 .armoryReviewLead,
 .armoryReviewNote,
 .armoryLanePanelLead,
+.armoryPartFeel,
 .armoryChoiceImpact {
     margin: 0;
     color: rgba(210, 228, 248, 0.8);
@@ -845,12 +1141,6 @@
     padding: var(--armory-space-lg);
 }
 
-.armoryStepCard-slot.isActive {
-    background:
-        radial-gradient(circle at 100% 0%, rgba(96, 174, 255, 0.12), rgba(96, 174, 255, 0) 36%),
-        rgba(255, 255, 255, 0.03);
-}
-
 .armoryStepCard-passives.isActive {
     background:
         radial-gradient(circle at 100% 0%, rgba(86, 178, 150, 0.12), rgba(86, 178, 150, 0) 36%),
@@ -869,15 +1159,12 @@
         rgba(255, 255, 255, 0.03);
 }
 
-.armoryStatusRow,
-.armoryActionRow,
 .armoryChipRow {
     display: flex;
     flex-wrap: wrap;
     gap: var(--armory-space-xs);
 }
 
-.armoryStatusChip,
 .armorySnapshotChip,
 .armoryExactChip {
     min-height: 30px;
@@ -894,35 +1181,10 @@
     letter-spacing: 0.12px;
 }
 
-.armorySnapshotGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.armorySnapshotPanel,
 .armoryReviewPanel {
     padding: 14px;
     display: grid;
     gap: var(--armory-space-sm);
-}
-
-.armorySnapshotChipIcon {
-    width: 14px;
-    height: 14px;
-    color: rgba(241, 247, 255, 0.92);
-    stroke-width: 2;
-}
-
-.armorySnapshotChip.tone-tempoCore {
-    background: rgba(var(--armory-tone-tempo), 0.14);
-}
-
-.armorySnapshotChip.tone-streakLens {
-    background: rgba(var(--armory-tone-streak), 0.14);
-}
-
-.armorySnapshotChip.tone-power,
-.armorySnapshotChip.tone-powerRig {
-    background: rgba(var(--armory-tone-power), 0.14);
 }
 
 .armorySnapshotChip.tone-good {
@@ -931,27 +1193,6 @@
 
 .armorySnapshotChip.tone-risk {
     background: rgba(var(--armory-tone-risk), 0.12);
-}
-
-.armoryField {
-    display: grid;
-    gap: 6px;
-}
-
-.armoryNameInput {
-    width: 100%;
-    min-height: 46px;
-    border-radius: var(--armory-radius-field);
-    border: 1px solid rgba(169, 205, 240, 0.18);
-    background: rgba(7, 12, 23, 0.42);
-    color: #eef5ff;
-    padding: 10px 12px;
-    font: inherit;
-}
-
-.armoryNameInput:focus {
-    outline: 2px solid rgba(117, 199, 255, 0.68);
-    outline-offset: 1px;
 }
 
 .armoryLaneTabs,
@@ -1026,7 +1267,7 @@
 .armoryHotbarLabel,
 .armoryModeButtonLabel,
 .armoryReviewPanelTitle,
-.armoryMetricValue,
+.armoryPartLabel,
 .armoryReviewPowerLabel,
 .armoryChoiceLabel {
     color: #f4f9ff;
@@ -1189,16 +1430,6 @@
         rgba(255, 255, 255, 0.035);
 }
 
-.armoryReviewMetrics {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-.armoryMetricCard {
-    padding: var(--armory-space-md);
-    display: grid;
-    gap: 6px;
-}
-
 .armoryReviewGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -1212,6 +1443,502 @@
     border-radius: var(--armory-radius-field);
     border: 1px solid rgba(var(--armory-line), 0.1);
     background: rgba(255, 255, 255, 0.035);
+}
+
+/* ---- Phase 5: instrument column + parts gallery ---------------------------
+   The five feel readouts become calibrated segment dials, passive modules
+   become machined parts on a shelf, and previews ghost onto the machine. */
+
+.armoryInstruments {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(146px, 1fr));
+    gap: var(--armory-space-xs);
+}
+
+.armoryInstrument {
+    padding: var(--armory-space-sm) var(--armory-space-md);
+    display: grid;
+    gap: 6px;
+    transition: border-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryInstrument.isPreviewing {
+    border-color: rgba(var(--armory-accent), 0.42);
+}
+
+.armoryInstrumentLabel {
+    color: rgba(197, 219, 243, 0.72);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16px;
+    text-transform: uppercase;
+}
+
+.armoryInstrumentDial {
+    display: flex;
+    gap: 3px;
+}
+
+.armoryInstrumentSegment {
+    flex: 1;
+    height: 6px;
+    border-radius: 2px;
+    background: rgba(var(--armory-line), 0.14);
+}
+
+.armoryInstrumentSegment.isLit {
+    background: color-mix(in srgb, var(--armory-key-light) 82%, white 8%);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--armory-key-light) 36%, transparent);
+}
+
+/* Preview movement along the gauge: gained segments glow good-tone, lost
+   segments cool to risk-tone; both blink until the part commits or clears. */
+.armoryInstrumentSegment.isGain {
+    background: rgba(var(--armory-tone-good), 0.9);
+    animation: armoryInstrumentBlink 0.9s ease-in-out infinite;
+}
+
+.armoryInstrumentSegment.isLoss {
+    background: rgba(var(--armory-tone-risk), 0.5);
+    animation: armoryInstrumentBlink 0.9s ease-in-out infinite;
+}
+
+@keyframes armoryInstrumentBlink {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+.armoryInstrumentReadout {
+    display: flex;
+    align-items: baseline;
+    gap: var(--armory-space-xs);
+    flex-wrap: wrap;
+}
+
+.armoryInstrumentValue {
+    color: #f6fbff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.armoryInstrumentDelta {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.armoryInstrumentDelta.delta-up {
+    color: rgba(var(--armory-tone-good), 0.95);
+}
+
+.armoryInstrumentDelta.delta-down {
+    color: rgba(var(--armory-tone-risk), 0.95);
+}
+
+/* Parts gallery: a lane's modules as machined parts on a shelf. */
+.armoryPartsGallery {
+    display: grid;
+    gap: var(--armory-space-md);
+}
+
+.armoryPartsShelf {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.armoryPartCard {
+    position: relative;
+    min-height: 128px;
+    padding: var(--armory-space-md);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: var(--armory-space-sm);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+    color: rgba(232, 243, 255, 0.9);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015) 62%),
+        rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition:
+        transform var(--armory-motion-fast) var(--armory-motion-ease),
+        border-color var(--armory-motion-fast) var(--armory-motion-ease),
+        background-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+/* Lane-toned machined edge along the part's top face. */
+.armoryPartCard::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    border-radius: var(--armory-radius-panel) var(--armory-radius-panel) 0 0;
+}
+
+.armoryPartCard.tone-tempoCore::before {
+    background: linear-gradient(90deg, rgba(109, 194, 255, 0.96), rgba(80, 145, 255, 0.9));
+}
+
+.armoryPartCard.tone-streakLens::before {
+    background: linear-gradient(90deg, rgba(var(--armory-tone-good), 0.96), rgba(83, 215, 179, 0.9));
+}
+
+.armoryPartCard.tone-powerRig::before,
+.armoryPartCard.tone-power::before {
+    background: linear-gradient(90deg, rgba(255, 214, 113, 0.96), rgba(244, 173, 71, 0.9));
+}
+
+.armoryPartCard:hover:not(:disabled),
+.armoryPartCard:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(var(--armory-accent), 0.4);
+}
+
+.armoryPartCard.isPreviewed {
+    border-color: rgba(var(--armory-accent), 0.52);
+    background: rgba(82, 165, 255, 0.1);
+}
+
+/* The installed part sits visibly seated: lane ring + inner glow. */
+.armoryPartCard.isInstalled.tone-tempoCore {
+    border-color: rgba(var(--armory-tone-tempo), 0.55);
+    box-shadow: inset 0 0 0 1px rgba(var(--armory-tone-tempo), 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.armoryPartCard.isInstalled.tone-streakLens {
+    border-color: rgba(var(--armory-tone-streak), 0.55);
+    box-shadow: inset 0 0 0 1px rgba(var(--armory-tone-streak), 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.armoryPartCard.isInstalled.tone-powerRig,
+.armoryPartCard.isInstalled.tone-power {
+    border-color: rgba(var(--armory-tone-power), 0.55);
+    box-shadow: inset 0 0 0 1px rgba(var(--armory-tone-power), 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Locked parts sit behind glass. */
+.armoryPartCard.isLocked {
+    cursor: not-allowed;
+}
+
+.armoryPartCard.isLocked .armoryPartGlyph,
+.armoryPartCard.isLocked .armoryPartBody {
+    opacity: 0.45;
+}
+
+.armoryPartGlass {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(155deg, rgba(190, 215, 240, 0.12), rgba(190, 215, 240, 0.02) 55%);
+    backdrop-filter: blur(1.5px);
+    pointer-events: none;
+}
+
+.armoryPartGlyph {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--armory-radius-glyph);
+    flex-shrink: 0;
+}
+
+.armoryPartGlyph svg {
+    width: 18px;
+    height: 18px;
+}
+
+.armoryPartGlyph.tone-tempoCore {
+    color: rgb(var(--armory-tone-tempo));
+    background: rgba(var(--armory-tone-tempo), 0.14);
+}
+
+.armoryPartGlyph.tone-streakLens {
+    color: rgb(var(--armory-tone-streak));
+    background: rgba(var(--armory-tone-streak), 0.14);
+}
+
+.armoryPartGlyph.tone-powerRig,
+.armoryPartGlyph.tone-power {
+    color: rgb(var(--armory-tone-power));
+    background: rgba(var(--armory-tone-power), 0.14);
+}
+
+.armoryPartBody {
+    display: grid;
+    gap: 4px;
+}
+
+.armoryPartState {
+    grid-column: 1 / -1;
+    margin-top: auto;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16px;
+    text-transform: uppercase;
+}
+
+/* Key badge on a power part already racked on another key (swap affordance). */
+.armoryPartKey {
+    position: absolute;
+    top: var(--armory-space-sm);
+    right: var(--armory-space-sm);
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--armory-radius-key);
+    border: 1px solid rgba(var(--armory-tone-power), 0.4);
+    background: rgba(var(--armory-tone-power), 0.16);
+    color: rgb(var(--armory-tone-power));
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* Both galleries stack their inspection footer(s) below the shelf. */
+.armoryGalleryFooter {
+    display: grid;
+    gap: var(--armory-space-md);
+}
+
+/* Preview ghost on the machine: the would-be target size as a dashed ring. */
+.armoryMachineTarget {
+    position: relative;
+}
+
+.armoryMachineTargetGhost {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: var(--armory-radius-pill);
+    border: 2px dashed color-mix(in srgb, var(--armory-key-light) 72%, white 12%);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--armory-key-light) 28%, transparent);
+    animation: armoryGhostPulse 1.6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes armoryGhostPulse {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Housings are buttons now: clicking one opens its lane's parts gallery. */
+.armoryMachineHousing {
+    font: inherit;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+    transition: border-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryMachineHousing:hover,
+.armoryMachineHousing:focus-visible {
+    border-color: rgba(var(--armory-accent), 0.55);
+}
+
+/* A freshly installed part seats into its housing. */
+.armoryPartSeat {
+    animation: armoryPartSeatIn 0.32s var(--armory-motion-ease);
+}
+
+@keyframes armoryPartSeatIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(1.08);
+    }
+}
+
+/* ---- Phase 6: tool rack + cadence timeline -------------------------------
+   The hotbar becomes a keyed rack you drag between, and the "Every N streak"
+   text becomes a streak ruler that marks exactly when each tool charges. */
+
+/* A swapped tool seats into its new key, mirroring the machine housing. */
+.armoryHotbarSwap {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--armory-space-sm);
+    animation: armoryPartSeatIn 0.32s var(--armory-motion-ease);
+}
+
+.armoryHotbarButton {
+    cursor: grab;
+}
+
+.armoryHotbarButton.isDragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    border-color: rgba(var(--armory-tone-power), 0.5);
+}
+
+.armoryCadenceTimeline {
+    padding: var(--armory-space-md);
+    display: grid;
+    gap: var(--armory-space-sm);
+    border: 1px solid rgba(var(--armory-line), 0.12);
+    border-radius: var(--armory-radius-card);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+        rgba(255, 255, 255, 0.03);
+}
+
+.armoryCadenceHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--armory-space-sm);
+}
+
+.armoryCadenceTitle {
+    color: #f4f9ff;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.armoryCadenceScale {
+    color: rgba(197, 219, 243, 0.72);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16px;
+    text-transform: uppercase;
+}
+
+.armoryCadenceRow {
+    display: grid;
+    grid-template-columns: auto auto minmax(64px, 96px) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--armory-space-sm);
+    padding: 6px var(--armory-space-sm);
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-line), 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    transition: border-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryCadenceRow.isPreview {
+    border-color: rgba(var(--armory-accent), 0.46);
+    background: rgba(82, 165, 255, 0.08);
+}
+
+.armoryCadenceKey {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--armory-radius-key);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background: rgba(7, 12, 23, 0.24);
+    display: grid;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #f5fbff;
+}
+
+.armoryCadenceGlyph {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    color: rgb(var(--armory-tone-power));
+}
+
+.armoryCadenceGlyph svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.armoryCadenceLabel {
+    color: rgba(235, 244, 255, 0.9);
+    font-size: 12px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The streak ruler: 20 evenly spaced ticks; charge points light up. */
+.armoryCadenceTrack {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 18px;
+}
+
+.armoryCadenceTick {
+    flex: 1;
+    height: 6px;
+    border-radius: 2px;
+    background: rgba(var(--armory-line), 0.14);
+}
+
+.armoryCadenceTick.isCharge {
+    height: 14px;
+    background: rgb(var(--armory-tone-power));
+    box-shadow: 0 0 8px rgba(var(--armory-tone-power), 0.5);
+}
+
+.armoryCadenceRow.isPreview .armoryCadenceTick.isCharge {
+    background: color-mix(in srgb, rgb(var(--armory-accent)) 70%, white 8%);
+    box-shadow: 0 0 8px rgba(var(--armory-accent), 0.5);
+}
+
+/* Reserve-rig starting charge sits before the ruler's first streak tick. */
+.armoryCadenceStartPip {
+    width: 8px;
+    height: 14px;
+    flex-shrink: 0;
+    margin-right: 2px;
+    border-radius: 2px;
+    background: rgba(var(--armory-tone-good), 0.9);
+    box-shadow: 0 0 8px rgba(var(--armory-tone-good), 0.5);
+}
+
+.armoryCadenceEvery {
+    color: rgba(197, 219, 243, 0.72);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .armoryInstrumentSegment.isGain,
+    .armoryInstrumentSegment.isLoss,
+    .armoryMachineTargetGhost,
+    .armoryPartSeat,
+    .armoryHotbarSwap {
+        animation: none;
+    }
+
+    .armoryPartCard,
+    .armoryInstrument,
+    .armoryCadenceRow {
+        transition: none;
+    }
+}
+
+@media (max-width: 700px) {
+    /* On narrow screens the ruler carries the cadence; drop the ancillary columns. */
+    .armoryCadenceRow {
+        grid-template-columns: auto auto minmax(0, 1fr);
+    }
+
+    .armoryCadenceLabel,
+    .armoryCadenceEvery {
+        display: none;
+    }
 }
 
 .armoryWalkthroughOverlay {
@@ -1345,9 +2072,7 @@
         grid-template-columns: 280px minmax(0, 1.5fr) minmax(0, 1fr);
     }
 
-    .armoryReviewGrid,
-    .armoryReviewMetrics,
-    .armorySnapshotGrid {
+    .armoryReviewGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -1387,9 +2112,8 @@
     .armoryHotbarTabs,
     .armoryChoiceGrid,
     .armoryChoiceGrid.armoryChoiceGrid-powers,
-    .armoryReviewMetrics,
-    .armoryReviewGrid,
-    .armorySnapshotGrid {
+    .armoryPartsShelf,
+    .armoryReviewGrid {
         grid-template-columns: 1fr;
     }
 }
@@ -1437,12 +2161,622 @@
     .armoryLanePanelHeader {
         grid-template-columns: 1fr;
     }
+}
 
-    .armorySlotRailButton {
-        grid-template-columns: auto minmax(0, 1fr);
+/* ---- Phase 7: Test Range launcher, live range, and spec sheet ---- */
+
+.armoryRangeLauncher {
+    display: grid;
+    gap: var(--armory-space-lg);
+}
+
+.armoryRangeLauncherHero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--armory-space-lg);
+    padding: var(--armory-space-lg);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background:
+        radial-gradient(ellipse 70% 120% at 0% 0%, rgba(var(--armory-tone-review), 0.14), transparent 66%),
+        linear-gradient(180deg, rgba(14, 21, 36, 0.9), rgba(10, 16, 28, 0.94));
+}
+
+.armoryRangeLauncherCopy {
+    display: grid;
+    gap: 6px;
+    max-width: 42ch;
+}
+
+.armoryRangeLauncherActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--armory-space-sm);
+}
+
+/* The range takes over the whole scene: an immersive stage, not a card. */
+.armoryRange {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: var(--armory-space-md);
+    padding: clamp(12px, 3vw, 28px);
+    background:
+        radial-gradient(ellipse 60% 46% at 50% 0%, color-mix(in srgb, var(--armory-key-light) 15%, transparent), transparent 70%),
+        linear-gradient(180deg, rgba(6, 10, 19, 0.97), rgba(4, 7, 14, 0.99));
+    animation: armoryRangeFade var(--armory-motion-fast) ease;
+}
+
+@keyframes armoryRangeFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.armoryRangeHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--armory-space-md);
+}
+
+.armoryRangeEyebrow {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--armory-tone-review));
+}
+
+.armoryRangeTitle {
+    margin: 2px 0 0;
+    font-size: clamp(18px, 2.4vw, 24px);
+}
+
+.armoryRangeStage {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--armory-space-md);
+    min-height: 0;
+}
+
+.armoryRangeReadout {
+    display: flex;
+    gap: var(--armory-space-xl);
+    padding: var(--armory-space-xs) var(--armory-space-lg);
+    border-radius: var(--armory-radius-pill);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background: rgba(10, 16, 28, 0.7);
+}
+
+.armoryRangeReadoutStat {
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    min-width: 66px;
+}
+
+.armoryRangeReadoutLabel {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+.armoryRangeReadoutValue {
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+}
+
+.armoryRangeCombo {
+    color: rgb(var(--armory-accent));
+    font-size: 15px;
+}
+
+.armoryRangeArenaWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+}
+
+.armoryRangeCountdown {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.armoryRangeCountdownValue {
+    font-size: clamp(56px, 12vw, 120px);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
+}
+
+.armoryRangeResults {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--armory-space-md);
+    padding: var(--armory-space-xl);
+    border-radius: 22px;
+    background: rgba(6, 10, 19, 0.86);
+    backdrop-filter: blur(8px);
+    text-align: center;
+}
+
+.armoryRangeResultsEyebrow {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--armory-tone-review));
+}
+
+.armoryRangeResultsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(90px, 1fr));
+    gap: var(--armory-space-md) var(--armory-space-xl);
+}
+
+.armoryRangeResultStat {
+    display: grid;
+    gap: 2px;
+}
+
+.armoryRangeResultLabel {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+.armoryRangeResultValue {
+    font-size: 26px;
+    font-variant-numeric: tabular-nums;
+}
+
+.armoryRangeResultsNote {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(var(--armory-line), 0.72);
+}
+
+.armoryRangeResultsActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--armory-space-sm);
+    justify-content: center;
+}
+
+/* Spec sheet: slides out from the machine as the build's service manual. */
+.armorySpecSheetScrim {
+    position: fixed;
+    inset: 0;
+    z-index: 18;
+    background: rgba(3, 7, 16, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.armorySpecSheet {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 19;
+    width: min(420px, 100%);
+    padding: var(--armory-space-xl);
+    overflow-y: auto;
+    display: grid;
+    align-content: start;
+    gap: var(--armory-space-md);
+    border-left: 1px solid rgba(var(--armory-line), 0.2);
+    background: linear-gradient(180deg, rgba(12, 19, 33, 0.99), rgba(9, 15, 27, 1));
+    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.4);
+    animation: armorySpecSlideIn var(--armory-motion-fast) ease;
+}
+
+@keyframes armorySpecSlideIn {
+    from { transform: translateX(24px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.armorySpecSheetHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--armory-space-md);
+}
+
+.armorySpecSheetEyebrow {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+.armorySpecSheetTitle {
+    margin: 2px 0 0;
+    font-size: 20px;
+}
+
+.armorySpecSheetLead {
+    margin: 0;
+    font-size: 15px;
+}
+
+.armorySpecSheetNote {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(var(--armory-line), 0.72);
+}
+
+.armorySpecSheetEmptyRecord {
+    margin: 0;
+    font-size: 13px;
+    font-style: italic;
+    color: rgba(var(--armory-line), 0.6);
+}
+
+.armorySpecSheetPanel {
+    display: grid;
+    gap: var(--armory-space-xs);
+}
+
+.armorySpecSheetPanelTitle {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+/* Compare Bench (Phase 8): a centered plate rather than a side drawer, since
+   it needs to hold two machines and a manifest grid side by side. */
+.armoryCompareScrim {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(3, 7, 16, 0.66);
+    backdrop-filter: blur(4px);
+}
+
+.armoryCompareBench {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 21;
+    width: min(880px, calc(100vw - 32px));
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    transform: translate(-50%, -50%);
+    display: grid;
+    align-content: start;
+    gap: var(--armory-space-lg);
+    padding: var(--armory-space-xl);
+    border-radius: var(--armory-radius-card);
+    border: 1px solid rgba(var(--armory-line), 0.2);
+    background: linear-gradient(180deg, rgba(12, 19, 33, 0.99), rgba(9, 15, 27, 1));
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    animation: armorySpecSlideIn var(--armory-motion-fast) ease;
+}
+
+.armoryCompareHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--armory-space-md);
+}
+
+.armoryCompareEyebrow {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+.armoryCompareTitle {
+    margin: 2px 0 0;
+    font-size: 20px;
+}
+
+.armoryCompareTabs {
+    display: flex;
+    gap: var(--armory-space-xs);
+    border-bottom: 1px solid rgba(var(--armory-line), 0.14);
+    padding-bottom: var(--armory-space-sm);
+}
+
+.armoryCompareTab {
+    padding: var(--armory-space-xs) var(--armory-space-md);
+    border-radius: var(--armory-radius-pill);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background: transparent;
+    color: rgba(var(--armory-line), 0.76);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        border-color var(--armory-motion-fast) var(--armory-motion-ease),
+        color var(--armory-motion-fast) var(--armory-motion-ease),
+        background-color var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryCompareTab.isActive {
+    border-color: rgba(var(--armory-accent), 0.5);
+    color: #f6fbff;
+    background: rgba(var(--armory-accent), 0.14);
+}
+
+.armoryCompareEmpty {
+    margin: 0;
+    color: rgba(var(--armory-line), 0.7);
+    font-size: 14px;
+}
+
+.armoryCompareMachines {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--armory-space-lg);
+}
+
+.armoryCompareMachine {
+    display: grid;
+    justify-items: center;
+    gap: var(--armory-space-xs);
+    padding: var(--armory-space-lg);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-line), 0.14);
+    background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--armory-key-light) 14%, transparent), transparent 60%);
+    text-align: center;
+}
+
+.armoryCompareMachine.isGhost {
+    opacity: 0.72;
+    border-style: dashed;
+}
+
+.armoryCompareMachineLabel {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.6);
+}
+
+.armoryCompareMachineTarget {
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--armory-key-light) 55%, white 10%);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--armory-key-light) 26%, transparent);
+}
+
+.armoryCompareMachine.isGhost .armoryCompareMachineTarget {
+    background: transparent;
+    border: 2px dashed color-mix(in srgb, var(--armory-key-light) 60%, white 10%);
+    box-shadow: none;
+}
+
+.armoryCompareMachineModules {
+    display: flex;
+    gap: var(--armory-space-xs);
+}
+
+.armoryCompareMachineModule {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--armory-radius-glyph);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+}
+
+.armoryCompareMachineName {
+    font-size: 15px;
+}
+
+.armoryCompareMachineIdentity {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--armory-space-2xs);
+    font-size: 12px;
+    color: rgba(var(--armory-line), 0.72);
+}
+
+.armoryCompareMachineIdentityGlyph {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+}
+
+.armoryInstrumentsLegend {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--armory-space-md);
+}
+
+.armoryInstrumentsLegendItem {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.armoryInstrumentsLegendItem.tone-primary {
+    color: color-mix(in srgb, var(--armory-key-light) 82%, white 8%);
+}
+
+.armoryInstrumentsLegendItem.tone-compare {
+    color: rgba(var(--armory-line), 0.68);
+}
+
+.armoryInstrument.isComparing {
+    grid-template-rows: auto auto auto;
+}
+
+.armoryInstrumentSegment.isCompareMarker {
+    outline: 2px solid rgba(var(--armory-line), 0.7);
+    outline-offset: -1px;
+}
+
+.armoryInstrumentCompareValue {
+    color: rgba(var(--armory-line), 0.72);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.armoryCompareSpecColumns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--armory-space-lg);
+}
+
+.armoryCompareSpecColumn {
+    display: grid;
+    gap: var(--armory-space-sm);
+}
+
+.armoryCompareSpecColumnTitle {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.armoryCompareSpecColumnBody {
+    display: grid;
+    gap: var(--armory-space-sm);
+}
+
+/* Mode manifest (Phase 8): an etched plate, not a data table — each mode is a
+   column of the same five readouts, framed against that mode's own baseline. */
+.armoryModeManifest {
+    display: grid;
+    gap: var(--armory-space-md);
+}
+
+.armoryModeManifestHeader {
+    display: grid;
+    gap: 2px;
+}
+
+.armoryModeManifestEyebrow {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+.armoryModeManifestTitle {
+    margin: 0;
+    font-size: 17px;
+}
+
+.armoryModeManifestGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--armory-space-md);
+}
+
+.armoryModeManifestColumn {
+    display: grid;
+    gap: var(--armory-space-sm);
+    padding: var(--armory-space-lg);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-line), 0.14);
+    background:
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--armory-key-light) 14%, transparent), transparent 50%),
+        rgba(10, 16, 28, 0.5);
+}
+
+.armoryModeManifestColumnHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--armory-space-sm);
+}
+
+.armoryModeManifestColumnGlyph {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.armoryModeManifestMode {
+    display: block;
+    font-size: 15px;
+}
+
+.armoryModeManifestIdentity {
+    display: block;
+    font-size: 11px;
+    color: rgba(var(--armory-line), 0.68);
+}
+
+.armoryModeManifestStats {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+}
+
+.armoryModeManifestStat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--armory-space-sm);
+}
+
+.armoryModeManifestStatLabel {
+    margin: 0;
+    font-size: 11px;
+    color: rgba(var(--armory-line), 0.66);
+}
+
+.armoryModeManifestStatValue {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f6fbff;
+}
+
+.armoryModeManifestBestFor {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(var(--armory-line), 0.76);
+}
+
+@media (max-width: 720px) {
+    .armorySpecSheet {
+        width: 100%;
     }
 
-    .armorySlotRailGlyph {
-        display: none;
+    .armoryCompareBench {
+        width: calc(100vw - 24px);
+        padding: var(--armory-space-lg);
+    }
+
+    .armoryRangeReadout {
+        gap: var(--armory-space-md);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .armoryRange,
+    .armorySpecSheet,
+    .armoryCompareBench {
+        animation: none;
     }
 }

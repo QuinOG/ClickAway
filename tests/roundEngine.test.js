@@ -267,6 +267,71 @@ test("server clamps loadout snapshots to the player's unlocked level", () => {
   assert.match(result.reason, /Unknown powerup/)
 })
 
+test("second wind keeps the streak on the next miss but still applies the penalty", () => {
+  const roundRules = buildRoundRules(getDifficultyById("hard"), {
+    ...GLASS_CANNON_LOADOUT,
+    powerupIds: ["second_wind", "time_boost", "size_boost"],
+  })
+  const simulation = createRoundSimulation(roundRules)
+
+  const awardEvery = roundRules.equippedPowerups
+    .find((powerup) => powerup.id === "second_wind").awardEvery
+  for (let i = 0; i < awardEvery; i++) simulation.applyHit(100 * (i + 1))
+
+  const beforeMiss = simulation.getState()
+  const activation = simulation.applyPowerup("second_wind", 1400)
+  assert.equal(activation.applied, true)
+
+  const shieldedMiss = simulation.applyMiss(1500)
+  assert.equal(shieldedMiss.streak, beforeMiss.streak)
+  assert.equal(shieldedMiss.penaltyApplied, roundRules.missPenalty)
+  assert.equal(shieldedMiss.score, beforeMiss.score - roundRules.missPenalty)
+
+  // Second Wind is consumed: the following miss resets the streak normally.
+  const nextMiss = simulation.applyMiss(1600)
+  assert.equal(nextMiss.streak, 0)
+})
+
+test("overclock boosts score and doubles miss cost for its window", () => {
+  const mode = getDifficultyById("hard")
+  const roundRules = buildRoundRules(mode, {
+    ...GLASS_CANNON_LOADOUT,
+    moduleIds: {
+      tempoCoreId: "tempo_balanced",
+      streakLensId: "streak_balanced",
+      powerRigId: "power_balanced",
+    },
+    powerupIds: ["overclock", "time_boost", "size_boost"],
+  })
+  const simulation = createRoundSimulation(roundRules)
+
+  const awardEvery = roundRules.equippedPowerups
+    .find((powerup) => powerup.id === "overclock").awardEvery
+  for (let i = 0; i < awardEvery; i++) simulation.applyHit(100 * (i + 1))
+
+  const activation = simulation.applyPowerup("overclock", 5000)
+  assert.equal(activation.applied, true)
+
+  const streakBefore = simulation.getState().streak
+  const boostedHit = simulation.applyHit(5100)
+  const expectedBoostedPoints = Math.max(1, Math.round(
+    mode.basePointsPerHit * (1 + Math.floor((streakBefore + 1) / mode.comboStep)) * 1.5
+  ))
+  assert.equal(boostedHit.pointsEarned, expectedBoostedPoints)
+
+  const scoreBeforeMiss = boostedHit.score
+  const boostedMiss = simulation.applyMiss(5200)
+  assert.equal(boostedMiss.penaltyApplied, roundRules.missPenalty * 2)
+  assert.equal(boostedMiss.score, Math.max(0, scoreBeforeMiss - roundRules.missPenalty * 2))
+
+  // The window expires after 5 seconds of event time.
+  const lateHit = simulation.applyHit(10500)
+  const expectedLatePoints = Math.max(1, Math.round(
+    mode.basePointsPerHit * (1 + Math.floor(1 / mode.comboStep))
+  ))
+  assert.equal(lateHit.pointsEarned, expectedLatePoints)
+})
+
 test("seeded rng is deterministic and uniform-ish", () => {
   const first = createSeededRng(1234)
   const second = createSeededRng(1234)

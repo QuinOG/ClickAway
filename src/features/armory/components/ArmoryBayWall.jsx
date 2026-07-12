@@ -7,6 +7,26 @@ import {
 // differences stay readable even from across the room.
 export const BAY_TARGET_SCALE = 0.32
 
+// Etched service plate: a one-line field record so a bay never has to be
+// activated just to see how it's actually performed. Keyed on loadout.id
+// (stable), never on the display name, so renames never orphan the record.
+function ArmoryBayServicePlate({ stats }) {
+  if (!stats || stats.totalRounds <= 0) {
+    return <p className="armoryBayServicePlate isEmpty">No field data yet — take it to the arena.</p>
+  }
+
+  const attempts = stats.totalHits + stats.totalMisses
+  const accuracyPercent = attempts > 0 ? Math.round((stats.totalHits / attempts) * 100) : null
+
+  return (
+    <p className="armoryBayServicePlate">
+      {stats.totalRounds} round{stats.totalRounds === 1 ? "" : "s"}
+      {accuracyPercent !== null ? ` · ${accuracyPercent}% acc` : ""}
+      {` · best streak ${stats.bestStreak}`}
+    </p>
+  )
+}
+
 function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi }) {
   const identity = (presentation?.identity.label || "Balanced").toLowerCase()
   const miniTargetSize = Math.round(
@@ -51,6 +71,8 @@ function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi 
             {presentation.identity.label}
           </span>
         </span>
+
+        <ArmoryBayServicePlate stats={bayApi.loadoutStatsById?.[loadout.id]} />
       </button>
 
       {isActive ? null : (
@@ -72,13 +94,22 @@ function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi 
               </div>
             </>
           ) : (
-            <button
-              type="button"
-              className="armoryBayAction"
-              onClick={() => bayApi.requestCopyToBay(loadout.id)}
-            >
-              Copy active build here
-            </button>
+            <>
+              <button
+                type="button"
+                className="armoryBayAction"
+                onClick={() => bayApi.requestCopyToBay(loadout.id)}
+              >
+                Copy active build here
+              </button>
+              <button
+                type="button"
+                className="armoryBayAction"
+                onClick={() => bayApi.openBayCompare(loadout.id)}
+              >
+                Compare with active
+              </button>
+            </>
           )}
         </div>
       )}

@@ -1,7 +1,7 @@
 export const ARMORY_STEPS = [
   { id: "passives", label: "Passive Stack", lead: "Tune the 3 systems that shape the round." },
   { id: "hotbar", label: "Hotbar", lead: "Choose the tools on keys 1, 2, and 3." },
-  { id: "review", label: "Review Sim", lead: "See how the build feels in the current mode." },
+  { id: "review", label: "Test Range", lead: "Feel the build in a live 10-second sample." },
 ]
 
 export const ARMORY_STEP_IDS = new Set(ARMORY_STEPS.map((step) => step.id))

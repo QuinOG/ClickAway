@@ -6,6 +6,7 @@ export const FREEZE_MOVEMENT_DURATION_MS = 1000
 export const MAGNET_CENTER_FREEZE_MS = 400
 export const SIZE_BOOST_GROWTH = 10
 export const MAGNET_CENTER_GROWTH = 6
+export const SIZE_LOCK_DURATION_MS = 3000
 
 const MIN_ARENA_DIMENSION = 120
 const MAX_ARENA_DIMENSION = 2000
@@ -77,12 +78,14 @@ export function createGeometrySimulation({
   let buttonSize = initialButtonSize
   let position = getCenteredPosition(arenaWidth, arenaHeight, buttonSize)
   let freezeMovementUntilMs = 0
+  let sizeLockUntilMs = 0
 
   function getState() {
     return {
       buttonSize,
       position: { ...position },
       freezeMovementUntilMs,
+      sizeLockUntilMs,
     }
   }
 
@@ -91,7 +94,9 @@ export function createGeometrySimulation({
   }
 
   function applyHit(eventTimeMs = 0) {
-    buttonSize = getNextButtonSize(buttonSize, roundRules)
+    if (eventTimeMs >= sizeLockUntilMs) {
+      buttonSize = getNextButtonSize(buttonSize, roundRules)
+    }
 
     if (eventTimeMs >= freezeMovementUntilMs) {
       position = getRandomPosition(arenaWidth, arenaHeight, buttonSize, rng)
@@ -116,6 +121,8 @@ export function createGeometrySimulation({
       freezeMovementUntilMs = eventTimeMs + MAGNET_CENTER_FREEZE_MS
       buttonSize = Math.min(initialButtonSize, buttonSize + MAGNET_CENTER_GROWTH)
       position = getCenteredPosition(arenaWidth, arenaHeight, buttonSize)
+    } else if (powerup.effectType === "size_lock") {
+      sizeLockUntilMs = eventTimeMs + SIZE_LOCK_DURATION_MS
     }
 
     return getState()

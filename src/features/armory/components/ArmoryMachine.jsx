@@ -22,21 +22,28 @@ function getTargetSkinStyle({ targetSize, imageSrc, imageScale }) {
   }
 }
 
-function MachineHousing({ module }) {
+function MachineHousing({ module, onOpenLane }) {
   const isNeutral = module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId]
 
   return (
-    <div
+    <button
+      type="button"
       className={`armoryMachineHousing housing-${module.slotId} tone-${module.slotId} ${isNeutral ? "isNeutral" : ""}`}
+      onClick={() => onOpenLane?.(module.slotId)}
+      title={`Open ${module.slotLabel} parts`}
     >
       <span className={`armoryMachineHousingGlyph tone-${module.slotId}`} aria-hidden="true">
         <ModuleSlotGlyph slotId={module.slotId} />
       </span>
-      <span className="armoryMachineHousingBody">
+      {/* Keyed by installed module so a fresh part visibly seats into place. */}
+      <span
+        key={module.moduleId || module.slotId}
+        className="armoryMachineHousingBody armoryPartSeat"
+      >
         <span className="armoryMachineHousingSlot">{module.slotLabel}</span>
         <strong className="armoryMachineHousingLabel">{module.label}</strong>
       </span>
-    </div>
+    </button>
   )
 }
 
@@ -101,6 +108,12 @@ function MachineWorkshopActions({ machineApi }) {
 
   return (
     <div className="armoryMachineActions">
+      <button type="button" className="secondaryButton" onClick={machineApi.openSpecSheet}>
+        Spec Sheet
+      </button>
+      <button type="button" className="secondaryButton" onClick={machineApi.openModeMatrix}>
+        Compare Modes
+      </button>
       <button type="button" className="secondaryButton" onClick={machineApi.requestReset}>
         Strip to Factory Spec
       </button>
@@ -119,6 +132,12 @@ export default function ArmoryMachine({
   const targetSize = Math.round(
     presentation.roundRules.initialButtonSize * MACHINE_TARGET_SCALE
   )
+  // Ghost-resize (Phase 5): while a part is previewed the target shows the
+  // would-be size as a dashed ring; nothing commits until install.
+  const previewTargetSize = machineApi.previewInitialButtonSize
+    ? Math.round(machineApi.previewInitialButtonSize * MACHINE_TARGET_SCALE)
+    : null
+  const showGhost = previewTargetSize !== null && previewTargetSize !== targetSize
 
   return (
     <section className="armoryStage" aria-label="Active build machine">
@@ -127,7 +146,7 @@ export default function ArmoryMachine({
       <div className="armoryMachine" key={loadout.id}>
         <div className="armoryMachineCore">
           {presentation.moduleStack.map((module) => (
-            <MachineHousing key={module.slotId} module={module} />
+            <MachineHousing key={module.slotId} module={module} onOpenLane={machineApi.openModuleLane} />
           ))}
 
           <span
@@ -138,7 +157,14 @@ export default function ArmoryMachine({
               imageScale: buttonSkinImageScale,
             })}
             aria-hidden="true"
-          />
+          >
+            {showGhost ? (
+              <span
+                className="armoryMachineTargetGhost"
+                style={{ width: `${previewTargetSize}px`, height: `${previewTargetSize}px` }}
+              />
+            ) : null}
+          </span>
         </div>
 
         <div className="armoryMachineRack" aria-label="Racked hotbar">

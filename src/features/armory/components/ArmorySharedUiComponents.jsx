@@ -2,8 +2,6 @@
   getPowerupById,
 } from "../../../constants/buildcraft.js"
 import {
-  BuildIdentityGlyph,
-  ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 
@@ -74,28 +72,6 @@ export function ArmoryRailStepButton({ step, index, isActive = false, onClick })
   )
 }
 
-export function ArmorySlotRailButton({ loadout, index, presentation, isActive = false, onClick }) {
-  return (
-    <button
-      type="button"
-      className={`armorySlotRailButton ${isActive ? "isActive" : ""}`}
-      onClick={onClick}
-    >
-      <span className="armorySlotRailIndex">{index + 1}</span>
-      <span className="armorySlotRailBody">
-        <span className="armorySlotRailLabel">Build {index + 1}</span>
-        <strong className="armorySlotRailName">{loadout.name}</strong>
-      </span>
-      <span className="armorySlotRailGlyph" aria-hidden="true">
-        <BuildIdentityGlyph
-          identity={presentation?.identity.label}
-          className="armorySlotRailGlyphIcon"
-        />
-      </span>
-    </button>
-  )
-}
-
 export function ArmoryStepCard({ step, index, summary, isActive = false, onActivate, children }) {
   return (
     <section className={`armoryStepCard armoryStepCard-${step.id} ${isActive ? "isActive" : ""}`}>
@@ -117,33 +93,6 @@ export function ArmoryStepCard({ step, index, summary, isActive = false, onActiv
       </button>
       {isActive ? <div className="armoryStepContent">{children}</div> : null}
     </section>
-  )
-}
-
-export function ArmoryChoiceCard({
-  tone = "",
-  icon = null,
-  label,
-  impact = "",
-  hint = "",
-  isSelected = false,
-  isDisabled = false,
-  onClick,
-}) {
-  return (
-    <button
-      type="button"
-      className={`armoryChoiceCard ${tone} ${isSelected ? "isSelected" : ""}`}
-      disabled={isDisabled}
-      onClick={onClick}
-    >
-      <span className="armoryChoiceIcon" aria-hidden="true">{icon}</span>
-      <span className="armoryChoiceBody">
-        <strong className="armoryChoiceLabel">{label}</strong>
-        <span className="armoryChoiceImpact">{impact}</span>
-      </span>
-      {hint ? <span className="armoryChoiceHint">{hint}</span> : null}
-    </button>
   )
 }
 
@@ -174,22 +123,35 @@ export function ArmoryDetailPanel({ eyebrow = "", title = "", lead = "", rows = 
   )
 }
 
-export function ArmoryHotbarButton({ powerupId, index, cadenceLabel = "", isActive = false, onClick }) {
+export function ArmoryHotbarButton({
+  powerupId,
+  index,
+  cadenceLabel = "",
+  isActive = false,
+  isDragging = false,
+  onClick,
+  dragProps = {},
+}) {
   const powerup = getPowerupById(powerupId)
 
   return (
     <button
       type="button"
-      className={`armoryHotbarButton ${isActive ? "isActive" : ""}`}
+      className={`armoryHotbarButton ${isActive ? "isActive" : ""} ${isDragging ? "isDragging" : ""}`}
       onClick={onClick}
+      title="Drag onto another key to swap"
+      {...dragProps}
     >
       <span className="armoryHotbarKey">{index + 1}</span>
-      <span className="armoryHotbarGlyph" aria-hidden="true">
-        <PowerupGlyph powerupId={powerupId} />
-      </span>
-      <span className="armoryHotbarBody">
-        <strong className="armoryHotbarLabel">{powerup?.label ?? "Choose Power"}</strong>
-        <span className="armoryHotbarMeta">{cadenceLabel || "No cadence"}</span>
+      {/* Keyed by tool so a swapped tool visibly seats into its new key. */}
+      <span key={powerupId} className="armoryHotbarSwap">
+        <span className="armoryHotbarGlyph" aria-hidden="true">
+          <PowerupGlyph powerupId={powerupId} />
+        </span>
+        <span className="armoryHotbarBody">
+          <strong className="armoryHotbarLabel">{powerup?.label ?? "Choose Power"}</strong>
+          <span className="armoryHotbarMeta">{cadenceLabel || "No cadence"}</span>
+        </span>
       </span>
     </button>
   )

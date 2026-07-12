@@ -6,22 +6,18 @@ import {
   MODULE_SLOTS,
   PASSIVE_LOADOUT_MODULES,
   getLoadoutById,
-  getPassiveModuleById,
-  getPowerupById,
 } from "../../../constants/buildcraft.js"
 import { BUILD_WALKTHROUGH_STATUS, shouldAutoStartArmoryWalkthrough } from "../../../constants/buildWalkthrough.js"
-import {
-  buildLoadoutPresentation,
-  getModuleOptionPresentation,
-  getPowerupOptionPresentation,
-} from "../../../constants/buildcraftPresentation.js"
+import { buildLoadoutPresentation } from "../../../constants/buildcraftPresentation.js"
 import { ARMORY_STEPS, DEFAULT_ARMORY_STEP_ID, WALKTHROUGH_STEPS } from "../armoryConstants.js"
 import {
   buildCommittedNameResult,
+  buildSwappedPowerupIds,
   getStepSummary,
   measureSpotlightRect,
 } from "../armoryUtils.js"
 import { useArmoryUrlState } from "../useArmoryUrlState.js"
+import { selectLoadoutStatsEntry } from "../../../utils/armoryFieldDataUtils.js"
 
 export function useArmoryScreenController({
   modes = [],
@@ -36,6 +32,8 @@ export function useArmoryScreenController({
   buttonSkinClass = "",
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
+  arenaThemeClass = "theme-default",
+  loadoutStats = [],
 }) {
   const navigate = useNavigate()
   const shellRef = useRef(null)
@@ -50,10 +48,26 @@ export function useArmoryScreenController({
   const [activeModuleSlotId, setActiveModuleSlotId] = useState(MODULE_SLOTS[0]?.id ?? "tempoCore")
   const [editingPowerSlotIndex, setEditingPowerSlotIndex] = useState(0)
   const [nameDraft, setNameDraft] = useState("")
+  // Pre-commit part preview (Phase 5): { slotKey, moduleId } or null. Purely
+  // derived presentation below — never persisted through the loadout path.
+  const [previewedPart, setPreviewedPart] = useState(null)
+  // Pre-commit tool preview (Phase 6): powerup id aimed at the editing key.
+  const [previewedPowerId, setPreviewedPowerId] = useState(null)
   const [isEditingNameplate, setIsEditingNameplate] = useState(false)
   // One pending workshop confirm at a time: { type: "reset" } or { type: "copy", targetLoadoutId }.
   const [pendingBayAction, setPendingBayAction] = useState(null)
   const [showReviewDetails, setShowReviewDetails] = useState(false)
+  // Test Range (Phase 7): an ephemeral, unrewarded live sample. `rangeRunToken`
+  // bumps on "Run it again" to restart the throwaway round from scratch.
+  const [isRangeOpen, setIsRangeOpen] = useState(false)
+  const [rangeRunToken, setRangeRunToken] = useState(0)
+  const [isSpecSheetOpen, setIsSpecSheetOpen] = useState(false)
+  // Compare Bench (Phase 8): "bay" ghosts another bay against the active
+  // build; "matrix" reads the active build across all three modes. Neither
+  // view holds persisted state — both presentations are derived on demand.
+  const [isCompareOpen, setIsCompareOpen] = useState(false)
+  const [compareView, setCompareView] = useState("bay")
+  const [compareGhostLoadoutId, setCompareGhostLoadoutId] = useState(null)
   const [isWalkthroughVisible, setIsWalkthroughVisible] = useState(false)
   const [walkthroughSource, setWalkthroughSource] = useState(null)
   const [walkthroughStepIndex, setWalkthroughStepIndex] = useState(0)
@@ -63,17 +77,6 @@ export function useArmoryScreenController({
   const currentWalkthroughStep = isWalkthroughVisible
     ? WALKTHROUGH_STEPS[walkthroughStepIndex] ?? WALKTHROUGH_STEPS[0]
     : null
-
-  useArmoryUrlState({
-    buildWalkthroughStatus,
-    isWalkthroughVisible,
-    activeStepId,
-    setActiveStepId,
-    activeModuleSlotId,
-    setActiveModuleSlotId,
-    editingPowerSlotIndex,
-    setEditingPowerSlotIndex,
-  })
 
   useEffect(() => {
     setLocalSavedLoadouts(savedLoadouts)
@@ -127,19 +130,51 @@ export function useArmoryScreenController({
     setEditingPowerSlotIndex(0)
   }, [activeLoadout])
 
+  // Hypothetical presentation for the previewed part. Null while the preview
+  // matches the installed module so consumers can treat "no preview" and
+  // "previewing the installed part" the same way.
+  const previewPresentation = useMemo(() => {
+    if (!previewedPart || !activeLoadout || !selectedMode) return null
+    if (activeLoadout.moduleIds?.[previewedPart.slotKey] === previewedPart.moduleId) return null
+
+    return buildLoadoutPresentation(selectedMode, {
+      ...activeLoadout,
+      moduleIds: {
+        ...activeLoadout.moduleIds,
+        [previewedPart.slotKey]: previewedPart.moduleId,
+      },
+    })
+  }, [activeLoadout, previewedPart, selectedMode])
+
+  // The would-be hotbar while a power is previewed on the editing key: the
+  // previewed tool lands on that key and any key it currently occupies takes
+  // the displaced tool (a swap). Null when it matches the racked arrangement.
+  const powerPreviewPresentation = useMemo(() => {
+    if (!previewedPowerId || !activeLoadout || !selectedMode) return null
+    if (activeLoadout.powerupIds?.[editingPowerSlotIndex] === previewedPowerId) return null
+
+    return buildLoadoutPresentation(selectedMode, {
+      ...activeLoadout,
+      powerupIds: buildSwappedPowerupIds(
+        activeLoadout.powerupIds,
+        editingPowerSlotIndex,
+        previewedPowerId
+      ),
+    })
+  }, [activeLoadout, editingPowerSlotIndex, previewedPowerId, selectedMode])
+
+  // A preview aimed at one lane/key/build/mode means nothing in another context.
+  useEffect(() => {
+    setPreviewedPart(null)
+    setPreviewedPowerId(null)
+  }, [activeModuleSlotId, activeStepId, editingPowerSlotIndex, localActiveLoadoutId, selectedModeId])
+
   const selectedModuleSlot = useMemo(
     () => MODULE_SLOTS.find((slot) => slot.id === activeModuleSlotId) ?? MODULE_SLOTS[0] ?? null,
     [activeModuleSlotId]
   )
-  const selectedModule = selectedModuleSlot && activeLoadout
-    ? getPassiveModuleById(activeLoadout.moduleIds?.[selectedModuleSlot.key])
-    : null
-  const selectedModuleCopy = getModuleOptionPresentation(selectedModule?.id)
 
   const selectedPowerupId = activeLoadout?.powerupIds?.[editingPowerSlotIndex] ?? ""
-  const selectedPowerup = getPowerupById(selectedPowerupId)
-  const selectedPowerCopy = getPowerupOptionPresentation(selectedPowerupId)
-  const selectedPowerSlotPresentation = activePresentation?.powerSlots?.[editingPowerSlotIndex] ?? null
 
   const measureWalkthroughTarget = useCallback(() => {
     if (!currentWalkthroughStep?.targetId) {
@@ -204,11 +239,32 @@ export function useArmoryScreenController({
     commitLoadoutState(nextSavedLoadouts, nextLoadoutId)
   }, [activeLoadout, commitLoadoutState, localActiveLoadoutId, localSavedLoadouts, nameDraft])
 
+  const savedLoadoutIds = useMemo(
+    () => localSavedLoadouts.map((loadout) => loadout.id),
+    [localSavedLoadouts]
+  )
+
+  useArmoryUrlState({
+    buildWalkthroughStatus,
+    isWalkthroughVisible,
+    activeStepId,
+    setActiveStepId,
+    activeModuleSlotId,
+    setActiveModuleSlotId,
+    editingPowerSlotIndex,
+    setEditingPowerSlotIndex,
+    savedLoadoutIds,
+    activateLoadout: handleActivateLoadout,
+  })
+
   // Rolling a different machine onto the stage abandons any half-finished
   // rename or confirm aimed at the previous build.
   useEffect(() => {
     setIsEditingNameplate(false)
     setPendingBayAction(null)
+    setIsRangeOpen(false)
+    setIsSpecSheetOpen(false)
+    setIsCompareOpen(false)
   }, [localActiveLoadoutId])
 
   const startNameplateEdit = useCallback(() => {
@@ -238,17 +294,57 @@ export function useArmoryScreenController({
     }))
   }, [activeLoadout, updateSingleLoadout])
 
-  const handleSelectPowerup = useCallback((powerupId) => {
-    if (!activeLoadout) return
+  const handlePreviewModule = useCallback((moduleId) => {
+    if (!selectedModuleSlot) return
+    setPreviewedPart({ slotKey: selectedModuleSlot.key, moduleId })
+  }, [selectedModuleSlot])
 
-    const nextPowerupIds = [...activeLoadout.powerupIds]
-    nextPowerupIds[editingPowerSlotIndex] = powerupId
+  const clearModulePreview = useCallback(() => {
+    setPreviewedPart(null)
+  }, [])
+
+  // Clicking a module housing on the machine opens that lane's parts gallery.
+  const openModuleLane = useCallback((slotId) => {
+    commitActiveLoadoutName()
+    setActiveStepId("passives")
+    setActiveModuleSlotId(slotId)
+  }, [commitActiveLoadoutName])
+
+  // Installing a tool that is racked on another key swaps the two keys in one
+  // action instead of dead-ending on a disabled card.
+  const handleInstallPower = useCallback((powerupId) => {
+    if (!activeLoadout || !powerupId) return
+    if (activeLoadout.powerupIds?.[editingPowerSlotIndex] === powerupId) return
 
     updateSingleLoadout(activeLoadout.id, (loadout) => ({
       ...loadout,
-      powerupIds: nextPowerupIds,
+      powerupIds: buildSwappedPowerupIds(loadout.powerupIds, editingPowerSlotIndex, powerupId),
     }))
   }, [activeLoadout, editingPowerSlotIndex, updateSingleLoadout])
+
+  // Desktop drag between rack slots (and any explicit "swap with key N" action).
+  const handleSwapPowerSlots = useCallback((fromIndex, toIndex) => {
+    if (!activeLoadout || fromIndex === toIndex) return
+    if (!activeLoadout.powerupIds?.[fromIndex] || !activeLoadout.powerupIds?.[toIndex]) return
+
+    updateSingleLoadout(activeLoadout.id, (loadout) => {
+      const nextPowerupIds = [...loadout.powerupIds]
+      ;[nextPowerupIds[fromIndex], nextPowerupIds[toIndex]] = [
+        nextPowerupIds[toIndex],
+        nextPowerupIds[fromIndex],
+      ]
+
+      return { ...loadout, powerupIds: nextPowerupIds }
+    })
+  }, [activeLoadout, updateSingleLoadout])
+
+  const handlePreviewPower = useCallback((powerupId) => {
+    setPreviewedPowerId(powerupId)
+  }, [])
+
+  const clearPowerPreview = useCallback(() => {
+    setPreviewedPowerId(null)
+  }, [])
 
   const handleResetLoadout = useCallback(() => {
     if (!activeLoadout) return
@@ -298,6 +394,59 @@ export function useArmoryScreenController({
     commitActiveLoadoutName()
     setActiveStepId(nextStepId)
   }, [commitActiveLoadoutName])
+
+  const openTestRange = useCallback(() => {
+    commitActiveLoadoutName()
+    setIsSpecSheetOpen(false)
+    setRangeRunToken((token) => token + 1)
+    setIsRangeOpen(true)
+  }, [commitActiveLoadoutName])
+
+  const closeTestRange = useCallback(() => {
+    setIsRangeOpen(false)
+  }, [])
+
+  const runTestRangeAgain = useCallback(() => {
+    setRangeRunToken((token) => token + 1)
+  }, [])
+
+  const openSpecSheet = useCallback(() => {
+    commitActiveLoadoutName()
+    setIsSpecSheetOpen(true)
+  }, [commitActiveLoadoutName])
+
+  const closeSpecSheet = useCallback(() => {
+    setIsSpecSheetOpen(false)
+  }, [])
+
+  // The active build's five readouts across all three modes (Phase 8's mode
+  // matrix). buildLoadoutPresentation is already mode-parameterized, so this
+  // is just re-deriving it per mode — never persisted, never sent anywhere.
+  const compareModePresentations = useMemo(() => {
+    if (!activeLoadout || !modes.length) return []
+
+    return modes.map((mode) => ({
+      mode,
+      presentation: buildLoadoutPresentation(mode, activeLoadout),
+    }))
+  }, [activeLoadout, modes])
+
+  const openBayCompare = useCallback((targetLoadoutId) => {
+    if (!targetLoadoutId) return
+    setCompareGhostLoadoutId(targetLoadoutId)
+    setCompareView("bay")
+    setIsCompareOpen(true)
+  }, [])
+
+  const openModeMatrix = useCallback(() => {
+    commitActiveLoadoutName()
+    setCompareView("matrix")
+    setIsCompareOpen(true)
+  }, [commitActiveLoadoutName])
+
+  const closeCompareBench = useCallback(() => {
+    setIsCompareOpen(false)
+  }, [])
 
   const openWalkthrough = useCallback((source = "manual") => {
     setWalkthroughSource(source)
@@ -410,6 +559,16 @@ export function useArmoryScreenController({
     }
   }, [isWalkthroughVisible, measureWalkthroughTarget])
 
+  // Field Data (Phase 9): per-bay service records keyed on the stable
+  // `loadoutId`, not the display name — a rename never orphans its history.
+  const loadoutStatsById = useMemo(
+    () => Object.fromEntries(loadoutStats.map((entry) => [entry.loadoutId, entry])),
+    [loadoutStats]
+  )
+  const activeLoadoutStats = activeLoadout?.id
+    ? selectLoadoutStatsEntry(loadoutStats, activeLoadout.id)
+    : null
+
   const isReady = Boolean(selectedMode && activeLoadout && activePresentation && selectedModuleSlot)
 
   const passiveStepSummary = getStepSummary("passives", activeLoadout, activePresentation, selectedMode)
@@ -449,42 +608,84 @@ export function useArmoryScreenController({
       requestReset: requestResetLoadout,
       confirmBayAction,
       cancelBayAction,
+      openModuleLane,
+      openSpecSheet,
+      openModeMatrix,
+      previewInitialButtonSize: previewPresentation?.roundRules?.initialButtonSize ?? null,
     },
     bayApi: {
       savedLoadouts: localSavedLoadouts,
       loadoutPresentations,
+      loadoutStatsById,
       activeLoadoutId: localActiveLoadoutId,
       activateLoadout: handleActivateLoadout,
       pendingCopyTargetId: pendingBayAction?.type === "copy" ? pendingBayAction.targetLoadoutId : null,
       requestCopyToBay,
       confirmBayAction,
       cancelBayAction,
+      openBayCompare,
     },
     passiveApi: {
       selectedModuleSlot,
       setActiveModuleSlotId,
       moduleOptionsBySlot,
-      selectedModule,
-      selectedModuleCopy,
       selectModule: handleSelectModule,
+      previewedModuleId: previewedPart?.slotKey === selectedModuleSlot?.key
+        ? previewedPart.moduleId
+        : null,
+      previewPresentation,
+      previewModule: handlePreviewModule,
+      clearPreview: clearModulePreview,
       summary: passiveStepSummary,
     },
     hotbarApi: {
       editingPowerSlotIndex,
       setEditingPowerSlotIndex,
       selectedPowerupId,
-      selectedPowerup,
-      selectedPowerCopy,
-      selectedPowerSlotPresentation,
-      selectPowerup: handleSelectPowerup,
+      installPower: handleInstallPower,
+      swapPowerSlots: handleSwapPowerSlots,
+      previewedPowerId,
+      previewPresentation: powerPreviewPresentation,
+      previewPower: handlePreviewPower,
+      clearPreview: clearPowerPreview,
       summary: hotbarStepSummary,
     },
     reviewApi: {
       modes,
       onModeChange,
+      summary: reviewStepSummary,
+    },
+    rangeApi: {
+      isOpen: isRangeOpen,
+      runToken: rangeRunToken,
+      open: openTestRange,
+      close: closeTestRange,
+      runAgain: runTestRangeAgain,
+      arenaThemeClass,
+      buttonSkinClass,
+      buttonSkinImageSrc,
+      buttonSkinImageScale,
+    },
+    specSheetApi: {
+      isOpen: isSpecSheetOpen,
+      open: openSpecSheet,
+      close: closeSpecSheet,
       showDetails: showReviewDetails,
       setShowDetails: setShowReviewDetails,
-      summary: reviewStepSummary,
+      loadoutStats: activeLoadoutStats,
+    },
+    compareApi: {
+      isOpen: isCompareOpen,
+      view: compareView,
+      setView: setCompareView,
+      ghostLoadout: compareGhostLoadoutId
+        ? getLoadoutById(localSavedLoadouts, compareGhostLoadoutId)
+        : null,
+      ghostPresentation: compareGhostLoadoutId ? loadoutPresentations[compareGhostLoadoutId] : null,
+      modePresentations: compareModePresentations,
+      openBayCompare,
+      openModeMatrix,
+      close: closeCompareBench,
     },
     walkthroughApi: {
       currentStep: currentWalkthroughStep,

@@ -122,6 +122,80 @@ const PASSIVE_MODULES = [
       missPenalty: 1,
     },
   },
+  {
+    id: "tempo_bastion",
+    slotId: "tempoCore",
+    label: "Bastion",
+    unlockLevel: 5,
+    description: "Even larger targets and slower shrink than Anchor, at a steeper score cost.",
+    effects: {
+      initialButtonSize: 20,
+      minButtonSize: 8,
+      shrinkFactor: 0.035,
+      scoreMultiplier: 0.8,
+    },
+  },
+  {
+    id: "streak_rapidfire",
+    slotId: "streakLens",
+    label: "Rapid Fire",
+    unlockLevel: 9,
+    description: "Momentum's combo speed with a small score bonus, at the harshest miss cost of any lens.",
+    effects: {
+      comboStep: -1,
+      missPenalty: 3,
+      scoreMultiplier: 1.05,
+    },
+  },
+  {
+    id: "power_overcharge",
+    slotId: "powerRig",
+    label: "Overcharge Rig",
+    unlockLevel: 13,
+    description: "The fastest charges available, paid for with a slower combo ramp and harsher misses.",
+    effects: {
+      powerupAwardMultiplier: 0.65,
+      comboStep: 2,
+      missPenalty: 1,
+    },
+  },
+  {
+    id: "power_vault",
+    slotId: "powerRig",
+    label: "Vault Rig",
+    unlockLevel: 17,
+    description: "Start the round with two charges per equipped power, but later charges arrive much slower and hits pay less.",
+    effects: {
+      startingPowerupCharges: 2,
+      powerupAwardMultiplier: 1.5,
+      scoreMultiplier: 0.95,
+    },
+  },
+  {
+    id: "tempo_flashpoint",
+    slotId: "tempoCore",
+    label: "Flashpoint",
+    unlockLevel: 21,
+    description: "Sharper than Overdrive: smaller targets, faster shrink, and a higher score ceiling.",
+    effects: {
+      initialButtonSize: -14,
+      minButtonSize: -3,
+      shrinkFactor: -0.032,
+      scoreMultiplier: 1.22,
+    },
+  },
+  {
+    id: "streak_ironnerve",
+    slotId: "streakLens",
+    label: "Iron Nerve",
+    unlockLevel: 25,
+    description: "The safest lens: near-free misses and slow, steady combo growth, at a real score cost.",
+    effects: {
+      comboStep: 3,
+      missPenalty: -2,
+      scoreMultiplier: 0.85,
+    },
+  },
 ]
 
 const BUILDCRAFT_POWERUPS = [
@@ -172,6 +246,30 @@ const BUILDCRAFT_POWERUPS = [
     awardEvery: 16,
     description: "The next miss within 8 seconds keeps your streak and prevents miss penalty.",
     effectType: "guard_charge",
+  },
+  {
+    id: "second_wind",
+    label: "Second Wind",
+    unlockLevel: 14,
+    awardEvery: 10,
+    description: "The next miss within 5 seconds keeps your streak, but the miss penalty still applies.",
+    effectType: "second_wind",
+  },
+  {
+    id: "size_lock",
+    label: "Steady Lock",
+    unlockLevel: 18,
+    awardEvery: 13,
+    description: "The target holds its current size for 3 seconds — no shrink on hits.",
+    effectType: "size_lock",
+  },
+  {
+    id: "overclock",
+    label: "Overclock",
+    unlockLevel: 22,
+    awardEvery: 18,
+    description: "5 seconds of +50% score, but misses cost double.",
+    effectType: "overclock",
   },
 ]
 

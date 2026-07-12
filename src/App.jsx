@@ -269,6 +269,7 @@ export default function App() {
                 playerRecentRounds={roundHistory}
                 playerBestScore={playerLeaderboardStats.bestScore}
                 lifetimeStats={lifetimeStats}
+                loadoutStats={loadoutStats}
                 savedLoadouts={savedLoadouts}
                 activeLoadoutId={activeLoadoutId}
                 activeLoadout={activeLoadout}
@@ -309,6 +310,8 @@ export default function App() {
                   equippedButtonSkin?.gameImageScale ??
                   equippedButtonSkin?.imageScale
                 }
+                arenaThemeClass={equippedArenaTheme?.effectClass}
+                loadoutStats={loadoutStats}
               />
             </ProtectedRoute>
           }

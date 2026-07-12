@@ -12,8 +12,9 @@ function parsePowerSlot(raw) {
 }
 
 /**
- * Reads ?step= & ?lane= & ?powerSlot= once URL init is allowed; then keeps the query string in sync (replace).
+ * Reads ?step= & ?lane= & ?powerSlot= & ?bay= once URL init is allowed; then keeps the query string in sync (replace).
  * First-time walkthrough (NOT_STARTED): skips reading the URL so deep links do not fight the tour; writes begin after init completes.
+ * `?bay=<loadoutId>` focuses a bay (e.g. a Game Over "Workshop notes" link) — validated against the player's saved loadouts, silently ignored otherwise.
  */
 export function useArmoryUrlState({
   buildWalkthroughStatus,
@@ -24,6 +25,8 @@ export function useArmoryUrlState({
   setActiveModuleSlotId,
   editingPowerSlotIndex,
   setEditingPowerSlotIndex,
+  savedLoadoutIds = [],
+  activateLoadout,
 }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const urlInitDone = useRef(false)
@@ -48,10 +51,15 @@ export function useArmoryUrlState({
     const idx = parsePowerSlot(ps)
     if (idx !== null) setEditingPowerSlotIndex(idx)
 
+    const bay = searchParams.get("bay")
+    if (bay && savedLoadoutIds.includes(bay)) activateLoadout?.(bay)
+
     urlInitDone.current = true
   }, [
+    activateLoadout,
     buildWalkthroughStatus,
     isWalkthroughVisible,
+    savedLoadoutIds,
     searchParams,
     setActiveStepId,
     setActiveModuleSlotId,
@@ -76,10 +84,15 @@ export function useArmoryUrlState({
       next.delete("powerSlot")
     }
 
+    // `?bay=` is a one-shot focus deep link; drop it once its job (setting
+    // activeLoadoutId) is done so it doesn't linger as a stale param.
+    next.delete("bay")
+
     const same =
       searchParams.get("step") === next.get("step")
       && (searchParams.get("lane") ?? "") === (next.get("lane") ?? "")
       && (searchParams.get("powerSlot") ?? "") === (next.get("powerSlot") ?? "")
+      && !searchParams.get("bay")
 
     if (same) return
 

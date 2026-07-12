@@ -1,28 +1,37 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 
 import {
   LOADOUT_POWERUPS,
   MODULE_SLOTS,
   getPassiveModuleById,
+  getPowerupById,
 } from "../../../constants/buildcraft.js"
+import {
+  getModuleOptionPresentation,
+  getPowerupOptionPresentation,
+} from "../../../constants/buildcraftPresentation.js"
 import {
   BuildIdentityGlyph,
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import {
-  formatSignedPercent,
   getModuleExactChips,
   getPowerupExactChips,
-  getUnlockText,
 } from "../armoryUtils.js"
+import ArmoryBayWall from "./ArmoryBayWall.jsx"
+import ArmoryCadenceTimeline from "./ArmoryCadenceTimeline.jsx"
+import ArmoryCompareBench from "./ArmoryCompareBench.jsx"
+import ArmoryInstruments from "./ArmoryInstruments.jsx"
 import ArmoryMachine from "./ArmoryMachine.jsx"
+import ArmoryPartsGallery from "./ArmoryPartsGallery.jsx"
+import ArmorySpecSheet from "./ArmorySpecSheet.jsx"
+import ArmoryTestRange from "./ArmoryTestRange.jsx"
 import {
-  ArmoryChoiceCard,
   ArmoryDetailPanel,
   ArmoryHotbarButton,
   ArmoryRailStepButton,
-  ArmorySlotRailButton,
   ArmoryStepCard,
   ReviewModeButton,
 } from "./ArmorySharedUiComponents.jsx"
@@ -31,7 +40,7 @@ import ArmoryWalkthroughOverlay from "./ArmoryWalkthroughOverlay.jsx"
 export default function ArmoryScreen({
   shellRef,
   workspaceRef,
-  slotEditorRef,
+  nameplateRef,
   passiveLaneRef,
   hotbarEditorRef,
   reviewPanelRef,
@@ -43,14 +52,47 @@ export default function ArmoryScreen({
   activeLoadout,
   activePresentation,
   machineApi,
-  slotApi,
+  bayApi,
   passiveApi,
   hotbarApi,
   reviewApi,
+  rangeApi,
+  specSheetApi,
+  compareApi,
   walkthroughApi,
 }) {
   // Identity drives the scene's lighting "weather" (see armory.css data-identity rules).
   const sceneIdentity = (activePresentation.identity.label || "Balanced").toLowerCase()
+
+  // Which rack key is mid-drag, so its tab reads as lifted off the rack.
+  const [draggedKeyIndex, setDraggedKeyIndex] = useState(null)
+
+  // Inspection footer for the passive parts gallery: previewed part wins over
+  // the installed one so hovering answers "what would I get?" before commit.
+  const installedModuleId = activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] ?? ""
+  const inspectedModuleId = passiveApi.previewedModuleId ?? installedModuleId
+  const inspectedModule = getPassiveModuleById(inspectedModuleId)
+  const inspectedModuleCopy = getModuleOptionPresentation(inspectedModule?.id)
+
+  // Same contract for the tool rack, plus the cadence recomputed for the
+  // previewed arrangement (buildRoundRules applies powerupAwardMultiplier).
+  const inspectedPowerId = hotbarApi.previewedPowerId ?? hotbarApi.selectedPowerupId
+  const inspectedPower = getPowerupById(inspectedPowerId)
+  const inspectedPowerCopy = getPowerupOptionPresentation(inspectedPowerId)
+  const editingSlotPresentation = (hotbarApi.previewPresentation ?? activePresentation)
+    .powerSlots?.[hotbarApi.editingPowerSlotIndex] ?? null
+
+  // Powers racked on another key stay live in the gallery and install as a swap.
+  const powerParts = LOADOUT_POWERUPS.map((powerup) => {
+    const rackedIndex = activeLoadout.powerupIds.indexOf(powerup.id)
+
+    return {
+      ...powerup,
+      rackedOnKey: rackedIndex !== -1 && rackedIndex !== hotbarApi.editingPowerSlotIndex
+        ? rackedIndex + 1
+        : null,
+    }
+  })
 
   return (
     <div className="armoryScene armoryPage" data-identity={sceneIdentity} ref={shellRef}>
@@ -68,7 +110,7 @@ export default function ArmoryScreen({
             <div className="armoryRailIdentityCopy">
               <span className="armoryRailLabel">Active build</span>
               <strong className="armoryRailName">{activeLoadout.name}</strong>
-              <span className="armoryRailHint">Saves instantly. Ready uses this slot next round.</span>
+              <span className="armoryRailHint">Saves instantly. Ready uses this bay next round.</span>
             </div>
           </div>
         </div>
@@ -85,21 +127,7 @@ export default function ArmoryScreen({
           ))}
         </div>
 
-        <div className="armoryRailSection">
-          <span className="armoryRailSectionLabel">Saved builds</span>
-          <div className="armorySlotRailList" aria-label="Saved build slots">
-            {slotApi.savedLoadouts.map((loadout, index) => (
-              <ArmorySlotRailButton
-                key={loadout.id}
-                loadout={loadout}
-                index={index}
-                presentation={slotApi.loadoutPresentations[loadout.id]}
-                isActive={loadout.id === slotApi.activeLoadoutId}
-                onClick={() => slotApi.activateLoadout(loadout.id)}
-              />
-            ))}
-          </div>
-        </div>
+        <ArmoryBayWall bayApi={bayApi} />
 
         <div className="armoryRailActions">
           <button type="button" className="secondaryButton" onClick={() => walkthroughApi.open("manual")}>
@@ -114,83 +142,20 @@ export default function ArmoryScreen({
       <ArmoryMachine
         loadout={activeLoadout}
         presentation={activePresentation}
-        buttonSkinClass={machineApi.buttonSkinClass}
-        buttonSkinImageSrc={machineApi.buttonSkinImageSrc}
-        buttonSkinImageScale={machineApi.buttonSkinImageScale}
+        nameplateRef={nameplateRef}
+        machineApi={machineApi}
       />
 
       <div className="armoryWorkspace" ref={workspaceRef}>
+        <ArmoryInstruments
+          presentation={activePresentation}
+          previewPresentation={passiveApi.previewPresentation}
+        />
+
         <div className="armoryStepStack">
           <ArmoryStepCard
             step={steps[0]}
             index={0}
-            summary={slotApi.summary}
-            isActive={activeStepId === "slot"}
-            onActivate={() => handleOpenStep("slot")}
-          >
-            <div className="armorySlotEditor" ref={slotEditorRef}>
-              <label className="armoryField" htmlFor="armory-build-name">
-                <span className="armoryFieldLabel">Build name</span>
-                <input
-                  id="armory-build-name"
-                  className="armoryNameInput"
-                  value={slotApi.nameDraft}
-                  maxLength={24}
-                  onChange={(event) => slotApi.setNameDraft(event.target.value)}
-                  onBlur={slotApi.commitName}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault()
-                      slotApi.commitName()
-                      event.currentTarget.blur()
-                    }
-                  }}
-                />
-              </label>
-
-              <div className="armoryStatusRow">
-                <span className="armoryStatusChip">Active in Ready</span>
-                <span className="armoryStatusChip">{activePresentation.identity.label}</span>
-              </div>
-
-              <div className="armoryActionRow">
-                <button type="button" className="secondaryButton" onClick={slotApi.resetLoadout}>
-                  Reset This Slot
-                </button>
-              </div>
-
-              <div className="armorySnapshotGrid" aria-label="Current build snapshot">
-                <section className="armorySnapshotPanel">
-                  <span className="armorySnapshotLabel">Passive stack</span>
-                  <div className="armoryChipRow">
-                    {activePresentation.moduleStack.map((module) => (
-                      <span key={module.slotKey} className={`armorySnapshotChip tone-${module.slotId}`}>
-                        <ModuleSlotGlyph slotId={module.slotId} className="armorySnapshotChipIcon" />
-                        {module.label}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="armorySnapshotPanel">
-                  <span className="armorySnapshotLabel">Hotbar</span>
-                  <div className="armoryChipRow">
-                    {activePresentation.powerSlots.map((powerSlot, index) => (
-                      <span key={`${powerSlot.id}-${index + 1}`} className="armorySnapshotChip tone-power">
-                        <span className="armorySnapshotKey">{index + 1}</span>
-                        <PowerupGlyph powerupId={powerSlot.id} className="armorySnapshotChipIcon" />
-                        {powerSlot.label}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              </div>
-            </div>
-          </ArmoryStepCard>
-
-          <ArmoryStepCard
-            step={steps[1]}
-            index={1}
             summary={passiveApi.summary}
             isActive={activeStepId === "passives"}
             onActivate={() => handleOpenStep("passives")}
@@ -230,47 +195,36 @@ export default function ArmoryScreen({
                 </div>
               </div>
 
-              <div className="armoryChoiceGrid">
-                {passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id].map((module) => {
-                  const isLocked = playerLevel < module.unlockLevel
-                  const hint = isLocked
-                    ? getUnlockText(module.unlockLevel)
-                    : activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] === module.id
-                      ? "Equipped"
-                      : ""
-
-                  return (
-                    <ArmoryChoiceCard
-                      key={module.id}
-                      tone={`tone-${passiveApi.selectedModuleSlot.id}`}
-                      icon={<ModuleSlotGlyph slotId={passiveApi.selectedModuleSlot.id} />}
-                      label={module.label}
-                      impact={module.description}
-                      hint={hint}
-                      isSelected={activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] === module.id}
-                      isDisabled={isLocked}
-                      onClick={() => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, module.id)}
-                    />
-                  )
-                })}
-              </div>
-
-              <ArmoryDetailPanel
-                eyebrow="Selected passive"
-                title={passiveApi.selectedModule?.label ?? passiveApi.selectedModuleSlot.label}
-                lead={passiveApi.selectedModuleCopy.youGet}
-                rows={[
-                  { label: "Tradeoff", value: passiveApi.selectedModuleCopy.youGiveUp },
-                  { label: "Best in", value: passiveApi.selectedModuleCopy.bestIn },
-                ]}
-                exactChips={getModuleExactChips(passiveApi.selectedModule)}
+              <ArmoryPartsGallery
+                tone={passiveApi.selectedModuleSlot.id}
+                galleryLabel={`${passiveApi.selectedModuleSlot.label} parts`}
+                parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
+                playerLevel={playerLevel}
+                installedPartId={installedModuleId}
+                previewedPartId={passiveApi.previewedModuleId}
+                renderPartGlyph={() => <ModuleSlotGlyph slotId={passiveApi.selectedModuleSlot.id} />}
+                onPreviewPart={passiveApi.previewModule}
+                onClearPreview={passiveApi.clearPreview}
+                onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
+                footer={(
+                  <ArmoryDetailPanel
+                    eyebrow={inspectedModuleId !== installedModuleId ? "Previewing part" : "Installed part"}
+                    title={inspectedModule?.label ?? passiveApi.selectedModuleSlot.label}
+                    lead={inspectedModuleCopy.youGet}
+                    rows={[
+                      { label: "Tradeoff", value: inspectedModuleCopy.youGiveUp },
+                      { label: "Best in", value: inspectedModuleCopy.bestIn },
+                    ]}
+                    exactChips={getModuleExactChips(inspectedModule)}
+                  />
+                )}
               />
             </div>
           </ArmoryStepCard>
 
           <ArmoryStepCard
-            step={steps[2]}
-            index={2}
+            step={steps[1]}
+            index={1}
             summary={hotbarApi.summary}
             isActive={activeStepId === "hotbar"}
             onActivate={() => handleOpenStep("hotbar")}
@@ -284,75 +238,74 @@ export default function ArmoryScreen({
                     index={index}
                     cadenceLabel={powerSlot.cadenceLabel}
                     isActive={hotbarApi.editingPowerSlotIndex === index}
+                    isDragging={draggedKeyIndex === index}
                     onClick={() => hotbarApi.setEditingPowerSlotIndex(index)}
+                    dragProps={{
+                      draggable: true,
+                      onDragStart: (event) => {
+                        setDraggedKeyIndex(index)
+                        event.dataTransfer.setData("text/plain", String(index))
+                        event.dataTransfer.effectAllowed = "move"
+                      },
+                      onDragEnd: () => setDraggedKeyIndex(null),
+                      onDragOver: (event) => event.preventDefault(),
+                      onDrop: (event) => {
+                        event.preventDefault()
+                        setDraggedKeyIndex(null)
+                        const fromIndex = Number(event.dataTransfer.getData("text/plain"))
+                        if (Number.isInteger(fromIndex)) hotbarApi.swapPowerSlots(fromIndex, index)
+                      },
+                    }}
                   />
                 ))}
               </div>
 
-              <div className="armoryChoiceGrid armoryChoiceGrid-powers">
-                {LOADOUT_POWERUPS.map((powerup) => {
-                  const isLocked = playerLevel < powerup.unlockLevel
-                  const takenSlotIndex = activeLoadout.powerupIds.findIndex((equippedId, index) => (
-                    index !== hotbarApi.editingPowerSlotIndex && equippedId === powerup.id
-                  ))
-                  const isSelected = hotbarApi.selectedPowerupId === powerup.id
-                  const isTakenElsewhere = takenSlotIndex !== -1
-                  const isDisabled = isLocked || isTakenElsewhere
-                  let hint = `Key ${hotbarApi.editingPowerSlotIndex + 1}`
-
-                  if (isLocked) {
-                    hint = getUnlockText(powerup.unlockLevel)
-                  } else if (isTakenElsewhere && !isSelected) {
-                    hint = `On key ${takenSlotIndex + 1}`
-                  } else if (isSelected) {
-                    hint = "Equipped"
-                  }
-
-                  return (
-                    <ArmoryChoiceCard
-                      key={powerup.id}
-                      tone="tone-power"
-                      icon={<PowerupGlyph powerupId={powerup.id} />}
-                      label={powerup.label}
-                      impact={powerup.description}
-                      hint={hint}
-                      isSelected={isSelected}
-                      isDisabled={isDisabled}
-                      onClick={() => hotbarApi.selectPowerup(powerup.id)}
+              <ArmoryPartsGallery
+                tone="power"
+                galleryLabel="Power tools"
+                parts={powerParts}
+                playerLevel={playerLevel}
+                installedPartId={hotbarApi.selectedPowerupId}
+                previewedPartId={hotbarApi.previewedPowerId}
+                renderPartGlyph={(part) => <PowerupGlyph powerupId={part.id} />}
+                onPreviewPart={hotbarApi.previewPower}
+                onClearPreview={hotbarApi.clearPreview}
+                onInstallPart={hotbarApi.installPower}
+                footer={(
+                  <>
+                    <ArmoryCadenceTimeline
+                      powerSlots={activePresentation.powerSlots}
+                      previewPowerSlots={hotbarApi.previewPresentation?.powerSlots ?? null}
+                      startingCharges={activePresentation.roundRules.startingPowerupCharges}
                     />
-                  )
-                })}
-              </div>
-
-              <ArmoryDetailPanel
-                eyebrow={`Key ${hotbarApi.editingPowerSlotIndex + 1}`}
-                title={hotbarApi.selectedPowerup?.label ?? "Choose Power"}
-                lead={hotbarApi.selectedPowerCopy.youGet}
-                rows={[
-                  { label: "Tradeoff", value: hotbarApi.selectedPowerCopy.youGiveUp },
-                  { label: "Best in", value: hotbarApi.selectedPowerCopy.bestIn },
-                  {
-                    label: "Charge",
-                    value: hotbarApi.selectedPowerSlotPresentation?.cadenceLabel ?? "No cadence",
-                  },
-                ]}
-                exactChips={getPowerupExactChips(
-                  hotbarApi.selectedPowerup,
-                  hotbarApi.selectedPowerSlotPresentation?.awardEvery ?? hotbarApi.selectedPowerup?.awardEvery ?? 0
+                    <ArmoryDetailPanel
+                      eyebrow={`Key ${hotbarApi.editingPowerSlotIndex + 1}`}
+                      title={inspectedPower?.label ?? "Choose Power"}
+                      lead={inspectedPowerCopy.youGet}
+                      rows={[
+                        { label: "Tradeoff", value: inspectedPowerCopy.youGiveUp },
+                        { label: "Best in", value: inspectedPowerCopy.bestIn },
+                      ]}
+                      exactChips={getPowerupExactChips(
+                        inspectedPower,
+                        editingSlotPresentation?.awardEvery ?? inspectedPower?.awardEvery ?? 0
+                      )}
+                    />
+                  </>
                 )}
               />
             </div>
           </ArmoryStepCard>
 
           <ArmoryStepCard
-            step={steps[3]}
-            index={3}
+            step={steps[2]}
+            index={2}
             summary={reviewApi.summary}
             isActive={activeStepId === "review"}
             onActivate={() => handleOpenStep("review")}
           >
-            <div ref={reviewPanelRef}>
-              <div className="armoryReviewModeRow" aria-label="Mode preview">
+            <div className="armoryRangeLauncher" ref={reviewPanelRef}>
+              <div className="armoryReviewModeRow" aria-label="Range mode">
                 {reviewApi.modes.map((mode) => (
                   <ReviewModeButton
                     key={mode.id}
@@ -363,114 +316,70 @@ export default function ArmoryScreen({
                 ))}
               </div>
 
-              <section className="armoryReviewHero">
-                <div className="armoryReviewHeroCopy">
-                  <p className="armoryReviewEyebrow">Current mode</p>
-                  <h3 className="armoryReviewTitle">
-                    {selectedMode.label} / {activeLoadout.name}
-                  </h3>
-                  <p className="armoryReviewLead">{activePresentation.glanceText}</p>
-                  <p className="armoryReviewNote">{activePresentation.bestFor}</p>
+              <section className="armoryRangeLauncherHero">
+                <div className="armoryRangeLauncherCopy">
+                  <p className="armoryReviewEyebrow">{selectedMode.label} rules</p>
+                  <h3 className="armoryReviewTitle">Take {activeLoadout.name} to the range</h3>
+                  <p className="armoryReviewLead">
+                    Run a live 10-second sample with real shrink, movement, and your hotbar.
+                  </p>
+                  <p className="armoryReviewNote">No XP, no coins, no rank — nothing is saved.</p>
                 </div>
-                <button
-                  type="button"
-                  className="secondaryButton armoryReviewToggle"
-                  onClick={() => reviewApi.setShowDetails((currentValue) => !currentValue)}
-                  aria-expanded={reviewApi.showDetails}
-                >
-                  {reviewApi.showDetails ? "Hide Exact Values" : "Show Exact Values"}
-                </button>
+                <div className="armoryRangeLauncherActions">
+                  <button type="button" className="primaryButton" onClick={rangeApi.open}>
+                    Run the Range
+                  </button>
+                  <button
+                    type="button"
+                    className="secondaryButton"
+                    onClick={specSheetApi.open}
+                  >
+                    Open Spec Sheet
+                  </button>
+                </div>
               </section>
-
-              <div className="armoryReviewMetrics" aria-label="Mode simulation metrics">
-                {activePresentation.summaryStats.map((stat) => (
-                  <article key={stat.label} className="armoryMetricCard">
-                    <span className="armoryMetricLabel">{stat.label}</span>
-                    <strong className="armoryMetricValue">{stat.value}</strong>
-                  </article>
-                ))}
-              </div>
-
-              <div className="armoryReviewGrid">
-                <section className="armoryReviewPanel">
-                  <span className="armoryReviewPanelTitle">Strengths</span>
-                  <div className="armoryChipRow">
-                    {activePresentation.strengths.map((item) => (
-                      <span key={item} className="armorySnapshotChip tone-good">{item}</span>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="armoryReviewPanel">
-                  <span className="armoryReviewPanelTitle">Tradeoffs</span>
-                  <div className="armoryChipRow">
-                    {activePresentation.tradeoffs.map((item) => (
-                      <span key={item} className="armorySnapshotChip tone-risk">{item}</span>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="armoryReviewPanel">
-                  <span className="armoryReviewPanelTitle">Hotbar cadence</span>
-                  <div className="armoryReviewPowerList">
-                    {activePresentation.powerSlots.map((powerSlot, index) => (
-                      <div key={`${powerSlot.id}-${index + 1}`} className="armoryReviewPowerItem">
-                        <span className="armoryReviewPowerKey">{index + 1}</span>
-                        <span className="armoryReviewPowerGlyph" aria-hidden="true">
-                          <PowerupGlyph powerupId={powerSlot.id} />
-                        </span>
-                        <span className="armoryReviewPowerBody">
-                          <strong className="armoryReviewPowerLabel">{powerSlot.label}</strong>
-                          <span className="armoryReviewPowerMeta">{powerSlot.cadenceLabel}</span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              {reviewApi.showDetails ? (
-                <section className="armoryReviewDetails">
-                  <div className="armoryDetailRows">
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Start size</span>
-                      <span className="armoryDetailValue">{activePresentation.roundRules.initialButtonSize}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Min size</span>
-                      <span className="armoryDetailValue">{activePresentation.roundRules.minButtonSize}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Shrink factor</span>
-                      <span className="armoryDetailValue">{Number(activePresentation.roundRules.shrinkFactor).toFixed(2)}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Combo step</span>
-                      <span className="armoryDetailValue">{activePresentation.roundRules.comboStep}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Miss penalty</span>
-                      <span className="armoryDetailValue">{activePresentation.roundRules.missPenalty}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Score multiplier</span>
-                      <span className="armoryDetailValue">{formatSignedPercent(activePresentation.roundRules.scoreMultiplier)}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Charge rate</span>
-                      <span className="armoryDetailValue">x{Number(activePresentation.roundRules.powerupAwardMultiplier).toFixed(2)}</span>
-                    </div>
-                    <div className="armoryDetailRow">
-                      <span className="armoryDetailLabel">Starting charges</span>
-                      <span className="armoryDetailValue">{activePresentation.roundRules.startingPowerupCharges}</span>
-                    </div>
-                  </div>
-                </section>
-              ) : null}
             </div>
           </ArmoryStepCard>
         </div>
       </div>
+
+      <ArmorySpecSheet
+        isOpen={specSheetApi.isOpen}
+        onClose={specSheetApi.close}
+        loadoutName={activeLoadout.name}
+        modeLabel={selectedMode.label}
+        presentation={activePresentation}
+        showDetails={specSheetApi.showDetails}
+        onToggleDetails={specSheetApi.setShowDetails}
+        loadoutStats={specSheetApi.loadoutStats}
+      />
+
+      <ArmoryTestRange
+        isOpen={rangeApi.isOpen}
+        roundRules={activePresentation.roundRules}
+        modeLabel={selectedMode.label}
+        loadoutName={activeLoadout.name}
+        runToken={rangeApi.runToken}
+        onRunAgain={rangeApi.runAgain}
+        onExit={rangeApi.close}
+        arenaThemeClass={rangeApi.arenaThemeClass}
+        buttonSkinClass={rangeApi.buttonSkinClass}
+        buttonSkinImageSrc={rangeApi.buttonSkinImageSrc}
+        buttonSkinImageScale={rangeApi.buttonSkinImageScale}
+      />
+
+      <ArmoryCompareBench
+        isOpen={compareApi.isOpen}
+        onClose={compareApi.close}
+        view={compareApi.view}
+        onChangeView={compareApi.setView}
+        modeLabel={selectedMode.label}
+        activeLoadout={activeLoadout}
+        activePresentation={activePresentation}
+        ghostLoadout={compareApi.ghostLoadout}
+        ghostPresentation={compareApi.ghostPresentation}
+        modePresentations={compareApi.modePresentations}
+      />
 
       <ArmoryWalkthroughOverlay
         step={walkthroughApi.currentStep}

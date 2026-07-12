@@ -1,6 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
+import { buildRoundRules } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { simulateRound } from "../server/roundRewards.js"
 import {
@@ -121,6 +122,35 @@ test("ranked simulateRound requires a round seed and validates geometry", () => 
   })
   assert.equal(withSeed.valid, true)
   assert.equal(withSeed.hits, 1)
+})
+
+test("size_lock pauses shrink on hits for its window", () => {
+  const roundRules = buildRoundRules(getDifficultyById("hard"), {
+    id: "loadout_1",
+    name: "Locked",
+    moduleIds: {
+      tempoCoreId: "tempo_balanced",
+      streakLensId: "streak_balanced",
+      powerRigId: "power_balanced",
+    },
+    powerupIds: ["size_lock", "time_boost", "size_boost"],
+  })
+  const rng = createSeededRng(SEED)
+  const simulation = createGeometrySimulation({
+    roundRules,
+    arenaWidth: ARENA.arenaWidth,
+    arenaHeight: ARENA.arenaHeight,
+    rng,
+  })
+
+  const sizeBeforeLock = simulation.getState().buttonSize
+  simulation.applyPowerup("size_lock", 500)
+  const lockedHit = simulation.applyHit(600)
+  assert.equal(lockedHit.buttonSize, sizeBeforeLock)
+
+  // After the 3-second window, hits resume shrinking normally.
+  const laterHit = simulation.applyHit(4000)
+  assert.ok(laterHit.buttonSize < sizeBeforeLock)
 })
 
 test("getRandomPosition stays inside arena bounds", () => {
