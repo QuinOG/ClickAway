@@ -489,6 +489,10 @@ export function useGameScreenController({
 
   const resetRoundState = useCallback((modeSettings) => {
     clearRoundEndTimeout()
+    countdownEndsAtRef.current = 0
+    setRoundStartStatus("idle")
+    setRoundStartError("")
+    setCountdownValue(READY_COUNTDOWN_START)
     setScore(0)
     setStreak(0)
     setBestStreak(0)
@@ -1405,8 +1409,8 @@ export function useGameScreenController({
       rankProgress: playerRankProgress,
       onStartRankedWarmup: startRankedWarmup,
     },
-    entranceOverlayProps: roundStartStatus !== "idle" && (
-      phase === ROUND_PHASE.READY
+    entranceOverlayProps: (
+      (phase === ROUND_PHASE.READY && ["requesting", "error"].includes(roundStartStatus))
       || phase === ROUND_PHASE.COUNTDOWN
       || isGoCueVisible
     ) ? {
