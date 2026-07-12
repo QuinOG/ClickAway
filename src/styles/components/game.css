@@ -28,11 +28,24 @@
     transition: background 0.3s ease;
 }
 
-.hudTopRow {
-    width: min(720px, 94vw);
+.gameHud {
+    width: min(860px, 96vw, 100%);
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
+    flex: 0 0 auto;
+    color: var(--hud-color);
+}
+
+.hudPrimaryRow {
+    min-height: 86px;
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) minmax(240px, 1.35fr) minmax(150px, 1fr);
+    align-items: center;
+    gap: clamp(12px, 3vw, 34px);
+    padding-inline: clamp(4px, 1.5vw, 14px);
+    border-block: 1px solid rgba(150, 204, 239, 0.16);
+    background:
+        linear-gradient(90deg, rgba(83, 215, 179, 0.07), transparent 28%, transparent 72%, rgba(74, 168, 255, 0.07));
 }
 
 .ghostDuelBanner,
@@ -74,62 +87,56 @@
     color: #ffd8dc;
 }
 
-.hudTopBlock {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 14px;
-    padding: 9px 11px;
-    background: linear-gradient(170deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+.hudScoreAnchor,
+.hudTimerAnchor {
+    position: relative;
     display: grid;
-    justify-items: center;
+    align-items: center;
     align-content: center;
-    gap: 2px;
-    min-height: 72px;
-    backdrop-filter: blur(6px);
-    transition: border-color var(--dur-quick) ease, box-shadow var(--dur-quick) ease;
+    min-width: 0;
 }
 
-.hudTopBlock:has(.timerText.timerUrgent),
-.hudTopBlock:has(.timerText.timerDanger) {
-    border-color: rgba(244, 173, 71, 0.45);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(244, 173, 71, 0.15);
+.hudScoreAnchor {
+    justify-items: start;
+    padding-left: 12px;
 }
 
-.hudTopBlock:has(.timerText.timerDanger) {
-    border-color: rgba(255, 106, 117, 0.5);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 16px rgba(255, 106, 117, 0.2);
+.hudScoreAnchor::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 2px;
+    height: 58px;
+    background: linear-gradient(transparent, var(--score-color), transparent);
+    box-shadow: 0 0 10px var(--score-glow);
 }
 
-.hudTopLabel {
+.hudEyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: rgba(191, 215, 238, 0.62);
+}
+
+.hudQuietMeta,
+.hudPace {
+    min-height: 13px;
     font-size: 10px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: rgba(74, 168, 255, 0.6);
-}
-
-.hudTopMeta {
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: 0.2px;
-    color: rgba(226, 242, 255, 0.76);
-    text-align: center;
-}
-
-.hudPbPace {
-    font-size: 11px;
-    font-weight: 700;
     letter-spacing: 0.3px;
-    text-align: center;
-    line-height: 1.2;
-    transition: color 0.3s ease;
+    white-space: nowrap;
 }
 
-.hudPbPace-ahead {
+.hudQuietMeta {
+    color: rgba(204, 221, 240, 0.54);
+}
+
+.hudPace-ahead {
     color: #72deb6;
 }
 
-.hudPbPace-behind {
+.hudPace-behind {
     color: rgba(255, 160, 170, 0.9);
 }
 
@@ -139,98 +146,220 @@
     font-weight: 700;
     letter-spacing: 0.3px;
     line-height: 1;
-    text-align: center;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .scoreNumber {
-    font-size: clamp(42px, 7vw, 62px);
+    min-width: 4ch;
+    font-size: clamp(36px, 5.5vw, 54px);
     color: var(--score-color);
     text-shadow: 0 8px 24px var(--score-glow);
     transition: color var(--dur-quick) ease, text-shadow var(--dur-quick) ease;
+    animation: hudNumberImpulse 160ms var(--ca-motion-ease-enter, ease-out);
 }
 
-.timerText {
-    color: var(--hud-color);
-    font-size: clamp(42px, 7vw, 62px);
-    transition: color var(--dur-quick) ease;
-}
-
-.timerText.timerUrgent {
-    color: var(--caution);
-    animation: timerPulse 0.9s ease-in-out infinite;
-}
-
-.timerText.timerDanger {
-    color: var(--negative);
-    animation: timerPulse 0.5s ease-in-out infinite;
-}
-
-.hudStatusLine {
-    width: min(720px, 94vw);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    flex-shrink: 0;
+.hudCenterChannel {
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    gap: 5px;
 }
 
 .gameStatusRow {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+        "streak combo"
+        "best best";
+    align-items: end;
+    column-gap: 12px;
+}
+
+.hudStreakReadout {
+    grid-area: streak;
     display: flex;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.hudActionButton {
-    min-height: 34px;
-    font-size: 12px;
-    padding: 8px 12px;
-    flex-shrink: 0;
-}
-
-.statusBar {
-    width: fit-content;
-    max-width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--chip-border);
-    border-radius: 999px;
-    padding: 2px 6px;
-    background: linear-gradient(135deg, rgba(92, 189, 255, 0.22), rgba(80, 140, 255, 0.16));
-    backdrop-filter: blur(2px);
-    transition: border-color 0.4s ease;
-}
-
-.statusBarItem {
-    min-width: 72px;
-    display: inline-flex;
     align-items: baseline;
-    justify-content: center;
     gap: 5px;
-    padding: 3px 8px;
 }
 
-.statusBarItem + .statusBarItem {
-    border-left: 1px solid rgba(160, 218, 255, 0.36);
-}
-
-.statusBarLabel {
-    color: rgba(226, 242, 255, 0.82);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.16px;
+.hudStreakLabel,
+.hudComboLabel {
+    color: rgba(207, 226, 244, 0.64);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
     text-transform: uppercase;
 }
 
-.statusBarValue {
-    color: rgba(240, 248, 255, 0.96);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.24px;
-    line-height: 1;
+.hudStreakValue,
+.hudComboValue {
     display: inline-block;
-    animation: statValuePop 0.22s ease-out;
+    color: #f5f9ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    animation: hudNumberImpulse 160ms var(--ca-motion-ease-enter, ease-out);
+}
+
+.hudComboReadout {
+    grid-area: combo;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    color: var(--score-color);
+}
+
+.hudComboValue {
+    color: var(--score-color);
+    font-size: 19px;
+}
+
+.hudBestReadout {
+    grid-area: best;
+    justify-self: center;
+    color: rgba(205, 223, 241, 0.55);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.hudIdentity {
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    overflow: hidden;
+    color: rgba(194, 214, 235, 0.52);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.hudIdentity span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hudModeIdentity {
+    color: rgba(122, 218, 197, 0.86);
+}
+
+.hudTimerAnchor {
+    width: 74px;
+    height: 74px;
+    justify-self: end;
+    justify-items: center;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #111829 60%, transparent 62%),
+        conic-gradient(from 0deg, var(--hud-timer-color, #75c8ff) var(--hud-timer-progress), rgba(140, 181, 218, 0.14) 0);
+    box-shadow: 0 0 16px rgba(80, 171, 235, 0.1);
+    --hud-timer-color: #75c8ff;
+}
+
+.hudTimerAnchor.is-urgent {
+    --hud-timer-color: var(--caution);
+}
+
+.hudTimerAnchor.is-danger {
+    --hud-timer-color: var(--negative);
+}
+
+.hudTimerAnchor.is-untimed {
+    --hud-timer-color: var(--score-color);
+}
+
+.hudTimerAnchor .hudEyebrow {
+    position: absolute;
+    top: 12px;
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+
+.timerText {
+    min-width: 2ch;
+    color: var(--hud-color);
+    font-size: 28px;
+    animation: hudNumberImpulse 160ms var(--ca-motion-ease-enter, ease-out);
+}
+
+.hudTimerAnchor.is-urgent .timerText {
+    color: var(--caution);
+}
+
+.hudTimerAnchor.is-danger .timerText {
+    color: var(--negative);
+}
+
+.hudTimerUnit {
+    position: absolute;
+    bottom: 10px;
+    color: rgba(207, 225, 242, 0.58);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.hudContextRail {
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 3px 10px;
+    border-bottom: 1px solid rgba(150, 204, 239, 0.13);
+    color: rgba(222, 235, 248, 0.76);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.hudGhostContext,
+.hudDrillContext {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    white-space: nowrap;
+}
+
+.hudContextLabel {
+    color: rgba(255, 224, 153, 0.9);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.hudDrillContext .hudContextLabel {
+    color: var(--score-color);
+}
+
+.hudGhostContext .isAhead,
+.hudGoalComplete {
+    color: #8be4bd;
+}
+
+.hudGhostContext .isBehind {
+    color: #ffabb4;
+}
+
+.hudActionButton {
+    min-height: 28px;
+    padding: 4px 10px;
+    font-size: 10px;
+    flex: 0 0 auto;
+}
+
+@keyframes hudNumberImpulse {
+    from { opacity: 0.72; transform: translateY(1px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .arena {
@@ -4914,24 +5043,17 @@
     --arena-saturation: 1.22;
 }
 
-.scoreNumber.comboActive,
-.gameScreen.streakTier3 .scoreNumber,
-.gameScreen.streakTier4 .scoreNumber {
-    animation: scoreBreath var(--pulse-duration) ease-in-out infinite;
-}
-
 .gameScreen.isShaking .arena {
     animation: comboShake 0.26s ease-in-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
     .arena::before,
-    .scoreNumber.comboActive,
-    .gameScreen.streakTier3 .scoreNumber,
-    .gameScreen.streakTier4 .scoreNumber,
+    .scoreNumber,
+    .timerText,
+    .hudStreakValue,
+    .hudComboValue,
     .gameScreen.isShaking .arena,
-    .timerText.timerUrgent,
-    .timerText.timerDanger,
     .gameOverPromotionCard,
     .rewardsCard,
     .gameOverSection.panel-performance,
@@ -4940,14 +5062,13 @@
     .gameOverScorePanel.isComplete,
     .powerupReadyCue,
     .powerupItem.ready,
-    .statusBarValue,
     .clickFeedback,
     .clickFeedback.positive,
     .clickFeedback.negative {
         animation: none;
     }
 
-    .statusBar {
+    .hudPrimaryRow {
         transition: none;
     }
 
@@ -5170,21 +5291,95 @@
         gap: 10px;
     }
 
-    .hudTopRow {
-        grid-template-columns: 1fr;
-        gap: 8px;
+    .gameHud {
+        width: 100%;
     }
 
-    .hudTopBlock {
-        min-height: 68px;
+    .hudPrimaryRow {
+        min-height: 70px;
+        grid-template-columns: minmax(94px, 1fr) minmax(116px, 1.15fr) minmax(60px, 0.7fr);
+        gap: 6px;
+        padding-inline: 4px;
     }
 
-    .gameStatusRow {
-        justify-content: center;
+    .hudScoreAnchor {
+        padding-left: 8px;
+    }
+
+    .hudScoreAnchor::before {
+        height: 46px;
+    }
+
+    .scoreNumber {
+        min-width: 3.5ch;
+        font-size: clamp(28px, 9vw, 38px);
+    }
+
+    .hudPace,
+    .hudQuietMeta {
+        max-width: 24vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 8px;
+    }
+
+    .hudStreakValue {
+        font-size: 21px;
+    }
+
+    .hudComboValue {
+        font-size: 16px;
+    }
+
+    .hudStreakLabel,
+    .hudComboLabel,
+    .hudBestReadout,
+    .hudIdentity {
+        font-size: 7px;
+    }
+
+    .hudIdentity {
+        gap: 3px;
+        width: 100%;
+    }
+
+    .hudTimerAnchor {
+        width: 58px;
+        height: 58px;
+    }
+
+    .hudTimerAnchor .hudEyebrow {
+        top: 8px;
+        font-size: 6px;
+    }
+
+    .timerText {
+        font-size: 23px;
+    }
+
+    .hudTimerUnit {
+        bottom: 6px;
+        font-size: 6px;
+    }
+
+    .hudContextRail {
+        min-height: 26px;
+        justify-content: space-between;
+        gap: 6px;
+        padding-inline: 4px;
+        overflow-x: auto;
+        font-size: 8px;
+        scrollbar-width: none;
+    }
+
+    .hudGhostContext,
+    .hudDrillContext {
+        justify-content: flex-start;
+        gap: 6px;
     }
 
     .arena {
-        max-height: min(520px, calc(100dvh - 380px));
+        max-height: min(520px, calc(100dvh - 270px));
     }
 
     .powerupTray {

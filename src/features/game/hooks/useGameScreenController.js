@@ -319,13 +319,16 @@ export function useGameScreenController({
     [allowsCoinRewards, hits, roundMode.coinMultiplier]
   )
   const atmosphereTier = useMemo(() => getStreakAtmosphereTier(streak), [streak])
-  const pbPaceStatus = useMemo(() => {
+  const pbPace = useMemo(() => {
     if (!isPlaying || !isTimedRound) return null
     if (!playerBestScore || playerBestScore <= 0) return null
     const elapsedSeconds = roundMode.durationSeconds - timeLeft
     if (elapsedSeconds < 3) return null
     const expectedPace = Math.round(playerBestScore * (elapsedSeconds / roundMode.durationSeconds))
-    return score >= expectedPace ? "ahead" : "behind"
+    return {
+      status: score >= expectedPace ? "ahead" : "behind",
+      delta: score - expectedPace,
+    }
   }, [isPlaying, isTimedRound, playerBestScore, roundMode.durationSeconds, score, timeLeft])
   const isGuardActive = guardActiveUntilMs > 0
   const displayMode = phase === ROUND_PHASE.READY ? resolvedSelectedMode : roundMode
@@ -1276,6 +1279,7 @@ export function useGameScreenController({
       ghostTargetScore: ghostReplay?.score ?? null,
       isGhostDuel: Boolean(ghostReplay),
       timeLeft: phase === ROUND_PHASE.READY ? displayMode.durationSeconds : timeLeft,
+      roundDurationSeconds: displayMode.durationSeconds,
       isTimedRound: displayMode.isTimedRound !== false,
       modeLabel: displayMode.label,
       rankLabel: playerRankLabel,
@@ -1288,7 +1292,8 @@ export function useGameScreenController({
       loadoutPresentation: phase === ROUND_PHASE.READY
         ? previewLoadoutPresentation
         : activeRoundLoadoutPresentation,
-      pbPaceStatus,
+      pbPaceStatus: pbPace?.status ?? null,
+      pbPaceDelta: pbPace?.delta ?? null,
       playerBestScore,
       onEndRound: endCurrentRound,
       drillGoal,
