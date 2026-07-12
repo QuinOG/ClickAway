@@ -2,13 +2,22 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import AuthInputField from "../components/auth/AuthInputField.jsx"
+import AuthArenaArrival from "../components/auth/AuthArenaArrival.jsx"
+import { ActionButton } from "../components/ui/index.js"
 
 function getUsernameError(username = "") {
-  return username.trim() ? "" : "Choose a username."
+  const trimmedUsername = username.trim()
+  if (!trimmedUsername) return "Choose a username."
+  if (trimmedUsername.length < 3) return "Username must be at least 3 characters."
+  if (trimmedUsername.length > 32) return "Username must be 32 characters or less."
+  return ""
 }
 
 function getPasswordError(password = "") {
-  return password ? "" : "Create a password."
+  if (!password) return "Create a password."
+  if (password.length < 8) return "Password must be at least 8 characters."
+  if (password.length > 128) return "Password must be 128 characters or less."
+  return ""
 }
 
 function getConfirmPasswordError(password = "", confirmPassword = "") {
@@ -147,13 +156,8 @@ export default function SignupPage({ onSignup }) {
   }
 
   return (
-    <div className="pageCenter">
-      <section className="cardWide authCard">
-        <h1 className="cardTitle authTitle">Sign Up</h1>
-        <p className="muted authSubtitle">
-          Create your player identity and start building streaks.
-        </p>
-
+    <AuthArenaArrival mode="signup">
+      <div className="authCard">
         <form onSubmit={handleSubmit} className="authForm" noValidate>
           <AuthInputField
             label="Username"
@@ -174,6 +178,8 @@ export default function SignupPage({ onSignup }) {
             hintTone={usernameHint.tone}
             autoFocus
             required
+            minLength={3}
+            maxLength={32}
             disabled={isSubmitting}
           />
 
@@ -193,6 +199,8 @@ export default function SignupPage({ onSignup }) {
             hint={passwordHint.text}
             hintTone={passwordHint.tone}
             required
+            minLength={8}
+            maxLength={128}
             disabled={isSubmitting}
           />
 
@@ -212,12 +220,21 @@ export default function SignupPage({ onSignup }) {
             hint={confirmPasswordHint.text}
             hintTone={confirmPasswordHint.tone}
             required
+            minLength={8}
+            maxLength={128}
             disabled={isSubmitting}
           />
 
-          <button className="primaryButton authButton" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating Account..." : "Create Account"}
-          </button>
+          <ActionButton
+            className="authButton"
+            type="submit"
+            intent="primary"
+            size="lg"
+            isLoading={isSubmitting}
+            loadingLabel="Creating competitor…"
+          >
+            Create competitor
+          </ActionButton>
 
           {submitError ? (
             <p className="authHint authHint-error" role="alert">
@@ -232,7 +249,7 @@ export default function SignupPage({ onSignup }) {
             Login instead
           </Link>
         </div>
-      </section>
-    </div>
+      </div>
+    </AuthArenaArrival>
   )
 }

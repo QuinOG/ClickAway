@@ -1617,6 +1617,908 @@
     color: rgba(236, 228, 210, 0.9);
 }
 
+/* UX-06: game-entry lobby. These rules intentionally sit after the legacy
+   carousel styles so the lobby can ship without changing live-round geometry. */
+.arenaLobbyBackdrop {
+    --lobby-accent: 78, 190, 239;
+    --lobby-accent-strong: #7cddff;
+    padding: clamp(10px, 2.4vw, 28px);
+    background:
+        radial-gradient(circle at 50% 8%, rgba(var(--lobby-accent), 0.14), transparent 44%),
+        rgba(4, 9, 18, 0.8);
+    transition: background-color 0.2s ease;
+}
+
+.arenaLobbyMood-practice {
+    --lobby-accent: 73, 215, 173;
+    --lobby-accent-strong: #80efc3;
+}
+
+.arenaLobbyMood-casual {
+    --lobby-accent: 65, 180, 239;
+    --lobby-accent-strong: #79d9ff;
+}
+
+.arenaLobbyMood-ranked {
+    --lobby-accent: 239, 171, 67;
+    --lobby-accent-strong: #ffd276;
+}
+
+.readyCard.arenaLobby {
+    width: min(1120px, calc(100vw - 32px));
+    min-width: 0;
+    max-width: 1120px;
+    max-height: calc(100dvh - 32px);
+    padding: clamp(18px, 2.5vw, 30px);
+    border: 1px solid rgba(var(--lobby-accent), 0.2);
+    border-radius: 24px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-align: left;
+    background:
+        linear-gradient(90deg, rgba(var(--lobby-accent), 0.1), transparent 26%),
+        radial-gradient(circle at 90% 0%, rgba(var(--lobby-accent), 0.12), transparent 36%),
+        linear-gradient(160deg, rgba(12, 21, 36, 0.99), rgba(7, 13, 25, 0.99));
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.44), 0 0 50px rgba(var(--lobby-accent), 0.08);
+    display: grid;
+    gap: clamp(14px, 2vh, 20px);
+    scrollbar-gutter: stable;
+}
+
+.arenaLobbyHeader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 28px;
+    align-items: end;
+}
+
+.arenaLobbyHeader h2,
+.arenaLobbyHeader p {
+    margin: 0;
+}
+
+.arenaLobbyHeader h2 {
+    margin-top: 3px;
+    color: #f5f9ff;
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+}
+
+.arenaLobbyHeader p {
+    max-width: 680px;
+    margin-top: 8px;
+    color: rgba(215, 229, 246, 0.72);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.arenaLobbyKicker,
+.practiceDrawerEyebrow {
+    color: var(--lobby-accent-strong);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.arenaLobbyShortcuts {
+    display: flex;
+    gap: 12px;
+    color: rgba(194, 213, 235, 0.56);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.arenaLobbyShortcuts span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.arenaLobbyShortcuts kbd {
+    min-width: 22px;
+    padding: 3px 5px;
+    border: 1px solid rgba(195, 218, 244, 0.16);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(229, 240, 252, 0.8);
+    font: inherit;
+    text-align: center;
+}
+
+.arenaLobbyHeader .readyOnboardingCoach {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+}
+
+.lobbyModeSelector {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.lobbyModeRail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.lobbyModeArrow {
+    min-width: 40px;
+    border: 1px solid rgba(184, 207, 233, 0.13);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.025);
+    color: rgba(222, 237, 253, 0.74);
+    font: inherit;
+    font-size: 24px;
+    cursor: pointer;
+    transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.lobbyModeArrow:hover:not(:disabled) {
+    border-color: rgba(var(--lobby-accent), 0.45);
+    background: rgba(var(--lobby-accent), 0.08);
+    color: var(--lobby-accent-strong);
+}
+
+.lobbyModeArrow:focus-visible {
+    outline: 2px solid var(--lobby-accent-strong);
+    outline-offset: 3px;
+}
+
+.lobbyModeArrow:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.lobbyModeChoice {
+    min-width: 0;
+    min-height: 116px;
+    padding: 14px;
+    border: 1px solid rgba(184, 207, 233, 0.13);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    color: #eaf3ff;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    transition: transform 0.16s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lobbyModeChoice:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(190, 216, 244, 0.3);
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.lobbyModeChoice.isSelected {
+    border-color: rgba(var(--lobby-accent), 0.66);
+    background: linear-gradient(145deg, rgba(var(--lobby-accent), 0.16), rgba(var(--lobby-accent), 0.04));
+    box-shadow: inset 0 0 0 1px rgba(var(--lobby-accent), 0.1), 0 10px 28px rgba(var(--lobby-accent), 0.08);
+}
+
+.lobbyModeChoice:focus-visible,
+.practiceDrawerTrigger:focus-visible,
+.practiceDrillChoice:focus-visible,
+.arenaLobbyStart:focus-visible,
+.lobbyTextLink:focus-visible {
+    outline: 2px solid var(--lobby-accent-strong);
+    outline-offset: 3px;
+}
+
+.lobbyModeChoice:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.lobbyModeChoiceTopline {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+}
+
+.lobbyModeGlyph {
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(197, 219, 243, 0.2);
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.055);
+    color: var(--lobby-accent-strong);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.lobbyModeName {
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 18px;
+    font-weight: 750;
+}
+
+.lobbyModeDuration,
+.lobbyModeReward {
+    color: rgba(205, 223, 244, 0.62);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.lobbyModeDuration {
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.lobbyModeSummary {
+    color: rgba(217, 231, 247, 0.72);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.lobbyModeReward {
+    color: var(--lobby-accent-strong);
+}
+
+.lobbyModeBrief {
+    padding: 16px;
+    border: 1px solid rgba(var(--lobby-accent), 0.18);
+    border-radius: 18px;
+    background: linear-gradient(100deg, rgba(var(--lobby-accent), 0.1), rgba(255, 255, 255, 0.018));
+    display: grid;
+    grid-template-columns: minmax(190px, 0.8fr) minmax(380px, 1.7fr);
+    gap: 14px 24px;
+}
+
+.lobbyModeBriefLead {
+    display: grid;
+    align-content: center;
+    gap: 5px;
+}
+
+.lobbyModeBriefLead span,
+.lobbyTargetRow small,
+.lobbyBuildReadiness small,
+.lobbyModeFacts dt {
+    color: rgba(181, 205, 232, 0.6);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.lobbyModeBriefLead strong {
+    color: rgba(239, 246, 255, 0.92);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.lobbyModeFacts {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+}
+
+.lobbyModeFacts div {
+    min-width: 0;
+    padding-left: 10px;
+    border-left: 1px solid rgba(197, 220, 244, 0.12);
+    display: grid;
+    align-content: center;
+    gap: 4px;
+}
+
+.lobbyModeFacts dd {
+    margin: 0;
+    color: #f1f7ff;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.25;
+}
+
+.lobbyTargetRow {
+    grid-column: 1 / -1;
+    padding-top: 12px;
+    border-top: 1px solid rgba(197, 220, 244, 0.1);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.lobbyTargetRow span {
+    display: grid;
+    gap: 3px;
+}
+
+.lobbyTargetRow strong {
+    color: rgba(238, 246, 255, 0.9);
+    font-size: 12px;
+}
+
+.practiceDrawer {
+    border: 1px solid rgba(90, 220, 178, 0.18);
+    border-radius: 16px;
+    background: rgba(57, 178, 140, 0.045);
+    overflow: hidden;
+}
+
+.practiceDrawerTrigger {
+    width: 100%;
+    min-height: 58px;
+    padding: 10px 14px;
+    border: 0;
+    background: transparent;
+    color: #eff9f5;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.practiceDrawerTrigger > span:first-child {
+    display: grid;
+    gap: 3px;
+}
+
+.practiceDrawerTrigger > span:last-child {
+    color: rgba(169, 236, 211, 0.75);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.practiceDrawerContent {
+    padding: 0 14px 14px;
+}
+
+.practiceWarmupNote {
+    margin: 0 0 10px;
+    color: rgba(211, 236, 226, 0.76);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.practiceDrillGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.practiceDrillChoice {
+    min-height: 104px;
+    padding: 11px;
+    border: 1px solid rgba(181, 222, 207, 0.13);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    color: rgba(234, 246, 241, 0.9);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: grid;
+    align-content: start;
+    gap: 5px;
+}
+
+.practiceDrillChoice.isSelected {
+    border-color: rgba(82, 223, 177, 0.55);
+    background: rgba(69, 207, 162, 0.1);
+}
+
+.practiceDrillChoice strong {
+    font-size: 12px;
+}
+
+.practiceDrillChoice span,
+.practiceDrillChoice small {
+    color: rgba(206, 229, 220, 0.67);
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.practiceDrillChoice small {
+    color: #8ee6c3;
+    font-weight: 800;
+}
+
+.lobbyWarmupStrip {
+    padding: 10px 14px;
+    border: 1px solid rgba(239, 183, 88, 0.18);
+    border-radius: 12px;
+    background: rgba(239, 183, 88, 0.06);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: rgba(236, 223, 199, 0.7);
+    font-size: 11px;
+}
+
+.lobbyWarmupStrip > span:first-child {
+    color: #ffd184;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.lobbyWarmupStrip strong {
+    color: #fff4df;
+}
+
+.arenaLobbyFooter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 18px;
+    align-items: center;
+}
+
+.lobbyBuildReadiness {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.lobbyBuildStatus {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--lobby-accent-strong);
+    box-shadow: 0 0 14px rgba(var(--lobby-accent), 0.72);
+}
+
+.lobbyBuildReadiness > span:nth-child(2) {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 8px;
+    align-items: baseline;
+}
+
+.lobbyBuildReadiness strong {
+    color: #eff6ff;
+    font-size: 13px;
+}
+
+.lobbyBuildReadiness em {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    color: rgba(187, 208, 232, 0.62);
+    font-size: 10px;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lobbyTextLink {
+    color: rgba(202, 224, 247, 0.78);
+    font-size: 11px;
+    font-weight: 750;
+    text-decoration-color: rgba(202, 224, 247, 0.32);
+    text-underline-offset: 3px;
+    white-space: nowrap;
+}
+
+.lobbyTextLink b {
+    margin-left: 5px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    background: rgba(255, 199, 92, 0.15);
+    color: #ffd17a;
+    font-size: 8px;
+    text-transform: uppercase;
+}
+
+.arenaLobbyFooter .readySessionStrip {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.arenaLobbyActions {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+}
+
+.arenaLobby .arenaLobbyStart {
+    min-width: 230px;
+    min-height: 54px;
+    padding: 9px 18px;
+    border: 1px solid rgba(var(--lobby-accent), 0.6);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(var(--lobby-accent), 0.96), rgba(var(--lobby-accent), 0.68));
+    color: #07121d;
+    box-shadow: 0 12px 30px rgba(var(--lobby-accent), 0.16);
+    display: grid;
+    place-items: center;
+    gap: 2px;
+}
+
+.arenaLobbyStart span {
+    font-size: 15px;
+    font-weight: 850;
+}
+
+.arenaLobbyStart small {
+    color: rgba(5, 15, 24, 0.68);
+    font-size: 9px;
+    font-weight: 750;
+}
+
+@media (max-width: 760px) {
+    .arenaLobbyBackdrop {
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .readyCard.arenaLobby {
+        width: 100%;
+        max-width: none;
+        max-height: 100dvh;
+        min-height: 100dvh;
+        padding: 18px 14px calc(14px + env(safe-area-inset-bottom));
+        border-width: 0;
+        border-radius: 0;
+        gap: 14px;
+        scrollbar-gutter: auto;
+    }
+
+    .arenaLobbyHeader {
+        grid-template-columns: 1fr;
+    }
+
+    .arenaLobbyHeader h2 {
+        font-size: clamp(29px, 9vw, 38px);
+    }
+
+    .arenaLobbyShortcuts {
+        display: none;
+    }
+
+    .lobbyModeRail {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .lobbyModeSelector {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .lobbyModeArrow {
+        display: none;
+    }
+
+    .lobbyModeChoice {
+        min-height: 54px;
+        padding: 8px 6px;
+        border-radius: 11px;
+        place-items: center;
+        align-content: center;
+    }
+
+    .lobbyModeChoiceTopline {
+        grid-template-columns: 24px auto;
+        gap: 5px;
+    }
+
+    .lobbyModeGlyph {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        font-size: 10px;
+    }
+
+    .lobbyModeName {
+        font-size: 13px;
+    }
+
+    .lobbyModeDuration,
+    .lobbyModeSummary,
+    .lobbyModeReward {
+        display: none;
+    }
+
+    .lobbyModeBrief {
+        grid-template-columns: 1fr;
+        padding: 13px;
+        gap: 12px;
+    }
+
+    .lobbyModeFacts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px 5px;
+    }
+
+    .lobbyTargetRow {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .lobbyTargetRow span {
+        grid-template-columns: 105px 1fr;
+        align-items: baseline;
+    }
+
+    .practiceDrawer.isOpen {
+        position: fixed;
+        z-index: 5;
+        inset: auto 0 0;
+        max-height: min(72dvh, 610px);
+        overflow: auto;
+        border-radius: 22px 22px 0 0;
+        border-color: rgba(92, 222, 179, 0.32);
+        background: #0b1d1b;
+        box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.55);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .practiceDrillGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .practiceDrillChoice {
+        min-height: 82px;
+    }
+
+    .lobbyWarmupStrip > span:last-child {
+        display: none;
+    }
+
+    .arenaLobbyFooter {
+        grid-template-columns: 1fr;
+        padding-bottom: 68px;
+    }
+
+    .lobbyBuildReadiness {
+        grid-template-columns: 8px minmax(0, 1fr) auto;
+    }
+
+    .lobbyBuildReadiness em {
+        max-width: 60vw;
+    }
+
+    .arenaLobbyActions {
+        position: fixed;
+        z-index: 4;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 9px 14px calc(9px + env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, rgba(7, 13, 25, 0), rgba(7, 13, 25, 0.96) 24%);
+    }
+
+    .arenaLobbyActions .lobbyTextLink {
+        display: none;
+    }
+
+    .arenaLobby .arenaLobbyStart {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 420px) {
+    .readyCard.arenaLobby {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .lobbyModeBriefLead strong {
+        font-size: 12px;
+    }
+
+    .lobbyModeFacts dd,
+    .lobbyTargetRow strong {
+        font-size: 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .arenaLobbyBackdrop,
+    .lobbyModeChoice {
+        transition: none;
+    }
+}
+
+/* Ranked lobby preflight */
+.rankedPreflight {
+    --ranked-accent: #f3c45a;
+    display: grid;
+    grid-template-columns: minmax(170px, 0.72fr) minmax(0, 1.8fr);
+    gap: 18px;
+    padding: 16px;
+    border: 1px solid rgba(243, 196, 90, 0.24);
+    border-radius: 18px;
+    text-align: left;
+    background:
+        radial-gradient(circle at 8% 30%, color-mix(in srgb, var(--ranked-accent) 14%, transparent), transparent 42%),
+        rgba(11, 17, 29, 0.66);
+}
+
+.rankedPreflight.rank-bronze { --ranked-accent: #d59168; }
+.rankedPreflight.rank-silver { --ranked-accent: #c9d8e8; }
+.rankedPreflight.rank-gold { --ranked-accent: #f3c45a; }
+.rankedPreflight.rank-platinum { --ranked-accent: #64d7c4; }
+.rankedPreflight.rank-diamond { --ranked-accent: #72b9ff; }
+.rankedPreflight.rank-deadeye { --ranked-accent: #ff8c73; }
+.rankedPreflight.rank-placement,
+.rankedPreflight.rank-unranked { --ranked-accent: #a9bdd6; }
+
+.rankedPreflightHero {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.rankedPreflightCrest {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 72px;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--ranked-accent) 48%, transparent);
+    border-radius: 50%;
+    color: var(--ranked-accent);
+    font: 800 24px/1 "Space Grotesk", sans-serif;
+    background: color-mix(in srgb, var(--ranked-accent) 10%, transparent);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--ranked-accent) 13%, transparent);
+}
+
+.rankedPreflightCrest img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+}
+
+.rankedPreflightIdentity {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.rankedPreflightIdentity > span {
+    color: color-mix(in srgb, var(--ranked-accent) 86%, white);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.rankedPreflightIdentity > strong {
+    color: #f6f9ff;
+    font: 700 20px/1.15 "Space Grotesk", sans-serif;
+}
+
+.rankedPreflightIdentity > small {
+    color: rgba(221, 232, 247, 0.72);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.rankedPreflightDetails > summary {
+    display: none;
+}
+
+.rankedPreflightDetailsBody {
+    display: grid;
+    gap: 10px;
+}
+
+.rankedPreflightProgress {
+    display: grid;
+    gap: 7px;
+}
+
+.rankedPlacementPips {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.rankedPlacementPips span,
+.rankedRrTrack {
+    height: 7px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(210, 225, 243, 0.13);
+}
+
+.rankedPlacementPips span.isComplete,
+.rankedRrTrack > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--ranked-accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--ranked-accent) 42%, transparent);
+}
+
+.rankedProgressSemantic {
+    color: rgba(232, 240, 251, 0.9);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.rankedPreflightProgress p,
+.rankedStakesCopy,
+.rankedWarmupAction p {
+    margin: 0;
+    color: rgba(210, 224, 242, 0.72);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.rankedPreflightReadouts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.rankedPreflightReadouts > div {
+    display: grid;
+    gap: 2px;
+    padding: 8px 10px;
+    border-left: 2px solid color-mix(in srgb, var(--ranked-accent) 55%, transparent);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.rankedPreflightReadouts span,
+.rankedPreflightReadouts small {
+    color: rgba(197, 214, 236, 0.62);
+    font-size: 10px;
+}
+
+.rankedPreflightReadouts strong {
+    color: #eef5ff;
+    font-size: 12px;
+}
+
+.rankedPreflightReadouts strong.is-positive { color: #7ce4b0; }
+.rankedPreflightReadouts strong.is-negative { color: #ff9b8f; }
+
+.rankedStakesCopy {
+    padding-top: 8px;
+    border-top: 1px solid rgba(208, 224, 244, 0.1);
+}
+
+.rankedWarmupAction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.readyWarmupButton {
+    min-height: 36px;
+    flex: 0 0 auto;
+    padding: 7px 12px;
+    border: 1px solid rgba(243, 196, 90, 0.36);
+    border-radius: 10px;
+    color: #ffe7ae;
+    background: rgba(243, 196, 90, 0.1);
+    font: 700 11px/1.2 inherit;
+    cursor: pointer;
+}
+
+.readyWarmupButton:hover {
+    background: rgba(243, 196, 90, 0.18);
+}
+
 .readyTrainingSuite {
     display: grid;
     gap: 12px;
@@ -4088,6 +4990,61 @@
 
     .readyActions {
         width: 100%;
+    }
+
+    .rankedPreflight {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 13px;
+    }
+
+    .rankedPreflightCrest {
+        width: 58px;
+        height: 58px;
+        flex-basis: 58px;
+    }
+
+    .rankedPreflightCrest img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .rankedPreflightDetails > summary {
+        display: flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: space-between;
+        color: rgba(232, 240, 251, 0.88);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .rankedPreflightDetails > summary::after {
+        content: "+";
+        color: var(--ranked-accent);
+        font-size: 18px;
+    }
+
+    .rankedPreflightDetails[open] > summary::after {
+        content: "âˆ’";
+    }
+
+    .rankedPreflightDetailsBody {
+        display: none;
+    }
+
+    .rankedPreflightDetails[open] .rankedPreflightDetailsBody {
+        display: grid;
+    }
+
+    .rankedWarmupAction {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .readyWarmupButton {
+        min-height: 44px;
     }
 
     .readyBuildStrip {

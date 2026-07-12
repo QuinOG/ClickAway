@@ -401,6 +401,115 @@ export function getRankProgressWithPlacement({
   return getRankProgress(mmr)
 }
 
+export function buildRankedPreflight({
+  rankProgress,
+  rankedState = {},
+  recentRounds = [],
+} = {}) {
+  if (!rankProgress || typeof rankProgress !== "object") {
+    return {
+      state: "unavailable",
+      headline: "Rank status unavailable",
+      detail: "Your rank data could not be loaded. You can retry by reopening the lobby.",
+      progressValue: 0,
+      progressMax: 1,
+      progressText: "Rank data unavailable",
+      recentTrend: { label: "Unavailable", value: 0, tone: "neutral" },
+      protectionMatches: 0,
+    }
+  }
+
+  const normalizedRankedState = normalizeRankedState(rankedState)
+  const rankedRounds = (Array.isArray(recentRounds) ? recentRounds : [])
+    .filter((round) => (
+      round?.progressionMode === PROGRESSION_MODE.RANKED ||
+      round?.modeId === DIFFICULTY_IDS.HARD ||
+      round?.difficultyId === DIFFICULTY_IDS.HARD
+    ))
+    .slice(0, 5)
+  const recentDelta = rankedRounds.reduce(
+    (total, round) => total + (Number(round?.rankDelta) || 0),
+    0
+  )
+  const recentTrend = {
+    label: rankedRounds.length
+      ? `${recentDelta > 0 ? "+" : ""}${recentDelta} RR / last ${rankedRounds.length}`
+      : "No recent Ranked rounds",
+    value: recentDelta,
+    tone: recentDelta > 0 ? "positive" : recentDelta < 0 ? "negative" : "neutral",
+  }
+  const protectionMatches = normalizedRankedState.demotionProtectionRounds
+
+  if (rankProgress.isUnranked) {
+    return {
+      state: "unranked",
+      headline: "Begin your placements",
+      detail: `Complete ${PLACEMENT_MATCH_COUNT} Ranked matches to reveal your first division.`,
+      progressValue: 0,
+      progressMax: PLACEMENT_MATCH_COUNT,
+      progressText: `0 of ${PLACEMENT_MATCH_COUNT} placement matches complete`,
+      recentTrend,
+      protectionMatches,
+    }
+  }
+
+  if (rankProgress.isPlacement) {
+    const played = clampInteger(
+      rankProgress.placementMatchesPlayed,
+      0,
+      PLACEMENT_MATCH_COUNT
+    )
+    const remaining = Math.max(0, PLACEMENT_MATCH_COUNT - played)
+
+    return {
+      state: remaining === 1 ? "reveal-pending" : "placement",
+      headline: remaining === 1 ? "One match until reveal" : "Placement in progress",
+      detail: `${remaining} ${remaining === 1 ? "match" : "matches"} remaining before your division is revealed.`,
+      progressValue: played,
+      progressMax: PLACEMENT_MATCH_COUNT,
+      progressText: `${played} of ${PLACEMENT_MATCH_COUNT} placement matches complete`,
+      recentTrend,
+      protectionMatches,
+    }
+  }
+
+  if (rankProgress.isTopRank) {
+    return {
+      state: "top-rank",
+      headline: "Deadeye division",
+      detail: "You are at the top rank. Keep competing to build your season standing.",
+      progressValue: 1,
+      progressMax: 1,
+      progressText: "Top rank reached",
+      recentTrend,
+      protectionMatches,
+    }
+  }
+
+  const rr = clampInteger(rankProgress.rr, 0, rankProgress.rrMax || RR_PER_DIVISION)
+  const rrMax = clampInteger(rankProgress.rrMax || RR_PER_DIVISION, 1, RR_PER_DIVISION)
+  const rrToNext = Math.max(0, Number(rankProgress.mmrToNextTier) || 0)
+  const isPromotionNear = rrToNext > 0 && rrToNext <= 20
+  const isProtected = protectionMatches > 0
+
+  return {
+    state: isProtected ? "protected" : isPromotionNear ? "promotion-near" : "revealed",
+    headline: isProtected
+      ? "Division protected"
+      : isPromotionNear
+        ? `${rrToNext} RR to ${rankProgress.nextTierLabel}`
+        : `${rankProgress.nextTierLabel} in sight`,
+    detail: isProtected
+      ? `${protectionMatches} ${protectionMatches === 1 ? "match" : "matches"} of demotion protection remain.`
+      : `${rrToNext} RR separates you from ${rankProgress.nextTierLabel}.`,
+    progressValue: rr,
+    progressMax: rrMax,
+    progressText: `${rr} of ${rrMax} RR in ${rankProgress.tierLabel}`,
+    recentTrend,
+    protectionMatches,
+  }
+}
+
 export function applyRankedMatchResult({
   currentMmr = INITIAL_RANK_MMR,
   currentRankedState = {},

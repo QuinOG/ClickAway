@@ -15,6 +15,16 @@ function getErrorMessage(error, fallbackMessage) {
   return error?.response?.data?.error || fallbackMessage
 }
 
+function getAuthErrorMessage(error, fallbackMessage) {
+  if (!error?.response) {
+    return "You appear to be offline. Check your connection and try again."
+  }
+  if (error.response.status === 429) {
+    return "Too many attempts. Wait a moment, then try again."
+  }
+  return getErrorMessage(error, fallbackMessage)
+}
+
 export async function signupUser({ username, password }) {
   try {
     const response = await apiClient.post("/auth/signup", {
@@ -23,7 +33,7 @@ export async function signupUser({ username, password }) {
     })
     return response.data
   } catch (error) {
-    throw new Error(getErrorMessage(error, "Unable to create account."))
+    throw new Error(getAuthErrorMessage(error, "Unable to create account."))
   }
 }
 
@@ -35,7 +45,7 @@ export async function loginUser({ username, password }) {
     })
     return response.data
   } catch (error) {
-    throw new Error(getErrorMessage(error, "Unable to log in."))
+    throw new Error(getAuthErrorMessage(error, "Unable to log in."))
   }
 }
 

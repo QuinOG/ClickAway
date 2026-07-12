@@ -1,4 +1,4 @@
-import { lazy, useCallback, useState } from "react"
+import { lazy, useCallback, useEffect, useState } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { MotionConfig } from "motion/react"
 
@@ -36,12 +36,22 @@ const UiKitPage = import.meta.env.DEV
   : null
 
 function SessionLoadingScreen() {
+  useEffect(() => {
+    document.title = "Entering the arena | ClickAway"
+  }, [])
+
   return (
-    <div className="pageCenter">
-      <section className="cardWide authCard">
-        <h1 className="cardTitle authTitle">Checking session...</h1>
-      </section>
-    </div>
+    <main className="sessionArrival" aria-labelledby="session-arrival-title" aria-busy="true">
+      <div className="sessionArrivalAtmosphere" aria-hidden="true">
+        <span className="sessionCalibrationRing" />
+        <span className="sessionCalibrationRing sessionCalibrationRingInner" />
+      </div>
+      <img className="sessionArrivalMark" src="/brand/clickaway-mark.svg" alt="" />
+      <span className="sessionArrivalEyebrow">Precision Arena</span>
+      <h1 id="session-arrival-title">Calibrating your session</h1>
+      <p>Restoring your competitor profile and arena settings…</p>
+      <span className="sessionProgress" aria-hidden="true"><span /></span>
+    </main>
   )
 }
 
@@ -256,6 +266,7 @@ export default function App() {
                 playerRankProgress={rankProgress}
                 playerRankedState={rankedState}
                 playerHasRankedHistory={hasRankedHistory}
+                playerRecentRounds={roundHistory}
                 playerBestScore={playerLeaderboardStats.bestScore}
                 lifetimeStats={lifetimeStats}
                 savedLoadouts={savedLoadouts}

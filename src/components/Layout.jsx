@@ -88,6 +88,12 @@ export default function Layout({
   useBodyClass(ARMORY_ROUTE_BODY_CLASS, isArmoryRoute)
 
   useEffect(() => {
+    document.title = currentRoute
+      ? `${currentRoute.label} | ClickAway`
+      : "ClickAway | Precision Arena"
+  }, [currentRoute])
+
+  useEffect(() => {
     stopFeedback()
     cancelCelebrationEffects()
     emitFeedback(FEEDBACK_EVENTS.NAVIGATE, {

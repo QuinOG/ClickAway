@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import AuthInputField from "../components/auth/AuthInputField.jsx"
+import AuthArenaArrival from "../components/auth/AuthArenaArrival.jsx"
+import { ActionButton } from "../components/ui/index.js"
 
 function getUsernameError(username = "") {
   return username.trim() ? "" : "Enter your username."
@@ -92,13 +94,8 @@ export default function LoginPage({ onLogin }) {
   }
 
   return (
-    <div className="pageCenter">
-      <section className="cardWide authCard">
-        <h1 className="cardTitle authTitle">Login</h1>
-        <p className="muted authSubtitle">
-          Return to Reflex Arena and keep your streak moving.
-        </p>
-
+    <AuthArenaArrival mode="login">
+      <div className="authCard">
         <form onSubmit={handleSubmit} className="authForm" noValidate>
           <AuthInputField
             label="Username"
@@ -141,9 +138,16 @@ export default function LoginPage({ onLogin }) {
             disabled={isSubmitting}
           />
 
-          <button className="primaryButton authButton" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Logging in..." : "Login"}
-          </button>
+          <ActionButton
+            className="authButton"
+            type="submit"
+            intent="primary"
+            size="lg"
+            isLoading={isSubmitting}
+            loadingLabel="Entering arena…"
+          >
+            Enter arena
+          </ActionButton>
 
           {submitError ? (
             <p className="authHint authHint-error" role="alert">
@@ -158,7 +162,7 @@ export default function LoginPage({ onLogin }) {
             Create account
           </Link>
         </div>
-      </section>
-    </div>
+      </div>
+    </AuthArenaArrival>
   )
 }

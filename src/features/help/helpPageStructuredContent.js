@@ -84,7 +84,7 @@ export const MODE_EXPLANATION_POINTS = [
   "Casual: timed mode (30s) with moderate miss penalty and steady progression.",
   "Ranked: shorter timer (15s), faster shrink pressure, placement matches, and rank movement enabled.",
   "Mode-specific tuning changes difficulty feel: min size, shrink factor, combo step, and miss cost.",
-  "Ranked and Casual both award XP, but only Ranked changes your competitive rating.",
+  "Ranked and Casual both award XP, but only Ranked changes your RR.",
 ]
 
 export const MODE_TUNING_ROWS = [
@@ -109,7 +109,8 @@ export const RANK_RULES_POINTS = [
   "Promotion into a new visible division grants 2 matches of demotion protection.",
   `Each placement match awards a simple 0-${PLACEMENT_MATCH_SCORE_MAX} score based on score, accuracy, streak, and miss control.`,
   `Your first placement rank comes from the average of ${PLACEMENT_MATCH_COUNT} placement scores and is capped at Gold III.`,
-  "Round rank delta is still performance-based and clamped for stability.",
+  "After placements, score, accuracy, streak, and misses determine each RR result; the lobby never promises a fixed change.",
+  "The Ranked preflight shows placement progress or division RR, promotion distance, protection matches, recent trend, and your active build before Start.",
 ]
 
 export const SCORING_ROWS = [

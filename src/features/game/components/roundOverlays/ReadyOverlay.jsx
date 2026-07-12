@@ -1,62 +1,24 @@
-﻿import { AnimatePresence, motion } from "motion/react"
+import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 import { formatDrillBestMetric } from "../../../../utils/drillStatsUtils.js"
+import { getRankImageSrc, getRankToneClassName } from "../../../../utils/rankUtils.js"
+import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionSection = motion.section
 const MotionDiv = motion.div
 const OVERLAY_EASE = [0.22, 1, 0.36, 1]
-const MODE_CARD_EASE = [0.2, 0.9, 0.28, 1]
 
-const readyCardVariants = {
+const lobbyVariants = {
   hidden: { opacity: 0, y: 12, scale: 0.994 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: {
-      duration: 0.24,
-      ease: OVERLAY_EASE,
-      when: "beforeChildren",
-      delayChildren: 0.02,
-      staggerChildren: 0.035,
-    },
+    transition: { duration: 0.24, ease: OVERLAY_EASE },
   },
-  exit: {
-    opacity: 0,
-    y: -8,
-    scale: 0.998,
-    transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
-  },
-}
-
-const readySectionVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.16, ease: OVERLAY_EASE },
-  },
-}
-
-const modeCardVariants = {
-  enter: (direction) => ({
-    opacity: 0,
-    x: direction >= 0 ? 26 : -26,
-    scale: 0.988,
-  }),
-  center: {
-    opacity: 1,
-    x: 0,
-    scale: 1,
-  },
-  exit: (direction) => ({
-    opacity: 0,
-    x: direction >= 0 ? -22 : 22,
-    scale: 0.992,
-  }),
+  exit: { opacity: 0, y: -8, transition: { duration: 0.16 } },
 }
 
 function getShrinkPaceLabel(shrinkFactor) {
@@ -65,54 +27,221 @@ function getShrinkPaceLabel(shrinkFactor) {
   return "Aggressive"
 }
 
-function toModeSlide(mode) {
+function getModeTone(mode = {}) {
+  return String(mode.label || mode.id || "mode").toLowerCase()
+}
+
+function getRewardLabel(mode = {}) {
+  if (mode.readyRewardLabel) return mode.readyRewardLabel
+  if (mode.allowsRankProgression) return "XP + coins + rank"
+  if (mode.allowsCoinRewards || mode.allowsLevelProgression) return "XP + coins"
+  return "Training only"
+}
+
+function getGoalLabel(mode = {}) {
+  if (mode.readyGoalLabel) return mode.readyGoalLabel
+  if (mode.allowsRankProgression) return "Climb your division"
+  if (mode.allowsCoinRewards) return "Set a new score best"
+  return "Build clean aim"
+}
+
+function toLobbyMode(mode) {
   if (!mode) return null
 
   return {
     ...mode,
-    tone: String(mode.label || "").toLowerCase(),
+    tone: getModeTone(mode),
     glyph: mode.readyGlyph ?? String(mode.label || "M").charAt(0),
-    round: mode.isTimedRound === false ? "No limit" : `${mode.durationSeconds}s`,
-    miss: mode.missPenalty > 0 ? `-${mode.missPenalty}` : "None",
-    shrink: getShrinkPaceLabel(mode.shrinkFactor),
-    footer: mode.playerHint,
+    roundLabel: mode.isTimedRound === false ? "No limit" : `${mode.durationSeconds}s`,
+    missLabel: mode.missPenalty > 0 ? `-${mode.missPenalty} score` : "No penalty",
+    shrinkLabel: getShrinkPaceLabel(mode.shrinkFactor),
+    rewardLabel: getRewardLabel(mode),
+    goalLabel: getGoalLabel(mode),
   }
-}
-
-function ModePreviewContent({ mode }) {
-  if (!mode) return null
-
-  return (
-    <article className={`modeCard modeCard-${mode.tone}`}>
-      <header className="modeCardHeader">
-        <div className="modeCardTitleGroup">
-          <span className="modeCardGlyph" aria-hidden="true">{mode.glyph}</span>
-          <h3 className="modeCardTitle">{mode.label}</h3>
-        </div>
-      </header>
-      <p className="modeCardDescription">{mode.description}</p>
-      <div className="modeCardStats">
-        <div className="modeCardStat">
-          <span className="modeCardStatLabel">Round</span>
-          <strong className="modeCardStatValue">{mode.round}</strong>
-        </div>
-        <div className="modeCardStat">
-          <span className="modeCardStatLabel">Miss</span>
-          <strong className="modeCardStatValue">{mode.miss}</strong>
-        </div>
-        <div className="modeCardStat">
-          <span className="modeCardStatLabel">Shrink</span>
-          <strong className="modeCardStatValue">{mode.shrink}</strong>
-        </div>
-      </div>
-      {mode.footer ? <p className="modeCardFooter">{mode.footer}</p> : null}
-    </article>
-  )
 }
 
 function formatSessionRR(netRR = 0) {
   if (netRR === 0) return "Even"
   return `${netRR > 0 ? "+" : ""}${netRR} RR`
+}
+
+function RankedPreflight({
+  preflight,
+  rankProgress,
+  loadoutName,
+  loadoutPresentation,
+  warmupSuggestion,
+  onStartWarmup,
+}) {
+  if (!preflight) return null
+
+  const rankLabel = rankProgress?.tierLabel ?? "Rank unavailable"
+  const rankImageSrc = getRankImageSrc(rankProgress)
+  const showsPlacementPips = ["unranked", "placement", "reveal-pending"].includes(preflight.state)
+  const progressPercent = preflight.progressMax > 0
+    ? Math.min(100, Math.max(0, (preflight.progressValue / preflight.progressMax) * 100))
+    : 0
+
+  return (
+    <section
+      className={`rankedPreflight ${getRankToneClassName(rankProgress)}`}
+      data-state={preflight.state}
+      aria-label="Ranked preflight"
+    >
+      <div className="rankedPreflightHero">
+        <div className="rankedPreflightCrest" aria-hidden="true">
+          {rankImageSrc ? <img src={rankImageSrc} alt="" /> : <span>R</span>}
+        </div>
+        <div className="rankedPreflightIdentity">
+          <span>Ranked preflight</span>
+          <strong>{rankLabel}</strong>
+          <small>{preflight.headline}</small>
+        </div>
+      </div>
+
+      <details className="rankedPreflightDetails">
+        <summary>Review Ranked status and build</summary>
+        <div className="rankedPreflightDetailsBody">
+          <div className="rankedPreflightProgress">
+            {showsPlacementPips ? (
+              <div className="rankedPlacementPips" aria-hidden="true">
+                {Array.from({ length: preflight.progressMax }, (_, index) => (
+                  <span key={index} className={index < preflight.progressValue ? "isComplete" : ""} />
+                ))}
+              </div>
+            ) : (
+              <span className="rankedRrTrack" aria-hidden="true">
+                <span style={{ width: `${progressPercent}%` }} />
+              </span>
+            )}
+            <span
+              className="rankedProgressSemantic"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax={preflight.progressMax}
+              aria-valuenow={preflight.progressValue}
+              aria-valuetext={preflight.progressText}
+            >
+              {preflight.progressText}
+            </span>
+            <p>{preflight.detail}</p>
+          </div>
+
+          <div className="rankedPreflightReadouts">
+            <div>
+              <span>Recent trend</span>
+              <strong className={`is-${preflight.recentTrend.tone}`}>{preflight.recentTrend.label}</strong>
+            </div>
+            <div>
+              <span>Active build</span>
+              <strong>{loadoutName}</strong>
+              {loadoutPresentation?.titleLine ? <small>{loadoutPresentation.titleLine}</small> : null}
+            </div>
+          </div>
+
+          <p className="rankedStakesCopy">
+            Your score, accuracy, streak, and misses determine the RR result. No fixed change is guaranteed.
+          </p>
+
+          {warmupSuggestion ? (
+            <div className="rankedWarmupAction">
+              <p><strong>{warmupSuggestion.label}</strong> is recommended. {warmupSuggestion.description}</p>
+              <button type="button" className="readyWarmupButton" onClick={onStartWarmup}>
+                Warm up in Practice
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </details>
+    </section>
+  )
+}
+
+function ModeChoice({ mode, isSelected, disabled, onSelect }) {
+  return (
+    <button
+      type="button"
+      className={`lobbyModeChoice lobbyModeChoice-${mode.tone} ${isSelected ? "isSelected" : ""}`}
+      aria-label={`Select ${mode.label}`}
+      aria-pressed={isSelected}
+      aria-describedby={`lobby-mode-summary-${mode.id}`}
+      disabled={disabled}
+      onClick={() => onSelect(mode.id)}
+    >
+      <span className="lobbyModeChoiceTopline">
+        <span className="lobbyModeGlyph" aria-hidden="true">{mode.glyph}</span>
+        <span className="lobbyModeName">{mode.label}</span>
+        <span className="lobbyModeDuration">{mode.roundLabel}</span>
+      </span>
+      <span id={`lobby-mode-summary-${mode.id}`} className="lobbyModeSummary">
+        {mode.description}
+      </span>
+      <span className="lobbyModeReward">{mode.rewardLabel}</span>
+    </button>
+  )
+}
+
+function PracticeDrawer({
+  isOpen,
+  onToggle,
+  drills,
+  selectedDrillId,
+  onSelectDrill,
+  drillStats,
+  warmupSuggestion,
+}) {
+  return (
+    <section className={`practiceDrawer ${isOpen ? "isOpen" : ""}`} aria-label="Practice training">
+      <button
+        type="button"
+        className="practiceDrawerTrigger"
+        aria-expanded={isOpen}
+        aria-controls="practice-drawer-content"
+        onClick={onToggle}
+      >
+        <span>
+          <span className="practiceDrawerEyebrow">Practice lab</span>
+          <strong>{selectedDrillId ? "Focused drill selected" : "Free Practice selected"}</strong>
+        </span>
+        <span aria-hidden="true">{isOpen ? "Close" : "Choose drill"}</span>
+      </button>
+
+      {isOpen ? (
+        <div id="practice-drawer-content" className="practiceDrawerContent">
+          {warmupSuggestion ? (
+            <p className="practiceWarmupNote">
+              Recommended: <strong>{warmupSuggestion.label}</strong> — {warmupSuggestion.description}
+            </p>
+          ) : null}
+          <div className="practiceDrillGrid">
+            <button
+              type="button"
+              className={`practiceDrillChoice ${selectedDrillId ? "" : "isSelected"}`}
+              aria-pressed={!selectedDrillId}
+              onClick={() => onSelectDrill?.(null)}
+            >
+              <strong>Free Practice</strong>
+              <span>No timer pressure or drill goal.</span>
+              <small>Open training</small>
+            </button>
+            {drills.map((drill) => (
+              <button
+                key={drill.id}
+                type="button"
+                className={`practiceDrillChoice ${selectedDrillId === drill.id ? "isSelected" : ""}`}
+                aria-pressed={selectedDrillId === drill.id}
+                onClick={() => onSelectDrill?.(drill.id)}
+              >
+                <strong>{drill.label}</strong>
+                <span>{drill.description}</span>
+                <small>Best: {formatDrillBestMetric(drill, drillStats[drill.id])}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  )
 }
 
 export function ReadyOverlay({
@@ -122,6 +251,8 @@ export function ReadyOverlay({
   onSelectMode,
   canChangeMode = true,
   activeLoadoutName = "Loadout",
+  activeLoadoutPresentation = null,
+  playerBestScore = 0,
   showArmoryWalkthroughBadge = false,
   onboardingCoach = null,
   showTrainingSuite = false,
@@ -130,300 +261,264 @@ export function ReadyOverlay({
   onSelectDrill,
   drillStats = {},
   warmupSuggestion = null,
+  rankedPreflight = null,
+  rankProgress = null,
+  onStartRankedWarmup,
   sessionStats = null,
   onClose,
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
-  const overlayCardRef = useRef(null)
+  const lobbyRef = useRef(null)
+  const previousFocusRef = useRef(null)
   const [localSelectedModeId, setLocalSelectedModeId] = useState(selectedModeId)
-  const [modeTransitionDirection, setModeTransitionDirection] = useState(1)
+  const [isPracticeDrawerOpen, setIsPracticeDrawerOpen] = useState(false)
 
   useEffect(() => {
     setLocalSelectedModeId(selectedModeId)
   }, [selectedModeId])
 
   useEffect(() => {
-    overlayCardRef.current?.focus()
+    previousFocusRef.current = document.activeElement
+    lobbyRef.current?.focus()
+    return () => previousFocusRef.current?.focus?.()
   }, [])
 
-  const modeSlides = useMemo(
-    () => modes.map((mode) => toModeSlide(mode)).filter(Boolean),
-    [modes]
-  )
-  const modeCount = modeSlides.length
-  const activeModeIndex = Math.max(0, modeSlides.findIndex((mode) => mode.id === localSelectedModeId))
-  const selectedMode = modeSlides[activeModeIndex] ?? modeSlides[0] ?? null
+  const lobbyModes = useMemo(() => modes.map(toLobbyMode).filter(Boolean), [modes])
+  const selectedIndex = Math.max(0, lobbyModes.findIndex((mode) => mode.id === localSelectedModeId))
+  const selectedMode = lobbyModes[selectedIndex] ?? lobbyModes[0] ?? null
 
-  function goPrevMode() {
-    if (!canChangeMode || !modeCount) return
+  useEffect(() => {
+    if (!showTrainingSuite) setIsPracticeDrawerOpen(false)
+  }, [showTrainingSuite])
 
-    const nextIndex = (activeModeIndex - 1 + modeCount) % modeCount
-    const nextMode = modeSlides[nextIndex]
-    setModeTransitionDirection(-1)
-    setLocalSelectedModeId(nextMode.id)
-    onSelectMode?.(nextMode.id)
+  function selectMode(modeId) {
+    if (!canChangeMode) return
+    setLocalSelectedModeId(modeId)
+    onSelectMode?.(modeId)
   }
 
-  function goNextMode() {
-    if (!canChangeMode || !modeCount) return
-
-    const nextIndex = (activeModeIndex + 1) % modeCount
-    const nextMode = modeSlides[nextIndex]
-    setModeTransitionDirection(1)
-    setLocalSelectedModeId(nextMode.id)
-    onSelectMode?.(nextMode.id)
-  }
-
-  function handleStartSelectedMode() {
-    if (!selectedMode) return
-    onStart?.(selectedMode.id)
+  function moveMode(direction) {
+    if (!canChangeMode || !lobbyModes.length) return
+    const nextIndex = (selectedIndex + direction + lobbyModes.length) % lobbyModes.length
+    selectMode(lobbyModes[nextIndex].id)
   }
 
   function handleKeyDown(event) {
     if (event.key === "Escape") {
-      event.preventDefault()
-      onClose?.()
+      if (isPracticeDrawerOpen) {
+        event.preventDefault()
+        setIsPracticeDrawerOpen(false)
+      } else if (onClose) {
+        event.preventDefault()
+        onClose()
+      }
       return
     }
 
-    if (event.key === "ArrowLeft") {
-      event.preventDefault()
-      goPrevMode()
+    if (event.key === "Tab") {
+      const focusable = [...lobbyRef.current.querySelectorAll(
+        'button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
+      )]
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
       return
     }
 
-    if (event.key === "ArrowRight") {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault()
-      goNextMode()
+      moveMode(event.key === "ArrowLeft" ? -1 : 1)
       return
     }
 
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && event.target === lobbyRef.current) {
       event.preventDefault()
-      handleStartSelectedMode()
+      if (selectedMode) onStart?.(selectedMode.id)
     }
   }
 
   const startButtonLabel = onboardingCoach?.startLabel
     ?? (selectedMode ? `Start ${selectedMode.label}` : "Start Round")
-  const currentModePosition = modeCount ? activeModeIndex + 1 : 0
-  const readyTitle = onboardingCoach?.title ?? "Choose Round"
+  const readyTitle = onboardingCoach?.title ?? "Enter the arena"
   const readyLead = onboardingCoach?.instruction
-    ?? "Pick your mode and start. Armory is where you change the build."
+    ?? "Choose how you want to play. Your build is locked in when the round begins."
+  const loadoutDetail = activeLoadoutPresentation?.glanceText
+    || activeLoadoutPresentation?.identity?.description
+    || "Ready with your equipped modules and powers."
 
   return (
     <MotionDiv
-      className="gameOverlay"
+      className={`gameOverlay arenaLobbyBackdrop arenaLobbyMood-${selectedMode?.tone ?? "casual"}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="round-ready-title"
       initial={prefersReducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={prefersReducedMotion ? undefined : { opacity: 0 }}
-      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.18, ease: OVERLAY_EASE }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.18, ease: OVERLAY_EASE }}
     >
       <MotionSection
-        className={`gameOverCard readyCard readyCardStack readyCardChoosing difficultyMood-${localSelectedModeId}`}
-        ref={overlayCardRef}
+        className="readyCard arenaLobby"
+        ref={lobbyRef}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        variants={prefersReducedMotion ? undefined : readyCardVariants}
+        variants={prefersReducedMotion ? undefined : lobbyVariants}
         initial={prefersReducedMotion ? false : "hidden"}
         animate="visible"
         exit={prefersReducedMotion ? undefined : "exit"}
       >
-        <MotionDiv variants={prefersReducedMotion ? undefined : readySectionVariants}>
-          <h2 id="round-ready-title" className="readyTitle">
-            {readyTitle}
-          </h2>
-          <p className="readyLead">
-            {readyLead}
-          </p>
+        <header className="arenaLobbyHeader">
+          <div>
+            <span className="arenaLobbyKicker">Round lobby</span>
+            <h2 id="round-ready-title">{readyTitle}</h2>
+            <p>{readyLead}</p>
+          </div>
+          <div className="arenaLobbyShortcuts" aria-label="Lobby keyboard shortcuts">
+            <span><kbd>←</kbd><kbd>→</kbd> modes</span>
+            <span><kbd>Enter</kbd> start</span>
+          </div>
           {onboardingCoach ? (
             <div className="readyOnboardingCoach" aria-label="First session onboarding">
               <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span>
-              {onboardingCoach.note ? (
-                <p className="readyOnboardingCoachNote">{onboardingCoach.note}</p>
-              ) : null}
+              {onboardingCoach.note ? <p className="readyOnboardingCoachNote">{onboardingCoach.note}</p> : null}
             </div>
           ) : null}
-        </MotionDiv>
+        </header>
 
-        <MotionDiv
-          className="modeProgressDots"
-          aria-label={`Mode ${currentModePosition} of ${modeCount}`}
-          variants={prefersReducedMotion ? undefined : readySectionVariants}
-        >
-          {modeSlides.map((mode, index) => (
-            <span
-              key={`mode-dot-${mode.id}`}
-              className={`modeProgressDot ${index === activeModeIndex ? "active" : ""}`}
-              aria-hidden="true"
-            />
-          ))}
-        </MotionDiv>
-
-        <MotionDiv
-          className="modeCarousel"
-          aria-label="Mode navigation controls"
-          variants={prefersReducedMotion ? undefined : readySectionVariants}
-        >
+        <div className="lobbyModeSelector">
           <button
-            className="modeArrowButton"
             type="button"
-            onClick={goPrevMode}
-            disabled={!canChangeMode || !modeCount}
+            className="lobbyModeArrow"
             aria-label="Select previous mode"
+            disabled={!canChangeMode || !lobbyModes.length}
+            onClick={() => moveMode(-1)}
           >
-            <span aria-hidden="true">&#8249;</span>
+            <span aria-hidden="true">‹</span>
           </button>
-
-          <div className="modeDeckViewport" role="listbox" aria-label="Mode carousel">
-            <p className="modeSelectionLive" aria-live="polite">
-              Selected mode: {selectedMode?.label ?? "Unknown"}
-            </p>
-            <div className="modeDeckCard">
-              <AnimatePresence initial={false} custom={modeTransitionDirection} mode="popLayout">
-                {selectedMode ? (
-                  <MotionDiv
-                    key={selectedMode.id}
-                    className="modeDeckMotionCard"
-                    role="option"
-                    aria-selected="true"
-                    custom={modeTransitionDirection}
-                    variants={prefersReducedMotion ? undefined : modeCardVariants}
-                    initial={prefersReducedMotion ? false : "enter"}
-                    animate="center"
-                    exit={prefersReducedMotion ? undefined : "exit"}
-                    transition={prefersReducedMotion ? { duration: 0 } : {
-                      duration: 0.24,
-                      ease: MODE_CARD_EASE,
-                    }}
-                  >
-                    <ModePreviewContent mode={selectedMode} />
-                  </MotionDiv>
-                ) : null}
-              </AnimatePresence>
-            </div>
+          <div className="lobbyModeRail" aria-label="Choose a game mode">
+            {lobbyModes.map((mode) => (
+              <ModeChoice
+                key={mode.id}
+                mode={mode}
+                isSelected={mode.id === selectedMode?.id}
+                disabled={!canChangeMode && mode.id !== selectedMode?.id}
+                onSelect={selectMode}
+              />
+            ))}
           </div>
-
           <button
-            className="modeArrowButton"
             type="button"
-            onClick={goNextMode}
-            disabled={!canChangeMode || !modeCount}
+            className="lobbyModeArrow"
             aria-label="Select next mode"
+            disabled={!canChangeMode || !lobbyModes.length}
+            onClick={() => moveMode(1)}
           >
-            <span aria-hidden="true">&#8250;</span>
+            <span aria-hidden="true">›</span>
           </button>
-        </MotionDiv>
+        </div>
 
-        {warmupSuggestion ? (
+        {selectedMode ? (
           <MotionDiv
-            className="readyWarmupSuggestion"
-            variants={prefersReducedMotion ? undefined : readySectionVariants}
+            key={selectedMode.id}
+            className={`lobbyModeBrief lobbyModeBrief-${selectedMode.tone}`}
+            aria-live="polite"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: OVERLAY_EASE }}
           >
-            <span className="readyWarmupEyebrow">Warm-up suggestion</span>
-            <p className="readyWarmupCopy">
-              Try <strong>{warmupSuggestion.label}</strong> in Practice before Ranked.{" "}
-              {warmupSuggestion.description}
-            </p>
+            <div className="lobbyModeBriefLead">
+              <span>{selectedMode.label} briefing</span>
+              <strong>{selectedMode.playerHint}</strong>
+            </div>
+            <dl className="lobbyModeFacts">
+              <div><dt>Duration</dt><dd>{selectedMode.roundLabel}</dd></div>
+              <div><dt>Miss rule</dt><dd>{selectedMode.missLabel}</dd></div>
+              <div><dt>Pressure</dt><dd>{selectedMode.shrinkLabel}</dd></div>
+              <div><dt>Rewards / stakes</dt><dd>{selectedMode.rewardLabel}</dd></div>
+            </dl>
+            <div className="lobbyTargetRow">
+              <span><small>Current target</small><strong>{selectedMode.goalLabel}</strong></span>
+              <span><small>Personal best</small><strong>{playerBestScore > 0 ? Number(playerBestScore).toLocaleString() : "No score yet"}</strong></span>
+              <span><small>Recent outcome</small><strong>{sessionStats?.rounds ? `Session best ${Number(sessionStats.bestScore).toLocaleString()}` : "First round waiting"}</strong></span>
+            </div>
           </MotionDiv>
+        ) : null}
+
+        {selectedMode?.id === "hard" ? (
+          <RankedPreflight
+            preflight={rankedPreflight}
+            rankProgress={rankProgress}
+            loadoutName={activeLoadoutName}
+            loadoutPresentation={activeLoadoutPresentation}
+            warmupSuggestion={warmupSuggestion}
+            onStartWarmup={onStartRankedWarmup}
+          />
         ) : null}
 
         {showTrainingSuite ? (
-          <MotionDiv
-            className="readyTrainingSuite"
-            variants={prefersReducedMotion ? undefined : readySectionVariants}
-            aria-label="Training drills"
-          >
-            <div className="readyTrainingHeader">
-              <span className="readyTrainingEyebrow">Training drills</span>
-              <p className="readyTrainingLead">Pick a focused drill or run free Practice.</p>
-            </div>
-            <div className="readyTrainingGrid">
-              <button
-                type="button"
-                className={`readyTrainingCard ${selectedDrillId ? "" : "isActive"}`}
-                onClick={() => onSelectDrill?.(null)}
-              >
-                <strong className="readyTrainingCardTitle">Free Practice</strong>
-                <span className="readyTrainingCardMeta">No timer pressure or drill goal.</span>
-              </button>
-              {trainingDrills.map((drill) => {
-                const bestLabel = formatDrillBestMetric(drill, drillStats[drill.id])
-                return (
-                  <button
-                    key={drill.id}
-                    type="button"
-                    className={`readyTrainingCard ${selectedDrillId === drill.id ? "isActive" : ""}`}
-                    onClick={() => onSelectDrill?.(drill.id)}
-                  >
-                    <strong className="readyTrainingCardTitle">{drill.label}</strong>
-                    <span className="readyTrainingCardMeta">{drill.description}</span>
-                    <span className="readyTrainingCardBest">Best: {bestLabel}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </MotionDiv>
+          <PracticeDrawer
+            isOpen={isPracticeDrawerOpen}
+            onToggle={() => setIsPracticeDrawerOpen((isOpen) => !isOpen)}
+            drills={trainingDrills}
+            selectedDrillId={selectedDrillId}
+            onSelectDrill={onSelectDrill}
+            drillStats={drillStats}
+            warmupSuggestion={warmupSuggestion}
+          />
         ) : null}
 
-        {sessionStats ? (
-          <MotionDiv
-            className="readySessionStrip"
-            variants={prefersReducedMotion ? undefined : readySectionVariants}
-            aria-label="Session summary"
-          >
-            <span className="readySessionLabel">This session</span>
-            <span className="readySessionStat">
-              {sessionStats.rounds} {sessionStats.rounds === 1 ? "round" : "rounds"}
+        <footer className="arenaLobbyFooter">
+          <div className="lobbyBuildReadiness" aria-label="Current active build">
+            <span className="lobbyBuildStatus" aria-hidden="true" />
+            <span>
+              <small>Active build</small>
+              <strong>{activeLoadoutName || "Loadout"}</strong>
+              <em>{loadoutDetail}</em>
             </span>
-            <span className="readySessionDivider" aria-hidden="true" />
-            <span className="readySessionStat">
-              Best: {Number(sessionStats.bestScore).toLocaleString()}
-            </span>
-            {sessionStats.netRR !== 0 ? (
-              <>
-                <span className="readySessionDivider" aria-hidden="true" />
-                <span className={`readySessionStat ${sessionStats.netRR > 0 ? "isPositive" : "isNegative"}`}>
-                  {formatSessionRR(sessionStats.netRR)}
-                </span>
-              </>
-            ) : null}
-          </MotionDiv>
-        ) : null}
-
-        <MotionDiv
-          className="overlayActions readyActions"
-          variants={prefersReducedMotion ? undefined : readySectionVariants}
-        >
-          <div className="readyPrimaryActionGroup">
-            <div className="readyActionButtonRow">
-              <button
-                className="primaryButton primaryButton-lg"
-                onClick={handleStartSelectedMode}
-                disabled={!selectedMode}
-              >
-                {startButtonLabel}
-              </button>
-              <Link className="readyBuildButton" to="/armory">
-                Open Armory
-                {showArmoryWalkthroughBadge ? (
-                  <span className="readyBuildButtonBadge">New</span>
-                ) : null}
-              </Link>
-            </div>
-            <p className="readyPassiveBuildLabel" aria-label="Current active build">
-              Active build: <strong>{activeLoadoutName || "Loadout"}</strong>
-            </p>
-            {!onboardingCoach ? (
-              <Link className="secondaryButton readyHelpLink" to="/help">
-                How To Play
-              </Link>
-            ) : null}
+            <Link className="lobbyTextLink" to="/armory">
+              View in Armory
+              {showArmoryWalkthroughBadge ? <b>New</b> : null}
+            </Link>
           </div>
-        </MotionDiv>
+
+          {sessionStats ? (
+            <div className="readySessionStrip" aria-label="Session summary">
+              <span className="readySessionLabel">This session</span>
+              <span className="readySessionStat">{sessionStats.rounds} {sessionStats.rounds === 1 ? "round" : "rounds"}</span>
+              <span className="readySessionDivider" aria-hidden="true" />
+              <span className="readySessionStat">Best: {Number(sessionStats.bestScore).toLocaleString()}</span>
+              {sessionStats.netRR !== 0 ? (
+                <>
+                  <span className="readySessionDivider" aria-hidden="true" />
+                  <span className={`readySessionStat ${sessionStats.netRR > 0 ? "isPositive" : "isNegative"}`}>
+                    {formatSessionRR(sessionStats.netRR)}
+                  </span>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="arenaLobbyActions">
+            {!onboardingCoach ? <Link className="lobbyTextLink" to="/help">How to play</Link> : <span />}
+            <button
+              type="button"
+              className="primaryButton arenaLobbyStart"
+              aria-label={startButtonLabel}
+              onClick={() => selectedMode && onStart?.(selectedMode.id)}
+              disabled={!selectedMode}
+            >
+              <span>{startButtonLabel}</span>
+              <small>{selectedMode?.roundLabel} · {selectedMode?.rewardLabel}</small>
+            </button>
+          </div>
+        </footer>
       </MotionSection>
     </MotionDiv>
   )

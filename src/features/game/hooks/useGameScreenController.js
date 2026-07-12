@@ -28,6 +28,7 @@ import {
   TIMER_TICK_MS,
 } from "../../../constants/gameConstants.js"
 import { FEEDBACK_EVENTS } from "../../../constants/feedbackEvents.js"
+import { buildRankedPreflight } from "../../../utils/rankUtils.js"
 import {
   formatAccuracy,
   getButtonLabel,
@@ -112,8 +113,10 @@ export function useGameScreenController({
   playerXpToNextLevel = 0,
   playerRankMmr = 0,
   playerRankLabel = "Unranked",
+  playerRankProgress = null,
   playerRankedState = {},
   playerHasRankedHistory = false,
+  playerRecentRounds = [],
   playerBestScore = 0,
   lifetimeStats = null,
   savedLoadouts = [],
@@ -155,6 +158,7 @@ export function useGameScreenController({
   const rngRef = useRef(Math.random)
   const ghostReplayRef = useRef(ghostReplay)
   const challengeIdRef = useRef(challengeId)
+  const rankedWarmupIntentRef = useRef(false)
 
   useEffect(() => {
     ghostReplayRef.current = ghostReplay
@@ -616,11 +620,19 @@ export function useGameScreenController({
   ])
 
   const returnToReadyOverlay = useCallback(() => {
-    const nextRoundMode = resolvedSelectedMode
+    const shouldReturnToRanked = rankedWarmupIntentRef.current
+    rankedWarmupIntentRef.current = false
+    const nextRoundMode = shouldReturnToRanked
+      ? buildRoundRules(getModeById(DIFFICULTY_IDS.HARD), resolvedLoadout)
+      : resolvedSelectedMode
+    if (shouldReturnToRanked) {
+      onModeChange?.(DIFFICULTY_IDS.HARD)
+      setSelectedDrillId(null)
+    }
     setRoundMode(nextRoundMode)
     resetRoundState(nextRoundMode)
     setPhase(ROUND_PHASE.READY)
-  }, [resetRoundState, resolvedSelectedMode])
+  }, [onModeChange, resetRoundState, resolvedLoadout, resolvedSelectedMode])
 
   const endCurrentRound = useCallback(() => {
     if (phase !== ROUND_PHASE.PLAYING || isRoundEnding) return
@@ -1149,6 +1161,25 @@ export function useGameScreenController({
     [lifetimeStats, selectedModeId]
   )
 
+  const rankedPreflight = useMemo(
+    () => buildRankedPreflight({
+      rankProgress: playerRankProgress,
+      rankedState: playerRankedState,
+      recentRounds: playerRecentRounds,
+    }),
+    [playerRankProgress, playerRankedState, playerRecentRounds]
+  )
+
+  const startRankedWarmup = useCallback(() => {
+    rankedWarmupIntentRef.current = true
+    setSelectedDrillId(warmupSuggestion?.id ?? null)
+    startRoundWithCountdown(
+      DIFFICULTY_IDS.EASY,
+      activeLoadoutId,
+      warmupSuggestion?.id ?? null
+    )
+  }, [activeLoadoutId, startRoundWithCountdown, warmupSuggestion?.id])
+
   return {
     phase,
     allowsCoinRewards,
@@ -1203,6 +1234,8 @@ export function useGameScreenController({
       onSelectMode: handleModeSelect,
       canChangeMode,
       activeLoadoutName: resolvedLoadout?.name ?? "Loadout",
+      playerBestScore,
+      activeLoadoutPresentation: previewLoadoutPresentation,
       showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus),
       onboardingCoach: gameOnboardingStep
         ? {
@@ -1220,6 +1253,9 @@ export function useGameScreenController({
       onSelectDrill: setSelectedDrillId,
       drillStats: lifetimeStats?.drillStats ?? {},
       warmupSuggestion,
+      rankedPreflight,
+      rankProgress: playerRankProgress,
+      onStartRankedWarmup: startRankedWarmup,
     },
     countdownOverlayProps: {
       countdownValue,

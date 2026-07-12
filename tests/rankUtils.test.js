@@ -4,12 +4,104 @@ import assert from "node:assert/strict"
 import {
   applyRankedMatchResult,
   buildDefaultRankedState,
+  buildRankedPreflight,
   calculatePlacementMatchScore,
+  getRankProgress,
   getRankProgressWithPlacement,
   migrateLegacyRankData,
   PLACEMENT_MATCH_COUNT,
   RANK_SYSTEM_VERSION,
 } from "../src/utils/rankUtils.js"
+
+test("ranked preflight defines every lobby state without projecting a fixed RR change", () => {
+  const completedPlacements = {
+    ...buildDefaultRankedState(),
+    placementMatchesPlayed: PLACEMENT_MATCH_COUNT,
+  }
+  const cases = [
+    {
+      expected: "unavailable",
+      input: {},
+    },
+    {
+      expected: "unranked",
+      input: {
+        rankProgress: getRankProgressWithPlacement({
+          hasRankedHistory: false,
+          rankedState: buildDefaultRankedState(),
+        }),
+      },
+    },
+    {
+      expected: "placement",
+      input: {
+        rankProgress: getRankProgressWithPlacement({
+          mmr: 30,
+          hasRankedHistory: true,
+          rankedState: { ...buildDefaultRankedState(), placementMatchesPlayed: 2 },
+        }),
+        rankedState: { ...buildDefaultRankedState(), placementMatchesPlayed: 2 },
+      },
+    },
+    {
+      expected: "reveal-pending",
+      input: {
+        rankProgress: getRankProgressWithPlacement({
+          mmr: 70,
+          hasRankedHistory: true,
+          rankedState: { ...buildDefaultRankedState(), placementMatchesPlayed: 4 },
+        }),
+        rankedState: { ...buildDefaultRankedState(), placementMatchesPlayed: 4 },
+      },
+    },
+    {
+      expected: "revealed",
+      input: { rankProgress: getRankProgress(340), rankedState: completedPlacements },
+    },
+    {
+      expected: "promotion-near",
+      input: { rankProgress: getRankProgress(385), rankedState: completedPlacements },
+    },
+    {
+      expected: "protected",
+      input: {
+        rankProgress: getRankProgress(385),
+        rankedState: { ...completedPlacements, demotionProtectionRounds: 2 },
+      },
+    },
+    {
+      expected: "top-rank",
+      input: { rankProgress: getRankProgress(1500), rankedState: completedPlacements },
+    },
+  ]
+
+  cases.forEach(({ expected, input }) => {
+    const preflight = buildRankedPreflight(input)
+    assert.equal(preflight.state, expected)
+    assert.doesNotMatch(`${preflight.headline} ${preflight.detail}`, /guaranteed \+?\d+ RR/i)
+  })
+})
+
+test("ranked preflight summarizes only the five most recent ranked results", () => {
+  const preflight = buildRankedPreflight({
+    rankProgress: getRankProgress(340),
+    rankedState: {
+      ...buildDefaultRankedState(),
+      placementMatchesPlayed: PLACEMENT_MATCH_COUNT,
+    },
+    recentRounds: [
+      { progressionMode: "ranked", rankDelta: 10 },
+      { modeId: "normal", rankDelta: 100 },
+      { modeId: "hard", rankDelta: -4 },
+      { difficultyId: "hard", rankDelta: 3 },
+      { progressionMode: "ranked", rankDelta: 2 },
+      { progressionMode: "ranked", rankDelta: 1 },
+      { progressionMode: "ranked", rankDelta: 99 },
+    ],
+  })
+
+  assert.equal(preflight.recentTrend.label, "+12 RR / last 5")
+})
 
 test("rank progress stays unranked before any placement match starts", () => {
   const progress = getRankProgressWithPlacement({
