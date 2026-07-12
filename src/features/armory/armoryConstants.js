@@ -1,11 +1,18 @@
 export const ARMORY_STEPS = [
-  { id: "slot", label: "Build Slot", lead: "Name it, make it active, or reset it." },
   { id: "passives", label: "Passive Stack", lead: "Tune the 3 systems that shape the round." },
   { id: "hotbar", label: "Hotbar", lead: "Choose the tools on keys 1, 2, and 3." },
   { id: "review", label: "Review Sim", lead: "See how the build feels in the current mode." },
 ]
 
 export const ARMORY_STEP_IDS = new Set(ARMORY_STEPS.map((step) => step.id))
+
+export const DEFAULT_ARMORY_STEP_ID = ARMORY_STEPS[0].id
+
+// Old deep links keep landing somewhere sensible: the "slot" step's content now
+// lives on the machine and the bay wall, which are always on stage.
+export const LEGACY_ARMORY_STEP_ALIASES = {
+  slot: DEFAULT_ARMORY_STEP_ID,
+}
 
 export const WALKTHROUGH_STEPS = [
   {
@@ -16,11 +23,10 @@ export const WALKTHROUGH_STEPS = [
   },
   {
     id: "slot",
-    armoryStepId: "slot",
-    targetId: "slot",
-    title: "This is your live build slot",
-    instruction: "Rename it if you want, or keep the current name and move on.",
-    note: "Ready will use this exact slot next round.",
+    targetId: "nameplate",
+    title: "This is your live build",
+    instruction: "Click the nameplate to rename it, or keep the current name and move on.",
+    note: "Ready will use this exact build next round.",
   },
   {
     id: "tempo",

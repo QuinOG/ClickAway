@@ -303,6 +303,12 @@ export default function App() {
                 onLoadoutStateChange={handleLoadoutStateChange}
                 buildWalkthrough={buildWalkthrough}
                 onBuildWalkthroughChange={handleBuildWalkthroughChange}
+                buttonSkinClass={equippedButtonSkin?.effectClass}
+                buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
+                buttonSkinImageScale={
+                  equippedButtonSkin?.gameImageScale ??
+                  equippedButtonSkin?.imageScale
+                }
               />
             </ProtectedRoute>
           }

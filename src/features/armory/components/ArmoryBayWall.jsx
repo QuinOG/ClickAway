@@ -1,0 +1,105 @@
+import {
+  BuildIdentityGlyph,
+  ModuleSlotGlyph,
+} from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+
+// Bay miniatures echo the center-stage machine at wall scale, so build size
+// differences stay readable even from across the room.
+export const BAY_TARGET_SCALE = 0.32
+
+function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi }) {
+  const identity = (presentation?.identity.label || "Balanced").toLowerCase()
+  const miniTargetSize = Math.round(
+    presentation.roundRules.initialButtonSize * BAY_TARGET_SCALE
+  )
+  const isConfirmingCopy = bayApi.pendingCopyTargetId === loadout.id
+
+  return (
+    <div className={`armoryBay ${isActive ? "isActive" : ""}`} data-identity={identity}>
+      <button
+        type="button"
+        className="armoryBaySelect"
+        onClick={onActivate}
+        aria-pressed={isActive}
+      >
+        <span className="armoryBayHeader">
+          <span className="armoryBayLabel">Bay {index + 1}</span>
+          <span className="armoryBayLamp" aria-hidden="true" />
+          <span className="armoryBayLampLabel">{isActive ? "Active" : "Docked"}</span>
+        </span>
+
+        <span className="armoryBayMini" aria-hidden="true">
+          <span
+            className="armoryBayMiniTarget"
+            style={{ width: `${miniTargetSize}px`, height: `${miniTargetSize}px` }}
+          />
+          <span className="armoryBayMiniModules">
+            {presentation.moduleStack.map((module) => (
+              <span key={module.slotId} className={`armoryBayMiniModule tone-${module.slotId}`}>
+                <ModuleSlotGlyph slotId={module.slotId} />
+              </span>
+            ))}
+          </span>
+        </span>
+
+        <span className="armoryBayNameplate">
+          <strong className="armoryBayName">{loadout.name}</strong>
+          <span className="armoryBayIdentity">
+            <span className="armoryBayIdentityGlyph" aria-hidden="true">
+              <BuildIdentityGlyph identity={presentation.identity.label} />
+            </span>
+            {presentation.identity.label}
+          </span>
+        </span>
+      </button>
+
+      {isActive ? null : (
+        <div className="armoryBayFooter">
+          {isConfirmingCopy ? (
+            <>
+              <span className="armoryBayConfirmText">Overwrite {loadout.name}?</span>
+              <div className="armoryBayConfirmActions">
+                <button type="button" className="armoryBayAction" onClick={bayApi.cancelBayAction}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="armoryBayAction isDanger"
+                  onClick={bayApi.confirmBayAction}
+                >
+                  Overwrite
+                </button>
+              </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="armoryBayAction"
+              onClick={() => bayApi.requestCopyToBay(loadout.id)}
+            >
+              Copy active build here
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function ArmoryBayWall({ bayApi }) {
+  return (
+    <div className="armoryBayWall" aria-label="Build bays">
+      {bayApi.savedLoadouts.map((loadout, index) => (
+        <ArmoryBay
+          key={loadout.id}
+          loadout={loadout}
+          index={index}
+          presentation={bayApi.loadoutPresentations[loadout.id]}
+          isActive={loadout.id === bayApi.activeLoadoutId}
+          onActivate={() => bayApi.activateLoadout(loadout.id)}
+          bayApi={bayApi}
+        />
+      ))}
+    </div>
+  )
+}

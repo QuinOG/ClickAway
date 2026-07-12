@@ -1,4 +1,19 @@
-/* Armory page: guided build editor with a fixed command rail and a focused workspace. */
+/* Armory scene: a full-bleed workshop — bay wall (left), center stage, and instrument
+   column (right) — under identity-driven lighting. The old card/dashboard shell is gone. */
+
+/* Registered so identity switches cross-fade the lighting instead of snapping.
+   Browsers without @property still render every rule; the change just snaps. */
+@property --armory-key-light {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #76c5ff;
+}
+
+@property --armory-ambient {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #16233d;
+}
 
 /*
  * Armory design tokens.
@@ -16,6 +31,9 @@
     /* shared line + accent colors */
     --armory-line: 176, 206, 240;
     --armory-accent: 118, 197, 255;
+    /* identity weather: key light above the stage + ambient wash, set per data-identity */
+    --armory-key-light: #76c5ff;
+    --armory-ambient: #16233d;
     /* radii */
     --armory-radius-key: 8px;
     --armory-radius-glyph: 12px;
@@ -33,40 +51,111 @@
     --armory-space-xl: 20px;
     /* motion */
     --armory-motion-fast: 0.16s;
+    --armory-motion-slow: 0.6s;
     --armory-motion-ease: ease;
-
-    width: min(1380px, 100%);
-    align-self: stretch;
 }
 
-.armoryShell {
-    width: 100%;
-    height: calc(100dvh - 112px);
-    min-height: 720px;
-    padding: 0;
+/*
+ * Scene grid — the layout skeleton for the final workshop composition:
+ *   column 1: bay wall (saved builds; Phase 4 rework)
+ *   column 2: center stage (the machine)
+ *   column 3: instrument column (Phases 5–6 editors dock here)
+ * The accordion workspace holds column 3 until the editor phases replace it.
+ */
+.armoryScene {
     position: relative;
+    flex: 1;
+    align-self: stretch;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
     display: grid;
-    grid-template-columns: 310px minmax(0, 1fr);
+    grid-template-columns: 310px minmax(0, 1.5fr) minmax(0, 1fr);
     overflow: hidden;
-    border-color: rgba(166, 201, 238, 0.16);
+    background: linear-gradient(180deg, #0b1120, #070c17);
+    transition:
+        --armory-key-light var(--armory-motion-slow) var(--armory-motion-ease),
+        --armory-ambient var(--armory-motion-slow) var(--armory-motion-ease);
+}
+
+/* Identity weather. Pressure runs hotter and brighter; Control cooler and steadier. */
+.armoryScene[data-identity="control"] {
+    --armory-key-light: #5fc9a9;
+    --armory-ambient: #0e211d;
+}
+
+.armoryScene[data-identity="pressure"] {
+    --armory-key-light: #ff8f70;
+    --armory-ambient: #29130e;
+}
+
+.armoryScene[data-identity="utility"] {
+    --armory-key-light: #f3c45a;
+    --armory-ambient: #221b0d;
+}
+
+/* Workbench atmosphere: key light over the future machine position, ambient wash,
+   vignette, and a strip of calibrated tick marks along the bench line. */
+.armorySceneBackdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
     background:
-        radial-gradient(circle at 100% 0%, rgba(84, 168, 255, 0.12), rgba(84, 168, 255, 0) 32%),
-        linear-gradient(180deg, rgba(14, 20, 36, 0.98), rgba(11, 17, 31, 0.99));
-    box-shadow:
-        0 22px 60px rgba(4, 10, 20, 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        radial-gradient(ellipse 46% 40% at 56% 0%, color-mix(in srgb, var(--armory-key-light) 17%, transparent), transparent 72%),
+        linear-gradient(180deg, color-mix(in srgb, var(--armory-ambient) 52%, transparent), transparent 58%),
+        radial-gradient(ellipse 120% 92% at 50% 42%, transparent 56%, rgba(2, 5, 12, 0.6) 100%);
+    animation: armoryLightsUp 0.9s var(--armory-motion-ease) both;
+}
+
+.armorySceneBackdrop::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 56px;
+    background: repeating-linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--armory-key-light) 22%, transparent) 0 1px,
+        transparent 1px 44px
+    );
+    mask-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.5));
+}
+
+/* Route entrance: the lights come up over the dark room. */
+@keyframes armoryLightsUp {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .armorySceneBackdrop {
+        animation: none;
+    }
+
+    .armoryScene {
+        transition: none;
+    }
+
+    /* Static machine: no idle loop, size changes snap. */
+    .armoryMachineTarget {
+        animation: none;
+        transition: none;
+    }
 }
 
 .armoryRail {
+    position: relative;
+    z-index: 1;
     min-height: 0;
     padding: var(--armory-space-xl) 18px;
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     gap: 18px;
     border-right: 1px solid rgba(var(--armory-line), 0.1);
-    background:
-        radial-gradient(circle at 0% 0%, rgba(var(--armory-tone-tempo), 0.15), rgba(var(--armory-tone-tempo), 0) 40%),
-        linear-gradient(180deg, rgba(18, 26, 44, 0.98), rgba(13, 19, 33, 0.99));
+    background: linear-gradient(180deg, rgba(18, 26, 44, 0.6), rgba(13, 19, 33, 0.42));
 }
 
 .armoryRailTop,
@@ -125,7 +214,7 @@
     border-radius: var(--armory-radius-panel);
     border: 1px solid rgba(var(--armory-line), 0.12);
     background:
-        radial-gradient(circle at 100% 0%, rgba(var(--armory-tone-tempo), 0.14), rgba(var(--armory-tone-tempo), 0) 42%),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--armory-key-light) 16%, transparent), transparent 42%),
         rgba(255, 255, 255, 0.035);
 }
 
@@ -135,7 +224,7 @@
     border-radius: var(--armory-radius-card);
     border: 1px solid rgba(var(--armory-line), 0.14);
     background:
-        radial-gradient(circle at 50% 50%, rgba(var(--armory-tone-tempo), 0.16), rgba(var(--armory-tone-tempo), 0) 56%),
+        radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--armory-key-light) 18%, transparent), transparent 56%),
         rgba(255, 255, 255, 0.04);
     display: grid;
     place-items: center;
@@ -309,12 +398,15 @@
 .armoryRailSection {
     min-height: 0;
     display: grid;
-    align-content: start;
+    grid-template-rows: auto minmax(0, 1fr);
     gap: var(--armory-space-sm);
 }
 
 .armorySlotRailList {
+    min-height: 0;
+    overflow-y: auto;
     display: grid;
+    align-content: start;
     gap: var(--armory-space-xs);
 }
 
@@ -368,14 +460,314 @@
 }
 
 .armoryWorkspace {
+    position: relative;
+    z-index: 1;
+    grid-column: 3 / -1;
     min-height: 0;
     overflow-y: auto;
     padding: var(--armory-space-xl);
     gap: 18px;
     scrollbar-gutter: stable;
-    background:
-        radial-gradient(circle at 100% 0%, rgba(var(--armory-tone-tempo), 0.1), rgba(var(--armory-tone-tempo), 0) 30%),
-        linear-gradient(180deg, rgba(16, 24, 40, 0.98), rgba(14, 21, 37, 0.99));
+}
+
+/* ---- Center stage: the machine (Phase 3) ---------------------------------
+   The build's body — live target under the key light, module housings docked
+   around it, the keyed tool rack beneath, and the nameplate. Everything here
+   re-renders from the active presentation, so editor changes are visible. */
+
+.armoryStage {
+    position: relative;
+    z-index: 1;
+    grid-column: 2;
+    min-height: 0;
+    min-width: 0;
+    display: grid;
+    align-content: center;
+    justify-items: stretch;
+    padding: var(--armory-space-xl);
+    overflow: hidden;
+}
+
+.armoryMachine {
+    display: grid;
+    gap: var(--armory-space-lg);
+    justify-items: center;
+}
+
+.armoryMachineCore {
+    position: relative;
+    width: 100%;
+    min-height: 340px;
+    display: grid;
+    place-items: center;
+}
+
+/* Bench glow: the key light pooling under the machine ties it to the weather. */
+.armoryMachineCore::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 74%;
+    height: 44px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(
+        ellipse at center,
+        color-mix(in srgb, var(--armory-key-light) 22%, transparent),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* The live target. Defaults mirror the in-game button's material so the bench
+   and the arena read as the same object; shop image skins override it. */
+.armoryMachineTarget {
+    border-radius: var(--armory-radius-pill);
+    background: linear-gradient(145deg, #6af0ca, #34b892);
+    box-shadow:
+        0 18px 30px rgba(0, 0, 0, 0.4),
+        0 0 34px color-mix(in srgb, var(--armory-key-light) 24%, transparent);
+    transition: width 0.3s var(--armory-motion-ease), height 0.3s var(--armory-motion-ease);
+    animation: armoryMachineIdle 3.4s ease-in-out infinite;
+}
+
+.armoryMachineTarget.hasImage {
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Idle life per identity: Control breathes slowly, Pressure ticks fast.
+   Transform-only so the idle loop stays on the compositor. */
+@keyframes armoryMachineIdle {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.035);
+    }
+}
+
+.armoryScene[data-identity="control"] .armoryMachineTarget {
+    animation-duration: 5.4s;
+}
+
+.armoryScene[data-identity="pressure"] .armoryMachineTarget {
+    animation-duration: 1.5s;
+    animation-timing-function: cubic-bezier(0.6, 0, 0.4, 1);
+}
+
+.armoryScene[data-identity="utility"] .armoryMachineTarget {
+    animation-duration: 2.6s;
+}
+
+/* Module housings docked around the target. */
+.armoryMachineHousing {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: var(--armory-space-sm);
+    padding: var(--armory-space-xs) var(--armory-space-md);
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background: linear-gradient(180deg, rgba(22, 32, 54, 0.86), rgba(14, 21, 37, 0.78));
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+}
+
+.armoryMachineHousing.housing-tempoCore {
+    left: 0;
+    top: 14%;
+}
+
+.armoryMachineHousing.housing-streakLens {
+    right: 0;
+    top: 14%;
+}
+
+.armoryMachineHousing.housing-powerRig {
+    left: 0;
+    bottom: 10%;
+}
+
+.armoryMachineHousing.tone-tempoCore {
+    border-color: rgba(var(--armory-tone-tempo), 0.42);
+}
+
+.armoryMachineHousing.tone-streakLens {
+    border-color: rgba(var(--armory-tone-streak), 0.42);
+}
+
+.armoryMachineHousing.tone-powerRig {
+    border-color: rgba(var(--armory-tone-power), 0.42);
+}
+
+/* Default modules read as neutral plates: no lane tint, dimmer glyph. */
+.armoryMachineHousing.isNeutral {
+    border-color: rgba(var(--armory-line), 0.14);
+}
+
+.armoryMachineHousing.isNeutral .armoryMachineHousingGlyph {
+    color: rgba(var(--armory-line), 0.6);
+    background: rgba(var(--armory-line), 0.08);
+}
+
+.armoryMachineHousingGlyph {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--armory-radius-glyph);
+    flex-shrink: 0;
+}
+
+.armoryMachineHousingGlyph svg {
+    width: 16px;
+    height: 16px;
+}
+
+.armoryMachineHousingGlyph.tone-tempoCore {
+    color: rgb(var(--armory-tone-tempo));
+    background: rgba(var(--armory-tone-tempo), 0.14);
+}
+
+.armoryMachineHousingGlyph.tone-streakLens {
+    color: rgb(var(--armory-tone-streak));
+    background: rgba(var(--armory-tone-streak), 0.14);
+}
+
+.armoryMachineHousingGlyph.tone-powerRig {
+    color: rgb(var(--armory-tone-power));
+    background: rgba(var(--armory-tone-power), 0.14);
+}
+
+.armoryMachineHousingBody {
+    display: grid;
+    gap: 2px;
+}
+
+.armoryMachineHousingSlot {
+    color: rgba(149, 204, 255, 0.72);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.armoryMachineHousingLabel {
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* The tool rack: three keyed slots mirroring the in-game power tray's
+   language (key badge + glyph + label) so round and workshop feel continuous. */
+.armoryMachineRack {
+    width: min(540px, 100%);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--armory-space-xs);
+}
+
+.armoryMachineRackSlot {
+    display: flex;
+    align-items: center;
+    gap: var(--armory-space-xs);
+    padding: var(--armory-space-xs) var(--armory-space-sm);
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.armoryMachineRackKey {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--armory-radius-key);
+    border: 1px solid rgba(var(--armory-tone-power), 0.4);
+    color: rgb(var(--armory-tone-power));
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.armoryMachineRackGlyph {
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.88);
+    flex-shrink: 0;
+}
+
+.armoryMachineRackGlyph svg {
+    width: 16px;
+    height: 16px;
+}
+
+.armoryMachineRackBody {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+}
+
+.armoryMachineRackLabel {
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.armoryMachineRackMeta {
+    color: rgba(197, 216, 240, 0.6);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Nameplate: display only in this phase (inline editing arrives with the bays). */
+.armoryMachineNameplate {
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    padding: var(--armory-space-sm) var(--armory-space-xl);
+    border-radius: var(--armory-radius-field);
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    background: linear-gradient(180deg, rgba(20, 29, 49, 0.82), rgba(13, 19, 33, 0.7));
+}
+
+.armoryMachineName {
+    color: rgba(255, 255, 255, 0.96);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.armoryMachineIdentity {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(149, 204, 255, 0.78);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+}
+
+.armoryMachineIdentityGlyph {
+    display: grid;
+    place-items: center;
+    color: var(--armory-key-light);
+}
+
+.armoryMachineIdentityGlyph svg {
+    width: 12px;
+    height: 12px;
 }
 
 .armoryStepCard,
@@ -949,8 +1341,8 @@
 }
 
 @media (max-width: 1100px) {
-    .armoryShell {
-        grid-template-columns: 280px minmax(0, 1fr);
+    .armoryScene {
+        grid-template-columns: 280px minmax(0, 1.5fr) minmax(0, 1fr);
     }
 
     .armoryReviewGrid,
@@ -961,10 +1353,9 @@
 }
 
 @media (max-width: 940px) {
-    .armoryShell {
-        height: auto;
-        min-height: 0;
+    .armoryScene {
         grid-template-columns: 1fr;
+        overflow: visible;
     }
 
     .armoryRail {
@@ -972,8 +1363,14 @@
         border-bottom: 1px solid rgba(var(--armory-line), 0.1);
     }
 
-    .armoryWorkspace {
+    .armoryWorkspace,
+    .armoryStage {
+        grid-column: auto;
         overflow: visible;
+    }
+
+    .armoryMachineCore {
+        min-height: 280px;
     }
 
     .armoryReviewHero,
@@ -998,17 +1395,29 @@
 }
 
 @media (max-width: 700px) {
-    .armoryPage {
-        width: 100%;
-    }
-
-    .armoryShell {
-        border-radius: var(--armory-radius-card);
-    }
-
     .armoryRail,
-    .armoryWorkspace {
+    .armoryWorkspace,
+    .armoryStage {
         padding: var(--armory-space-lg);
+    }
+
+    /* Housings fold into the flow beneath the target on narrow screens. */
+    .armoryMachineCore {
+        min-height: 0;
+        grid-auto-flow: row;
+        gap: var(--armory-space-xs);
+        justify-items: center;
+        padding-top: var(--armory-space-lg);
+    }
+
+    .armoryMachineCore .armoryMachineTarget {
+        order: -1;
+        margin-bottom: var(--armory-space-lg);
+    }
+
+    .armoryMachineHousing {
+        position: static;
+        width: min(320px, 100%);
     }
 
     .armoryWalkthroughPanel {

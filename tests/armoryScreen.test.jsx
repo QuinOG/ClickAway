@@ -4,6 +4,8 @@ import { MemoryRouter } from "react-router-dom"
 import { describe, expect, test, vi } from "vitest"
 
 import { DEFAULT_SAVED_LOADOUTS } from "../src/constants/buildcraft.js"
+import { buildLoadoutPresentation } from "../src/constants/buildcraftPresentation.js"
+import { MACHINE_TARGET_SCALE } from "../src/features/armory/components/ArmoryMachine.jsx"
 import { BUILD_WALKTHROUGH_STATUS } from "../src/constants/buildWalkthrough.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
 import ArmoryPage from "../src/pages/ArmoryPage.jsx"
@@ -177,5 +179,128 @@ describe("Armory screen baseline", () => {
     renderArmory({ url: "/armory?step=passives&lane=powerRig" })
 
     expect(screen.getByRole("heading", { name: "Power Rig" })).not.toBeNull()
+  })
+})
+
+describe("Armory scene shell", () => {
+  test("renders as a full-bleed scene with a semantic h1, not a card page", () => {
+    renderArmory()
+
+    expect(screen.getByRole("heading", { level: 1, name: "Armory" })).not.toBeNull()
+    expect(document.querySelector(".armoryScene")).not.toBeNull()
+    expect(document.querySelector(".pageCenter")).toBeNull()
+    expect(document.querySelector(".cardWide")).toBeNull()
+  })
+
+  test("scene lighting identity follows the active build", async () => {
+    const user = userEvent.setup()
+    renderArmory()
+
+    const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
+    const expectedIdentityFor = (loadoutId) => buildLoadoutPresentation(
+      normalMode,
+      DEFAULT_SAVED_LOADOUTS.find((loadout) => loadout.id === loadoutId)
+    ).identity.label.toLowerCase()
+
+    const scene = document.querySelector(".armoryScene")
+    expect(scene.dataset.identity).toBe(expectedIdentityFor("loadout_1"))
+
+    const slotList = screen.getByLabelText("Saved build slots")
+    await user.click(within(slotList).getByRole("button", { name: /Glass Cannon/ }))
+
+    const glassCannonIdentity = expectedIdentityFor("loadout_3")
+    expect(scene.dataset.identity).toBe(glassCannonIdentity)
+    expect(glassCannonIdentity).not.toBe(expectedIdentityFor("loadout_1"))
+  })
+})
+
+describe("Armory machine", () => {
+  const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
+
+  function expectedTargetSize(loadout) {
+    const { roundRules } = buildLoadoutPresentation(normalMode, loadout)
+    return `${Math.round(roundRules.initialButtonSize * MACHINE_TARGET_SCALE)}px`
+  }
+
+  function getMachine() {
+    return screen.getByLabelText("Active build machine")
+  }
+
+  test("shows the build's body: nameplate, module housings, and keyed rack", () => {
+    renderArmory()
+
+    const machine = getMachine()
+    expect(within(machine).getByText("All-Rounder")).not.toBeNull()
+
+    // Housings carry the installed module of each lane.
+    expect(within(machine).getByText("Tempo Core")).not.toBeNull()
+    expect(within(machine).getByText("Balanced Tempo")).not.toBeNull()
+    expect(within(machine).getByText("Balanced Streak")).not.toBeNull()
+    expect(within(machine).getByText("Balanced Rig")).not.toBeNull()
+
+    // The rack mirrors the in-game tray: three keyed tools with cadence.
+    const rack = within(machine).getByLabelText("Racked hotbar")
+    expect(within(rack).getByText("Time +2s")).not.toBeNull()
+    expect(within(rack).getByText("Grow +10")).not.toBeNull()
+    expect(within(rack).getByText("Freeze 1s")).not.toBeNull()
+    expect(rack.querySelectorAll(".armoryMachineRackKey")).toHaveLength(3)
+  })
+
+  test("target size tracks the build's computed initial button size", async () => {
+    const user = userEvent.setup()
+    renderArmory()
+
+    const target = document.querySelector(".armoryMachineTarget")
+    const allRounder = DEFAULT_SAVED_LOADOUTS.find((loadout) => loadout.id === "loadout_1")
+    expect(target.style.width).toBe(expectedTargetSize(allRounder))
+
+    // Installing Anchor (bigger targets) visibly grows the machine's target.
+    await openStep(user, "Passive Stack")
+    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+
+    const anchorLoadout = {
+      ...allRounder,
+      moduleIds: { ...allRounder.moduleIds, tempoCoreId: "tempo_anchor" },
+    }
+    const anchorSize = expectedTargetSize(anchorLoadout)
+    expect(target.style.width).toBe(anchorSize)
+    expect(parseInt(anchorSize, 10)).toBeGreaterThan(
+      parseInt(expectedTargetSize(allRounder), 10)
+    )
+  })
+
+  test("default modules read as neutral plates; specialist modules light their lane", async () => {
+    const user = userEvent.setup()
+    renderArmory()
+
+    // All-Rounder ships all-default: every housing is a neutral plate.
+    expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(3)
+
+    await openStep(user, "Passive Stack")
+    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+
+    const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
+    expect(tempoHousing.className).not.toContain("isNeutral")
+    expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(2)
+  })
+
+  test("the shop-equipped image skin dresses the target", () => {
+    renderArmory({
+      buttonSkinImageSrc: "/skins/cd.png",
+      buttonSkinImageScale: 120,
+    })
+
+    const target = document.querySelector(".armoryMachineTarget")
+    expect(target.className).toContain("hasImage")
+    expect(target.style.backgroundImage).toContain("/skins/cd.png")
+    expect(target.style.backgroundSize).toBe("120%")
+  })
+
+  test("a class-based skin applies its effect class when no image is set", () => {
+    renderArmory({ buttonSkinClass: "skin-cd" })
+
+    const target = document.querySelector(".armoryMachineTarget")
+    expect(target.className).toContain("skin-cd")
+    expect(target.className).not.toContain("hasImage")
   })
 })

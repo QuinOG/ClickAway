@@ -23,8 +23,11 @@
     display: flex;
 }
 
+/* The armory is a full-bleed scene like the game route; below 940px the scene
+   grows with its content and scrolls inside the main column instead. */
 .mainContent.armoryMain {
-    padding: 12px;
+    padding: 0;
+    overflow: hidden;
     display: flex;
 }
 
@@ -44,6 +47,14 @@
 .mainContent.armoryMain > .routeOutlet {
     min-height: 0;
     min-width: 0;
+    display: flex;
+}
+
+@media (max-width: 940px) {
+    .mainContent.armoryMain {
+        overflow: auto;
+        display: block;
+    }
 }
 
 .routeFallback {

@@ -15,7 +15,7 @@ import {
   getModuleOptionPresentation,
   getPowerupOptionPresentation,
 } from "../../../constants/buildcraftPresentation.js"
-import { ARMORY_STEPS, WALKTHROUGH_STEPS } from "../armoryConstants.js"
+import { ARMORY_STEPS, DEFAULT_ARMORY_STEP_ID, WALKTHROUGH_STEPS } from "../armoryConstants.js"
 import {
   buildCommittedNameResult,
   getStepSummary,
@@ -33,20 +33,26 @@ export function useArmoryScreenController({
   onLoadoutStateChange,
   buildWalkthrough = null,
   onBuildWalkthroughChange,
+  buttonSkinClass = "",
+  buttonSkinImageSrc = "",
+  buttonSkinImageScale = 100,
 }) {
   const navigate = useNavigate()
   const shellRef = useRef(null)
   const workspaceRef = useRef(null)
-  const slotEditorRef = useRef(null)
+  const nameplateRef = useRef(null)
   const passiveLaneRef = useRef(null)
   const hotbarEditorRef = useRef(null)
   const reviewPanelRef = useRef(null)
   const [localSavedLoadouts, setLocalSavedLoadouts] = useState(savedLoadouts)
   const [localActiveLoadoutId, setLocalActiveLoadoutId] = useState(activeLoadoutId)
-  const [activeStepId, setActiveStepId] = useState("slot")
+  const [activeStepId, setActiveStepId] = useState(DEFAULT_ARMORY_STEP_ID)
   const [activeModuleSlotId, setActiveModuleSlotId] = useState(MODULE_SLOTS[0]?.id ?? "tempoCore")
   const [editingPowerSlotIndex, setEditingPowerSlotIndex] = useState(0)
   const [nameDraft, setNameDraft] = useState("")
+  const [isEditingNameplate, setIsEditingNameplate] = useState(false)
+  // One pending workshop confirm at a time: { type: "reset" } or { type: "copy", targetLoadoutId }.
+  const [pendingBayAction, setPendingBayAction] = useState(null)
   const [showReviewDetails, setShowReviewDetails] = useState(false)
   const [isWalkthroughVisible, setIsWalkthroughVisible] = useState(false)
   const [walkthroughSource, setWalkthroughSource] = useState(null)
@@ -144,7 +150,7 @@ export function useArmoryScreenController({
     const shellElement = shellRef.current
     let targetElement = null
 
-    if (currentWalkthroughStep.targetId === "slot") targetElement = slotEditorRef.current
+    if (currentWalkthroughStep.targetId === "nameplate") targetElement = nameplateRef.current
     if (currentWalkthroughStep.targetId === "passives") targetElement = passiveLaneRef.current
     if (currentWalkthroughStep.targetId === "hotbar") targetElement = hotbarEditorRef.current
     if (currentWalkthroughStep.targetId === "review") targetElement = reviewPanelRef.current
@@ -198,6 +204,28 @@ export function useArmoryScreenController({
     commitLoadoutState(nextSavedLoadouts, nextLoadoutId)
   }, [activeLoadout, commitLoadoutState, localActiveLoadoutId, localSavedLoadouts, nameDraft])
 
+  // Rolling a different machine onto the stage abandons any half-finished
+  // rename or confirm aimed at the previous build.
+  useEffect(() => {
+    setIsEditingNameplate(false)
+    setPendingBayAction(null)
+  }, [localActiveLoadoutId])
+
+  const startNameplateEdit = useCallback(() => {
+    setNameDraft(activeLoadout?.name ?? "")
+    setIsEditingNameplate(true)
+  }, [activeLoadout?.name])
+
+  const commitNameplateEdit = useCallback(() => {
+    commitActiveLoadoutName()
+    setIsEditingNameplate(false)
+  }, [commitActiveLoadoutName])
+
+  const cancelNameplateEdit = useCallback(() => {
+    setNameDraft(activeLoadout?.name ?? "")
+    setIsEditingNameplate(false)
+  }, [activeLoadout?.name])
+
   const handleSelectModule = useCallback((slotKey, moduleId) => {
     if (!activeLoadout) return
 
@@ -237,6 +265,35 @@ export function useArmoryScreenController({
     }))
   }, [activeLoadout, updateSingleLoadout])
 
+  const handleCopyToBay = useCallback((targetLoadoutId) => {
+    if (!activeLoadout || !targetLoadoutId || targetLoadoutId === activeLoadout.id) return
+
+    updateSingleLoadout(targetLoadoutId, (loadout) => ({
+      id: loadout.id,
+      name: activeLoadout.name,
+      moduleIds: { ...activeLoadout.moduleIds },
+      powerupIds: [...activeLoadout.powerupIds],
+    }))
+  }, [activeLoadout, updateSingleLoadout])
+
+  const requestResetLoadout = useCallback(() => {
+    setPendingBayAction({ type: "reset" })
+  }, [])
+
+  const requestCopyToBay = useCallback((targetLoadoutId) => {
+    setPendingBayAction({ type: "copy", targetLoadoutId })
+  }, [])
+
+  const cancelBayAction = useCallback(() => {
+    setPendingBayAction(null)
+  }, [])
+
+  const confirmBayAction = useCallback(() => {
+    if (pendingBayAction?.type === "reset") handleResetLoadout()
+    if (pendingBayAction?.type === "copy") handleCopyToBay(pendingBayAction.targetLoadoutId)
+    setPendingBayAction(null)
+  }, [handleCopyToBay, handleResetLoadout, pendingBayAction])
+
   const handleOpenStep = useCallback((nextStepId) => {
     commitActiveLoadoutName()
     setActiveStepId(nextStepId)
@@ -271,14 +328,14 @@ export function useArmoryScreenController({
   }, [])
 
   const handleWalkthroughKeepCurrentName = useCallback(() => {
-    setNameDraft(activeLoadout?.name ?? "")
+    cancelNameplateEdit()
     goToNextWalkthroughStep()
-  }, [activeLoadout?.name, goToNextWalkthroughStep])
+  }, [cancelNameplateEdit, goToNextWalkthroughStep])
 
   const handleWalkthroughSaveName = useCallback(() => {
-    commitActiveLoadoutName()
+    commitNameplateEdit()
     goToNextWalkthroughStep()
-  }, [commitActiveLoadoutName, goToNextWalkthroughStep])
+  }, [commitNameplateEdit, goToNextWalkthroughStep])
 
   const handleWalkthroughKeepTuning = useCallback(() => {
     setIsWalkthroughVisible(false)
@@ -355,7 +412,6 @@ export function useArmoryScreenController({
 
   const isReady = Boolean(selectedMode && activeLoadout && activePresentation && selectedModuleSlot)
 
-  const slotStepSummary = getStepSummary("slot", activeLoadout, activePresentation, selectedMode)
   const passiveStepSummary = getStepSummary("passives", activeLoadout, activePresentation, selectedMode)
   const hotbarStepSummary = getStepSummary("hotbar", activeLoadout, activePresentation, selectedMode)
   const reviewStepSummary = getStepSummary("review", activeLoadout, activePresentation, selectedMode)
@@ -368,7 +424,7 @@ export function useArmoryScreenController({
     isReady,
     shellRef,
     workspaceRef,
-    slotEditorRef,
+    nameplateRef,
     passiveLaneRef,
     hotbarEditorRef,
     reviewPanelRef,
@@ -379,16 +435,30 @@ export function useArmoryScreenController({
     selectedMode,
     activeLoadout,
     activePresentation,
-    slotApi: {
+    machineApi: {
+      buttonSkinClass,
+      buttonSkinImageSrc,
+      buttonSkinImageScale,
+      nameDraft,
+      setNameDraft,
+      isEditingName: isEditingNameplate,
+      startNameEdit: startNameplateEdit,
+      commitNameEdit: commitNameplateEdit,
+      cancelNameEdit: cancelNameplateEdit,
+      isResetPending: pendingBayAction?.type === "reset",
+      requestReset: requestResetLoadout,
+      confirmBayAction,
+      cancelBayAction,
+    },
+    bayApi: {
       savedLoadouts: localSavedLoadouts,
       loadoutPresentations,
       activeLoadoutId: localActiveLoadoutId,
-      nameDraft,
-      setNameDraft,
-      commitName: commitActiveLoadoutName,
       activateLoadout: handleActivateLoadout,
-      resetLoadout: handleResetLoadout,
-      summary: slotStepSummary,
+      pendingCopyTargetId: pendingBayAction?.type === "copy" ? pendingBayAction.targetLoadoutId : null,
+      requestCopyToBay,
+      confirmBayAction,
+      cancelBayAction,
     },
     passiveApi: {
       selectedModuleSlot,

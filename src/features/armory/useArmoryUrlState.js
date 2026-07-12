@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 
 import { BUILD_WALKTHROUGH_STATUS } from "../../constants/buildWalkthrough.js"
-import { ARMORY_STEP_IDS } from "./armoryConstants.js"
+import { ARMORY_STEP_IDS, LEGACY_ARMORY_STEP_ALIASES } from "./armoryConstants.js"
 
 const LANE_IDS = new Set(["tempoCore", "streakLens", "powerRig"])
 
@@ -37,7 +37,8 @@ export function useArmoryUrlState({
       return
     }
 
-    const step = searchParams.get("step")
+    const rawStep = searchParams.get("step")
+    const step = LEGACY_ARMORY_STEP_ALIASES[rawStep] ?? rawStep
     if (step && ARMORY_STEP_IDS.has(step)) setActiveStepId(step)
 
     const lane = searchParams.get("lane")
