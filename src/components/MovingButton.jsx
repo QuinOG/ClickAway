@@ -1,3 +1,7 @@
+import { useState } from "react"
+
+const failedTargetSkinSources = new Set()
+
 function getButtonInlineStyle({ style, labelFontSize, hasImage, skinImageSrc, skinImageScale }) {
   return {
     ...style,
@@ -18,15 +22,39 @@ export default function MovingButton({
   skinImageScale = 100,
 }) {
   const hasImage = Boolean(skinImageSrc)
-  const skinClassName = hasImage ? "" : skinClass
+  const [failedImageSrc, setFailedImageSrc] = useState(() => (
+    failedTargetSkinSources.has(skinImageSrc) ? skinImageSrc : ""
+  ))
+  const imageFailed = hasImage
+    && (failedImageSrc === skinImageSrc || failedTargetSkinSources.has(skinImageSrc))
+  const showImage = hasImage && !imageFailed
+  const skinClassName = showImage ? "" : skinClass
 
   return (
     <button
-      className={`bigCircleButton ${skinClassName} ${hasImage ? "hasImage" : ""}`}
-      style={getButtonInlineStyle({ style, labelFontSize, hasImage, skinImageSrc, skinImageScale })}
+      className={`bigCircleButton ${skinClassName} ${showImage ? "hasImage" : ""} ${imageFailed ? "imageFallback" : ""}`}
+      style={getButtonInlineStyle({
+        style,
+        labelFontSize,
+        hasImage: showImage,
+        skinImageSrc,
+        skinImageScale,
+      })}
       onClick={onClick}
       disabled={disabled}
+      aria-label="Precision target"
     >
+      {showImage ? (
+        <img
+          className="targetSkinProbe"
+          src={skinImageSrc}
+          alt=""
+          onError={() => {
+            failedTargetSkinSources.add(skinImageSrc)
+            setFailedImageSrc(skinImageSrc)
+          }}
+        />
+      ) : null}
       {label}
     </button>
   )

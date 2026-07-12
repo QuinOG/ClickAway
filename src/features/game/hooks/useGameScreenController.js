@@ -19,12 +19,10 @@ import {
 } from "../../../constants/drillConfig.js"
 import {
   FEEDBACK_LIFETIME_MS,
-  FEEDBACK_OFFSET,
   READY_COUNTDOWN_START,
   ROUND_END_SETTLE_MS,
   ROUND_PHASE,
   SHAKE_DURATION_MS,
-  SHAKE_STREAK_MILESTONE,
   TIMER_TICK_MS,
 } from "../../../constants/gameConstants.js"
 import { FEEDBACK_EVENTS } from "../../../constants/feedbackEvents.js"
@@ -91,6 +89,12 @@ function buildButtonStyle(buttonSize, buttonPosition) {
 
 function buildClickFeedbackId() {
   return `${Date.now()}-${Math.random()}`
+}
+
+const MAX_TRANSIENT_FEEDBACK_ITEMS = 14
+
+function isStreakMilestone(streak) {
+  return streak === 5 || (streak >= 10 && streak % 10 === 0)
 }
 
 function buildPowerupChargeState(equippedPowerups = [], startingCharges = 0) {
@@ -207,6 +211,10 @@ export function useGameScreenController({
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 })
   const [timeLeft, setTimeLeft] = useState(resolvedSelectedMode.durationSeconds)
   const [clickFeedbackItems, setClickFeedbackItems] = useState([])
+  const [targetSpawnSequence, setTargetSpawnSequence] = useState(0)
+  const [activatedPowerup, setActivatedPowerup] = useState(null)
+  const activationCueTimeoutRef = useRef(null)
+  const hasPassedPersonalBestRef = useRef(false)
   const [powerupCharges, setPowerupCharges] = useState(() => (
     buildPowerupChargeState(
       resolvedSelectedMode.equippedPowerups,
@@ -414,6 +422,7 @@ export function useGameScreenController({
     const arenaRect = arenaElement.getBoundingClientRect()
     setButtonPosition(getRandomPosition(arenaRect, nextButtonSize, rngRef.current))
     markButtonSpawned()
+    setTargetSpawnSequence((currentSequence) => currentSequence + 1)
   }, [markButtonSpawned])
 
   const queueButtonReposition = useCallback(
@@ -433,12 +442,12 @@ export function useGameScreenController({
     if (!arenaElement) return
 
     const arenaRect = arenaElement.getBoundingClientRect()
-    const feedbackX = clientX - arenaRect.left + FEEDBACK_OFFSET.x
-    const feedbackY = clientY - arenaRect.top + FEEDBACK_OFFSET.y
+    const feedbackX = clientX - arenaRect.left
+    const feedbackY = clientY - arenaRect.top
     const feedbackId = buildClickFeedbackId()
 
     setClickFeedbackItems((currentItems) => [
-      ...currentItems,
+      ...currentItems.slice(-(MAX_TRANSIENT_FEEDBACK_ITEMS - 1)),
       { id: feedbackId, x: feedbackX, y: feedbackY, value, type },
     ])
 
@@ -488,6 +497,13 @@ export function useGameScreenController({
     setButtonSize(modeSettings.initialButtonSize)
     setTimeLeft(modeSettings.durationSeconds)
     setClickFeedbackItems([])
+    setTargetSpawnSequence(0)
+    setActivatedPowerup(null)
+    hasPassedPersonalBestRef.current = false
+    if (activationCueTimeoutRef.current) {
+      window.clearTimeout(activationCueTimeoutRef.current)
+      activationCueTimeoutRef.current = null
+    }
     setPowerupCharges(
       buildPowerupChargeState(
         modeSettings.equippedPowerups,
@@ -711,7 +727,7 @@ export function useGameScreenController({
       setTimeLeft((currentTime) =>
         Math.min(roundMode.maxTimeBufferSeconds, currentTime + 2)
       )
-      addCenterFeedback("+2s", "positive")
+      addCenterFeedback("+2s", "power power-time_boost")
       return
     }
 
@@ -720,13 +736,14 @@ export function useGameScreenController({
         Math.min(roundMode.initialButtonSize, currentButtonSize + 10)
       ))
       markButtonSpawned()
-      addCenterFeedback("Grow", "positive")
+      setTargetSpawnSequence((currentSequence) => currentSequence + 1)
+      addCenterFeedback("Grow", "power power-size_boost")
       return
     }
 
     if (powerup.effectType === "freeze_movement") {
       freezeMovementUntilRef.current = eventTimeMs + FREEZE_MOVEMENT_DURATION_MS
-      addCenterFeedback("Freeze", "positive")
+      addCenterFeedback("Freeze", "power power-freeze_movement")
       return
     }
 
@@ -738,17 +755,18 @@ export function useGameScreenController({
         return nextButtonSize
       })
       markButtonSpawned()
-      addCenterFeedback("Center", "positive")
+      setTargetSpawnSequence((currentSequence) => currentSequence + 1)
+      addCenterFeedback("Center", "power power-magnet_center")
       return
     }
 
     if (powerup.effectType === "combo_surge") {
-      addCenterFeedback("Surge", "positive")
+      addCenterFeedback("Surge", "power power-combo_surge")
       return
     }
 
     if (powerup.effectType === "guard_charge") {
-      addCenterFeedback("Guard", "positive")
+      addCenterFeedback("Guard", "power power-guard_charge")
     }
   }, [
     addCenterFeedback,
@@ -785,6 +803,16 @@ export function useGameScreenController({
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
+    setActivatedPowerup({
+      id: powerup.id,
+      label: powerup.label,
+      sequence: eventTimeMs,
+    })
+    if (activationCueTimeoutRef.current) window.clearTimeout(activationCueTimeoutRef.current)
+    activationCueTimeoutRef.current = window.setTimeout(() => {
+      setActivatedPowerup(null)
+      activationCueTimeoutRef.current = null
+    }, 1100)
     applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
 
@@ -840,14 +868,29 @@ export function useGameScreenController({
       pitch: 1 + Math.min(0.36, result.streak * 0.012),
       strength: 1 + Math.min(0.25, result.streak * 0.008),
     })
-    if (result.streak > 0 && result.streak % SHAKE_STREAK_MILESTONE === 0) {
+    if (isStreakMilestone(result.streak)) {
       emitFeedback?.(FEEDBACK_EVENTS.STREAK_MILESTONE, {
         eventId: `${feedbackEventId}-streak-${result.streak}`,
         strength: 1.12,
       })
+      addCenterFeedback(`${result.streak} streak`, "milestone")
     }
 
-    addClickFeedback(event.clientX, event.clientY, `+${result.pointsEarned}`, "positive")
+    addClickFeedback(
+      event.clientX,
+      event.clientY,
+      `+${result.pointsEarned}`,
+      result.comboSurgeHitsRemaining > 0 ? "hit comboHit" : "hit"
+    )
+    if (
+      !hasPassedPersonalBestRef.current
+      && roundStartBestScore > 0
+      && score <= roundStartBestScore
+      && result.score > roundStartBestScore
+    ) {
+      hasPassedPersonalBestRef.current = true
+      addCenterFeedback("Personal best", "milestone personalBest")
+    }
     result.grantedPowerups.forEach((powerup) => {
       addCenterFeedback(`${powerup.slotKey}+`, "positive")
       emitFeedback?.(FEEDBACK_EVENTS.POWER_READY, {
@@ -867,7 +910,9 @@ export function useGameScreenController({
     getElapsedMs,
     isPlaying,
     queueButtonReposition,
+    roundStartBestScore,
     roundMode,
+    score,
     syncSimulationState,
   ])
 
@@ -891,7 +936,7 @@ export function useGameScreenController({
 
     if (result.guarded) {
       emitFeedback?.(FEEDBACK_EVENTS.GUARDED_MISS, { eventId: feedbackEventId })
-      addClickFeedback(event.clientX, event.clientY, "Guarded", "positive")
+      addClickFeedback(event.clientX, event.clientY, "Absorbed", "guarded")
       return
     }
 
@@ -899,16 +944,27 @@ export function useGameScreenController({
     emitFeedback?.(FEEDBACK_EVENTS.MISS, { eventId: feedbackEventId })
 
     if (result.penaltyApplied > 0) {
-      addClickFeedback(event.clientX, event.clientY, `-${result.penaltyApplied}`, "negative")
+      addClickFeedback(
+        event.clientX,
+        event.clientY,
+        streak > 0 ? `Streak broken  -${result.penaltyApplied}` : `-${result.penaltyApplied}`,
+        streak > 0 ? "streakBreak" : "miss"
+      )
       return
     }
 
-    addClickFeedback(event.clientX, event.clientY, "Miss", "negative")
+    addClickFeedback(
+      event.clientX,
+      event.clientY,
+      streak > 0 ? "Streak broken" : "Miss",
+      streak > 0 ? "streakBreak" : "miss"
+    )
   }, [
     addClickFeedback,
     emitFeedback,
     getElapsedMs,
     isPlaying,
+    streak,
     syncSimulationState,
     triggerScreenShake,
   ])
@@ -941,6 +997,8 @@ export function useGameScreenController({
       setCountdownValue(0)
       setRoundStartStatus("playing")
       setIsGoCueVisible(true)
+      markButtonSpawned()
+      setTargetSpawnSequence((currentSequence) => currentSequence + 1)
       setPhase(ROUND_PHASE.PLAYING)
       goCueTimeoutRef.current = window.setTimeout(() => {
         setIsGoCueVisible(false)
@@ -975,7 +1033,7 @@ export function useGameScreenController({
       window.clearTimeout(timeoutId)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [phase])
+  }, [markButtonSpawned, phase])
 
   useEffect(() => {
     if (phase === ROUND_PHASE.COUNTDOWN && countdownValue > 0) {
@@ -1051,11 +1109,6 @@ export function useGameScreenController({
 
     return () => clearInterval(roundTimerInterval)
   }, [endCurrentRound, isPlaying, isTimedRound])
-
-  useEffect(() => {
-    if (!isPlaying) return
-    markButtonSpawned()
-  }, [isPlaying, markButtonSpawned])
 
   useEffect(() => {
     if (guardActiveUntilMs <= 0) return undefined
@@ -1173,6 +1226,7 @@ export function useGameScreenController({
       clearRoundEndTimeout()
       clearShakeTimeout()
       clearFeedbackTimeouts()
+      if (activationCueTimeoutRef.current) window.clearTimeout(activationCueTimeoutRef.current)
       if (goCueTimeoutRef.current) window.clearTimeout(goCueTimeoutRef.current)
     }
   }, [clearFeedbackTimeouts, clearRoundEndTimeout, clearShakeTimeout])
@@ -1311,11 +1365,14 @@ export function useGameScreenController({
       buttonSkinImageSrc,
       buttonSkinImageScale,
       clickFeedbackItems,
+      targetSpawnSequence,
       isTargetVisible: phase === ROUND_PHASE.PLAYING,
     },
     powerupTrayProps: {
       powerupSlots,
       streak,
+      isPlaying,
+      activatedPowerup,
       onUsePowerup: handleUsePowerup,
     },
     readyOverlayProps: {

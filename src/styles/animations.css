@@ -254,6 +254,48 @@
     animation: shimmer var(--ca-motion-duration-loading) ease-in-out infinite;
 }
 
+@keyframes targetSpawnCalibrate {
+    from { opacity: 0.72; transform: scale(0.82); filter: brightness(1.5); }
+    68% { opacity: 1; transform: scale(1.06); }
+    to { opacity: 1; transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes impactRing {
+    from { opacity: 0.95; scale: 0.3; }
+    to { opacity: 0; scale: 1.55; }
+}
+
+@keyframes guardAbsorb {
+    from { opacity: 1; transform: translate(0, 0) scale(0.88); }
+    45% { opacity: 1; transform: translate(0, -6px) scale(1.08); }
+    to { opacity: 0; transform: translate(0, -16px) scale(1); }
+}
+
+@keyframes streakBreakCue {
+    from { opacity: 1; transform: translate(0, 0) scale(1); }
+    30% { transform: translate(-4px, 0) scale(0.96); }
+    55% { transform: translate(4px, -3px) scale(0.92); }
+    to { opacity: 0; transform: translate(0, -14px) scale(0.82); }
+}
+
+@keyframes milestoneCue {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+    32% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+    to { opacity: 0; transform: translate(-50%, -68%) scale(1); }
+}
+
+@keyframes powerupActivate {
+    from { transform: translateY(0); box-shadow: 0 0 0 var(--power-signature); }
+    42% { transform: translateY(-4px); box-shadow: 0 0 22px color-mix(in srgb, var(--power-signature) 62%, transparent); }
+    to { transform: translateY(0); box-shadow: 0 0 0 transparent; }
+}
+
+@keyframes powerArenaCue {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+    28% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+    to { opacity: 0; transform: translate(-50%, -92%) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
     :root {
         --ca-motion-distance-xs: 0px;

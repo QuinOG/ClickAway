@@ -13,23 +13,23 @@
     min-height: 0;
     height: 100%;
     margin: 0;
-    padding: 12px 14px 14px;
+    padding: clamp(12px, 2.2dvh, 22px) clamp(14px, 2vw, 28px);
     background:
         radial-gradient(circle at 18% 8%, rgba(83, 215, 179, 0.14) 0%, rgba(83, 215, 179, 0) 42%),
         radial-gradient(circle at 84% 2%, rgba(58, 137, 255, 0.12) 0%, rgba(58, 137, 255, 0) 45%),
         linear-gradient(170deg, #0f1321, #1c2440);
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    gap: 9px;
+    gap: clamp(8px, 1.2dvh, 12px);
     position: relative;
     overflow: hidden;
     transition: background 0.3s ease;
 }
 
 .gameHud {
-    width: min(860px, 96vw, 100%);
+    width: min(980px, 100%);
     display: grid;
     gap: 6px;
     flex: 0 0 auto;
@@ -37,15 +37,32 @@
 }
 
 .hudPrimaryRow {
-    min-height: 86px;
+    position: relative;
+    min-height: 84px;
     display: grid;
-    grid-template-columns: minmax(150px, 1fr) minmax(240px, 1.35fr) minmax(150px, 1fr);
+    grid-template-columns: minmax(170px, 1fr) minmax(260px, 1.2fr) minmax(170px, 1fr);
     align-items: center;
-    gap: clamp(12px, 3vw, 34px);
-    padding-inline: clamp(4px, 1.5vw, 14px);
-    border-block: 1px solid rgba(150, 204, 239, 0.16);
+    gap: clamp(14px, 3vw, 38px);
+    padding: 8px clamp(14px, 2.4vw, 28px);
+    overflow: hidden;
+    border: 1px solid rgba(150, 204, 239, 0.2);
+    border-radius: 18px;
     background:
-        linear-gradient(90deg, rgba(83, 215, 179, 0.07), transparent 28%, transparent 72%, rgba(74, 168, 255, 0.07));
+        linear-gradient(90deg, rgba(83, 215, 179, 0.1), transparent 30%, transparent 70%, rgba(74, 168, 255, 0.1)),
+        rgba(8, 16, 31, 0.72);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 12px 30px rgba(3, 8, 18, 0.24);
+    backdrop-filter: blur(12px);
+}
+
+.hudPrimaryRow::after {
+    content: "";
+    position: absolute;
+    inset: auto 22% 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(118, 211, 239, 0.48), transparent);
+    pointer-events: none;
 }
 
 .ghostDuelBanner,
@@ -98,7 +115,7 @@
 
 .hudScoreAnchor {
     justify-items: start;
-    padding-left: 12px;
+    padding-left: 14px;
 }
 
 .hudScoreAnchor::before {
@@ -152,7 +169,7 @@
 
 .scoreNumber {
     min-width: 4ch;
-    font-size: clamp(36px, 5.5vw, 54px);
+    font-size: clamp(34px, 4.2vw, 48px);
     color: var(--score-color);
     text-shadow: 0 8px 24px var(--score-glow);
     transition: color var(--dur-quick) ease, text-shadow var(--dur-quick) ease;
@@ -509,17 +526,39 @@
 }
 
 .bigCircleButton:not(:disabled) {
-    animation: buttonAmbientGlow 2.6s ease-in-out infinite;
+    animation: targetSpawnCalibrate 120ms cubic-bezier(0.2, 0.9, 0.3, 1) both,
+        buttonAmbientGlow 2.6s 120ms ease-in-out infinite;
+}
+
+.targetSkinProbe {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bigCircleButton.imageFallback {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 0 7px rgba(83, 215, 179, 0.3);
+}
+
+.powerupHotbar {
+    width: min(540px, 94vw, 100%);
+    display: grid;
+    gap: 5px;
 }
 
 .powerupTray {
-    width: min(540px, 94vw, 100%);
+    width: 100%;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
 }
 
 .powerupItem {
+    appearance: none;
+    font: inherit;
+    text-align: left;
     display: grid;
     gap: 8px;
     padding: 9px 10px;
@@ -529,6 +568,17 @@
     color: rgba(255, 255, 255, 0.92);
     min-height: 76px;
     transition: border-color 0.25s ease, background 0.25s ease;
+    cursor: pointer;
+}
+
+.powerupItem:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+.powerupItem:focus-visible {
+    outline: 3px solid var(--focus-ring, #8eeeff);
+    outline-offset: 2px;
 }
 
 .powerupItem.ready {
@@ -677,6 +727,22 @@
     color: rgba(255, 245, 211, 0.98);
 }
 
+.powerupCoach {
+    min-height: 14px;
+    margin: 0;
+    color: rgba(211, 228, 244, 0.76);
+    font-size: 10px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.clickFeedbackLayer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
 .clickFeedback {
     position: absolute;
     pointer-events: none;
@@ -684,17 +750,39 @@
     font-size: 24px;
     font-weight: 700;
     line-height: 1;
+    transform: translate(-50%, -50%);
     animation: clickFeedbackFloat 0.55s ease-out forwards;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
-.clickFeedback.positive {
+.clickFeedbackLocus {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: impactRing 280ms ease-out forwards;
+}
+
+.clickFeedbackValue {
+    display: block;
+    white-space: nowrap;
+    margin-left: 12px;
+    margin-top: -12px;
+}
+
+.clickFeedback.positive,
+.clickFeedback.hit {
     color: var(--game-accent);
     text-shadow: 0 0 14px rgba(106, 240, 202, 0.5), 0 2px 10px rgba(0, 0, 0, 0.35);
     animation: clickFeedbackHit 0.6s ease-out forwards;
 }
 
-.clickFeedback.negative {
+.clickFeedback.negative,
+.clickFeedback.miss {
     color: var(--danger);
     font-size: 20px;
     animation: clickFeedbackMiss 0.44s ease-out forwards;
@@ -1744,6 +1832,74 @@
     font-size: 13px;
     line-height: 1.45;
     color: rgba(236, 228, 210, 0.9);
+}
+
+.clickFeedback.guarded {
+    color: #ffe083;
+    font-size: 17px;
+    animation: guardAbsorb 520ms ease-out forwards;
+}
+
+.clickFeedback.guarded .clickFeedbackLocus {
+    border-style: double;
+    border-width: 5px;
+}
+
+.clickFeedback.streakBreak {
+    color: #ff8d9b;
+    font-size: 17px;
+    animation: streakBreakCue 540ms ease-out forwards;
+}
+
+.clickFeedback.streakBreak .clickFeedbackLocus {
+    border-radius: 3px;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.clickFeedback.comboHit {
+    color: #ffd166;
+    text-shadow: 0 0 18px rgba(255, 187, 82, 0.72);
+}
+
+.clickFeedback.milestone {
+    color: #fff3bd;
+    font-size: clamp(22px, 4vw, 34px);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    animation: milestoneCue 680ms ease-out forwards;
+}
+
+.clickFeedback.power {
+    color: #dff8ff;
+    font-size: 22px;
+    animation: powerArenaCue 720ms ease-out forwards;
+}
+
+.clickFeedback.power-time_boost { color: #6ed8ff; }
+.clickFeedback.power-size_boost { color: #8df29e; }
+.clickFeedback.power-freeze_movement { color: #b8c8ff; }
+.clickFeedback.power-magnet_center { color: #e4a8ff; }
+.clickFeedback.power-combo_surge { color: #ffbd68; }
+.clickFeedback.power-guard_charge { color: #ffe083; }
+
+html[data-flashes="reduced"] .clickFeedbackLocus {
+    animation: none;
+    background: transparent;
+}
+
+.powerupItem.justActivated {
+    animation: powerupActivate 420ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.powerupItem.power-time_boost { --power-signature: #6ed8ff; }
+.powerupItem.power-size_boost { --power-signature: #8df29e; }
+.powerupItem.power-freeze_movement { --power-signature: #b8c8ff; }
+.powerupItem.power-magnet_center { --power-signature: #e4a8ff; }
+.powerupItem.power-combo_surge { --power-signature: #ffbd68; }
+.powerupItem.power-guard_charge { --power-signature: #ffe083; }
+
+.powerupItem .powerupIconWrap {
+    color: var(--power-signature, rgba(255, 229, 159, 0.98));
 }
 
 /* UX-06: game-entry lobby. These rules intentionally sit after the legacy
@@ -5062,9 +5218,12 @@
     .gameOverScorePanel.isComplete,
     .powerupReadyCue,
     .powerupItem.ready,
+    .powerupItem.justActivated,
     .clickFeedback,
     .clickFeedback.positive,
-    .clickFeedback.negative {
+    .clickFeedback.negative,
+    .clickFeedbackLocus,
+    .bigCircleButton:not(:disabled) {
         animation: none;
     }
 
@@ -5384,7 +5543,8 @@
 
     .powerupTray {
         width: 100%;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
     }
 
     .powerupPanel {
@@ -5403,6 +5563,30 @@
 
     .powerupItem {
         min-height: 0;
+        padding: 7px 6px;
+        gap: 5px;
+    }
+
+    .powerupHeading {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .powerupLead {
+        gap: 5px;
+    }
+
+    .powerupHeadingCopy {
+        display: none;
+    }
+
+    .powerupIconWrap {
+        width: 28px;
+        height: 28px;
+    }
+
+    .powerupSegment {
+        height: 5px;
     }
 
     .powerupMeta {
@@ -5514,6 +5698,10 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
+    animation: none;
 }
 
 /* UX-08: arena-bound entrance and countdown. */

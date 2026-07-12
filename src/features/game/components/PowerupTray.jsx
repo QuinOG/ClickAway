@@ -33,17 +33,36 @@ function getPowerupState(powerup, charges) {
   }
 
   return {
-    label: "Charging",
+    label: powerup.isPlaying ? "Charging" : "Unavailable",
     tone: "idle",
   }
 }
 
-export default function PowerupTray({ powerupSlots = [], streak = 0, onUsePowerup }) {
+export default function PowerupTray({
+  powerupSlots = [],
+  streak = 0,
+  isPlaying = false,
+  activatedPowerup = null,
+  onUsePowerup,
+}) {
+  const readyPowerup = powerupSlots.find((powerup) => (powerup.charges ?? 0) > 0)
+  const coachMessage = activatedPowerup?.id
+    ? `${activatedPowerup.label} activated — watch the arena cue.`
+    : readyPowerup && isPlaying
+      ? `${readyPowerup.label} ready — press ${readyPowerup.slotKey} or tap its slot.`
+      : ""
+
   return (
-    <div className="powerupTray" aria-label="Power hotbar">
-      {powerupSlots.map((powerup) => {
+    <section className="powerupHotbar" aria-label="Power hotbar">
+      <div className="powerupTray">
+        {powerupSlots.map((powerup) => {
         const charges = powerup.charges ?? 0
-        const powerupState = getPowerupState(powerup, charges)
+        const isActive = powerup.effectType === "combo_surge"
+          ? powerup.comboSurgeHitsRemaining > 0
+          : powerup.effectType === "guard_charge" && powerup.isGuardActive
+        const canUse = isPlaying && charges > 0
+        const isRecentlyActivated = activatedPowerup?.id === powerup.id
+        const powerupState = getPowerupState({ ...powerup, isPlaying }, charges)
         const filledSegments = getFilledSegments({
           charges,
           streak,
@@ -51,15 +70,14 @@ export default function PowerupTray({ powerupSlots = [], streak = 0, onUsePoweru
         })
 
         return (
-          <div
+          <button
             key={powerup.slotKey}
-            className={`powerupItem ${charges > 0 ? "ready" : ""} ${powerupState.tone === "active" ? "active" : ""}`}
+            type="button"
+            className={`powerupItem power-${powerup.id} ${canUse ? "ready" : ""} ${isActive ? "active" : ""} ${isRecentlyActivated ? "justActivated" : ""}`}
             onClick={() => onUsePowerup?.(powerup.id)}
-            role="button"
-            tabIndex={0}
-            aria-label={`${powerup.label}: ${powerupState.label}`}
-            aria-disabled={charges <= 0 && powerupState.tone !== "active"}
-            onKeyDown={(e) => e.key === "Enter" && onUsePowerup?.(powerup.id)}
+            aria-label={`${powerup.label}: ${powerupState.label}${charges > 1 ? `, ${charges} charges` : ""}. Shortcut ${powerup.slotKey}`}
+            aria-keyshortcuts={powerup.slotKey}
+            disabled={!canUse}
           >
             <div className="powerupTop">
               <div className="powerupHeading">
@@ -91,9 +109,13 @@ export default function PowerupTray({ powerupSlots = [], streak = 0, onUsePoweru
                 ))}
               </div>
             </div>
-          </div>
+          </button>
         )
-      })}
-    </div>
+        })}
+      </div>
+      <p className="powerupCoach" aria-live="polite" aria-atomic="true">
+        {coachMessage}
+      </p>
+    </section>
   )
 }
