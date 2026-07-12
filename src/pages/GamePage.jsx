@@ -95,11 +95,12 @@ export default function GamePage({ onPhaseChange, ...props }) {
   }, [game.phase, stopFeedback])
 
   let activeOverlay = null
+  const entranceOverlay = game.entranceOverlayProps
+    ? <CountdownOverlay key="round-entrance" {...game.entranceOverlayProps} />
+    : null
 
-  if (game.phase === ROUND_PHASE.READY) {
+  if (game.phase === ROUND_PHASE.READY && !entranceOverlay) {
     activeOverlay = <ReadyOverlay key="ready-overlay" {...game.readyOverlayProps} />
-  } else if (game.phase === ROUND_PHASE.COUNTDOWN) {
-    activeOverlay = <CountdownOverlay key="countdown-overlay" {...game.countdownOverlayProps} />
   } else if (game.phase === ROUND_PHASE.GAME_OVER) {
     activeOverlay = <GameOverFlow key="game-over-flow" {...game.gameOverOverlayProps} />
   }
@@ -114,7 +115,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
 
       <GameHud {...game.hudProps} />
 
-      <GameArena {...game.arenaProps} />
+      <GameArena {...game.arenaProps} roundOverlay={entranceOverlay} />
 
       <PowerupTray {...game.powerupTrayProps} />
 

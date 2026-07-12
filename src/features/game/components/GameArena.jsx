@@ -14,21 +14,26 @@ export default function GameArena({
   buttonSkinImageSrc,
   buttonSkinImageScale,
   clickFeedbackItems,
+  isTargetVisible = true,
+  roundOverlay = null,
 }) {
   return (
     <div className={`arena ${arenaThemeClass}`} ref={arenaRef} onClick={onArenaClick}>
-      <MovingButton
-        style={buttonStyle}
-        onClick={onButtonClick}
-        disabled={isButtonDisabled}
-        label={buttonLabel}
-        labelFontSize={buttonLabelFontSize}
-        skinClass={buttonSkinClass}
-        skinImageSrc={buttonSkinImageSrc}
-        skinImageScale={buttonSkinImageScale}
-      />
+      {isTargetVisible ? (
+        <MovingButton
+          style={buttonStyle}
+          onClick={onButtonClick}
+          disabled={isButtonDisabled}
+          label={buttonLabel}
+          labelFontSize={buttonLabelFontSize}
+          skinClass={buttonSkinClass}
+          skinImageSrc={buttonSkinImageSrc}
+          skinImageScale={buttonSkinImageScale}
+        />
+      ) : null}
 
       <ClickFeedbackLayer clickFeedbackItems={clickFeedbackItems} />
+      {roundOverlay}
     </div>
   )
 }

@@ -142,6 +142,9 @@ export function useGameScreenController({
   const hasAwardedRoundRef = useRef(false)
   const shakeTimeoutRef = useRef(null)
   const roundEndTimeoutRef = useRef(null)
+  const goCueTimeoutRef = useRef(null)
+  const countdownEndsAtRef = useRef(0)
+  const pendingRoundStartRef = useRef(null)
   const freezeMovementUntilRef = useRef(0)
   const buttonSpawnedAtRef = useRef(0)
   const reactionTotalMsRef = useRef(0)
@@ -185,6 +188,9 @@ export function useGameScreenController({
 
   const [phase, setPhase] = useState(ROUND_PHASE.READY)
   const [countdownValue, setCountdownValue] = useState(READY_COUNTDOWN_START)
+  const [roundStartStatus, setRoundStartStatus] = useState("idle")
+  const [roundStartError, setRoundStartError] = useState("")
+  const [isGoCueVisible, setIsGoCueVisible] = useState(false)
   const [isShakeActive, setIsShakeActive] = useState(false)
   const [isRoundEnding, setIsRoundEnding] = useState(false)
 
@@ -495,6 +501,11 @@ export function useGameScreenController({
     setBestReactionMs(null)
     setIsShakeActive(false)
     setIsRoundEnding(false)
+    setIsGoCueVisible(false)
+    if (goCueTimeoutRef.current) {
+      window.clearTimeout(goCueTimeoutRef.current)
+      goCueTimeoutRef.current = null
+    }
     clearShakeTimeout()
     clearFeedbackTimeouts()
     centerButtonPosition(modeSettings.initialButtonSize)
@@ -505,6 +516,13 @@ export function useGameScreenController({
     nextLoadoutId = activeLoadoutId,
     nextDrillId = selectedDrillId
   ) => {
+    pendingRoundStartRef.current = {
+      modeId: nextModeId,
+      loadoutId: nextLoadoutId,
+      drillId: nextDrillId,
+    }
+    setRoundStartStatus("idle")
+    setRoundStartError("")
     const nextResolvedLoadout = getResolvedLoadout(
       savedLoadouts,
       nextLoadoutId,
@@ -556,6 +574,8 @@ export function useGameScreenController({
       setRoundStartHasRankedHistory(playerHasRankedHistory)
       setRoundStartLoadoutSnapshot(buildLoadoutSnapshot(nextResolvedLoadout))
       setCountdownValue(READY_COUNTDOWN_START)
+      countdownEndsAtRef.current = Date.now() + (READY_COUNTDOWN_START * TIMER_TICK_MS)
+      setRoundStartStatus("countdown")
       setPhase(ROUND_PHASE.COUNTDOWN)
     }
 
@@ -574,14 +594,25 @@ export function useGameScreenController({
     }
 
     if (requiresRoundToken) {
+      setRoundStartStatus("requesting")
+      setPhase(ROUND_PHASE.READY)
       requestRoundStart(nextModeId)
         .then(({ roundToken, seed }) => {
-          if (roundNonceRef.current !== startedRoundNonce || !roundToken) return
+          if (roundNonceRef.current !== startedRoundNonce) return
+          if (!roundToken) {
+            setRoundStartStatus("error")
+            setRoundStartError("The Ranked server did not issue a round token. Please try again.")
+            return
+          }
           applyRoundSeed(seed, roundToken)
           beginCountdown()
         })
-        .catch(() => {
-          // Ranked rounds cannot start without a server-issued token.
+        .catch((error) => {
+          if (roundNonceRef.current !== startedRoundNonce) return
+          setRoundStartStatus("error")
+          setRoundStartError(
+            error?.message || "Unable to reach the Ranked server. Check your connection and try again."
+          )
         })
       return
     }
@@ -618,6 +649,30 @@ export function useGameScreenController({
     selectedModeId,
     selectedDrillId,
   ])
+
+  const cancelPendingRoundStart = useCallback(() => {
+    roundNonceRef.current += 1
+    pendingRoundStartRef.current = null
+    roundTokenRef.current = null
+    simulationRef.current = null
+    countdownEndsAtRef.current = 0
+    setRoundStartStatus("idle")
+    setRoundStartError("")
+    setCountdownValue(READY_COUNTDOWN_START)
+    setRoundMode(resolvedSelectedMode)
+    resetRoundState(resolvedSelectedMode)
+    setPhase(ROUND_PHASE.READY)
+  }, [resetRoundState, resolvedSelectedMode])
+
+  const retryPendingRoundStart = useCallback(() => {
+    const pendingStart = pendingRoundStartRef.current
+    if (!pendingStart) return
+    startRoundWithCountdown(
+      pendingStart.modeId,
+      pendingStart.loadoutId,
+      pendingStart.drillId
+    )
+  }, [startRoundWithCountdown])
 
   const returnToReadyOverlay = useCallback(() => {
     const shouldReturnToRanked = rankedWarmupIntentRef.current
@@ -865,29 +920,58 @@ export function useGameScreenController({
   useEffect(() => {
     if (phase !== ROUND_PHASE.COUNTDOWN) return
 
-    const countdownInterval = setInterval(() => {
-      setCountdownValue((currentCountdown) => {
-        if (currentCountdown <= 1) {
-          clearInterval(countdownInterval)
-          roundStartTimeRef.current = Date.now()
+    let timeoutId = null
 
-          const arenaElement = arenaRef.current
-          if (arenaElement) {
-            const arenaRect = arenaElement.getBoundingClientRect()
-            arenaDimensionsRef.current = {
-              arenaWidth: Math.round(arenaRect.width),
-              arenaHeight: Math.round(arenaRect.height),
-            }
-          }
+    const activateRound = () => {
+      roundStartTimeRef.current = Date.now()
+      countdownEndsAtRef.current = 0
 
-          setPhase(ROUND_PHASE.PLAYING)
-          return 0
+      const arenaElement = arenaRef.current
+      if (arenaElement) {
+        const arenaRect = arenaElement.getBoundingClientRect()
+        arenaDimensionsRef.current = {
+          arenaWidth: Math.round(arenaRect.width),
+          arenaHeight: Math.round(arenaRect.height),
         }
-        return currentCountdown - 1
-      })
-    }, TIMER_TICK_MS)
+      }
 
-    return () => clearInterval(countdownInterval)
+      setCountdownValue(0)
+      setRoundStartStatus("playing")
+      setIsGoCueVisible(true)
+      setPhase(ROUND_PHASE.PLAYING)
+      goCueTimeoutRef.current = window.setTimeout(() => {
+        setIsGoCueVisible(false)
+        goCueTimeoutRef.current = null
+      }, 180)
+    }
+
+    const syncCountdown = () => {
+      const remainingMs = countdownEndsAtRef.current - Date.now()
+      if (remainingMs <= 0) {
+        activateRound()
+        return
+      }
+
+      const nextValue = Math.ceil(remainingMs / TIMER_TICK_MS)
+      setCountdownValue(nextValue)
+      const untilNextBeat = remainingMs - ((nextValue - 1) * TIMER_TICK_MS)
+      timeoutId = window.setTimeout(syncCountdown, Math.max(16, untilNextBeat))
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        window.clearTimeout(timeoutId)
+        timeoutId = window.setTimeout(syncCountdown, 0)
+      }
+    }
+
+    timeoutId = window.setTimeout(syncCountdown, TIMER_TICK_MS)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
   }, [phase])
 
   useEffect(() => {
@@ -1086,6 +1170,7 @@ export function useGameScreenController({
       clearRoundEndTimeout()
       clearShakeTimeout()
       clearFeedbackTimeouts()
+      if (goCueTimeoutRef.current) window.clearTimeout(goCueTimeoutRef.current)
     }
   }, [clearFeedbackTimeouts, clearRoundEndTimeout, clearShakeTimeout])
 
@@ -1221,6 +1306,7 @@ export function useGameScreenController({
       buttonSkinImageSrc,
       buttonSkinImageScale,
       clickFeedbackItems,
+      isTargetVisible: phase === ROUND_PHASE.PLAYING,
     },
     powerupTrayProps: {
       powerupSlots,
@@ -1257,9 +1343,24 @@ export function useGameScreenController({
       rankProgress: playerRankProgress,
       onStartRankedWarmup: startRankedWarmup,
     },
-    countdownOverlayProps: {
+    entranceOverlayProps: roundStartStatus !== "idle" && (
+      phase === ROUND_PHASE.READY
+      || phase === ROUND_PHASE.COUNTDOWN
+      || isGoCueVisible
+    ) ? {
       countdownValue,
-    },
+      modeId: roundMode.id,
+      modeLabel: roundMode.label,
+      loadoutName: roundMode.loadoutSnapshot?.loadoutName
+        ?? roundStartLoadoutSnapshot?.loadoutName
+        ?? resolvedLoadout?.name
+        ?? "Loadout",
+      startStatus: roundStartStatus,
+      startError: roundStartError,
+      isGoCue: isGoCueVisible,
+      onRetry: retryPendingRoundStart,
+      onCancel: cancelPendingRoundStart,
+    } : null,
     gameOverOverlayProps: {
       score,
       hits,

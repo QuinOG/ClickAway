@@ -5320,3 +5320,289 @@
         transform: translateY(0);
     }
 }
+
+/* UX-08: arena-bound entrance and countdown. */
+.roundEntranceOverlay {
+    --entrance-rgb: 72, 195, 239;
+    --entrance-color: #85e5ff;
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    display: grid;
+    place-items: center;
+    background: rgba(3, 8, 17, 0.66);
+    cursor: default;
+    isolation: isolate;
+}
+
+.roundEntranceOverlay.roundEntrance-easy {
+    --entrance-rgb: 73, 215, 173;
+    --entrance-color: #80efc3;
+}
+
+.roundEntranceOverlay.roundEntrance-hard {
+    --entrance-rgb: 239, 171, 67;
+    --entrance-color: #ffd276;
+}
+
+.roundEntranceOverlay.isGo {
+    pointer-events: none;
+    background: rgba(3, 8, 17, 0.2);
+}
+
+.roundEntranceOverlay .srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.roundEntranceWash {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(var(--entrance-rgb), 0.2), transparent 28%),
+        linear-gradient(90deg, transparent 49.9%, rgba(var(--entrance-rgb), 0.07) 50%, transparent 50.1%),
+        linear-gradient(0deg, transparent 49.9%, rgba(var(--entrance-rgb), 0.07) 50%, transparent 50.1%);
+    animation: entranceLightRise 3s steps(3, end) both;
+}
+
+.entranceReticle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(92px, 15%, 128px);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    color: var(--entrance-color);
+    filter: drop-shadow(0 0 12px rgba(var(--entrance-rgb), 0.42));
+}
+
+.entranceReticleRing,
+.entranceReticleCross,
+.entranceReticleCore {
+    position: absolute;
+    display: block;
+}
+
+.entranceReticleRing {
+    inset: 0;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+}
+
+.entranceReticleRingOuter {
+    border-style: dashed;
+    opacity: 0.48;
+    animation: entranceReticleTurn 3s linear infinite;
+}
+
+.entranceReticleRingInner {
+    inset: 25%;
+    opacity: 0.82;
+}
+
+.entranceReticleCrossHorizontal {
+    left: -16%;
+    right: -16%;
+    top: 50%;
+    height: 1px;
+    background: linear-gradient(90deg, currentColor 0 20%, transparent 20% 80%, currentColor 80%);
+}
+
+.entranceReticleCrossVertical {
+    top: -16%;
+    bottom: -16%;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(0deg, currentColor 0 20%, transparent 20% 80%, currentColor 80%);
+}
+
+.entranceReticleCore {
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    translate: -50% -50%;
+    box-shadow: 0 0 14px currentColor;
+}
+
+.roundEntranceBrief {
+    position: absolute;
+    top: clamp(14px, 4%, 28px);
+    left: clamp(16px, 4%, 34px);
+    display: grid;
+    gap: 2px;
+    color: rgba(226, 238, 251, 0.64);
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.roundEntranceBrief strong {
+    color: var(--entrance-color);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+}
+
+.roundCountdownCue {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.roundCountdownValue {
+    color: #f7fbff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(92px, 23vmin, 180px);
+    font-weight: 720;
+    line-height: 0.78;
+    letter-spacing: -0.08em;
+    text-shadow: 0 0 38px rgba(var(--entrance-rgb), 0.55);
+}
+
+.roundCountdownValue.isGo {
+    color: var(--entrance-color);
+    font-size: clamp(54px, 14vmin, 108px);
+    letter-spacing: 0.04em;
+}
+
+.roundCountdownInstruction {
+    color: rgba(230, 240, 252, 0.72);
+    font-size: clamp(9px, 1.3vw, 11px);
+    font-weight: 750;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.roundTokenStatus {
+    position: relative;
+    z-index: 3;
+    width: min(410px, calc(100% - 36px));
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 22px;
+    color: #f5f9ff;
+    text-align: center;
+}
+
+.roundTokenStatusKicker {
+    color: var(--entrance-color);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+}
+
+.roundTokenStatus strong {
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(24px, 5vw, 38px);
+    line-height: 1;
+}
+
+.roundTokenStatus p {
+    max-width: 360px;
+    margin: 0;
+    color: rgba(216, 230, 246, 0.72);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.roundTokenProgress {
+    width: min(240px, 70%);
+    height: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.roundTokenProgress::after {
+    content: "";
+    display: block;
+    width: 42%;
+    height: 100%;
+    background: var(--entrance-color);
+    box-shadow: 0 0 12px rgba(var(--entrance-rgb), 0.7);
+    animation: roundTokenScan 1.2s ease-in-out infinite;
+}
+
+.roundTokenActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.roundTokenActions button {
+    min-width: 94px;
+    min-height: 38px;
+    border: 1px solid rgba(var(--entrance-rgb), 0.56);
+    border-radius: 9px;
+    background: rgba(var(--entrance-rgb), 0.18);
+    color: #f5f9ff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.roundTokenActions button.isQuiet {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(230, 240, 252, 0.72);
+}
+
+.roundTokenActions button:focus-visible {
+    outline: 2px solid var(--entrance-color);
+    outline-offset: 3px;
+}
+
+@keyframes entranceLightRise {
+    from { opacity: 0.32; }
+    to { opacity: 1; }
+}
+
+@keyframes entranceReticleTurn {
+    to { rotate: 360deg; }
+}
+
+@keyframes roundTokenScan {
+    from { translate: -105% 0; }
+    to { translate: 245% 0; }
+}
+
+@media (max-width: 600px) {
+    .roundEntranceBrief {
+        top: max(12px, env(safe-area-inset-top));
+    }
+
+    .roundTokenStatus {
+        padding: 16px;
+    }
+
+    .roundCountdownValue {
+        font-size: clamp(74px, 28vw, 120px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .roundEntranceWash,
+    .entranceReticleRingOuter,
+    .roundTokenProgress::after {
+        animation: none;
+    }
+}
