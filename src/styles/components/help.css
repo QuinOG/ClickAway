@@ -626,3 +626,126 @@
         transition: none;
     }
 }
+
+/* Visual field guide ------------------------------------------------------ */
+.helpPageScene { width: min(1240px, 100%); }
+.helpPageScene .helpDoc { width: min(1140px, 100%); }
+
+.helpGuideStatus {
+    min-height: 40px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 28%);
+    background: rgb(var(--scene-accent-rgb) / 7%);
+    color: var(--scene-accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    clip-path: var(--ca-shape-cut-xs);
+}
+
+.helpMissionMap {
+    padding: clamp(16px, 2.5vw, 24px);
+    border: 1px solid rgb(var(--scene-accent-rgb) / 20%);
+    background:
+        linear-gradient(rgb(var(--scene-accent-rgb) / 4%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(var(--scene-accent-rgb) / 4%) 1px, transparent 1px),
+        radial-gradient(circle at 84% 0%, rgb(var(--scene-accent-rgb) / 10%), transparent 30%),
+        rgb(5 12 24 / 66%);
+    background-size: 42px 42px, 42px 42px, auto, auto;
+    clip-path: var(--ca-shape-cut-sm);
+}
+
+.helpMissionMapHeader { margin-bottom: 16px; display: flex; align-items: end; justify-content: space-between; gap: 18px; }
+.helpMissionMapHeader .commandHeaderEyebrow { margin: 0 0 4px; }
+.helpMissionMapHeader h2 { margin: 0; color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 27px; }
+.helpMissionMapHeader > span { display: inline-flex; align-items: center; gap: 6px; color: var(--ca-color-ink-faint); font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.helpMissionMapHeader > span i { width: 7px; aspect-ratio: 1; border-radius: 50%; background: var(--ca-color-success); box-shadow: 0 0 9px var(--ca-color-success); }
+
+.helpMissionGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; }
+.helpMissionCard {
+    position: relative;
+    min-width: 0;
+    min-height: 164px;
+    padding: 13px;
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 6px;
+    overflow: hidden;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 14%);
+    background: linear-gradient(150deg, rgb(24 43 64 / 84%), rgb(7 14 27 / 94%));
+    color: var(--ca-color-ink-muted);
+    text-decoration: none;
+    transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.helpMissionCard::after { content: ""; position: absolute; inset: auto 0 0; height: 2px; background: var(--scene-accent); transform: scaleX(0); transform-origin: left; transition: transform 160ms ease; }
+.helpMissionCard:hover { transform: translateY(-3px); border-color: rgb(var(--scene-accent-rgb) / 42%); background: linear-gradient(150deg, rgb(var(--scene-accent-rgb) / 14%), rgb(7 14 27 / 94%)); }
+.helpMissionCard:hover::after { transform: scaleX(1); }
+.helpMissionIndex { justify-self: end; color: rgb(var(--scene-accent-rgb) / 44%); font-family: var(--ca-font-display); font-size: 10px; font-weight: 800; }
+.helpMissionGlyph { width: 44px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgb(var(--scene-accent-rgb) / 32%); border-radius: 50%; color: var(--scene-accent); }
+.helpMissionGlyph svg { width: 22px; height: 22px; }
+.helpMissionCard strong { margin-top: 4px; color: var(--ca-color-ink-strong); font-size: 13px; line-height: 1.2; }
+.helpMissionCard small { color: var(--ca-color-ink-faint); font-size: 9px; line-height: 1.35; }
+.helpMissionCard > svg { width: 14px; height: 14px; margin-top: auto; color: var(--scene-accent); }
+
+.helpRoundLoop {
+    margin: 18px 0;
+    padding: clamp(18px, 2.5vw, 26px);
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: center;
+    gap: 26px;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 16%);
+    background: linear-gradient(125deg, rgb(11 23 39 / 94%), rgb(5 11 22 / 82%));
+}
+
+.helpRoundLoopCopy .commandHeaderEyebrow { margin: 0 0 5px; }
+.helpRoundLoopCopy h2 { margin: 0; color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 26px; }
+.helpRoundLoopCopy p:not(.commandHeaderEyebrow) { margin: 8px 0 14px; color: var(--ca-color-ink-muted); font-size: 12px; line-height: 1.5; }
+.helpRoundLoopAction { display: inline-flex; align-items: center; gap: 7px; color: var(--scene-accent); font-size: 11px; font-weight: 800; text-decoration: none; text-transform: uppercase; }
+
+.helpRoundLoopTrack { position: relative; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); list-style: none; }
+.helpRoundLoopTrack::before { content: ""; position: absolute; left: 10%; right: 10%; top: 37px; height: 1px; background: linear-gradient(90deg, var(--ca-mode-practice), var(--ca-mode-casual), var(--ca-mode-ranked), var(--scene-accent)); }
+.helpRoundLoopTrack li { position: relative; display: grid; justify-items: center; gap: 5px; text-align: center; }
+.helpRoundLoopTrack li > span { width: 74px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgb(var(--scene-accent-rgb) / 30%); border-radius: 50%; background: #091425; color: var(--scene-accent); box-shadow: 0 0 0 9px #091425; }
+.helpRoundLoopTrack li > span svg { width: 29px; height: 29px; }
+.helpRoundLoopTrack strong { color: var(--ca-color-ink-strong); font-size: 12px; }
+.helpRoundLoopTrack small { color: var(--ca-color-ink-faint); font-size: 9px; }
+.helpRoundLoopTrack [data-step="ready"] > span { color: var(--ca-mode-practice); }
+.helpRoundLoopTrack [data-step="count"] > span { color: var(--ca-mode-casual); }
+.helpRoundLoopTrack [data-step="hit"] > span { color: var(--ca-mode-ranked); }
+
+.helpQuickNavCompact { margin: 0 0 28px; padding: 12px 14px; border: 1px solid rgb(var(--scene-accent-rgb) / 13%); background: rgb(4 10 20 / 48%); }
+
+@media (max-width: 980px) {
+    .helpMissionGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .helpMissionCard { min-height: 142px; }
+}
+
+@media (max-width: 700px) {
+    .helpPageScene .helpDoc { padding-inline: 16px; }
+    .helpMissionMapHeader { align-items: flex-start; flex-direction: column; }
+    .helpMissionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .helpMissionCard { min-height: 136px; }
+    .helpRoundLoop { grid-template-columns: 1fr; }
+    .helpRoundLoopTrack { grid-template-columns: repeat(4, minmax(72px, 1fr)); overflow-x: auto; padding: 8px 6px 12px; }
+    .helpRoundLoopTrack::before { top: 45px; }
+    .helpRoundLoopTrack li > span { width: 64px; }
+}
+
+@media (max-width: 420px) {
+    .helpMissionGrid { gap: 7px; }
+    .helpMissionCard { min-height: 128px; padding: 11px; }
+    .helpMissionGlyph { width: 38px; }
+    .helpRoundLoop { padding: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .helpMissionCard,
+    .helpMissionCard::after { transition: none; }
+}

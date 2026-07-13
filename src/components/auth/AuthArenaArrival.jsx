@@ -18,6 +18,16 @@ export default function AuthArenaArrival({ mode = "login", children }) {
           </p>
         </div>
 
+        <div className="authMobilePreview" aria-label="Practice, Casual, and Ranked arena modes">
+          <span className="authMobileTrack" aria-hidden="true" />
+          <span className="authMobileMode" data-mode="practice" aria-hidden="true"><i /></span>
+          <span className="authMobileMode" data-mode="casual" aria-hidden="true"><i /></span>
+          <span className="authMobileMode" data-mode="ranked" aria-hidden="true"><i /></span>
+          <span className="authMobileTarget" aria-hidden="true">
+            <img src="/brand/clickaway-mark.svg" alt="" />
+          </span>
+        </div>
+
         {children}
       </section>
 
@@ -49,4 +59,3 @@ export default function AuthArenaArrival({ mode = "login", children }) {
     </div>
   )
 }
-

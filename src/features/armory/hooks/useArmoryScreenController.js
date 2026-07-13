@@ -87,7 +87,7 @@ export function useArmoryScreenController({
   const [walkthroughStepIndex, setWalkthroughStepIndex] = useState(0)
   const [walkthroughSpotlightRect, setWalkthroughSpotlightRect] = useState(null)
   // First-touch tips (Phase 12): local-only, "shown once ever per browser".
-  const [seenFirstTouchTipIds, setSeenFirstTouchTipIds] = useState(loadSeenFirstTouchTipIds)
+  const [, setSeenFirstTouchTipIds] = useState(loadSeenFirstTouchTipIds)
   const [activeFirstTouchTipId, setActiveFirstTouchTipId] = useState(null)
   // Unlock ceremony queue (Phase 11): frozen at mount, so a visit reveals
   // whatever crossed the unlock wall since the last time this page opened.

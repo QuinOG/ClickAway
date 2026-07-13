@@ -9,6 +9,10 @@ import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useBodyClass } from "../hooks/useBodyClass.js"
 import { cancelCelebrationEffects } from "../services/celebrationEffects.js"
 import Navbar from "./Navbar.jsx"
+import {
+  RouteFallback as BrandedRouteFallback,
+  RouteSceneBackdrop,
+} from "./RouteScene.jsx"
 
 const MotionDiv = motion.div
 const FeedbackSettingsSheet = lazy(() => import("./FeedbackSettingsSheet.jsx"))
@@ -16,7 +20,9 @@ const GAME_ROUTE_BODY_CLASS = "gameRouteActive"
 const ARMORY_ROUTE_BODY_CLASS = "armoryRouteActive"
 const PAGE_EASE = [0.22, 1, 0.36, 1]
 
-function RouteFallback() {
+function RouteFallback({ route }) {
+  if (route) return <BrandedRouteFallback route={route} />
+
   return (
     <div className="routeFallback" aria-busy="true" aria-live="polite">
       <span className="routeFallbackText">Loading…</span>
@@ -117,7 +123,11 @@ export default function Layout({
   }
 
   return (
-    <div className={shellClassName} data-round-phase={isGameRoute ? gamePhase : undefined}>
+    <div
+      className={shellClassName}
+      data-round-phase={isGameRoute ? gamePhase : undefined}
+      data-scene={currentRoute?.scene?.tone ?? currentRoute?.id ?? "utility"}
+    >
       <Navbar
         isArmoryRoute={isArmoryRoute}
         isAuthed={isAuthed}
@@ -154,6 +164,7 @@ export default function Layout({
       </div>
 
       <main className={mainClassName}>
+        <RouteSceneBackdrop route={currentRoute} isLiveRound={isLiveRound} />
         <AnimatePresence mode="wait" initial={false}>
           <MotionDiv
             key={pathname}
@@ -167,7 +178,7 @@ export default function Layout({
               ease: PAGE_EASE,
             }}
           >
-            <Suspense fallback={<RouteFallback />}>
+            <Suspense fallback={<RouteFallback route={currentRoute} />}>
               <Outlet />
             </Suspense>
           </MotionDiv>

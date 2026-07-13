@@ -362,3 +362,151 @@
         transition: none;
     }
 }
+
+/* Visual replay journal --------------------------------------------------- */
+.historyPageScene { width: min(1240px, 100%); }
+.historyPageScene .historyPageCard { width: min(1140px, 100%); }
+
+.historyArchiveCount {
+    min-height: 48px;
+    padding: 0 14px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: 9px;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 26%);
+    background: rgb(var(--scene-accent-rgb) / 7%);
+    color: var(--scene-accent);
+    clip-path: var(--ca-shape-cut-xs);
+}
+
+.historyArchiveCount svg { grid-row: 1 / -1; width: 20px; height: 20px; align-self: center; }
+.historyArchiveCount strong { color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 18px; line-height: 1; }
+.historyArchiveCount small { color: var(--ca-color-ink-faint); font-size: 8px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
+
+.historyTrajectory {
+    min-height: 220px;
+    margin-bottom: 26px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    gap: 4px 22px;
+    overflow: hidden;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 20%);
+    background:
+        linear-gradient(rgb(var(--scene-accent-rgb) / 4%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(var(--scene-accent-rgb) / 4%) 1px, transparent 1px),
+        radial-gradient(circle at 78% 40%, rgb(var(--scene-accent-rgb) / 9%), transparent 34%),
+        rgb(5 12 24 / 62%);
+    background-size: 36px 36px, 36px 36px, auto, auto;
+    clip-path: var(--ca-shape-cut-sm);
+}
+
+.historyTrajectoryCopy { align-self: center; }
+.historyTrajectoryCopy .commandHeaderEyebrow { margin: 0 0 5px; }
+.historyTrajectoryCopy h2 { margin: 0 0 12px; color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 24px; line-height: 1.05; }
+
+.historyTrajectoryDelta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--ca-font-display);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.historyTrajectoryDelta svg { width: 19px; height: 19px; }
+.historyTrajectoryDelta.isPositive { color: var(--ca-color-success); }
+.historyTrajectoryDelta.isNegative { color: var(--ca-color-error); }
+.historyTrajectoryPlot { min-width: 0; height: 165px; }
+.historyTrajectoryPlot svg { width: 100%; height: 100%; overflow: visible; }
+.historyTrajectoryBaseline { stroke: rgb(var(--scene-accent-rgb) / 18%); stroke-width: 1; }
+
+.historyTrajectoryPoint {
+    fill: #071221;
+    stroke: var(--scene-accent);
+    stroke-width: 3px;
+    filter: drop-shadow(0 0 5px rgb(var(--scene-accent-rgb) / 55%));
+}
+
+.historyTrajectoryPoint.isPractice { stroke: var(--ca-mode-practice); }
+.historyTrajectoryPoint.isCasual { stroke: var(--ca-mode-casual); }
+.historyTrajectoryPoint.isRanked { stroke: var(--ca-mode-ranked); }
+
+.historyTrajectoryLegend {
+    grid-column: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    color: var(--ca-color-ink-faint);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.historyTrajectoryLegend span { display: inline-flex; align-items: center; gap: 5px; }
+.historyTrajectoryLegend i { width: 7px; aspect-ratio: 1; border: 1px solid currentColor; }
+.historyTrajectoryLegend [data-mode="practice"] i { color: var(--ca-mode-practice); border-radius: 50%; }
+.historyTrajectoryLegend [data-mode="casual"] i { color: var(--ca-mode-casual); transform: rotate(45deg); }
+.historyTrajectoryLegend [data-mode="ranked"] i { color: var(--ca-mode-ranked); clip-path: polygon(50% 0, 100% 35%, 82% 100%, 18% 100%, 0 35%); }
+
+.historyRoundDeck { display: none; }
+
+.historyRoundCard {
+    position: relative;
+    min-width: 0;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 15%);
+    background: linear-gradient(145deg, rgb(18 33 52 / 90%), rgb(7 14 26 / 96%));
+}
+
+.historyRoundCard::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 2px; background: var(--scene-accent); opacity: 0.55; }
+.historyRoundCard.isPractice::before { background: var(--ca-mode-practice); }
+.historyRoundCard.isCasual::before { background: var(--ca-mode-casual); }
+.historyRoundCard.isRanked::before { background: var(--ca-mode-ranked); }
+
+.historyRoundCardSignal { width: 42px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgb(var(--scene-accent-rgb) / 24%); border-radius: 50%; color: var(--scene-accent); }
+.historyRoundCardSignal svg { width: 20px; height: 20px; }
+.historyRoundCardMain { min-width: 0; }
+.historyRoundCardTopline { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+.historyRoundCardTopline time { color: var(--ca-color-ink-faint); font-size: 10px; }
+.historyRoundCardScore { display: inline-block; margin-top: 9px; color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 32px; line-height: 1; }
+.historyRoundCardScoreLabel { margin-left: 6px; color: var(--ca-color-ink-faint); font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.historyRoundCardMeters { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px 13px; color: var(--ca-color-ink-muted); font-size: 10px; font-weight: 700; }
+.historyRoundCardMeters span { display: inline-flex; align-items: center; gap: 4px; }
+.historyRoundCardMeters svg { width: 13px; height: 13px; color: var(--scene-accent); }
+.historyRoundCardOutcome { min-width: 68px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.historyRoundCardOutcome small { color: var(--ca-color-ink-faint); font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.historyRoundCardOutcome > svg { margin-top: auto; color: var(--scene-accent); }
+
+@media (max-width: 760px) {
+    .historyPageScene .historyPageCard { padding-inline: 16px; }
+
+    .historyTrajectory {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 148px auto;
+        padding: 16px;
+    }
+
+    .historyTrajectoryCopy { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+    .historyTrajectoryCopy .commandHeaderEyebrow { grid-column: 1 / -1; }
+    .historyTrajectoryCopy h2 { margin: 0; }
+    .historyTrajectoryPlot { height: 148px; }
+    .historyTrajectoryLegend { grid-column: 1; justify-content: flex-start; gap: 10px; }
+
+    .historyTableWrap { display: none; }
+    .historyRoundDeck { display: grid; gap: 10px; }
+}
+
+@media (max-width: 430px) {
+    .historyRoundCard { grid-template-columns: auto minmax(0, 1fr); }
+    .historyRoundCardOutcome { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+    .historyRoundCardOutcome > svg { margin: 0 0 0 auto; }
+    .historyTrajectoryLegend { font-size: 8px; }
+}

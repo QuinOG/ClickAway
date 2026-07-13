@@ -845,6 +845,333 @@
     }
 }
 
+/* Route scenes ------------------------------------------------------------ */
+.appShell {
+    --scene-accent: #58d6ff;
+    --scene-accent-rgb: 88 214 255;
+    --scene-secondary-rgb: 79 255 205;
+}
+
+.appShell[data-scene="armory"] { --scene-accent: #72d6ff; --scene-accent-rgb: 114 214 255; --scene-secondary-rgb: 255 182 87; }
+.appShell[data-scene="shop"] { --scene-accent: #9f8cff; --scene-accent-rgb: 159 140 255; --scene-secondary-rgb: 76 231 255; }
+.appShell[data-scene="profile"] { --scene-accent: #ffad74; --scene-accent-rgb: 255 173 116; --scene-secondary-rgb: 255 104 116; }
+.appShell[data-scene="ladder"] { --scene-accent: #ffd45a; --scene-accent-rgb: 255 212 90; --scene-secondary-rgb: 90 203 255; }
+.appShell[data-scene="duels"] { --scene-accent: #ff6d8f; --scene-accent-rgb: 255 109 143; --scene-secondary-rgb: 96 198 255; }
+.appShell[data-scene="history"] { --scene-accent: #62e1c1; --scene-accent-rgb: 98 225 193; --scene-secondary-rgb: 84 173 255; }
+.appShell[data-scene="help"] { --scene-accent: #8be8ff; --scene-accent-rgb: 139 232 255; --scene-secondary-rgb: 112 255 193; }
+
+.mainContent {
+    position: relative;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 88% 4%, rgb(var(--scene-accent-rgb) / 8%), transparent 28%),
+        linear-gradient(180deg, rgb(10 22 35 / 72%), rgb(5 10 20 / 28%) 34%, transparent 72%);
+}
+
+.routeOutlet {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.routeSceneBackdrop {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    color: var(--scene-accent);
+}
+
+.routeSceneGrid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    background-image:
+        linear-gradient(rgb(var(--scene-accent-rgb) / 14%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(var(--scene-accent-rgb) / 14%) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(ellipse at 76% 8%, black, transparent 62%);
+}
+
+.routeSceneSweep {
+    position: absolute;
+    top: -48%;
+    right: -8%;
+    width: min(72vw, 880px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 12%);
+    background: conic-gradient(from 220deg, transparent 0 79%, rgb(var(--scene-accent-rgb) / 12%) 87%, transparent 94%);
+    animation: route-scene-sweep 18s linear infinite;
+}
+
+.routeSceneOrbit {
+    position: absolute;
+    top: clamp(30px, 8vh, 92px);
+    right: clamp(34px, 8vw, 150px);
+    border: 1px solid rgb(var(--scene-accent-rgb) / 17%);
+    border-radius: 50%;
+    box-shadow: 0 0 70px rgb(var(--scene-accent-rgb) / 6%);
+}
+
+.routeSceneOrbitOuter { width: 220px; aspect-ratio: 1; }
+.routeSceneOrbitInner { width: 138px; aspect-ratio: 1; transform: translate(-41px, 41px); }
+
+.routeSceneGlyph {
+    position: absolute;
+    top: clamp(102px, 15vh, 180px);
+    right: clamp(94px, 12vw, 208px);
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    color: rgb(var(--scene-accent-rgb) / 18%);
+    filter: drop-shadow(0 0 20px rgb(var(--scene-accent-rgb) / 16%));
+}
+
+.routeSceneGlyph svg { width: 100%; height: 100%; }
+
+.routeSceneTrajectory {
+    position: absolute;
+    left: 4%;
+    bottom: 9%;
+    width: min(42vw, 540px);
+    height: 1px;
+    opacity: 0.46;
+    transform: rotate(-7deg);
+    transform-origin: left center;
+    background: linear-gradient(90deg, transparent, rgb(var(--scene-secondary-rgb) / 46%), transparent);
+}
+
+.routeSceneTrajectory i {
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    aspect-ratio: 1;
+    border: 1px solid rgb(var(--scene-secondary-rgb) / 62%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 14px rgb(var(--scene-secondary-rgb) / 24%);
+}
+
+.routeSceneTrajectory i:nth-child(1) { left: 20%; }
+.routeSceneTrajectory i:nth-child(2) { left: 58%; width: 11px; }
+.routeSceneTrajectory i:nth-child(3) { left: 86%; width: 5px; }
+
+.routeFallback {
+    position: relative;
+    width: min(760px, calc(100% - 32px));
+    margin: clamp(18px, 5vh, 56px) auto;
+    padding: clamp(28px, 5vw, 52px);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-content: initial;
+    gap: 22px;
+    align-items: center;
+    min-height: min(310px, 48dvh);
+    overflow: hidden;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 24%);
+    background: linear-gradient(145deg, rgb(15 29 47 / 88%), rgb(7 13 25 / 92%));
+    box-shadow: 0 26px 80px rgb(0 4 14 / 46%);
+    clip-path: var(--ca-shape-cut-md);
+}
+
+.routeFallbackCore {
+    position: relative;
+    width: 92px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+}
+
+.routeFallbackReticle {
+    width: 74px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 46%);
+    border-radius: 50%;
+    color: var(--scene-accent);
+    box-shadow: inset 0 0 28px rgb(var(--scene-accent-rgb) / 8%), 0 0 28px rgb(var(--scene-accent-rgb) / 10%);
+    animation: route-fallback-lock 1.7s var(--ca-motion-ease-standard) infinite alternate;
+}
+
+.routeFallbackReticle::before,
+.routeFallbackReticle::after {
+    content: "";
+    position: absolute;
+    background: rgb(var(--scene-accent-rgb) / 46%);
+}
+
+.routeFallbackReticle::before { width: 100%; height: 1px; }
+.routeFallbackReticle::after { width: 1px; height: 100%; }
+.routeFallbackReticle svg { position: relative; z-index: 1; width: 28px; height: 28px; }
+
+.routeFallbackScan {
+    position: absolute;
+    inset: 0;
+    border: 1px dashed rgb(var(--scene-accent-rgb) / 22%);
+    border-radius: 50%;
+    animation: route-scene-sweep 5s linear infinite;
+}
+
+.routeFallbackCopy { display: grid; gap: 6px; min-width: 0; }
+
+.routeFallbackEyebrow,
+.commandHeaderEyebrow {
+    color: var(--scene-accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.routeFallbackText {
+    color: var(--ca-color-ink-strong);
+    font-family: var(--ca-font-display);
+    font-size: clamp(22px, 3vw, 32px);
+    line-height: 1.1;
+}
+
+.routeFallbackProgress {
+    width: min(300px, 100%);
+    height: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+    background: rgb(var(--scene-accent-rgb) / 12%);
+}
+
+.routeFallbackProgress i {
+    display: block;
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--scene-accent), transparent);
+    animation: route-fallback-progress 1.35s ease-in-out infinite;
+}
+
+.routeFallbackSkeleton {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 0.7fr;
+    gap: 10px;
+}
+
+.routeFallbackSkeleton span {
+    height: 52px;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 11%);
+    background: linear-gradient(90deg, rgb(255 255 255 / 2%), rgb(var(--scene-accent-rgb) / 8%), rgb(255 255 255 / 2%));
+    background-size: 220% 100%;
+    animation: route-fallback-shimmer 1.7s linear infinite;
+}
+
+.commandHeader {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.commandHeaderGlyph {
+    width: 72px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 32%);
+    background: radial-gradient(circle, rgb(var(--scene-accent-rgb) / 15%), transparent 68%);
+    clip-path: var(--ca-shape-cut-sm);
+}
+
+.commandHeaderGlyph span {
+    width: 46px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(var(--scene-accent-rgb) / 38%);
+    border-radius: 50%;
+    color: var(--scene-accent);
+}
+
+.commandHeaderGlyph svg { width: 25px; height: 25px; }
+.commandHeaderCopy { min-width: 0; }
+.commandHeaderEyebrow { margin: 0 0 5px; }
+
+.commandHeaderTitle {
+    margin: 0;
+    font-family: var(--ca-font-display);
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ca-color-ink-strong);
+}
+
+.commandHeaderSubtitle {
+    max-width: 62ch;
+    margin: 9px 0 0;
+    color: var(--ca-color-ink-muted);
+    line-height: 1.55;
+}
+
+.commandHeaderStatus,
+.commandHeaderActions {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+@keyframes route-scene-sweep { to { transform: rotate(360deg); } }
+@keyframes route-fallback-progress { from { transform: translateX(-110%); } to { transform: translateX(250%); } }
+@keyframes route-fallback-shimmer { to { background-position: -220% 0; } }
+@keyframes route-fallback-lock { from { transform: scale(0.94); opacity: 0.7; } to { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 620px) {
+    .routeSceneGrid { background-size: 48px 48px; opacity: 0.12; }
+    .routeSceneOrbitOuter { width: 150px; }
+    .routeSceneOrbitInner { width: 92px; transform: translate(-29px, 29px); }
+    .routeSceneGlyph { top: 96px; right: 73px; width: 38px; height: 38px; }
+
+    .routeFallback {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: 14px;
+        min-height: min(390px, 62dvh);
+        padding: 28px 22px;
+    }
+
+    .routeFallbackCore { width: 78px; }
+    .routeFallbackReticle { width: 64px; }
+    .routeFallbackCopy { width: 100%; justify-items: center; }
+    .routeFallbackSkeleton { width: 100%; grid-template-columns: 1fr 0.72fr; }
+    .routeFallbackSkeleton span { height: 42px; }
+    .routeFallbackSkeleton span:last-child { display: none; }
+
+    .commandHeader {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .commandHeaderGlyph { width: 54px; }
+    .commandHeaderGlyph span { width: 36px; }
+    .commandHeaderGlyph svg { width: 20px; height: 20px; }
+    .commandHeaderSubtitle { grid-column: 1 / -1; }
+    .commandHeaderStatus,
+    .commandHeaderActions { grid-column: 1 / -1; justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .routeSceneSweep,
+    .routeFallbackReticle,
+    .routeFallbackScan,
+    .routeFallbackProgress i,
+    .routeFallbackSkeleton span {
+        animation: none;
+    }
+}
+
 @media (max-width: 900px) {
     .leaderboardStandingMain,
     .leaderboardTableIntro {

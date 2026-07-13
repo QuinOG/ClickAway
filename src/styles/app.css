@@ -14,6 +14,8 @@
 @import "./components/history.css";
 @import "./components/shop.css";
 @import "./components/help.css";
+@import "./components/duels.css";
+@import "./components/ladder.css";
 
 /* Shared animations */
 @import "./animations.css";

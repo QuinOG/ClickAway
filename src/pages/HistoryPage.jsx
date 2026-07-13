@@ -1,6 +1,17 @@
 ﻿import { useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
+import {
+  ArrowRight,
+  ClockCounterClockwise,
+  Coins,
+  Crosshair,
+  Lightning,
+  Target,
+  TrendDown,
+  TrendUp,
+} from "@phosphor-icons/react"
 
+import { CommandHeader } from "../components/RouteScene.jsx"
 import { HISTORY_PREVIEW_FIELDS } from "../features/history/historyPageTableFieldsAndInsights.js"
 import { buildHistorySnapshot } from "../features/history/historyRoundsSnapshotBuilder.js"
 import { fetchHistoryPage } from "../services/clickAwayHttpApiClient.js"
@@ -99,6 +110,105 @@ function HighlightCard({ eyebrow, title, value, meta, stats = [], tone = "neutra
             {stat}
           </span>
         ))}
+      </div>
+    </article>
+  )
+}
+
+function HistoryTrajectory({ rounds = [] }) {
+  const plottedRounds = rounds.slice(0, 8).reverse()
+  const scores = plottedRounds.map((round) => Number(round.score) || 0)
+  const highestScore = Math.max(...scores, 1)
+  const lowestScore = Math.min(...scores, 0)
+  const scoreRange = Math.max(1, highestScore - lowestScore)
+  const points = plottedRounds.map((round, index) => {
+    const x = plottedRounds.length === 1 ? 300 : 24 + (index * 552) / (plottedRounds.length - 1)
+    const y = 122 - (((Number(round.score) || 0) - lowestScore) / scoreRange) * 90
+    return { round, x, y }
+  })
+  const pointString = points.map((point) => `${point.x},${point.y}`).join(" ")
+  const scoreChange = scores.length > 1 ? scores.at(-1) - scores[0] : 0
+  const trendIcon = scoreChange >= 0
+    ? <TrendUp weight="bold" />
+    : <TrendDown weight="bold" />
+
+  return (
+    <section
+      className="historyTrajectory"
+      aria-label={`Score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
+    >
+      <div className="historyTrajectoryCopy">
+        <p className="commandHeaderEyebrow">Performance vector</p>
+        <h2>Recent trajectory</h2>
+        <span className={`historyTrajectoryDelta ${scoreChange >= 0 ? "isPositive" : "isNegative"}`}>
+          <span aria-hidden="true">{trendIcon}</span>
+          {scoreChange > 0 ? "+" : ""}{formatNumber(scoreChange)}
+        </span>
+      </div>
+
+      <div className="historyTrajectoryPlot" aria-hidden="true">
+        <svg viewBox="0 0 600 150" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="history-line" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#4aa8ff" />
+              <stop offset="1" stopColor="#62e1c1" />
+            </linearGradient>
+            <linearGradient id="history-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#62e1c1" stopOpacity="0.24" />
+              <stop offset="1" stopColor="#62e1c1" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <line x1="24" y1="122" x2="576" y2="122" className="historyTrajectoryBaseline" />
+          {points.length > 1 ? (
+            <polygon points={`24,122 ${pointString} 576,122`} fill="url(#history-fill)" />
+          ) : null}
+          <polyline points={pointString} fill="none" stroke="url(#history-line)" strokeWidth="4" vectorEffect="non-scaling-stroke" />
+          {points.map((point) => (
+            <circle
+              key={point.round.id}
+              cx={point.x}
+              cy={point.y}
+              r="6"
+              className={`historyTrajectoryPoint ${getModeToneClassName(point.round)}`}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+      </div>
+
+      <div className="historyTrajectoryLegend" aria-hidden="true">
+        <span data-mode="practice"><i /> Practice</span>
+        <span data-mode="casual"><i /> Casual</span>
+        <span data-mode="ranked"><i /> Ranked</span>
+      </div>
+    </section>
+  )
+}
+
+function HistoryRoundCard({ round, markers = [] }) {
+  return (
+    <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
+      <div className="historyRoundCardSignal" aria-hidden="true"><Crosshair weight="duotone" /></div>
+      <div className="historyRoundCardMain">
+        <div className="historyRoundCardTopline">
+          <span className={`historyModeBadge ${getModeToneClassName(round)}`}>
+            {getModeLabelFromHistoryEntry(round)}
+          </span>
+          <time>{getPlayedAtLabel(round)}</time>
+        </div>
+        <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
+        <span className="historyRoundCardScoreLabel">score</span>
+        <div className="historyRoundCardMeters">
+          <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
+          <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
+          <span><Coins weight="fill" aria-hidden="true" /> {formatNumber(round.coinsEarned)}</span>
+          <span><Lightning weight="fill" aria-hidden="true" /> {formatNumber(round.xpEarned ?? 0)}</span>
+        </div>
+      </div>
+      <div className="historyRoundCardOutcome">
+        <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span>
+        {markers.map((marker) => <small key={marker}>{marker}</small>)}
+        <ArrowRight weight="bold" aria-hidden="true" />
       </div>
     </article>
   )
@@ -231,16 +341,21 @@ export default function HistoryPage({
   }, [historySnapshot])
 
   return (
-    <div className="pageCenter">
+    <div className="pageCenter historyPageScene">
       <section className="cardWide historyPageCard">
-        <header className="historyHero">
-          <div className="historyHeroText">
-            <h1 className="cardTitle">Match History</h1>
-            <p className="muted historyLead">
-              Score, accuracy, and ranked results across {formatNumber(resolvedTotalRoundCount)} saved rounds.
-            </p>
-          </div>
-        </header>
+        <CommandHeader
+          routeId="history"
+          eyebrow="Replay archive"
+          title="Match history"
+          subtitle="See the shape of your progress, then inspect every run."
+          status={(
+            <span className="historyArchiveCount">
+              <ClockCounterClockwise weight="bold" aria-hidden="true" />
+              <strong>{formatNumber(resolvedTotalRoundCount)}</strong>
+              <small>saved rounds</small>
+            </span>
+          )}
+        />
 
         {!hasHistory ? (
           <section className="historyEmptyState" role="status" aria-live="polite">
@@ -267,6 +382,8 @@ export default function HistoryPage({
           </section>
         ) : (
           <main className="historyContent">
+            <HistoryTrajectory rounds={historyRows} />
+
             {highlightCards.length > 0 ? (
               <section className="historyHighlightsSection" aria-label="Round highlights">
                 <div className="historySectionHeader">
@@ -379,6 +496,16 @@ export default function HistoryPage({
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="historyRoundDeck" aria-label="Match cards">
+                {historyRows.map((round) => (
+                  <HistoryRoundCard
+                    key={round.id}
+                    round={round}
+                    markers={getRoundMarkers(round, historySnapshot)}
+                  />
+                ))}
               </div>
 
               {canLoadMoreHistory ? (

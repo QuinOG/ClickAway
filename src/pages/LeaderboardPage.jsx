@@ -1,6 +1,8 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { Crown, Crosshair, Trophy } from "@phosphor-icons/react"
 
+import { CommandHeader } from "../components/RouteScene.jsx"
 import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
 import TierBadge from "../components/TierBadge.jsx"
 import { fetchLeaderboard } from "../services/clickAwayHttpApiClient.js"
@@ -422,6 +424,49 @@ function LeaderboardControls({
   )
 }
 
+function PodiumStage({ rows = [], currentUserId, currentUsername }) {
+  const podiumRows = [...rows]
+    .filter((player) => player.rank >= 1 && player.rank <= 3)
+    .sort((leftPlayer, rightPlayer) => leftPlayer.rank - rightPlayer.rank)
+
+  if (podiumRows.length === 0) return null
+
+  return (
+    <section className="leaderboardPodium" aria-label="Top ranked players">
+      <div className="leaderboardPodiumSignal" aria-hidden="true">
+        <span /><span /><Crosshair weight="duotone" />
+      </div>
+      <div className="leaderboardPodiumHeader">
+        <div>
+          <p className="leaderboardSectionEyebrow">Season leaders</p>
+          <h2>Players to beat</h2>
+        </div>
+        <Crown weight="duotone" aria-hidden="true" />
+      </div>
+      <div className={`leaderboardPodiumDeck count-${podiumRows.length}`}>
+        {podiumRows.map((player) => {
+          const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)
+          return (
+            <article
+              key={`podium-${player.userId}-${player.rank}`}
+              className={`leaderboardPodiumPlayer isRank${player.rank} ${isCurrentUser ? "isCurrentUser" : ""}`}
+            >
+              <span className="leaderboardPodiumRank">#{player.rank}</span>
+              <span className="leaderboardPodiumCrest" aria-hidden="true">
+                {player.rank === 1 ? <Crown weight="fill" /> : player.username?.charAt(0)?.toUpperCase()}
+              </span>
+              <strong>{player.username}</strong>
+              <span className="leaderboardPodiumTier">{player.rankLabel}</span>
+              <span className="leaderboardPodiumRating">{formatNumericValue(player.mmr)} <small>RR</small></span>
+              <i aria-hidden="true" />
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 function NearMeSection({ rows = [], selfRank = null, mmrGap = 0 }) {
   return (
     <section className="leaderboardNearMeSection" aria-label="Players around your rank">
@@ -597,11 +642,31 @@ export default function LeaderboardPage({
   }
 
   return (
-    <div className="pageCenter">
-      <section className="card">
-        <h1 className="cardTitle">Leaderboard</h1>
+    <div className="pageCenter leaderboardPageScene">
+      <section className="card leaderboardPageCard">
+        <CommandHeader
+          routeId="ladder"
+          eyebrow="Season ladder"
+          title="Climb the field"
+          subtitle="See who leads, find your nearest rival, and take the next position."
+          status={(
+            <span className="leaderboardFieldCount">
+              <Trophy weight="fill" aria-hidden="true" />
+              <strong>{formatNumericValue(totalCount)}</strong>
+              <small>ranked</small>
+            </span>
+          )}
+        />
 
         <SeasonBanner season={season} />
+
+        {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
+          <PodiumStage
+            rows={leaderboardRows}
+            currentUserId={currentUserId}
+            currentUsername={currentUsername}
+          />
+        ) : null}
 
         <LeaderboardControls
           board={board}

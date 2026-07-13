@@ -37,6 +37,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     mobilePlacement: MOBILE_PLACEMENT.DOCK,
     mobileOrder: 1,
     transitionTone: "arena",
+    scene: Object.freeze({ tone: "play", loadingLabel: "Opening round lobby" }),
   }),
   Object.freeze({
     id: "armory",
@@ -48,6 +49,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     mobilePlacement: MOBILE_PLACEMENT.DOCK,
     mobileOrder: 2,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "armory", loadingLabel: "Powering the workshop" }),
   }),
   Object.freeze({
     id: "shop",
@@ -58,6 +60,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     requiresAuth: true,
     mobilePlacement: MOBILE_PLACEMENT.MORE,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "shop", loadingLabel: "Syncing cosmetic inventory" }),
   }),
   Object.freeze({
     id: "profile",
@@ -69,6 +72,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     mobilePlacement: MOBILE_PLACEMENT.DOCK,
     mobileOrder: 4,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "profile", loadingLabel: "Resolving player signal" }),
   }),
   Object.freeze({
     id: "ladder",
@@ -80,6 +84,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     mobilePlacement: MOBILE_PLACEMENT.DOCK,
     mobileOrder: 3,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "ladder", loadingLabel: "Acquiring ladder standings" }),
   }),
   Object.freeze({
     id: "duels",
@@ -90,6 +95,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     requiresAuth: true,
     mobilePlacement: MOBILE_PLACEMENT.MORE,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "duels", loadingLabel: "Scanning rival channels" }),
   }),
   Object.freeze({
     id: "history",
@@ -100,6 +106,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     requiresAuth: true,
     mobilePlacement: MOBILE_PLACEMENT.MORE,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "history", loadingLabel: "Reconstructing match data" }),
   }),
   Object.freeze({
     id: "help",
@@ -110,6 +117,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     requiresAuth: true,
     mobilePlacement: MOBILE_PLACEMENT.MORE,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "help", loadingLabel: "Loading field guide" }),
   }),
   Object.freeze({
     id: "login",
@@ -120,6 +128,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     requiresAuth: false,
     mobilePlacement: MOBILE_PLACEMENT.NONE,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "arrival", loadingLabel: "Opening competitor access" }),
   }),
   Object.freeze({
     id: "signup",
@@ -130,6 +139,7 @@ export const APP_ROUTE_METADATA = Object.freeze([
     requiresAuth: false,
     mobilePlacement: MOBILE_PLACEMENT.NONE,
     transitionTone: "utility",
+    scene: Object.freeze({ tone: "arrival", loadingLabel: "Preparing competitor profile" }),
   }),
 ])
 

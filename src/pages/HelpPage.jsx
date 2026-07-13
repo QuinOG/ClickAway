@@ -1,5 +1,19 @@
 ﻿import { Link } from "react-router-dom"
 
+import {
+  ArrowDown,
+  ClockCountdown,
+  Coins,
+  Crosshair,
+  GameController,
+  Lightning,
+  Question,
+  ShieldChevron,
+  Target,
+  Wrench,
+} from "@phosphor-icons/react"
+
+import { CommandHeader } from "../components/RouteScene.jsx"
 import HelpFlowSection from "../features/help/components/HelpFlowSection.jsx"
 import HelpFaqSection from "../features/help/components/HelpFaqSection.jsx"
 import HelpListSection from "../features/help/components/HelpListSection.jsx"
@@ -32,26 +46,95 @@ import {
   TRACKING_POINTS,
 } from "../features/help/helpPageStructuredContent.js"
 
+const GUIDE_DESTINATIONS = Object.freeze([
+  { id: "start", title: "First round", hint: "Ready → hit → reward", glyph: "play" },
+  { id: "core", title: "Aim & powers", hint: "Score, combo, hotbar", glyph: "target" },
+  { id: "modes", title: "Modes & rank", hint: "Pressure and stakes", glyph: "rank" },
+  { id: "progression", title: "Rewards", hint: "XP, coins, cosmetics", glyph: "reward" },
+  { id: "account", title: "Player record", hint: "Profile, history, ladder", glyph: "record" },
+  { id: "faq", title: "Quick answers", hint: "Common field fixes", glyph: "question" },
+])
+
+function GuideGlyph({ glyph }) {
+  switch (glyph) {
+    case "play": return <GameController weight="duotone" />
+    case "target": return <Crosshair weight="duotone" />
+    case "rank": return <ShieldChevron weight="duotone" />
+    case "reward": return <Coins weight="duotone" />
+    case "record": return <ClockCountdown weight="duotone" />
+    default: return <Question weight="duotone" />
+  }
+}
+
+function HelpMissionMap() {
+  return (
+    <section className="helpMissionMap" aria-labelledby="help-mission-map-title">
+      <div className="helpMissionMapHeader">
+        <div>
+          <p className="commandHeaderEyebrow">Choose a system</p>
+          <h2 id="help-mission-map-title">Field guide</h2>
+        </div>
+        <span><i /> Training signal online</span>
+      </div>
+      <nav className="helpMissionGrid" aria-label="Field guide sections">
+        {GUIDE_DESTINATIONS.map((item, index) => (
+          <a key={item.id} className="helpMissionCard" href={`#${item.id}`}>
+            <span className="helpMissionIndex">0{index + 1}</span>
+            <span className="helpMissionGlyph" aria-hidden="true"><GuideGlyph glyph={item.glyph} /></span>
+            <strong>{item.title}</strong>
+            <small>{item.hint}</small>
+            <ArrowDown weight="bold" aria-hidden="true" />
+          </a>
+        ))}
+      </nav>
+    </section>
+  )
+}
+
+function RoundLoopDiagram() {
+  return (
+    <section className="helpRoundLoop" aria-labelledby="help-round-loop-title">
+      <div className="helpRoundLoopCopy">
+        <p className="commandHeaderEyebrow">One-glance briefing</p>
+        <h2 id="help-round-loop-title">The round loop</h2>
+        <p>Choose pressure, lock your build, then follow the target.</p>
+        <Link className="helpRoundLoopAction" to="/game">
+          Enter lobby <GameController weight="fill" aria-hidden="true" />
+        </Link>
+      </div>
+      <ol className="helpRoundLoopTrack">
+        <li data-step="ready"><span><Wrench weight="duotone" /></span><strong>Ready</strong><small>Mode + build</small></li>
+        <li data-step="count"><span><ClockCountdown weight="duotone" /></span><strong>3 · 2 · 1</strong><small>Eyes center</small></li>
+        <li data-step="hit"><span><Target weight="duotone" /></span><strong>Hit</strong><small>Chain streak</small></li>
+        <li data-step="reward"><span><Lightning weight="duotone" /></span><strong>Reward</strong><small>XP + rank</small></li>
+      </ol>
+    </section>
+  )
+}
+
 export default function HelpPage() {
   return (
-    <div className="pageCenter">
+    <div className="pageCenter helpPageScene">
       <section className="card helpDoc">
-        <div className="helpHero">
-          <h1 className="helpHeroTitle">Help Center</h1>
-          <p className="helpHeroCopy">
-            Learn the first round fast, then dip into deeper systems only when you need them.
-          </p>
-          <nav className="helpQuickNav" aria-label="Quick help navigation">
-            <span className="helpQuickNavLabel">Jump To</span>
-            <div className="helpQuickNavLinks">
-              {HELP_QUICK_NAV.map((item) => (
-                <a key={item.id} className="helpQuickNavLink" href={`#${item.id}`}>
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </nav>
-        </div>
+        <CommandHeader
+          routeId="help"
+          eyebrow="Arena field manual"
+          title="Learn by sight"
+          subtitle="Pick a system, see its shape, then open the exact rules only when you need them."
+          status={<span className="helpGuideStatus"><Target weight="bold" /> 6 systems</span>}
+        />
+
+        <HelpMissionMap />
+        <RoundLoopDiagram />
+
+        <nav className="helpQuickNav helpQuickNavCompact" aria-label="Quick help navigation">
+          <span className="helpQuickNavLabel">Exact reference</span>
+          <div className="helpQuickNavLinks">
+            {HELP_QUICK_NAV.map((item) => (
+              <a key={item.id} className="helpQuickNavLink" href={`#${item.id}`}>{item.label}</a>
+            ))}
+          </div>
+        </nav>
 
         <section id="start" className="helpTopicGroup" aria-label="Start here">
           <div className="helpGroupHeader">
