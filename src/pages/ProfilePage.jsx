@@ -1,4 +1,6 @@
-﻿import { useMemo, useState } from "react"
+import { useMemo, useState } from "react"
+import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
+import { useActionFeedback } from "../hooks/useActionFeedback.js"
 
 import AchievementTile from "../components/achievements/AchievementTile.jsx"
 import AchievementsCarousel from "../components/achievements/AchievementsCarousel.jsx"
@@ -19,30 +21,13 @@ import {
   getRankToneClassName,
 } from "../utils/rankUtils.js"
 
-function buildRankedInsights(roundHistory = []) {
-  const rankedRounds = (Array.isArray(roundHistory) ? roundHistory : [])
-    .filter((round) => isRankedModeEntry(round))
-  const recentRankedRounds = rankedRounds.slice(0, 10)
-  const recentRankDelta = recentRankedRounds.reduce(
-    (sum, round) => sum + (Number(round.rankDelta) || 0),
-    0
-  )
-  const positiveDeltaRounds = recentRankedRounds.filter(
-    (round) => (Number(round.rankDelta) || 0) > 0
-  ).length
-  const recentWinRate = recentRankedRounds.length > 0
-    ? Math.round((positiveDeltaRounds / recentRankedRounds.length) * 100)
-    : 0
-
-  return {
-    recentSampleSize: recentRankedRounds.length,
-    recentRankDelta,
-    recentWinRate,
-  }
+function toNumber(value) {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : 0
 }
 
 function formatNumber(value = 0) {
-  return Number(value).toLocaleString()
+  return toNumber(value).toLocaleString()
 }
 
 function formatReactionTime(value) {
@@ -51,12 +36,15 @@ function formatReactionTime(value) {
   return `${Math.round(normalizedValue)} ms`
 }
 
-function getProfileTagline({ totalRounds, overallAccuracyPercent, bestStreak }) {
-  if (totalRounds === 0) return "No rounds logged yet. Queue up and start your run."
-  if (overallAccuracyPercent >= 85 && bestStreak >= 10) {
-    return "Precision specialist. Your tempo is locked in."
-  }
-  if (overallAccuracyPercent >= 70) return "Strong fundamentals. Keep building consistency."
+function formatSignedValue(value = 0) {
+  const normalized = toNumber(value)
+  return `${normalized > 0 ? "+" : ""}${normalized}`
+}
+
+function getProfileTagline({ totalRounds, accuracyPercent, bestStreak }) {
+  if (totalRounds === 0) return "No rounds logged yet. Your first signal starts in the arena."
+  if (accuracyPercent >= 85 && bestStreak >= 10) return "Precision specialist. Your tempo is locked in."
+  if (accuracyPercent >= 70) return "Strong fundamentals. Keep building consistency."
   return "Momentum is building. Focus accuracy and chain longer streaks."
 }
 
@@ -77,63 +65,61 @@ function getRankMetaText(rankProgress = {}) {
   if (rankProgress.isUnranked) {
     return `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank`
   }
-
   if (rankProgress.isPlacement) {
-    return `${rankProgress.tierLabel} • ${rankProgress.placementMatchesRemaining} matches remaining`
+    return `${rankProgress.placementMatchesRemaining} placement matches remaining`
   }
-
-  if (rankProgress.isTopRank) {
-    return `${formatNumber(rankProgress.mmr)} rating`
-  }
-
+  if (rankProgress.isTopRank) return `${formatNumber(rankProgress.mmr)} rating`
   return `${formatNumber(rankProgress.rr)} / ${formatNumber(rankProgress.rrMax)} RR`
 }
 
-function StatCard({ label, value, tooltip = "", tone = "neutral", isFeatured = false }) {
-  const ariaDescription = tooltip ? `${label}: ${value}. ${tooltip}` : `${label}: ${value}`
+function buildRecentForm(roundHistory = []) {
+  const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
+  const scores = recentRounds.map((round) => toNumber(round.score))
+  const maxScore = Math.max(...scores, 1)
+  const bars = recentRounds.map((round, index) => ({
+    id: `${round?.playedAtIso ?? "round"}-${index}`,
+    score: scores[index],
+    height: Math.max(12, Math.round((scores[index] / maxScore) * 100)),
+    rankDelta: toNumber(round.rankDelta),
+    isRanked: isRankedModeEntry(round),
+  }))
+  const midpoint = Math.max(1, Math.floor(scores.length / 2))
+  const olderAverage = scores.slice(0, midpoint).reduce((sum, score) => sum + score, 0) / midpoint
+  const newerScores = scores.slice(midpoint)
+  const newerAverage = newerScores.length > 0
+    ? newerScores.reduce((sum, score) => sum + score, 0) / newerScores.length
+    : olderAverage
 
+  return {
+    bars,
+    averageScore: scores.length > 0
+      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+      : 0,
+    trendPercent: olderAverage > 0
+      ? Math.round(((newerAverage - olderAverage) / olderAverage) * 100)
+      : 0,
+  }
+}
+
+function getStrongestTrait(profileStats, reactionStats) {
+  const traits = [
+    { key: "precision", label: "Precision", score: profileStats.accuracyPercent / 85 },
+    { key: "tempo", label: "Tempo", score: reactionStats.avgReactionMs ? 430 / reactionStats.avgReactionMs : 0 },
+    { key: "chain", label: "Combo chain", score: profileStats.bestStreak / 15 },
+  ]
+  return traits.sort((firstTrait, secondTrait) => secondTrait.score - firstTrait.score)[0]
+}
+
+function PerformanceInstrument({ label, value, detail, tone, isStrongest }) {
   return (
-    <article
-      className={`profileStatCard tone-${tone} ${isFeatured ? "isFeatured" : ""}`}
-      data-tooltip={tooltip || undefined}
-      aria-label={ariaDescription}
-      tabIndex={0}
-    >
-      <p className="profileStatLabel">{label}</p>
-      <p className="profileStatValue">{value}</p>
+    <article className={`profileInstrument tone-${tone} ${isStrongest ? "isStrongest" : ""}`}>
+      <span className="profileInstrumentReticle" aria-hidden="true" />
+      <p className="profileInstrumentLabel">{label}</p>
+      <strong className="profileInstrumentValue">{value}</strong>
+      <span className="profileInstrumentDetail">{detail}</span>
     </article>
   )
 }
-
-function StatsSection({ title, stats = [], gridClassName = "" }) {
-  return (
-    <section className="profileStatsSection" aria-label={title}>
-      <header className="profileStatsSectionHeader">
-        <h2 className="profileStatsSectionTitle">{title}</h2>
-      </header>
-      <div className={`profileStatsGrid ${gridClassName}`.trim()}>
-        {stats.map((stat) => (
-          <StatCard
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
-            tooltip={stat.tooltip}
-            tone={stat.tone}
-            isFeatured={stat.isFeatured}
-          />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function formatSignedValue(value = 0) {
-  const normalized = Number(value) || 0
-  return `${normalized > 0 ? "+" : ""}${normalized}`
-}
-
-const REACTION_UNAVAILABLE_TOOLTIP =
-  "Reaction time appears after at least one recorded hit in a timed round."
 
 export default function ProfilePage({
   onLogout,
@@ -148,6 +134,7 @@ export default function ProfilePage({
   achievementStats = {},
   persistedAchievementIds = [],
 }) {
+  const { signalAction } = useActionFeedback()
   const [requestedCategoryKey, setRequestedCategoryKey] = useState(
     DEFAULT_ACHIEVEMENT_CATEGORY_KEY
   )
@@ -162,82 +149,86 @@ export default function ProfilePage({
     []
   )
   const availableAchievementCategories = useMemo(
-    () =>
-      ACHIEVEMENT_CATEGORIES.filter((category) => {
-        if (category.key === "master") {
-          return evaluatedAchievements.some(
-            (achievement) =>
-              achievement.type === "categoryMaster" || achievement.type === "masterOfMasters"
-          )
-        }
-
+    () => ACHIEVEMENT_CATEGORIES.filter((category) => {
+      if (category.key === "master") {
         return evaluatedAchievements.some(
-          (achievement) =>
-            achievement.categoryKey === category.key && achievement.type === "metric"
+          (achievement) => achievement.type === "categoryMaster" || achievement.type === "masterOfMasters"
         )
-      }),
+      }
+      return evaluatedAchievements.some(
+        (achievement) => achievement.categoryKey === category.key && achievement.type === "metric"
+      )
+    }),
     [evaluatedAchievements]
   )
   const selectedCategoryKey = useMemo(() => {
     const hasRequestedCategory = availableAchievementCategories.some(
       (category) => category.key === requestedCategoryKey
     )
-    if (hasRequestedCategory) return requestedCategoryKey
-
-    return availableAchievementCategories[0]?.key ?? DEFAULT_ACHIEVEMENT_CATEGORY_KEY
+    return hasRequestedCategory
+      ? requestedCategoryKey
+      : availableAchievementCategories[0]?.key ?? DEFAULT_ACHIEVEMENT_CATEGORY_KEY
   }, [availableAchievementCategories, requestedCategoryKey])
   const categoryMasterAchievements = useMemo(
-    () =>
-      evaluatedAchievements
-        .filter((achievement) => achievement.type === "categoryMaster")
-        .sort((firstAchievement, secondAchievement) => {
-          const firstIndex = categorySortIndexByKey.get(firstAchievement.masterCategoryKey) ?? 0
-          const secondIndex = categorySortIndexByKey.get(secondAchievement.masterCategoryKey) ?? 0
-          return firstIndex - secondIndex
-        }),
+    () => evaluatedAchievements
+      .filter((achievement) => achievement.type === "categoryMaster")
+      .sort((firstAchievement, secondAchievement) => {
+        const firstIndex = categorySortIndexByKey.get(firstAchievement.masterCategoryKey) ?? 0
+        const secondIndex = categorySortIndexByKey.get(secondAchievement.masterCategoryKey) ?? 0
+        return firstIndex - secondIndex
+      }),
     [categorySortIndexByKey, evaluatedAchievements]
   )
   const masterOfMastersAchievement = useMemo(
-    () =>
-      evaluatedAchievements.find((achievement) => achievement.type === "masterOfMasters") ?? null,
+    () => evaluatedAchievements.find((achievement) => achievement.type === "masterOfMasters") ?? null,
     [evaluatedAchievements]
   )
-  const featuredMasterAchievement = useMemo(() => {
-    if (selectedCategoryKey === "master") {
-      return masterOfMastersAchievement
-    }
-
-    return categoryMasterAchievements.find(
+  const featuredMasterAchievement = selectedCategoryKey === "master"
+    ? masterOfMastersAchievement
+    : categoryMasterAchievements.find(
       (achievement) => achievement.masterCategoryKey === selectedCategoryKey
     ) ?? null
-  }, [categoryMasterAchievements, masterOfMastersAchievement, selectedCategoryKey])
-  const carouselAchievements = useMemo(() => {
-    if (selectedCategoryKey === "master") {
-      return categoryMasterAchievements
-    }
-
-    return evaluatedAchievements.filter(
-      (achievement) =>
-        achievement.categoryKey === selectedCategoryKey && achievement.type === "metric"
+  const carouselAchievements = selectedCategoryKey === "master"
+    ? categoryMasterAchievements
+    : evaluatedAchievements.filter(
+      (achievement) => achievement.categoryKey === selectedCategoryKey && achievement.type === "metric"
     )
-  }, [categoryMasterAchievements, evaluatedAchievements, selectedCategoryKey])
 
   const profileStats = buildProfileStatsFromLifetime(lifetimeStats, roundHistory)
   const reactionStats = buildCareerReactionStatsFromLifetime(lifetimeStats)
-  const rankedInsights = buildRankedInsights(roundHistory)
-  const buildPerformanceStats = (Array.isArray(loadoutStats) ? loadoutStats : [])
-    .filter((entry) => entry.totalRounds > 0)
-    .slice(0, 3)
+  const recentForm = buildRecentForm(roundHistory)
+  const strongestTrait = getStrongestTrait(profileStats, reactionStats)
+  const signatureBuild = (Array.isArray(loadoutStats) ? loadoutStats : [])
+    .filter((entry) => toNumber(entry.totalRounds) > 0)
+    .sort((firstBuild, secondBuild) => (
+      toNumber(secondBuild.totalRounds) - toNumber(firstBuild.totalRounds)
+      || toNumber(secondBuild.bestScore) - toNumber(firstBuild.bestScore)
+    ))[0] ?? null
+  const buildAttempts = signatureBuild
+    ? toNumber(signatureBuild.totalHits) + toNumber(signatureBuild.totalMisses)
+    : 0
+  const buildAccuracy = buildAttempts > 0
+    ? Math.round((toNumber(signatureBuild.totalHits) / buildAttempts) * 100)
+    : 0
+  const nearestAchievement = [...evaluatedAchievements]
+    .filter((achievement) => !achievement.isUnlocked && achievement.isProgressAvailable !== false)
+    .sort((firstAchievement, secondAchievement) => (
+      toNumber(secondAchievement.percent) - toNumber(firstAchievement.percent)
+    ))[0] ?? evaluatedAchievements.find((achievement) => achievement.isUnlocked) ?? null
+  const constellationAchievements = [...evaluatedAchievements]
+    .sort((firstAchievement, secondAchievement) => (
+      Number(secondAchievement.isUnlocked) - Number(firstAchievement.isUnlocked)
+      || toNumber(secondAchievement.percent) - toNumber(firstAchievement.percent)
+    ))
+    .slice(0, 7)
+
   const rankLabel = rankProgress.tierLabel ?? "Unranked"
   const rankIconSrc = getRankImageSrc(rankLabel)
   const rankToneClass = getRankToneClassName(rankProgress)
   const levelValue = levelProgress.level ?? 1
-  const xpIntoLevel = levelProgress.xpIntoLevel ?? 0
   const xpToNextLevel = levelProgress.xpToNextLevel ?? 0
-  const xpForNextLevel = xpIntoLevel + xpToNextLevel
-  const levelProgressPercent = levelProgress.progressPercent ?? 0
+  const levelProgressPercent = Math.max(0, Math.min(100, levelProgress.progressPercent ?? 0))
   const nextLevelValue = levelValue + 1
-  const profileTagline = getProfileTagline(profileStats)
   const playerTitle = getPlayerTitle({
     totalRounds: profileStats.totalRounds,
     rankedRounds: profileStats.rankedRounds,
@@ -248,266 +239,224 @@ export default function ProfilePage({
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
   const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
-
-  const nextRankGoalStat = (() => {
-    if (rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank) return null
-    const mmrToNext = rankProgress.mmrToNextTier ?? 0
-    if (mmrToNext <= 0) return null
-    return {
-      label: "Next Rank",
-      value: `${formatNumber(mmrToNext)} RR`,
-      tooltip: `${formatNumber(mmrToNext)} RR needed to reach ${rankProgress.nextTierLabel}.`,
-      tone: "score",
-    }
-  })()
-
-  const playerProgressStats = [
-    {
-      label: "Coins",
-      value: formatNumber(coins),
-      tooltip: "Current coin balance available for shop purchases.",
-      tone: "coins",
-    },
-    {
-      label: "Level",
-      value: `Lv ${levelValue}`,
-      tooltip: "Your long-term account progression level.",
-      tone: "level",
-    },
-    {
-      label: "XP In Level",
-      value: `${formatNumber(xpIntoLevel)} / ${formatNumber(xpForNextLevel)}`,
-      tooltip: `XP progress in the current level. ${formatNumber(xpToNextLevel)} XP remaining.`,
-      tone: "level",
-    },
-    {
-      label: "Total Rounds",
-      value: formatNumber(profileStats.totalRounds),
-      tooltip: "Total rounds played across all modes.",
-      tone: "neutral",
-    },
-    {
-      label: "This Week",
-      value: formatNumber(profileStats.roundsThisWeek),
-      tooltip: "Rounds played in the last 7 days.",
-      tone: "neutral",
-    },
-    ...(nextRankGoalStat ? [nextRankGoalStat] : []),
-  ]
-
-  const performanceStats = [
-    {
-      label: "Best Score",
-      value: formatNumber(profileStats.bestScore),
-      tooltip: "Highest score achieved in any single round.",
-      tone: "score",
-      isFeatured: true,
-    },
-    {
-      label: "Best Streak",
-      value: formatNumber(profileStats.bestStreak),
-      tooltip: "Longest uninterrupted combo chain.",
-      tone: "streak",
-      isFeatured: true,
-    },
-    {
-      label: "Avg Reaction",
-      value: formatReactionTime(reactionStats.avgReactionMs),
-      tooltip: reactionStats.avgReactionMs === null
-        ? REACTION_UNAVAILABLE_TOOLTIP
-        : "Average reaction time across recorded rounds with hit data.",
-      tone: "score",
-    },
-    {
-      label: "Best Reaction",
-      value: formatReactionTime(reactionStats.bestReactionMs),
-      tooltip: reactionStats.bestReactionMs === null
-        ? REACTION_UNAVAILABLE_TOOLTIP
-        : "Fastest recorded hit response in saved round history.",
-      tone: "level",
-    },
-  ]
-  const combinedSummaryStats = [...playerProgressStats, ...performanceStats]
+  const rankGoal = rankProgress.isUnranked
+    ? `${PLACEMENT_MATCH_COUNT} placements to calibrate`
+    : rankProgress.isPlacement
+      ? `${rankProgress.placementMatchesRemaining} matches to reveal rank`
+      : rankProgress.isTopRank
+        ? "Hold the summit"
+        : `${formatNumber(rankProgress.mmrToNextTier ?? 0)} RR to ${rankProgress.nextTierLabel ?? "next rank"}`
 
   return (
-    <div className="pageCenter">
-      <section className="card profileCard">
-        <header className="profileHero">
-          <div className="profileHeroMain">
-            <div className="profileIdentityRow">
-              <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
-                {hasProfileImage ? (
-                  <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" />
-                ) : (
-                  playerInitials
-                )}
-              </div>
-              <div className="profileIdentityText">
-                <p className="profilePlayerName">{playerName.charAt(0).toUpperCase() + playerName.slice(1)}</p>
-                <p className="profilePlayerTitle">{playerTitle}</p>
-              </div>
+    <div className="pageCenter profilePageCenter">
+      <section className={`profileCockpit ${rankToneClass}`} aria-labelledby="profile-player-name">
+        <div className="profileCockpitGrid" aria-hidden="true" />
+
+        <header className="profileCommandHeader">
+          <div className="profileIdentityRow">
+            <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
+              {hasProfileImage
+                ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
+                : playerInitials}
             </div>
-
-            <p className="profileLead">
-              {profileTagline}
-            </p>
-
-            <div className="profileLevelProgress">
-              <div className="profileLevelProgressTop">
-                <div className="profileLevelProgressTitleGroup">
-                  <span className="profileLevelProgressLabel">Progression Level</span>
-                  <strong className="profileLevelProgressPercent">{levelProgressPercent}%</strong>
-                </div>
-                <span className="profileLevelProgressXpSummary">
-                  {formatNumber(xpToNextLevel)} XP to Level {nextLevelValue}
-                </span>
-              </div>
-              <div className="profileLevelProgressEnds" aria-hidden="true">
-                <span>Lv {levelValue}</span>
-                <span>Lv {nextLevelValue}</span>
-              </div>
-              <div className="profileLevelProgressTrack">
-                <span
-                  className="profileLevelProgressFill"
-                  style={{ width: `${Math.max(0, Math.min(100, levelProgressPercent))}%` }}
-                />
-              </div>
+            <div className="profileIdentityText">
+              <span className="profileIdentityKicker">Player identity / online</span>
+              <h1 className="profilePlayerName" id="profile-player-name">
+                {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
+              </h1>
+              <p className="profilePlayerTitle">{playerTitle}</p>
             </div>
           </div>
-
-          <aside className={`profileRankShowcase ${rankToneClass}`}>
-            <div className="profileRankPrimary">
-              <div className={`profileRankCrest ${rankProgress.isUnranked ? "isUnranked" : ""}`}>
-                {rankIconSrc ? (
-                  <img className="profileRankCrestImage" src={rankIconSrc} alt="" />
-                ) : (
-                  <span className="profileRankCrestFallback">?</span>
-                )}
-              </div>
-              <div className="profileRankPrimaryText">
-                <p className="profileRankLabel">Ranked Division</p>
-                <h2 className="profileRankTitle">{rankLabel}</h2>
-                <p className="profileRankMeta">
-                  {getRankMetaText(rankProgress)}
-                </p>
-              </div>
-            </div>
-            <div className="profileRankInsights" aria-label="Recent ranked trend">
-              <article className="profileRankInsightItem">
-                <span className="profileRankInsightLabel">Last 10 Movement</span>
-                <strong className="profileRankInsightValue">
-                  {formatSignedValue(rankedInsights.recentRankDelta)}
-                </strong>
-              </article>
-              <article className="profileRankInsightItem">
-                <span className="profileRankInsightLabel">Positive Rounds</span>
-                <strong className="profileRankInsightValue">
-                  {rankedInsights.recentSampleSize > 0
-                    ? `${rankedInsights.recentWinRate}%`
-                    : "N/A"}
-                </strong>
-              </article>
-              <article className="profileRankInsightItem">
-                <span className="profileRankInsightLabel">Sample Size</span>
-                <strong className="profileRankInsightValue">
-                  {rankedInsights.recentSampleSize}/10
-                </strong>
-              </article>
-            </div>
-            <div className="profileRankActionsDivider" />
-            <button className="secondaryButton profileLogoutButton" type="button" onClick={onLogout}>
-              Logout
-            </button>
-          </aside>
+          <p className="profileLead">{getProfileTagline(profileStats)}</p>
+          <div className="profileHeaderResources" aria-label="Player resources and actions">
+            <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
+            <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
+            <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+          </div>
         </header>
 
-        <div className="profileStatsSections">
-          <StatsSection
-            title="Player Summary"
-            stats={combinedSummaryStats}
-            gridClassName="isSummaryGrid"
-          />
-
-          {buildPerformanceStats.length > 0 ? (
-            <section className="profileStatsSection" aria-label="Build performance">
-              <div className="profileStatsSectionHeader">
-                <h2 className="profileStatsSectionTitle">Build Performance</h2>
-                <p className="profileStatsSectionLead">
-                  Lifetime results by saved loadout.
-                </p>
+        <div className="profileCockpitPrimary">
+          <section className="profileRankCore" aria-label={`${rankLabel} rank, level ${levelValue}`}>
+            <div
+              className="profileLevelOrbit"
+              style={{ "--level-progress": `${levelProgressPercent * 3.6}deg` }}
+            >
+              <div className={`profileRankCrest ${rankProgress.isUnranked ? "isUnranked" : ""}`}>
+                {rankIconSrc
+                  ? <img className="profileRankCrestImage" src={rankIconSrc} alt="" width="128" height="128" decoding="async" />
+                  : <span className="profileRankCrestFallback">?</span>}
               </div>
-              <div className="profileBuildStatsGrid">
-                {buildPerformanceStats.map((buildStat) => {
-                  const attempts = buildStat.totalHits + buildStat.totalMisses
-                  const winRate = buildStat.rankedRounds > 0
-                    ? Math.round((buildStat.rankedWins / buildStat.rankedRounds) * 100)
-                    : null
-
-                  return (
-                    <article key={buildStat.loadoutId} className="profileBuildStatCard">
-                      <p className="profileBuildStatEyebrow">{buildStat.loadoutName}</p>
-                      <strong className="profileBuildStatValue">
-                        {formatNumber(buildStat.bestScore)} peak score
-                      </strong>
-                      <p className="profileBuildStatMeta">
-                        {formatNumber(buildStat.totalRounds)} rounds
-                        {winRate !== null ? ` · ${winRate}% ranked wins` : ""}
-                      </p>
-                      <p className="profileBuildStatDetail">
-                        {formatNumber(buildStat.bestStreak)} best streak
-                        {attempts > 0
-                          ? ` · ${Math.round((buildStat.totalHits / attempts) * 100)}% accuracy`
-                          : ""}
-                      </p>
-                    </article>
-                  )
-                })}
-              </div>
-            </section>
-          ) : null}
-
-          <section className="profileStatsSection profileAchievementsSection" aria-label="Achievements">
-            <div className="achievementHeaderRow">
-              <div className="achievementHeaderText">
-                <h2 className="profileStatsSectionTitle">Achievements</h2>
-              </div>
-
-                <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">
-                  {availableAchievementCategories.map((category) => {
-                    const isSelected = category.key === selectedCategoryKey
-
-                    return (
-                      <button
-                        key={category.key}
-                        type="button"
-                        role="tab"
-                        aria-selected={isSelected}
-                        className={`achievementCategoryTab ${isSelected ? "isSelected" : ""}`}
-                        onClick={() => setRequestedCategoryKey(category.key)}
-                      >
-                        {category.label}
-                      </button>
-                    )
-                  })}
-                </div>
+              <span className="profileOrbitLevel">LV {levelValue}</span>
             </div>
-
-            <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
-              {featuredMasterAchievement ? (
-                <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
-              ) : (
-                <p className="achievementsEmptyState">No master achievement found.</p>
-              )}
+            <div className="profileRankReadout">
+              <span className="profileRankLabel">Current division</span>
+              <h2 className="profileRankTitle">{rankLabel}</h2>
+              <p className="profileRankMeta">{getRankMetaText(rankProgress)}</p>
+              <div className="profileRankGoal">
+                <span>Next vector</span>
+                <strong>{rankGoal}</strong>
+              </div>
             </div>
+            <div className="profileXpReadout">
+              <span><strong>{levelProgressPercent}%</strong> level orbit</span>
+              <span>{formatNumber(xpToNextLevel)} XP to LV {nextLevelValue}</span>
+            </div>
+          </section>
 
-            <div className="achievementsMainArea">
-              <AchievementsCarousel
-                key={`achievements-${selectedCategoryKey}`}
-                achievements={carouselAchievements}
+          <section className="profilePerformancePanel" aria-labelledby="performance-title">
+            <div className="profilePanelHeading">
+              <div>
+                <span className="profileSectionKicker">Performance instruments</span>
+                <h2 id="performance-title">Combat telemetry</h2>
+              </div>
+              <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
+            </div>
+            <div className="profileInstrumentGrid">
+              <PerformanceInstrument
+                label="Accuracy"
+                value={`${profileStats.accuracyPercent}%`}
+                detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
+                tone="precision"
+                isStrongest={strongestTrait.key === "precision"}
               />
+              <PerformanceInstrument
+                label="Best streak"
+                value={formatNumber(profileStats.bestStreak)}
+                detail="unbroken targets"
+                tone="chain"
+                isStrongest={strongestTrait.key === "chain"}
+              />
+              <PerformanceInstrument
+                label="Reaction"
+                value={formatReactionTime(reactionStats.avgReactionMs)}
+                detail={reactionStats.bestReactionMs ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
+                tone="tempo"
+                isStrongest={strongestTrait.key === "tempo"}
+              />
+            </div>
+            <div className="profilePeakStrip">
+              <span>Peak score</span>
+              <strong>{formatNumber(profileStats.bestScore)}</strong>
+              <span>This week</span>
+              <strong>{formatNumber(profileStats.roundsThisWeek)} rounds</strong>
             </div>
           </section>
         </div>
+
+        <div className="profileSignalBand">
+          <section className="profileFormPanel" aria-labelledby="recent-form-title">
+            <div className="profileMiniHeading">
+              <div>
+                <span className="profileSectionKicker">Recent form</span>
+                <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
+              </div>
+              <strong className={recentForm.trendPercent >= 0 ? "isPositive" : "isNegative"}>
+                {recentForm.bars.length > 1 ? `${formatSignedValue(recentForm.trendPercent)}%` : "Calibrating"}
+              </strong>
+            </div>
+            <div className="profileFormChart" aria-label={`Average recent score ${recentForm.averageScore}`}>
+              {recentForm.bars.length > 0 ? recentForm.bars.map((bar) => (
+                <span
+                  key={bar.id}
+                  className={`profileFormBar ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
+                  style={{ "--form-height": `${bar.height}%` }}
+                  title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
+                />
+              )) : <span className="profileEmptySignal">Play a round to establish form</span>}
+            </div>
+            <p className="profileFormAverage"><span>Average signal</span>{formatNumber(recentForm.averageScore)}</p>
+          </section>
+
+          <section className="profileBuildSignature" aria-labelledby="build-signature-title">
+            <div className="profileMiniHeading">
+              <div>
+                <span className="profileSectionKicker">Build signature</span>
+                <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
+              </div>
+              <span className="profileBuildGlyph" aria-hidden="true">+</span>
+            </div>
+            {signatureBuild ? (
+              <div className="profileBuildMetrics">
+                <span><strong>{formatNumber(signatureBuild.totalRounds)}</strong> rounds</span>
+                <span><strong>{buildAccuracy}%</strong> accuracy</span>
+                <span><strong>{formatNumber(signatureBuild.bestScore)}</strong> peak</span>
+              </div>
+            ) : (
+              <p className="profileEmptySignal">Run a saved loadout to reveal your field signature.</p>
+            )}
+          </section>
+
+          <section className="profileNearestGoal" aria-labelledby="nearest-goal-title">
+            <div className="profileGoalConstellation" aria-hidden="true">
+              {constellationAchievements.map((achievement, index) => (
+                <i
+                  key={achievement.id}
+                  className={achievement.isUnlocked ? "isUnlocked" : ""}
+                  style={{ "--node-index": index }}
+                />
+              ))}
+            </div>
+            <div className="profileMiniHeading">
+              <div>
+                <span className="profileSectionKicker">Nearest achievement</span>
+                <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>
+              </div>
+              <strong>{nearestAchievement?.percentText ?? "—"}</strong>
+            </div>
+            <p>{nearestAchievement?.description ?? "Achievement telemetry will appear after your first round."}</p>
+            <div className="profileGoalTrack" aria-hidden="true">
+              <span style={{ width: `${Math.max(0, Math.min(100, toNumber(nearestAchievement?.percent)))}%` }} />
+            </div>
+            <span className="profileGoalProgress">{nearestAchievement?.progressText ?? "Awaiting progress"}</span>
+          </section>
+        </div>
+
+        <section
+          className="profileStatsSection profileAchievementsSection"
+          id="achievement-constellation"
+          aria-label="Achievement constellation"
+        >
+          <div className="achievementHeaderRow">
+            <div className="achievementHeaderText">
+              <span className="profileSectionKicker">Collection signal</span>
+              <h2 className="profileStatsSectionTitle">Achievement constellation</h2>
+            </div>
+            <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">
+              {availableAchievementCategories.map((category) => {
+                const isSelected = category.key === selectedCategoryKey
+                return (
+                  <button
+                    key={category.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    className={`achievementCategoryTab ${isSelected ? "isSelected" : ""}`}
+                    onClick={(event) => {
+                      setRequestedCategoryKey(category.key)
+                      signalAction(event.currentTarget, {
+                        eventName: FEEDBACK_EVENTS.FILTER,
+                        eventId: `achievement-filter-${category.key}`,
+                      })
+                    }}
+                  >
+                    {category.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
+            {featuredMasterAchievement
+              ? <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
+              : <p className="achievementsEmptyState">No master achievement found.</p>}
+          </div>
+          <div className="achievementsMainArea">
+            <AchievementsCarousel
+              key={`achievements-${selectedCategoryKey}`}
+              achievements={carouselAchievements}
+            />
+          </div>
+        </section>
       </section>
     </div>
   )

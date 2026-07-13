@@ -1,702 +1,572 @@
-/* Profile page visuals: hero, rank card, and profile stat cards. */
-.profileCard {
-    --profile-accent: #69c5ff;
-    --profile-accent-soft: rgba(105, 197, 255, 0.18);
-    --profile-border-soft: rgba(182, 214, 248, 0.22);
-    width: min(980px, 100%);
-    position: relative;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at 92% 4%, rgba(105, 197, 255, 0.14) 0%, rgba(105, 197, 255, 0) 42%),
-        radial-gradient(circle at 4% 92%, rgba(105, 197, 255, 0.08) 0%, rgba(105, 197, 255, 0) 44%),
-        linear-gradient(175deg, rgba(16, 25, 44, 0.98), rgba(13, 20, 37, 0.98));
+/* Player identity cockpit: a single profile composition built around live signals. */
+.profilePageCenter {
+    width: min(1180px, 100%);
 }
 
-.profileCard::before {
+.profileCockpit {
+    --profile-accent: #74d7ff;
+    --profile-accent-rgb: 116, 215, 255;
+    --rank-accent: #89cfff;
+    --rank-accent-rgb: 137, 207, 255;
+    --rank-deep: #315c91;
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    padding: clamp(18px, 2.5vw, 30px);
+    border: 1px solid rgba(var(--rank-accent-rgb), 0.34);
+    clip-path: polygon(0 18px, 18px 0, calc(100% - 56px) 0, calc(100% - 42px) 14px, 100% 14px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    background:
+        radial-gradient(circle at 13% 10%, rgba(var(--rank-accent-rgb), 0.15), transparent 26%),
+        radial-gradient(circle at 94% 35%, rgba(112, 81, 255, 0.09), transparent 32%),
+        linear-gradient(155deg, rgba(13, 24, 43, 0.98), rgba(7, 14, 28, 0.99) 72%);
+    box-shadow: 0 26px 70px rgba(2, 8, 18, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.profileCockpit::before,
+.profileCockpit::after {
     content: "";
     position: absolute;
-    inset: 0;
+    z-index: -1;
     pointer-events: none;
-    background:
-        radial-gradient(circle at 10% 100%, rgba(105, 197, 255, 0.07) 0%, rgba(105, 197, 255, 0) 40%),
-        radial-gradient(circle at 100% 72%, rgba(105, 197, 255, 0.06) 0%, rgba(105, 197, 255, 0) 42%);
-    opacity: 0.55;
 }
 
-.profileCard > * {
+.profileCockpit::before {
+    top: 0;
+    left: 18px;
+    width: 190px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--rank-accent), transparent);
+    box-shadow: 0 0 18px rgba(var(--rank-accent-rgb), 0.6);
+}
+
+.profileCockpit::after {
+    top: 15px;
+    right: 0;
+    width: 96px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--rank-accent-rgb), 0.75));
+}
+
+.profileCockpitGrid {
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    opacity: 0.18;
+    background-image:
+        linear-gradient(rgba(116, 215, 255, 0.11) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(116, 215, 255, 0.11) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(130deg, #000, transparent 58%);
+}
+
+.profileCockpit.rank-bronze { --rank-accent: #dc955f; --rank-accent-rgb: 220, 149, 95; --rank-deep: #75452a; }
+.profileCockpit.rank-silver { --rank-accent: #c6d1e3; --rank-accent-rgb: 198, 209, 227; --rank-deep: #637086; }
+.profileCockpit.rank-gold { --rank-accent: #f4ca65; --rank-accent-rgb: 244, 202, 101; --rank-deep: #8e6519; }
+.profileCockpit.rank-platinum { --rank-accent: #72ded5; --rank-accent-rgb: 114, 222, 213; --rank-deep: #276f78; }
+.profileCockpit.rank-diamond { --rank-accent: #91b8ff; --rank-accent-rgb: 145, 184, 255; --rank-deep: #405da7; }
+.profileCockpit.rank-deadeye { --rank-accent: #ff9675; --rank-accent-rgb: 255, 150, 117; --rank-deep: #a34227; }
+.profileCockpit.rank-placement { --rank-accent: #7fc7ff; --rank-accent-rgb: 127, 199, 255; --rank-deep: #315d9f; }
+
+.profileCommandHeader {
     position: relative;
-    z-index: 1;
-}
-
-.profileLogoutButton {
-    width: 100%;
-}
-
-.profileHero {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(250px, 300px);
-    gap: 28px;
-    align-items: stretch;
-}
-
-.profileHeroMain {
-    padding-right: 24px;
-    border-right: 1px solid var(--profile-border-soft);
-}
-
-.profileEyebrow {
-    margin: 0;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: rgba(74, 168, 255, 0.6);
-}
-
-.profileTitle {
-    margin-top: 8px;
-    margin-bottom: 6px;
-    font-size: clamp(26px, 3vw, 36px);
+    grid-template-columns: auto minmax(240px, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 17px;
+    border-bottom: 1px solid rgba(170, 210, 248, 0.13);
 }
 
 .profileIdentityRow {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
 }
 
 .profileAvatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 16px;
-    border: 1px solid rgba(74, 168, 255, 0.36);
-    box-shadow:
-        0 0 0 1px rgba(74, 168, 255, 0.18),
-        0 8px 18px rgba(6, 14, 28, 0.36);
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #f8fcff;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 auto;
+    clip-path: polygon(0 11px, 11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%);
+    border: 1px solid rgba(var(--rank-accent-rgb), 0.55);
+    background: linear-gradient(145deg, rgba(var(--rank-accent-rgb), 0.28), rgba(20, 42, 70, 0.9));
+    box-shadow: 0 0 22px rgba(var(--rank-accent-rgb), 0.16), inset 0 0 18px rgba(var(--rank-accent-rgb), 0.12);
     display: grid;
     place-items: center;
-}
-
-.profileAvatar.hasImage {
-    padding: 3px;
     overflow: hidden;
-    background: linear-gradient(155deg, rgba(54, 89, 138, 0.9), rgba(40, 123, 173, 0.82));
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #f7fbff;
 }
 
-.profileAvatarImage {
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-    object-fit: cover;
-    display: block;
-}
+.profileAvatar.hasImage { padding: 3px; }
+.profileAvatarImage { width: 100%; height: 100%; object-fit: cover; display: block; }
+.profileIdentityText { display: grid; gap: 1px; min-width: 0; }
 
-.profileIdentityText {
-    display: grid;
-    gap: 3px;
+.profileIdentityKicker,
+.profileSectionKicker {
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 1.35px;
+    text-transform: uppercase;
+    color: rgba(var(--rank-accent-rgb), 0.78);
 }
 
 .profilePlayerName {
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 28px;
+    font-size: clamp(22px, 2.3vw, 30px);
     line-height: 1;
     color: #f7fbff;
 }
 
 .profilePlayerTitle {
-    margin: 0;
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(226, 240, 255, 0.68);
-    letter-spacing: 0.28px;
+    margin: 2px 0 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
+    color: rgba(219, 235, 252, 0.65);
 }
 
 .profileLead {
-    margin: 12px 0 0;
-    max-width: 640px;
-    color: rgba(220, 234, 254, 0.92);
+    margin: 0;
+    color: rgba(214, 230, 248, 0.76);
+    font-size: 12px;
     line-height: 1.45;
 }
 
-.profileHeroChips {
-    margin-top: 14px;
+.profileHeaderResources {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
-.profileHeroChip {
-    border: 1px solid rgba(170, 207, 246, 0.36);
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.35px;
-    color: rgba(231, 243, 255, 0.94);
-    background: linear-gradient(135deg, rgba(105, 197, 255, 0.16), rgba(105, 197, 255, 0.08));
+.profileCoinReadout,
+.profileTextAction {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid rgba(172, 209, 245, 0.18);
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.035);
+    color: rgba(222, 238, 253, 0.84);
+    font-size: 10px;
+    font-weight: 750;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
-.profileLevelProgress {
-    margin-top: 14px;
-    border: 1px solid var(--profile-border-soft);
-    border-radius: 16px;
-    padding: 13px 14px;
+.profileCoinReadout i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f8cb65;
+    box-shadow: 0 0 9px rgba(248, 203, 101, 0.6);
+}
+
+button.profileTextAction { font: inherit; cursor: pointer; }
+.profileTextAction:hover { border-color: rgba(var(--rank-accent-rgb), 0.5); color: #fff; }
+.profileTextAction:focus-visible { outline: 2px solid var(--rank-accent); outline-offset: 2px; }
+
+.profileCockpitPrimary {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.9fr) minmax(480px, 1.55fr);
+    min-width: 0;
+    border-bottom: 1px solid rgba(170, 210, 248, 0.13);
+}
+
+.profileRankCore {
+    position: relative;
+    min-width: 0;
+    min-height: 272px;
+    padding: 19px 22px 16px 0;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    align-items: center;
+    gap: 13px;
+    border-right: 1px solid rgba(170, 210, 248, 0.13);
+}
+
+.profileLevelOrbit {
+    --level-progress: 0deg;
+    position: relative;
+    width: 144px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(var(--rank-accent) var(--level-progress), rgba(171, 210, 245, 0.11) 0);
+    box-shadow: 0 0 34px rgba(var(--rank-accent-rgb), 0.12);
+}
+
+.profileLevelOrbit::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: inherit;
+    background: #0a1425;
+    border: 1px solid rgba(var(--rank-accent-rgb), 0.28);
+}
+
+.profileLevelOrbit::after {
+    content: "";
+    position: absolute;
+    inset: -9px;
+    border-radius: inherit;
+    border: 1px dashed rgba(var(--rank-accent-rgb), 0.18);
+    animation: profileOrbitSpin 32s linear infinite;
+    will-change: transform;
+}
+
+@keyframes profileOrbitSpin { to { transform: rotate(360deg); } }
+
+.profileRankCrest {
+    position: relative;
+    z-index: 1;
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(var(--rank-accent-rgb), 0.46);
     background:
-        radial-gradient(circle at 100% 0%, rgba(105, 197, 255, 0.13), rgba(105, 197, 255, 0) 46%),
-        linear-gradient(165deg, rgba(10, 19, 37, 0.64), rgba(13, 24, 45, 0.62));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        radial-gradient(circle at 38% 26%, rgba(255, 255, 255, 0.24), transparent 46%),
+        linear-gradient(150deg, rgba(var(--rank-accent-rgb), 0.27), rgba(10, 22, 40, 0.7));
+    box-shadow: inset 0 0 24px rgba(var(--rank-accent-rgb), 0.13);
 }
 
-.profileLevelProgressTop {
+.profileRankCrest.isUnranked { border-style: dashed; }
+.profileRankCrestImage { width: 78%; height: 78%; object-fit: contain; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.35)); }
+.profileRankCrestFallback { font-size: 34px; font-weight: 800; color: #eff8ff; }
+
+.profileOrbitLevel {
+    position: absolute;
+    z-index: 3;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 50px;
+    padding: 5px 9px;
+    border: 1px solid rgba(var(--rank-accent-rgb), 0.65);
+    background: #0a1628;
+    color: var(--rank-accent);
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-align: center;
+}
+
+.profileRankReadout { min-width: 0; }
+.profileRankLabel { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(var(--rank-accent-rgb), 0.7); }
+.profileRankTitle { margin: 4px 0 5px; color: #f7fbff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: clamp(27px, 3vw, 38px); line-height: 0.96; }
+.profileRankMeta { margin: 0; color: rgba(219, 235, 251, 0.7); font-size: 11px; line-height: 1.35; }
+
+.profileRankGoal {
+    margin-top: 13px;
+    padding-left: 9px;
+    border-left: 2px solid var(--rank-accent);
+    display: grid;
+    gap: 2px;
+}
+
+.profileRankGoal span { font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(196, 216, 239, 0.5); }
+.profileRankGoal strong { color: rgba(239, 247, 255, 0.92); font-size: 10px; line-height: 1.3; }
+
+.profileXpReadout {
+    grid-column: 1 / -1;
     display: flex;
-    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(var(--rank-accent-rgb), 0.13);
+    color: rgba(198, 219, 241, 0.6);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profileXpReadout strong { color: var(--rank-accent); }
+
+.profilePerformancePanel {
+    min-width: 0;
+    min-height: 272px;
+    padding: 19px 0 16px 22px;
+    display: grid;
+    align-content: center;
+    gap: 13px;
+}
+
+.profilePanelHeading,
+.profileMiniHeading {
+    display: flex;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
 }
 
-.profileLevelProgressTitleGroup {
-    display: grid;
-    gap: 3px;
-}
-
-.profileLevelProgressLabel {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: rgba(74, 168, 255, 0.6);
-    font-weight: 700;
-}
-
-.profileLevelProgressPercent {
+.profilePanelHeading h2,
+.profileMiniHeading h2 {
+    margin: 3px 0 0;
     font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-    color: #f3f9ff;
-    font-variant-numeric: tabular-nums;
+    color: #f1f7ff;
+    line-height: 1.05;
 }
 
-.profileLevelProgressXpSummary {
-    font-size: 12px;
-    color: rgba(216, 233, 252, 0.88);
-    font-weight: 600;
-}
+.profilePanelHeading h2 { font-size: 20px; }
+.profileMiniHeading h2 { font-size: 15px; }
 
-.profileLevelProgressEnds {
-    margin-top: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.24px;
-    color: rgba(213, 229, 249, 0.86);
-}
-
-.profileLevelProgressTrack {
-    margin-top: 8px;
-    width: 100%;
-    height: 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.09);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-}
-
-.profileLevelProgressFill {
-    position: relative;
-    height: 100%;
-    display: block;
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(105, 197, 255, 0.95), rgba(86, 175, 255, 0.92));
-    box-shadow: 0 0 10px rgba(105, 197, 255, 0.24);
-}
-
-.profileLevelProgressFill::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 9px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
-    pointer-events: none;
-}
-
-.profileRankShowcase {
-    --rank-card-border: var(--profile-border-soft);
-    --rank-card-highlight: rgba(105, 197, 255, 0.16);
-    --rank-card-fill-top: rgba(255, 255, 255, 0.09);
-    --rank-card-fill-bottom: rgba(255, 255, 255, 0.035);
-    --rank-crest-border: rgba(255, 255, 255, 0.28);
-    --rank-crest-top: rgba(255, 255, 255, 0.22);
-    --rank-crest-start: rgba(101, 172, 255, 0.26);
-    --rank-crest-end: rgba(73, 108, 198, 0.16);
-    --rank-label-color: rgba(205, 222, 246, 0.82);
-    --rank-title-color: #f3f8ff;
-    --rank-meta-color: rgba(219, 235, 253, 0.9);
-    --rank-insight-border: rgba(166, 204, 245, 0.16);
-    --rank-insight-bg: rgba(11, 20, 38, 0.22);
-    border: 1px solid var(--profile-border-soft);
-    border-radius: 18px;
-    padding: 16px;
-    background:
-        linear-gradient(180deg, var(--rank-card-fill-top), var(--rank-card-fill-bottom)),
-        radial-gradient(circle at 100% 0%, var(--rank-card-highlight), rgba(105, 197, 255, 0) 48%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 8px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    border-color: var(--rank-card-border);
-}
-
-.profileRankPrimary {
-    width: 100%;
-    display: grid;
-    justify-items: center;
-    gap: 11px;
-}
-
-.profileRankPrimaryText {
-    display: grid;
-    gap: 4px;
-    justify-items: center;
-}
-
-.profileRankCrest {
-    width: 106px;
-    height: 106px;
-    border-radius: 50%;
-    border: 1px solid var(--rank-crest-border);
-    background:
-        radial-gradient(circle at 35% 24%, var(--rank-crest-top), rgba(255, 255, 255, 0) 52%),
-        linear-gradient(160deg, var(--rank-crest-start), var(--rank-crest-end));
-    display: grid;
-    place-items: center;
-    box-shadow: 0 8px 16px rgba(4, 12, 25, 0.28);
-}
-
-.profileRankCrestImage {
-    width: 74%;
-    height: 74%;
-    object-fit: contain;
-}
-
-.profileRankCrestFallback {
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 34px;
-    font-weight: 700;
-    color: rgba(232, 242, 255, 0.92);
-}
-
-.profileRankCrest.isUnranked {
-    border-style: dashed;
-    opacity: 0.85;
-}
-
-.profileRankLabel {
-    margin: 0;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: var(--rank-label-color);
-}
-
-.profileRankTitle {
-    margin: 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 29px;
-    line-height: 1;
-    color: var(--rank-title-color);
-}
-
-.profileRankMeta {
-    margin: 0;
-    font-size: 13px;
-    color: var(--rank-meta-color);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
-.profileRankInsights {
-    width: 100%;
-    margin-top: 7px;
-    display: grid;
-    gap: 6px;
-}
-
-.profileRankInsightItem {
-    border: 1px solid var(--rank-insight-border);
-    border-radius: 10px;
-    padding: 7px 8px;
-    background: var(--rank-insight-bg);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 6px;
-}
-
-.profileRankShowcase.rank-bronze {
-    --rank-card-border: rgba(206, 141, 93, 0.55);
-    --rank-card-highlight: rgba(255, 255, 255, 0.28);
-    --rank-card-fill-top: rgba(195, 123, 74, 0.22);
-    --rank-card-fill-bottom: rgba(99, 58, 33, 0.28);
-    --rank-crest-border: rgba(227, 169, 123, 0.66);
-    --rank-crest-top: rgba(255, 230, 205, 0.42);
-    --rank-crest-start: rgba(210, 133, 82, 0.5);
-    --rank-crest-end: rgba(127, 72, 40, 0.36);
-    --rank-label-color: rgba(255, 255, 255, 0.88);
-    --rank-title-color: #ffffff;
-    --rank-meta-color: rgba(255, 255, 255, 0.9);
-    --rank-insight-border: rgba(227, 166, 118, 0.34);
-    --rank-insight-bg: rgba(61, 34, 18, 0.36);
-}
-
-.profileRankShowcase.rank-silver {
-    --rank-card-border: rgba(185, 196, 214, 0.62);
-    --rank-card-highlight: rgba(228, 236, 248, 0.32);
-    --rank-card-fill-top: rgba(148, 163, 186, 0.23);
-    --rank-card-fill-bottom: rgba(83, 95, 118, 0.28);
-    --rank-crest-border: rgba(217, 227, 243, 0.72);
-    --rank-crest-top: rgba(255, 255, 255, 0.48);
-    --rank-crest-start: rgba(203, 213, 229, 0.54);
-    --rank-crest-end: rgba(129, 144, 168, 0.35);
-    --rank-label-color: rgba(228, 236, 247, 0.9);
-    --rank-title-color: #f3f7ff;
-    --rank-meta-color: rgba(229, 238, 250, 0.93);
-    --rank-insight-border: rgba(201, 213, 231, 0.34);
-    --rank-insight-bg: rgba(43, 52, 71, 0.3);
-}
-
-.profileRankShowcase.rank-gold {
-    --rank-card-border: rgba(243, 201, 102, 0.68);
-    --rank-card-highlight: rgba(255, 227, 138, 0.33);
-    --rank-card-fill-top: rgba(236, 182, 61, 0.24);
-    --rank-card-fill-bottom: rgba(130, 89, 18, 0.3);
-    --rank-crest-border: rgba(255, 229, 143, 0.76);
-    --rank-crest-top: rgba(255, 248, 201, 0.5);
-    --rank-crest-start: rgba(255, 214, 103, 0.56);
-    --rank-crest-end: rgba(182, 126, 24, 0.4);
-    --rank-label-color: rgba(255, 236, 170, 0.92);
-    --rank-title-color: #ffe7a8;
-    --rank-meta-color: rgba(255, 233, 164, 0.95);
-    --rank-insight-border: rgba(255, 214, 122, 0.35);
-    --rank-insight-bg: rgba(73, 48, 9, 0.35);
-}
-
-.profileRankShowcase.rank-platinum {
-    --rank-card-border: rgba(113, 223, 214, 0.62);
-    --rank-card-highlight: rgba(206, 255, 251, 0.3);
-    --rank-card-fill-top: rgba(86, 196, 190, 0.22);
-    --rank-card-fill-bottom: rgba(23, 87, 96, 0.28);
-    --rank-crest-border: rgba(171, 255, 244, 0.7);
-    --rank-crest-top: rgba(230, 255, 252, 0.48);
-    --rank-crest-start: rgba(108, 221, 214, 0.54);
-    --rank-crest-end: rgba(48, 132, 149, 0.36);
-    --rank-label-color: rgba(214, 255, 249, 0.9);
-    --rank-title-color: #dffffa;
-    --rank-meta-color: rgba(214, 248, 246, 0.94);
-    --rank-insight-border: rgba(132, 223, 214, 0.34);
-    --rank-insight-bg: rgba(14, 53, 59, 0.34);
-}
-
-.profileRankShowcase.rank-diamond {
-    --rank-card-border: rgba(140, 178, 255, 0.66);
-    --rank-card-highlight: rgba(214, 226, 255, 0.34);
-    --rank-card-fill-top: rgba(99, 146, 255, 0.22);
-    --rank-card-fill-bottom: rgba(36, 54, 113, 0.3);
-    --rank-crest-border: rgba(186, 210, 255, 0.74);
-    --rank-crest-top: rgba(242, 247, 255, 0.5);
-    --rank-crest-start: rgba(126, 168, 255, 0.56);
-    --rank-crest-end: rgba(70, 96, 182, 0.4);
-    --rank-label-color: rgba(225, 234, 255, 0.92);
-    --rank-title-color: #edf3ff;
-    --rank-meta-color: rgba(223, 233, 255, 0.95);
-    --rank-insight-border: rgba(146, 181, 255, 0.34);
-    --rank-insight-bg: rgba(21, 33, 73, 0.36);
-}
-
-.profileRankShowcase.rank-deadeye {
-    --rank-card-border: rgba(255, 122, 109, 0.7);
-    --rank-card-highlight: rgba(255, 209, 155, 0.34);
-    --rank-card-fill-top: rgba(255, 104, 104, 0.24);
-    --rank-card-fill-bottom: rgba(121, 38, 21, 0.32);
-    --rank-crest-border: rgba(255, 190, 121, 0.76);
-    --rank-crest-top: rgba(255, 242, 225, 0.5);
-    --rank-crest-start: rgba(255, 125, 125, 0.58);
-    --rank-crest-end: rgba(232, 136, 52, 0.42);
-    --rank-label-color: rgba(255, 231, 208, 0.94);
-    --rank-title-color: #fff1df;
-    --rank-meta-color: rgba(255, 226, 194, 0.96);
-    --rank-insight-border: rgba(255, 164, 110, 0.36);
-    --rank-insight-bg: rgba(79, 28, 14, 0.38);
-}
-
-.profileRankShowcase.rank-placement {
-    --rank-card-border: rgba(127, 195, 255, 0.54);
-    --rank-card-highlight: rgba(214, 238, 255, 0.3);
-    --rank-card-fill-top: rgba(76, 158, 255, 0.18);
-    --rank-card-fill-bottom: rgba(24, 54, 108, 0.28);
-    --rank-crest-border: rgba(167, 219, 255, 0.64);
-    --rank-crest-top: rgba(239, 247, 255, 0.42);
-    --rank-crest-start: rgba(93, 176, 255, 0.48);
-    --rank-crest-end: rgba(56, 108, 209, 0.34);
-    --rank-label-color: rgba(220, 236, 255, 0.88);
-    --rank-title-color: #f2f8ff;
-    --rank-meta-color: rgba(220, 233, 252, 0.9);
-    --rank-insight-border: rgba(144, 203, 255, 0.3);
-    --rank-insight-bg: rgba(14, 29, 61, 0.32);
-}
-
-.profileRankInsightLabel {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.38px;
-    text-transform: uppercase;
-    color: rgba(199, 217, 241, 0.46);
-}
-
-.profileRankInsightValue {
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 15px;
-    line-height: 1;
-    color: rgba(237, 247, 255, 0.75);
-    font-variant-numeric: tabular-nums;
-}
-
-.profileRankActionsDivider {
-    width: 100%;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.16);
-    margin-top: 2px;
-}
-
-.profileStatsGrid {
-    display: grid;
-    gap: 8px;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-}
-
-.profileStatsGrid.isSummaryGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.profileStatsSections {
-    margin-top: 28px;
-    display: grid;
-    gap: 0;
-}
-
-.profileStatsSection {
-    padding: 22px 0 0;
-    border-top: 1px solid rgba(167, 204, 244, 0.1);
-}
-
-.profileStatsSectionHeader {
-    margin-bottom: 14px;
-    display: grid;
-    gap: 3px;
-}
-
-.profileStatsSectionTitle {
-    margin: 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 20px;
-    line-height: 1.1;
-    color: #f3f9ff;
-}
-
-.profileStatsSectionDescription {
-    margin: 0;
-    font-size: 12px;
-    color: rgba(196, 215, 239, 0.56);
-}
-
-.profileStatCard {
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
-    min-height: 92px;
-    padding: 8px 10px;
-    background:
-        linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-        radial-gradient(circle at 100% 0%, rgba(105, 197, 255, 0.1), rgba(105, 197, 255, 0) 44%);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 5px 10px rgba(5, 12, 24, 0.16);
-    transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
-    display: grid;
-    justify-items: center;
-    align-content: center;
-    text-align: center;
-    gap: 4px;
-    outline: none;
-}
-
-.profileStatCard:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.11);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 9px 16px rgba(5, 12, 24, 0.22);
-    filter: brightness(1.04);
-}
-
-.profileStatCard:focus-visible {
-    border-color: rgba(191, 223, 255, 0.34);
-    box-shadow:
-        0 0 0 2px rgba(114, 194, 255, 0.2),
-        0 8px 16px rgba(5, 12, 24, 0.2);
-}
-
-.profileStatCard[data-tooltip]::before,
-.profileStatCard[data-tooltip]::after {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.16s ease, transform 0.16s ease;
-    position: absolute;
-    left: 50%;
-    z-index: 3;
-}
-
-.profileStatCard[data-tooltip]::before {
-    content: "";
-    bottom: calc(100% + 2px);
-    transform: translate(-50%, 4px);
-    border-width: 6px;
-    border-style: solid;
-    border-color: rgba(20, 30, 52, 0.95) transparent transparent transparent;
-}
-
-.profileStatCard[data-tooltip]::after {
-    content: attr(data-tooltip);
-    bottom: calc(100% + 14px);
-    transform: translate(-50%, 4px);
-    width: min(220px, calc(100vw - 64px));
-    border-radius: 10px;
-    border: 1px solid rgba(170, 209, 250, 0.38);
-    padding: 8px 9px;
-    font-size: 11px;
-    line-height: 1.35;
-    color: rgba(228, 240, 255, 0.96);
-    background: rgba(20, 30, 52, 0.95);
-    box-shadow: 0 10px 20px rgba(3, 10, 20, 0.35);
-}
-
-.profileStatCard[data-tooltip]:hover::before,
-.profileStatCard[data-tooltip]:hover::after,
-.profileStatCard[data-tooltip]:focus-visible::before,
-.profileStatCard[data-tooltip]:focus-visible::after {
-    opacity: 1;
-    transform: translate(-50%, 0);
-}
-
-.profileStatCard.isFeatured {
-    border-width: 1px;
-    background:
-        linear-gradient(165deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
-        radial-gradient(circle at 100% 0%, rgba(105, 197, 255, 0.14), rgba(105, 197, 255, 0) 48%);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.12),
-        0 8px 16px rgba(7, 15, 29, 0.22);
-}
-
-.profileStatCard.tone-rank.isFeatured {
-    border-color: rgba(105, 197, 255, 0.24);
-}
-
-.profileStatCard.tone-score.isFeatured,
-.profileStatCard.tone-accuracy.isFeatured {
-    border-color: rgba(105, 197, 255, 0.2);
-}
-
-.profileStatLabel {
-    margin: 0;
-    font-size: 10px;
-    text-transform: none;
-    letter-spacing: 0.1px;
-    color: rgba(210, 225, 246, 0.76);
-    font-weight: 700;
-    line-height: 1.25;
-    min-height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.profileStatValue {
-    margin: 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: clamp(21px, 2.5vw, 27px);
+.profileStrengthCallout {
+    padding: 5px 8px;
+    border: 1px solid rgba(100, 229, 189, 0.3);
+    color: #9ceccd;
+    background: rgba(67, 185, 142, 0.08);
+    font-size: 8px;
     font-weight: 800;
-    color: #f6fbff;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
-@media (max-width: 900px) {
-    .profileHero {
-        grid-template-columns: 1fr;
-        gap: 0;
-    }
+.profileInstrumentGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 
-    .profileHeroMain {
-        padding-right: 0;
-        padding-bottom: 24px;
-        border-right: none;
-        border-bottom: 1px solid var(--profile-border-soft);
-    }
-
-    .profileRankShowcase {
-        margin-top: 24px;
-        align-items: flex-start;
-        text-align: left;
-    }
+.profileInstrument {
+    position: relative;
+    min-width: 0;
+    min-height: 112px;
+    overflow: hidden;
+    padding: 13px 12px 11px;
+    border: 1px solid rgba(169, 207, 244, 0.14);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+    display: grid;
+    align-content: end;
+    gap: 3px;
 }
 
-@media (max-width: 620px) {
-    .profileIdentityRow {
-        align-items: flex-start;
-    }
-
-    .profileAvatar {
-        width: 48px;
-        height: 48px;
-        font-size: 19px;
-    }
-
-    .profilePlayerName {
-        font-size: 21px;
-    }
-
-    .profileHeroChip {
-        font-size: 10px;
-        padding: 5px 10px;
-    }
-
-    .profileLevelProgressTop {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 7px;
-    }
-
-    .profileLevelProgressPercent {
-        font-size: 24px;
-    }
-
-    .profileStatCard {
-        min-height: 120px;
-    }
-
-    .profileStatsGrid.isSummaryGrid {
-        grid-template-columns: 1fr;
-    }
+.profileInstrument::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 38%;
+    height: 2px;
+    background: var(--instrument-accent, var(--profile-accent));
+    box-shadow: 0 0 12px var(--instrument-accent, var(--profile-accent));
 }
 
+.profileInstrument.tone-chain { --instrument-accent: #f5b968; }
+.profileInstrument.tone-tempo { --instrument-accent: #b89cff; }
+.profileInstrument.isStrongest { border-color: rgba(108, 230, 188, 0.42); background: linear-gradient(145deg, rgba(76, 202, 158, 0.1), rgba(255, 255, 255, 0.015)); }
+.profileInstrument.isStrongest::after { --instrument-accent: #6fe0b7; width: 68%; }
+
+.profileInstrumentReticle {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    width: 24px;
+    height: 24px;
+    border: 1px solid rgba(185, 219, 251, 0.17);
+    border-radius: 50%;
+}
+
+.profileInstrumentReticle::before,
+.profileInstrumentReticle::after { content: ""; position: absolute; top: 50%; left: 50%; background: rgba(194, 225, 252, 0.22); transform: translate(-50%, -50%); }
+.profileInstrumentReticle::before { width: 30px; height: 1px; }
+.profileInstrumentReticle::after { width: 1px; height: 30px; }
+.profileInstrumentLabel { margin: 0; color: rgba(190, 213, 238, 0.59); font-size: 8px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; }
+.profileInstrumentValue { overflow: hidden; text-overflow: ellipsis; color: #f5faff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: clamp(20px, 2.3vw, 29px); line-height: 1; font-variant-numeric: tabular-nums; }
+.profileInstrumentDetail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(197, 218, 239, 0.48); font-size: 8px; }
+
+.profilePeakStrip {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: baseline;
+    gap: 9px;
+    color: rgba(187, 211, 236, 0.55);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.profilePeakStrip strong { color: #e9f4ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 12px; }
+.profilePeakStrip strong:first-of-type { font-size: 18px; color: var(--profile-accent); }
+
+.profileSignalBand {
+    display: grid;
+    grid-template-columns: 1.08fr 0.9fr 1.12fr;
+    min-width: 0;
+    border-bottom: 1px solid rgba(170, 210, 248, 0.13);
+}
+
+.profileSignalBand > section {
+    position: relative;
+    min-width: 0;
+    min-height: 174px;
+    padding: 16px 18px;
+    border-right: 1px solid rgba(170, 210, 248, 0.13);
+}
+
+.profileSignalBand > section:first-child { padding-left: 0; }
+.profileSignalBand > section:last-child { padding-right: 0; border-right: 0; }
+.profileMiniHeading > strong { color: rgba(233, 244, 255, 0.83); font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 13px; }
+.profileMiniHeading > strong.isPositive { color: #78e2b9; }
+.profileMiniHeading > strong.isNegative { color: #ff958d; }
+
+.profileFormChart {
+    height: 66px;
+    margin-top: 10px;
+    padding: 0 3px;
+    border-bottom: 1px solid rgba(166, 205, 243, 0.17);
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.profileFormBar {
+    position: relative;
+    flex: 1;
+    max-width: 30px;
+    height: var(--form-height);
+    min-height: 7px;
+    background: linear-gradient(180deg, #77d8ff, rgba(70, 145, 211, 0.28));
+    border-top: 1px solid #b8ecff;
+    box-shadow: 0 -4px 10px rgba(93, 202, 255, 0.13);
+    transform-origin: bottom;
+    animation: profileSignalRise 0.45s ease-out both;
+}
+
+.profileFormBar.isRanked::after { content: ""; position: absolute; top: -4px; left: 50%; width: 4px; height: 4px; transform: translateX(-50%) rotate(45deg); background: #f7ca69; }
+.profileFormBar.isRanked.isLoss::after { background: #ff837c; }
+@keyframes profileSignalRise { from { transform: scaleY(0); opacity: 0.3; } }
+
+.profileFormAverage { margin: 8px 0 0; display: flex; justify-content: space-between; color: #dfeeff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 13px; }
+.profileFormAverage span { color: rgba(186, 211, 238, 0.5); font-family: inherit; font-size: 8px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase; }
+
+.profileBuildSignature { background: linear-gradient(150deg, rgba(245, 185, 104, 0.035), transparent); }
+.profileBuildGlyph { width: 25px; height: 25px; border: 1px solid rgba(245, 185, 104, 0.35); color: #f5b968; display: grid; place-items: center; font-size: 17px; }
+.profileBuildMetrics { margin-top: 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.profileBuildMetrics span { min-width: 0; padding-top: 8px; border-top: 1px solid rgba(245, 185, 104, 0.2); color: rgba(195, 216, 238, 0.55); font-size: 8px; text-transform: uppercase; }
+.profileBuildMetrics strong { display: block; overflow: hidden; text-overflow: ellipsis; color: #f1f7ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 17px; }
+
+.profileNearestGoal { overflow: hidden; background: radial-gradient(circle at 95% 0%, rgba(181, 151, 255, 0.09), transparent 45%); }
+.profileNearestGoal .profileMiniHeading { position: relative; z-index: 1; }
+.profileNearestGoal > p { position: relative; z-index: 1; margin: 10px 0 12px; max-width: 88%; color: rgba(202, 222, 243, 0.67); font-size: 9px; line-height: 1.4; }
+.profileGoalTrack { position: relative; z-index: 1; height: 6px; overflow: hidden; border: 1px solid rgba(190, 164, 255, 0.25); background: rgba(255, 255, 255, 0.05); }
+.profileGoalTrack span { display: block; height: 100%; background: linear-gradient(90deg, #9376df, #cbb7ff); box-shadow: 0 0 12px rgba(186, 156, 255, 0.5); }
+.profileGoalProgress { position: relative; z-index: 1; display: block; margin-top: 6px; color: rgba(215, 202, 249, 0.7); font-size: 8px; font-weight: 700; }
+
+.profileGoalConstellation { position: absolute; top: 0; right: 0; width: 130px; height: 110px; opacity: 0.35; }
+.profileGoalConstellation::before { content: ""; position: absolute; inset: 22px 18px; border: 1px dashed rgba(184, 159, 242, 0.28); border-radius: 50%; transform: rotate(-18deg); }
+.profileGoalConstellation i { position: absolute; width: 5px; height: 5px; border: 1px solid rgba(204, 185, 251, 0.7); border-radius: 50%; background: #16152a; box-shadow: 0 0 7px rgba(181, 151, 255, 0.4); }
+.profileGoalConstellation i:nth-child(1) { top: 17px; left: 65px; }
+.profileGoalConstellation i:nth-child(2) { top: 31px; left: 103px; }
+.profileGoalConstellation i:nth-child(3) { top: 63px; left: 110px; }
+.profileGoalConstellation i:nth-child(4) { top: 84px; left: 76px; }
+.profileGoalConstellation i:nth-child(5) { top: 75px; left: 33px; }
+.profileGoalConstellation i:nth-child(6) { top: 43px; left: 17px; }
+.profileGoalConstellation i:nth-child(7) { top: 24px; left: 36px; }
+.profileGoalConstellation i.isUnlocked { background: #c1a8ff; }
+.profileEmptySignal { margin: 17px 0 0; color: rgba(190, 212, 235, 0.48); font-size: 9px; line-height: 1.4; }
+
+.profileStatsSection { min-width: 0; }
+.profileAchievementsSection { padding-top: 22px; scroll-margin-top: 16px; }
+.profileStatsSectionTitle { margin: 3px 0 0; color: #f3f9ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 20px; line-height: 1.1; }
+
+@media (max-width: 980px) {
+    .profileCommandHeader { grid-template-columns: auto 1fr; }
+    .profileLead { display: none; }
+    .profileCockpitPrimary { grid-template-columns: minmax(280px, 0.85fr) minmax(390px, 1.3fr); }
+    .profileRankCore { grid-template-columns: 122px 1fr; padding-right: 15px; }
+    .profileLevelOrbit { width: 116px; }
+    .profileRankCrest { width: 88px; height: 88px; }
+    .profilePerformancePanel { padding-left: 15px; }
+    .profileSignalBand { grid-template-columns: 1fr 1fr; }
+    .profileSignalBand > section:nth-child(2) { border-right: 0; padding-right: 0; }
+    .profileSignalBand > section:nth-child(3) { grid-column: 1 / -1; min-height: 145px; padding-left: 0; border-top: 1px solid rgba(170, 210, 248, 0.13); }
+}
+
+@media (max-width: 760px) {
+    .profileCockpit { padding: 16px; clip-path: polygon(0 14px, 14px 0, calc(100% - 35px) 0, calc(100% - 24px) 11px, 100% 11px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
+    .profileCommandHeader { gap: 10px; padding-bottom: 12px; }
+    .profileAvatar { width: 48px; height: 48px; font-size: 18px; }
+    .profileIdentityKicker { display: none; }
+    .profilePlayerName { font-size: 21px; }
+    .profilePlayerTitle { font-size: 8px; }
+    .profileHeaderResources { gap: 5px; }
+    .profileCoinReadout, .profileTextAction { min-height: 26px; padding: 4px 7px; font-size: 8px; }
+    .profileTextAction:first-of-type { display: none; }
+    .profileCockpitPrimary { grid-template-columns: 1fr; }
+    .profileRankCore { min-height: 166px; grid-template-columns: 124px 1fr; padding: 14px 0; border-right: 0; border-bottom: 1px solid rgba(170, 210, 248, 0.13); }
+    .profilePerformancePanel { min-height: 190px; padding: 14px 0; }
+    .profilePanelHeading h2 { font-size: 17px; }
+    .profileInstrument { min-height: 91px; padding: 10px; }
+    .profileInstrumentValue { font-size: clamp(19px, 7vw, 27px); }
+    .profilePeakStrip { padding-top: 0; }
+    .profileSignalBand { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; overflow: visible; }
+    .profileSignalBand > section,
+    .profileSignalBand > section:nth-child(3) { grid-column: auto; min-height: 140px; padding: 10px 8px; border-top: 0; border-right: 1px solid rgba(170, 210, 248, 0.13); }
+    .profileSignalBand > section:first-child { padding-left: 0; }
+    .profileSignalBand > section:last-child { padding-right: 0; border-right: 0; }
+    .profileSignalBand .profileMiniHeading { display: grid; gap: 2px; }
+    .profileSignalBand .profileSectionKicker { font-size: 6px; letter-spacing: 0.8px; }
+    .profileSignalBand .profileMiniHeading h2 { margin-top: 2px; font-size: 11px; line-height: 1.1; }
+    .profileSignalBand .profileMiniHeading > strong { font-size: 9px; }
+    .profileFormChart { height: 48px; margin-top: 7px; gap: 2px; }
+    .profileFormAverage { margin-top: 6px; font-size: 10px; }
+    .profileFormAverage span { font-size: 6px; }
+    .profileBuildGlyph { position: absolute; top: 8px; right: 6px; width: 18px; height: 18px; font-size: 12px; }
+    .profileBuildMetrics { margin-top: 10px; grid-template-columns: 1fr; gap: 3px; }
+    .profileBuildMetrics span { padding-top: 3px; display: flex; align-items: baseline; justify-content: space-between; gap: 3px; font-size: 6px; }
+    .profileBuildMetrics strong { font-size: 11px; }
+    .profileNearestGoal > p,
+    .profileGoalConstellation { display: none; }
+    .profileNearestGoal .profileGoalTrack { margin-top: 14px; }
+    .profileGoalProgress { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 6px; }
+    .profileAchievementsSection { padding-top: 18px; }
+}
+
+@media (max-width: 480px) {
+    .profileCockpit { padding: 13px; }
+    .profileCommandHeader { grid-template-columns: 1fr auto; }
+    .profileHeaderResources .profileCoinReadout { position: absolute; right: 0; bottom: -11px; z-index: 2; background: #0b1729; }
+    .profileHeaderResources .profileTextAction { padding-inline: 6px; }
+    .profileRankCore { grid-template-columns: 110px 1fr; }
+    .profileLevelOrbit { width: 103px; }
+    .profileRankCrest { width: 77px; height: 77px; }
+    .profileRankTitle { font-size: 26px; }
+    .profileRankMeta { font-size: 9px; }
+    .profileRankGoal { margin-top: 8px; }
+    .profileXpReadout { font-size: 7px; }
+    .profileStrengthCallout { max-width: 130px; white-space: normal; text-align: right; }
+    .profileInstrumentGrid { gap: 5px; }
+    .profileInstrument { min-height: 84px; padding: 8px 7px; }
+    .profileInstrumentReticle { width: 18px; height: 18px; }
+    .profileInstrumentReticle::before { width: 22px; }
+    .profileInstrumentReticle::after { height: 22px; }
+    .profileInstrumentLabel { font-size: 7px; }
+    .profileInstrumentValue { font-size: clamp(17px, 6vw, 23px); }
+    .profileInstrumentDetail { display: none; }
+    .profilePeakStrip { grid-template-columns: auto 1fr auto auto; gap: 5px; font-size: 7px; }
+    .profilePeakStrip strong:first-of-type { font-size: 15px; }
+    .profileSignalBand > section,
+    .profileSignalBand > section:nth-child(3) { padding-inline: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .profileLevelOrbit::after,
+    .profileFormBar { animation: none; }
+    .profileTextAction { scroll-behavior: auto; }
+}

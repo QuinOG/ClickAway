@@ -12,6 +12,9 @@
     "test": "npm run test:unit && npm run test:ui",
     "test:unit": "node --test tests/*.test.js",
     "test:ui": "vitest run --config vitest.config.js",
+    "test:browser": "playwright test",
+    "test:browser:update": "playwright test tests/e2e/visual-cohesion.spec.js --update-snapshots",
+    "test:release": "npm run lint && npm run test && npm run test:browser && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -35,7 +38,9 @@
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.61.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.7",

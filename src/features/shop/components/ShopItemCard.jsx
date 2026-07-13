@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
@@ -13,13 +13,6 @@ function getActionState({ isOwned, isEquipped, canAfford }) {
   const isDisabled = isOwned ? isEquipped : !canAfford
 
   return { label, isDisabled }
-}
-
-function getVisualState({ isOwned, isEquipped, canAfford }) {
-  if (isEquipped) return "equipped"
-  if (isOwned) return "owned"
-  if (!canAfford) return "locked"
-  return "available"
 }
 
 function formatCoins(value) {
@@ -37,7 +30,14 @@ function getStateLabel({ isOwned, isEquipped, canAfford }) {
   if (isEquipped) return "Equipped"
   if (isOwned) return "Owned"
   if (!canAfford) return "Locked"
-  return "Ready"
+  return "Affordable"
+}
+
+function StateIcon({ state }) {
+  if (state === "equipped") return <Check weight="bold" aria-hidden="true" />
+  if (state === "owned") return <Package weight="fill" aria-hidden="true" />
+  if (state === "affordable") return <Coins weight="fill" aria-hidden="true" />
+  return <LockKey weight="fill" aria-hidden="true" />
 }
 
 function getPriceLabel({ item }) {
@@ -62,14 +62,17 @@ export default function ShopItemCard({
   item,
   coins,
   ownedItemIds,
+  isSelected = false,
+  isSubmitting = false,
+  onSelect,
   onPurchase,
   onEquip,
   equippedButtonSkinId,
   equippedArenaThemeId,
   equippedProfileImageId,
+  actionSourceAware = false,
 }) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { isOwned, canAfford, isEquipped } = getShopItemStatus({
+  const { isOwned, canAfford, isEquipped, state: visualState } = getShopItemStatus({
     item,
     coins,
     ownedItemIds,
@@ -83,20 +86,16 @@ export default function ShopItemCard({
     isEquipped,
     canAfford,
   })
-  const visualState = getVisualState({ isOwned, isEquipped, canAfford })
-
-  function handleAction() {
+  function handleAction(event) {
     if (isSubmitting) return
-
-    setIsSubmitting(true)
-
-    const actionPromise = isOwned
-      ? onEquip?.(item)
-      : onPurchase?.(item)
-
-    Promise.resolve(actionPromise).finally(() => {
-      setIsSubmitting(false)
-    })
+    const source = event.currentTarget
+    if (actionSourceAware) onSelect?.(item, source)
+    else onSelect?.(item)
+    if (isOwned) {
+      if (actionSourceAware) onEquip?.(item, source)
+      else onEquip?.(item)
+    } else if (actionSourceAware) onPurchase?.(item, source)
+    else onPurchase?.(item)
   }
 
   const hasImage = Boolean(item.imageSrc)
@@ -105,7 +104,7 @@ export default function ShopItemCard({
     hasImage ? "hasImage" : item.effectClass
   }`
   const previewFrameClassName = `shopItemPreviewFrame is-${itemTypeClass}`
-  const cardClassName = `shopItemCard shopItemCard-${visualState}`
+  const cardClassName = `shopItemCard shopItemCard-${visualState}${isSelected ? " shopItemCard-selected" : ""}`
   const actionButtonClassName = `primaryButton shopActionButton ${
     isEquipped ? "isEquipped" : isOwned ? "isEquip" : canAfford ? "isBuy" : "isLocked"
   }`
@@ -123,9 +122,17 @@ export default function ShopItemCard({
   const priceLabel = getPriceLabel({ item })
 
   return (
-    <article className={cardClassName}>
+    <article
+      className={cardClassName}
+      data-shop-state={visualState}
+      data-selected={isSelected ? "true" : "false"}
+      data-shop-item-id={item.id}
+    >
       <div className="shopItemHeader">
-        <span className={`shopItemStateTag is-${visualState}`}>{stateLabel}</span>
+        <span className={`shopItemStateTag is-${visualState}`}>
+          <StateIcon state={visualState} />
+          {stateLabel}
+        </span>
         {isEquipped ? null : (
           <span className={`shopItemPriceTag ${item.cost === 0 ? "isCore" : ""}`}>
             {priceLabel}
@@ -134,22 +141,35 @@ export default function ShopItemCard({
       </div>
 
       <div className="shopItemShowcase">
-        <div className={previewFrameClassName}>
-          <span className="shopItemPreviewGlow" aria-hidden="true" />
-          {item.type === "button_skin" ? (
-            <div
-              className={`shopPreviewButtonStage ${hasImage ? "hasImage" : item.effectClass}`}
-              style={getPreviewStyle(item)}
-              aria-hidden="true"
-            />
-          ) : (
-            <div
-              className={previewClassName}
-              style={getPreviewStyle(item)}
-              aria-hidden="true"
-            />
-          )}
-        </div>
+        <button
+          type="button"
+          className="shopItemPreviewSelect"
+          aria-label={`Preview ${item.name}`}
+          aria-pressed={isSelected}
+          onClick={(event) => actionSourceAware
+            ? onSelect?.(item, event.currentTarget)
+            : onSelect?.(item)}
+        >
+          <div className={previewFrameClassName}>
+            <span className="shopItemSelectionCue" aria-hidden="true">
+              <Eye weight="bold" />
+            </span>
+            <span className="shopItemPreviewGlow" aria-hidden="true" />
+            {item.type === "button_skin" ? (
+              <div
+                className={`shopPreviewButtonStage ${hasImage ? "hasImage" : item.effectClass}`}
+                style={getPreviewStyle(item)}
+                aria-hidden="true"
+              />
+            ) : (
+              <div
+                className={previewClassName}
+                style={getPreviewStyle(item)}
+                aria-hidden="true"
+              />
+            )}
+          </div>
+        </button>
       </div>
 
       <div className="shopItemInfo">

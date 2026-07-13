@@ -56,7 +56,7 @@ export function CountdownOverlay({
         <strong>{loadoutName}</strong>
       </div>
 
-      <span className="srOnly" role="status" aria-live="polite" aria-atomic="true">
+      <span className="uiVisuallyHidden" role="status" aria-live="polite" aria-atomic="true">
         {spokenCue}
       </span>
 

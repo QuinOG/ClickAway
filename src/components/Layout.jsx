@@ -3,7 +3,8 @@ import { Toaster } from "react-hot-toast"
 import { Outlet, useLocation } from "react-router-dom"
 import { AnimatePresence, motion } from "motion/react"
 
-import { getRouteMetadata, shouldCollapseShell } from "../app/routeMetadata.js"
+import { AUTHENTICATED_ROUTES, getRouteMetadata, shouldCollapseShell } from "../app/routeMetadata.js"
+import { scheduleIdleRoutePrefetch } from "../app/routeModules.js"
 import { useFeedbackPreferences } from "../app/useFeedbackPreferences.js"
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useBodyClass } from "../hooks/useBodyClass.js"
@@ -108,6 +109,15 @@ export default function Layout({
       scope: "navigation",
     })
   }, [emitFeedback, location.key, stopFeedback])
+
+  useEffect(() => {
+    if (!isAuthed) return undefined
+    return scheduleIdleRoutePrefetch(
+      AUTHENTICATED_ROUTES
+        .filter((route) => route.path !== pathname)
+        .map((route) => route.path)
+    )
+  }, [isAuthed, pathname])
 
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {

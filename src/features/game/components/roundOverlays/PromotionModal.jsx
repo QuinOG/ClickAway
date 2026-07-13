@@ -115,7 +115,13 @@ function getNewBadgeVariants(prefersReducedMotion) {
   }
 }
 
-export default function PromotionModal({ isPlacementReveal, currentRankLabel, projectedRankLabel, onContinue }) {
+export default function PromotionModal({
+  isPlacementReveal,
+  currentRankLabel,
+  projectedRankLabel,
+  buttonLabel = "Continue",
+  onContinue,
+}) {
   const { effectivePreferences, emitFeedback } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
   const buttonRef = useRef(null)
@@ -219,7 +225,7 @@ export default function PromotionModal({ isPlacementReveal, currentRankLabel, pr
           className="primaryButton primaryButton-lg gameOverPromotionButton"
           onClick={onContinue}
         >
-          View Rewards
+          {buttonLabel}
         </button>
       </MotionDiv>
     </MotionSection>

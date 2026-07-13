@@ -15,7 +15,7 @@ export default function ShopCategoryTabs({
             type="button"
             className={`shopTab ${isActive ? "active" : ""}`}
             aria-selected={isActive}
-            onClick={() => onChange?.(tab.id)}
+            onClick={(event) => onChange?.(tab.id, event.currentTarget)}
           >
             <span className="shopTabSignal" aria-hidden="true" />
             <span className="shopTabCopy">

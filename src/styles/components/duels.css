@@ -223,7 +223,7 @@
 .duelRadarState strong { color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 20px; }
 .duelRadarState p { max-width: 42ch; margin: 0; color: var(--ca-color-ink-muted); }
 
-.duelRadar { position: relative; width: 82px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgb(var(--scene-accent-rgb) / 36%); border-radius: 50%; background: conic-gradient(from 0deg, rgb(var(--scene-accent-rgb) / 20%), transparent 27% 100%); animation: duel-radar-scan 4s linear infinite; }
+.duelRadar { position: relative; width: 82px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgb(var(--scene-accent-rgb) / 36%); border-radius: 50%; background: conic-gradient(from 0deg, rgb(var(--scene-accent-rgb) / 20%), transparent 27% 100%); animation: duel-radar-scan 4s linear infinite; will-change: transform; }
 .duelRadar::before { content: ""; position: absolute; inset: 24%; border: 1px solid rgb(var(--scene-accent-rgb) / 22%); border-radius: 50%; }
 .duelRadar i { position: absolute; width: 5px; aspect-ratio: 1; border-radius: 50%; background: var(--scene-accent); box-shadow: 0 0 8px var(--scene-accent); }
 .duelRadar i:nth-child(1) { left: 22%; top: 38%; }

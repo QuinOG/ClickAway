@@ -91,9 +91,8 @@ export function useArmoryScreenController({
   const [activeFirstTouchTipId, setActiveFirstTouchTipId] = useState(null)
   // Unlock ceremony queue (Phase 11): frozen at mount, so a visit reveals
   // whatever crossed the unlock wall since the last time this page opened.
-  const [ceremonyQueue, setCeremonyQueue] = useState(
-    () => getUnseenUnlockedParts(playerLevel, seenUnlockPartIds)
-  )
+  const [ceremonyParts] = useState(() => getUnseenUnlockedParts(playerLevel, seenUnlockPartIds))
+  const [ceremonyQueue, setCeremonyQueue] = useState(ceremonyParts)
   const [isUnlockWallOpen, setIsUnlockWallOpen] = useState(false)
   const [blueprintNotice, setBlueprintNotice] = useState(null)
 
@@ -470,8 +469,9 @@ export function useArmoryScreenController({
 
     const code = encodeBlueprint(activeLoadout)
     setBlueprintNotice({ type: "export", code, notes: [] })
+    triggerFirstTouchTip("blueprint")
     return code
-  }, [activeLoadout])
+  }, [activeLoadout, triggerFirstTouchTip])
 
   const importBlueprintToActiveBay = useCallback((code) => {
     if (!activeLoadout) return
@@ -490,7 +490,8 @@ export function useArmoryScreenController({
     }))
     setNameDraft(result.name)
     setBlueprintNotice({ type: "import", notes: result.notes })
-  }, [activeLoadout, playerLevel, updateSingleLoadout])
+    triggerFirstTouchTip("blueprint")
+  }, [activeLoadout, playerLevel, triggerFirstTouchTip, updateSingleLoadout])
 
   const clearBlueprintNotice = useCallback(() => {
     setBlueprintNotice(null)
@@ -539,8 +540,7 @@ export function useArmoryScreenController({
   const openSpecSheet = useCallback(() => {
     commitActiveLoadoutName()
     setIsSpecSheetOpen(true)
-    triggerFirstTouchTip("blueprint")
-  }, [commitActiveLoadoutName, triggerFirstTouchTip])
+  }, [commitActiveLoadoutName])
 
   const closeSpecSheet = useCallback(() => {
     setIsSpecSheetOpen(false)
@@ -830,6 +830,7 @@ export function useArmoryScreenController({
     },
     ceremonyApi: {
       part: ceremonyQueue[0] ?? null,
+      parts: ceremonyParts,
       remainingCount: ceremonyQueue.length,
       installNow: installCeremonyPartNow,
       rackIt: rackCeremonyPart,

@@ -233,8 +233,86 @@
 .shopCommandLoadoutHeader {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: 12px;
+    width: 100%;
+}
+
+.shopCommandPreviewIdentity {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.shopCommandPreviewEyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #91b9e8;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.shopCommandPreviewEyebrow svg {
+    width: 14px;
+    height: 14px;
+}
+
+.shopCommandPreviewTitle {
+    overflow: hidden;
+    color: #f3f8ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 22px;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shopCommandPreviewState {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #dce9fb;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.shopCommandPreviewState svg {
+    width: 15px;
+    height: 15px;
+}
+
+.shopCommandPreviewState.is-equipped {
+    border-color: rgba(116, 241, 183, 0.44);
+    color: #bff8dc;
+    background: rgba(70, 198, 139, 0.11);
+}
+
+.shopCommandPreviewState.is-owned {
+    border-color: rgba(125, 199, 255, 0.34);
+    color: #cdeaff;
+    background: rgba(80, 156, 231, 0.1);
+}
+
+.shopCommandPreviewState.is-affordable {
+    border-color: rgba(255, 202, 104, 0.42);
+    color: #ffe0a2;
+    background: rgba(224, 157, 56, 0.11);
+}
+
+.shopCommandPreviewState.is-locked {
+    color: #aeb9ca;
+    background: rgba(100, 110, 129, 0.12);
 }
 
 .shopCommandLoadoutStage {
@@ -268,6 +346,19 @@
     background: radial-gradient(circle, rgba(99, 181, 255, 0.12), rgba(99, 181, 255, 0) 60%);
     opacity: 0.34;
     pointer-events: none;
+}
+
+.shopCommandLoadoutStage.isPreviewing {
+    border-color: rgba(111, 197, 255, 0.48);
+    box-shadow:
+        inset 0 0 0 1px rgba(111, 197, 255, 0.13),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 24px rgba(64, 157, 232, 0.12),
+        0 16px 32px rgba(3, 8, 17, 0.24);
+}
+
+.shopCommandLoadoutStage.isPreviewing::after {
+    opacity: 0.72;
 }
 
 .shopCommandLoadoutStage.theme-default {
@@ -412,6 +503,105 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #dce8f7;
+}
+
+.shopCommandLoadoutMeta > .isPreviewSlot {
+    position: relative;
+    padding-left: 9px;
+}
+
+.shopCommandLoadoutMeta > .isPreviewSlot::before {
+    content: "";
+    position: absolute;
+    inset: 1px auto 1px 0;
+    width: 3px;
+    border-radius: 99px;
+    background: #79cbff;
+    box-shadow: 0 0 10px rgba(121, 203, 255, 0.45);
+}
+
+.shopCommandPreviewAction {
+    width: 100%;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 16px;
+}
+
+.shopCommandPreviewCopy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.shopCommandPreviewCopy strong {
+    color: #eaf3ff;
+    font-size: 13px;
+}
+
+.shopCommandPreviewCopy span {
+    color: #93a9c8;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.shopCommandPreviewButtons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.shopPreviewResetButton,
+.shopPreviewActionButton {
+    min-height: 40px;
+    border-radius: 12px;
+    padding: 9px 12px;
+    white-space: nowrap;
+}
+
+.shopPreviewResetButton {
+    color: #c8d9ef;
+    font-size: 11px;
+}
+
+.shopPreviewActionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 150px;
+    font-size: 11px;
+}
+
+.shopPreviewActionButton svg {
+    width: 16px;
+    height: 16px;
+}
+
+.shopPreviewActionButton.is-affordable {
+    color: #251500;
+    background: linear-gradient(135deg, #ffd47d, #ff9a5c);
+}
+
+.shopPreviewActionButton.is-owned {
+    background: linear-gradient(135deg, #7dcaff, #4f9bff);
+}
+
+.shopPreviewActionButton.is-equipped:disabled {
+    border: 1px solid rgba(83, 215, 179, 0.36);
+    color: #9de6c4;
+    background: rgba(83, 215, 179, 0.1);
+    opacity: 1;
+}
+
+.shopPreviewActionButton.is-locked:disabled {
+    border: 1px solid rgba(155, 167, 187, 0.18);
+    color: #aeb9ca;
+    background: rgba(85, 95, 114, 0.28);
+    opacity: 0.86;
 }
 
 .shopTabRail {
@@ -585,6 +775,8 @@
 }
 
 .shopSection {
+    content-visibility: auto;
+    contain-intrinsic-size: 420px;
     position: relative;
     padding-top: 18px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -699,10 +891,13 @@
     border-color: rgba(156, 213, 255, 0.22);
 }
 
-.shopItemCard-available {
+.shopItemCard-affordable {
     --shop-item-accent: rgba(255, 206, 126, 0.42);
     --shop-item-glow: rgba(255, 194, 92, 0.12);
     border-color: rgba(255, 206, 126, 0.28);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 202, 100, 0.04),
+        0 12px 26px rgba(58, 37, 12, 0.25);
 }
 
 .shopItemCard-locked {
@@ -712,6 +907,35 @@
     background:
         linear-gradient(180deg, rgba(24, 28, 38, 0.96), rgba(14, 17, 26, 0.98));
     box-shadow: 0 8px 18px rgba(7, 15, 30, 0.14);
+}
+
+.shopItemCard-locked::after {
+    height: 100%;
+    background: repeating-linear-gradient(135deg, transparent 0 12px, rgba(185, 194, 209, 0.025) 12px 13px);
+    opacity: 0.9;
+}
+
+.shopItemCard-selected {
+    transform: translateY(-3px);
+    border-color: #80cfff;
+    box-shadow:
+        0 0 0 2px rgba(7, 13, 24, 0.98),
+        0 0 0 4px rgba(111, 199, 255, 0.76),
+        0 0 30px rgba(75, 174, 240, 0.22),
+        0 18px 32px rgba(4, 12, 25, 0.42);
+}
+
+.shopItemCard-selected:hover {
+    transform: translateY(-3px);
+    border-color: #9cdaff;
+}
+
+.shopItemCard-selected.shopItemCard-equipped {
+    box-shadow:
+        0 0 0 2px rgba(7, 13, 24, 0.98),
+        0 0 0 4px rgba(111, 235, 181, 0.78),
+        0 0 30px rgba(83, 215, 179, 0.22),
+        0 18px 32px rgba(4, 18, 14, 0.4);
 }
 
 .shopItemCard-locked::before {
@@ -769,13 +993,10 @@
     color: #d7e7ff;
 }
 
-.shopItemStateTag::before {
-    content: "";
-    width: 7px;
-    height: 7px;
-    border-radius: 999px;
-    background: currentColor;
-    opacity: 0.9;
+.shopItemStateTag svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
 }
 
 .shopItemStateTag.is-equipped {
@@ -784,25 +1005,13 @@
     color: #dcffef;
 }
 
-.shopItemStateTag.is-equipped::before {
-    content: "✓";
-    width: auto;
-    height: auto;
-    border-radius: 0;
-    background: transparent;
-    opacity: 1;
-    font-size: 11px;
-    font-weight: 900;
-    line-height: 1;
-}
-
 .shopItemStateTag.is-owned {
     border-color: rgba(143, 209, 255, 0.24);
     background: rgba(143, 209, 255, 0.07);
     color: #dbf0ff;
 }
 
-.shopItemStateTag.is-available {
+.shopItemStateTag.is-affordable {
     border-color: rgba(255, 207, 115, 0.3);
     background: rgba(255, 207, 115, 0.08);
     color: #ffe7b8;
@@ -823,6 +1032,52 @@
 .shopItemPriceTag.isCore {
     border-color: rgba(127, 243, 189, 0.36);
     color: #d9ffeb;
+}
+
+.shopItemPreviewSelect {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.shopItemPreviewSelect:focus-visible {
+    outline: 2px solid #8bd5ff;
+    outline-offset: 3px;
+}
+
+.shopItemSelectionCue {
+    position: absolute;
+    z-index: 3;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(160, 202, 239, 0.18);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    color: #91aac8;
+    background: rgba(5, 11, 21, 0.64);
+    opacity: 0.6;
+    transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease, opacity 0.16s ease;
+}
+
+.shopItemSelectionCue svg {
+    width: 16px;
+    height: 16px;
+}
+
+.shopItemCard-selected .shopItemSelectionCue {
+    border-color: rgba(130, 210, 255, 0.62);
+    color: #dff4ff;
+    background: #247ab1;
+    box-shadow: 0 0 16px rgba(77, 180, 243, 0.34);
+    opacity: 1;
 }
 
 .shopItemPreviewFrame {
@@ -1116,6 +1371,20 @@
         grid-template-columns: 1fr;
     }
 
+    .shopCommandPreviewAction {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .shopCommandPreviewButtons {
+        justify-content: stretch;
+    }
+
+    .shopPreviewResetButton,
+    .shopPreviewActionButton {
+        flex: 1;
+    }
+
     .shopTabRail {
         grid-template-columns: 1fr;
     }
@@ -1150,6 +1419,23 @@
 }
 
 @media (max-width: 520px) {
+    .shopCommandLoadoutHeader {
+        align-items: flex-start;
+    }
+
+    .shopCommandPreviewTitle {
+        font-size: 19px;
+    }
+
+    .shopCommandPreviewState {
+        padding: 0 8px;
+    }
+
+    .shopCommandPreviewButtons {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
     .shopCommandLoadoutStage {
         min-height: 168px;
     }
@@ -1206,34 +1492,34 @@
     animation: shopBalancePulse 0.7s ease-out;
 }
 
-/* Toast content for unlock (react-hot-toast renders inside global toast styles) */
-.shopSuccessToast {
-    display: grid;
-    gap: 4px;
-    text-align: left;
-}
-
-.shopSuccessToastEyebrow {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(180, 220, 255, 0.88);
-}
-
-.shopSuccessToastTitle {
-    display: block;
-    font-size: 15px;
-    font-weight: 800;
-    color: #f5faff;
-    line-height: 1.25;
-}
-
-.shopSuccessToastHint {
+.shopInlineSignal {
+    width: 100%;
+    min-height: 38px;
+    margin: 0;
+    padding: 9px 11px;
+    border: 1px solid rgba(83, 215, 179, 0.34);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #bff8dc;
+    background: rgba(51, 174, 129, 0.1);
     font-size: 12px;
-    font-weight: 600;
-    color: rgba(200, 220, 248, 0.78);
+    font-weight: 700;
 }
+
+.shopInlineSignal > span {
+    width: 20px;
+    height: 20px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+}
+
+.shopInlineSignal.is-pending { color: #cdeaff; border-color: rgba(125, 199, 255, 0.34); background: rgba(80, 156, 231, 0.1); }
+.shopInlineSignal.is-error { color: #ffc3c8; border-color: rgba(255, 106, 117, 0.38); background: rgba(196, 55, 68, 0.11); }
 
 @media (prefers-reduced-motion: reduce) {
     .shopFeedback,
@@ -1249,6 +1535,8 @@
     }
 
     .shopItemCard:hover,
+    .shopItemCard-selected,
+    .shopItemCard-selected:hover,
     .shopTab:hover {
         transform: none;
     }

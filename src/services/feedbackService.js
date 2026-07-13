@@ -27,6 +27,27 @@ const EVENT_RECIPES = Object.freeze({
     type: "square",
     vibration: 16,
   },
+  [FEEDBACK_EVENTS.SELECTION]: {
+    notes: [520], duration: 0.04, gain: 0.09, type: "sine", vibration: 4,
+  },
+  [FEEDBACK_EVENTS.FILTER]: {
+    notes: [360, 470], duration: 0.045, gain: 0.08, type: "sine", vibration: 4,
+  },
+  [FEEDBACK_EVENTS.PURCHASE]: {
+    notes: [420, 620, 860], duration: 0.11, gain: 0.14, type: "triangle", vibration: [8, 24, 8],
+  },
+  [FEEDBACK_EVENTS.EQUIP]: {
+    notes: [280, 560], duration: 0.08, gain: 0.13, type: "triangle", vibration: 10,
+  },
+  [FEEDBACK_EVENTS.DUEL_LAUNCH]: {
+    notes: [260, 520, 790], duration: 0.1, gain: 0.14, type: "sawtooth", vibration: [8, 18, 8],
+  },
+  [FEEDBACK_EVENTS.RETRY]: {
+    notes: [320, 480], duration: 0.065, gain: 0.1, type: "sine", vibration: 7,
+  },
+  [FEEDBACK_EVENTS.ACHIEVEMENT]: {
+    notes: [480, 720, 960], duration: 0.12, gain: 0.14, type: "triangle", vibration: [8, 28, 8],
+  },
   [FEEDBACK_EVENTS.COUNTDOWN_TICK]: {
     notes: [520],
     duration: 0.055,

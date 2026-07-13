@@ -30,6 +30,7 @@ import ArmorySpecSheet from "./ArmorySpecSheet.jsx"
 import ArmoryTestRange from "./ArmoryTestRange.jsx"
 import ArmoryUnlockCeremony from "./ArmoryUnlockCeremony.jsx"
 import ArmoryUnlockWall from "./ArmoryUnlockWall.jsx"
+import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 import {
   ArmoryDetailPanel,
   ArmoryFirstTouchTip,
@@ -348,6 +349,19 @@ export default function ArmoryScreen({
                   </button>
                 </div>
               </section>
+              <section className="armoryRangeReadiness" aria-label={`${activeLoadout.name} range readiness`}>
+                <ArmoryStateEmblem state="ready" label="Range ready" />
+                <div className="armoryRangeReadinessTrack" aria-hidden="true">
+                  <span className="isReady" />
+                  <span className="isReady" />
+                  <span className="isReady" />
+                </div>
+                <div className="armoryRangeReadinessChecks">
+                  <span><strong>3/3</strong> systems installed</span>
+                  <span><strong>3/3</strong> tools racked</span>
+                  <span><strong>{selectedMode.label}</strong> rules loaded</span>
+                </div>
+              </section>
             </div>
           </ArmoryStepCard>
           ) : null}
@@ -417,10 +431,12 @@ export default function ArmoryScreen({
         isOpen={unlockWallApi.isOpen}
         onClose={unlockWallApi.close}
         playerLevel={playerLevel}
+        activeLoadout={activeLoadout}
       />
 
       <ArmoryUnlockCeremony
         part={ceremonyApi.part}
+        parts={ceremonyApi.parts}
         remainingCount={ceremonyApi.remainingCount}
         onInstallNow={ceremonyApi.installNow}
         onRackIt={ceremonyApi.rackIt}

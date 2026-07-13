@@ -11,7 +11,7 @@ export default function TierBadge({
 
   return (
     <span className={resolvedClassName}>
-      {rankImageSrc ? <img src={rankImageSrc} alt="" className="tierBadgeIcon" /> : null}
+      {rankImageSrc ? <img src={rankImageSrc} alt="" className="tierBadgeIcon" width="128" height="128" loading="lazy" decoding="async" /> : null}
       <span>{normalizedLabel}</span>
     </span>
   )

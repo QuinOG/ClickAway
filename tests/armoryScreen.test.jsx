@@ -418,6 +418,25 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(screen.getByText("Bigger targets and slower shrink.")).not.toBeNull()
   })
 
+  test("part cards expose shape-led available, preview, installed, and locked states", async () => {
+    const user = userEvent.setup()
+    renderArmory({ playerLevel: 5 })
+
+    await openStep(user, "Passive Stack")
+    const balancedCard = getPartCard(/^Balanced Tempo/)
+    const anchorCard = getPartCard(/^Anchor/)
+    const lockedCard = getPartCard(/Flashpoint/)
+
+    expect(balancedCard.dataset.armoryState).toBe("installed")
+    expect(balancedCard.querySelector('[data-armory-state="installed"] svg')).not.toBeNull()
+    expect(anchorCard.dataset.armoryState).toBe("available")
+    expect(lockedCard.dataset.armoryState).toBe("locked")
+
+    await user.hover(anchorCard)
+    expect(anchorCard.dataset.armoryState).toBe("preview")
+    expect(within(anchorCard).getByText("Previewing")).not.toBeNull()
+  })
+
   test("keyboard: focus previews, Enter installs, arrows rove between parts", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
@@ -552,6 +571,11 @@ describe("Armory test range (Phase 7)", () => {
     const modeRow = screen.getByLabelText("Range mode")
     expect(within(modeRow).getByText("Casual")).not.toBeNull()
     expect(within(modeRow).getByText("Ranked")).not.toBeNull()
+
+    const readiness = screen.getByLabelText("All-Rounder range readiness")
+    expect(readiness.querySelector('[data-armory-state="ready"]')).not.toBeNull()
+    expect(within(readiness).getAllByText("3/3", { selector: "strong" })).toHaveLength(2)
+    expect(within(readiness).getByText("Casual", { selector: "strong" })).not.toBeNull()
   })
 
   test("?step=review deep-links to the range launcher", () => {
@@ -596,6 +620,48 @@ describe("Armory test range (Phase 7)", () => {
 
     // Purely presentational: no persistence.
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+  })
+})
+
+describe("Armory collection flow (Phase D2b)", () => {
+  test("the unlock wall summarizes collection progress and distinguishes installed parts", async () => {
+    const user = userEvent.setup()
+    renderArmory({ playerLevel: 5 })
+
+    await user.click(screen.getByRole("button", { name: "Unlock Wall" }))
+    const wall = screen.getByRole("dialog", { name: "Unlock wall" })
+    const progress = within(wall).getByRole("progressbar", { name: "Parts collected" })
+    expect(Number(progress.getAttribute("aria-valuenow"))).toBeGreaterThan(0)
+    expect(Number(progress.getAttribute("aria-valuenow"))).toBeLessThan(
+      Number(progress.getAttribute("aria-valuemax"))
+    )
+
+    const installedPart = within(wall).getByText("Balanced Tempo").closest(".armoryUnlockWallItem")
+    const collectedPart = within(wall).getByText("Anchor").closest(".armoryUnlockWallItem")
+    const lockedPart = within(wall).getByText("Flashpoint").closest(".armoryUnlockWallItem")
+    expect(installedPart.dataset.armoryState).toBe("installed")
+    expect(collectedPart.dataset.armoryState).toBe("owned")
+    expect(lockedPart.dataset.armoryState).toBe("locked")
+  })
+
+  test("a large unlock batch can be moved to collection in one action", async () => {
+    const user = userEvent.setup()
+    const onSeenUnlockPartIdsChange = vi.fn()
+    renderArmory({
+      playerLevel: 5,
+      seenUnlockPartIds: [],
+      onSeenUnlockPartIdsChange,
+    })
+
+    const ceremony = screen.getByRole("dialog", { name: "Part unlocked" })
+    expect(within(ceremony).getByText(/Collection drop/)).not.toBeNull()
+    expect(within(ceremony).getByText("Added to collection")).not.toBeNull()
+
+    await user.click(within(ceremony).getByRole("button", { name: /Keep all .* parts in collection/ }))
+
+    expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
+    expect(onSeenUnlockPartIdsChange).toHaveBeenCalledTimes(1)
+    expect(onSeenUnlockPartIdsChange.mock.calls[0][0].length).toBeGreaterThan(1)
   })
 })
 

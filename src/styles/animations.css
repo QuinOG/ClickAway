@@ -1,4 +1,33 @@
 /* Shared keyframes used across the app. */
+@keyframes actionSourceConfirm {
+    0% { transform: scale(1); opacity: 1; }
+    42% { transform: scale(1.025); opacity: 0.92; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes actionSourceDeny {
+    0%, 100% { transform: translateX(0); }
+    30% { transform: translateX(-3px); }
+    65% { transform: translateX(3px); }
+}
+
+[data-action-feedback="pending"] {
+    outline: 2px solid rgb(var(--scene-accent-rgb, 74 168 255) / 52%);
+    outline-offset: 2px;
+}
+
+[data-action-feedback="confirmed"] {
+    outline: 2px solid rgba(83, 215, 179, 0.76);
+    outline-offset: 2px;
+    animation: actionSourceConfirm 420ms var(--ca-motion-ease-standard);
+}
+
+[data-action-feedback="denied"] {
+    outline: 2px solid rgba(255, 106, 117, 0.8);
+    outline-offset: 2px;
+    animation: actionSourceDeny 300ms ease-out;
+}
+
 @keyframes pageEnter {
     from {
         opacity: 0;

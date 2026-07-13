@@ -235,7 +235,7 @@ export default function HelpPage() {
           </div>
           <div className="helpGrid">
             <HelpListSection title="Profile and Achievements" items={PROFILE_POINTS} />
-            <HelpListSection title="History and Leaderboard" items={TRACKING_POINTS} />
+            <HelpListSection title="History and Ladder" items={TRACKING_POINTS} />
           </div>
         </section>
 

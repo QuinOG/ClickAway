@@ -6,6 +6,9 @@ import { celebrateShopEquip, celebrateShopPurchase } from "../features/shop/shop
 import ShopCategoryTabs from "../features/shop/components/ShopCategoryTabs.jsx"
 import ShopHeroHeader from "../features/shop/components/ShopHeroHeader.jsx"
 import ShopItemCard from "../features/shop/components/ShopItemCard.jsx"
+import { getShopItemStatus } from "../utils/shopUtils.js"
+import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
+import { useActionFeedback } from "../hooks/useActionFeedback.js"
 
 const ALL_TAB_ID = "all_items"
 const SHOP_ITEMS = SHOP_CATEGORIES.flatMap((category) => category.items)
@@ -25,8 +28,12 @@ export default function ShopPage({
   equippedProfileImageId = "profile_default",
 }) {
   const { effectivePreferences } = useFeedbackPreferences()
+  const { signalAction } = useActionFeedback()
   const [activeCategoryId, setActiveCategoryId] = useState(ALL_TAB_ID)
   const [balancePulseKey, setBalancePulseKey] = useState(0)
+  const [selectedItemId, setSelectedItemId] = useState(equippedButtonSkinId)
+  const [pendingItemId, setPendingItemId] = useState(null)
+  const [actionFeedback, setActionFeedback] = useState(null)
 
   const totalItems = SHOP_ITEMS.length
   const categoryOwnedCounts = useMemo(
@@ -68,41 +75,97 @@ export default function ShopPage({
   const equippedButtonSkin = SHOP_ITEMS_BY_ID[equippedButtonSkinId] ?? null
   const equippedArenaTheme = SHOP_ITEMS_BY_ID[equippedArenaThemeId] ?? null
   const equippedProfileImage = SHOP_ITEMS_BY_ID[equippedProfileImageId] ?? null
+  const selectedItem = SHOP_ITEMS_BY_ID[selectedItemId] ?? equippedButtonSkin ?? SHOP_ITEMS[0]
+  const selectedItemStatus = getShopItemStatus({
+    item: selectedItem,
+    coins,
+    ownedItemIds: ownedItems,
+    equippedButtonSkinId,
+    equippedArenaThemeId,
+    equippedProfileImageId,
+  })
 
-  async function handlePurchase(item) {
-    const purchaseResult = await onPurchase?.(item)
-    if (purchaseResult?.ok) {
-      celebrateShopPurchase({ enabled: effectivePreferences.flashes })
-      setBalancePulseKey((key) => key + 1)
-      toast.success(
-        (
-          <div className="shopSuccessToast">
-            <span className="shopSuccessToastEyebrow">New unlock</span>
-            <strong className="shopSuccessToastTitle">{item.name}</strong>
-            <span className="shopSuccessToastHint">Added to your collection</span>
-          </div>
-        ),
-        { duration: 3800 },
-      )
-      return true
-    }
+  function selectEquippedItemForType(itemType) {
+    const equippedItemId = itemType === "arena_theme"
+      ? equippedArenaThemeId
+      : itemType === "profile_image"
+        ? equippedProfileImageId
+        : equippedButtonSkinId
 
-    toast.error(purchaseResult?.error || `Could not unlock ${item.name}.`)
-    return false
+    setSelectedItemId(equippedItemId)
   }
 
-  async function handleEquip(item) {
-    const equipResult = await onEquip?.(item)
-    if (equipResult?.ok) {
-      celebrateShopEquip({ enabled: effectivePreferences.flashes })
-      toast.success(`Equipped — ${item.name}`, {
-        duration: 2600,
-      })
-      return true
-    }
+  async function handlePurchase(item, source) {
+    if (pendingItemId) return false
 
-    toast.error(equipResult?.error || `Could not equip ${item.name}.`)
-    return false
+    setSelectedItemId(item.id)
+    setPendingItemId(item.id)
+    setActionFeedback({ kind: "pending", message: `Unlocking ${item.name}â€¦` })
+    signalAction(source, { state: "pending", silent: true })
+
+    try {
+      const purchaseResult = await onPurchase?.(item)
+      if (purchaseResult?.ok) {
+        celebrateShopPurchase({ enabled: effectivePreferences.flashes })
+        setBalancePulseKey((key) => key + 1)
+        setActionFeedback({ kind: "success", message: `${item.name} unlocked. Preview held â€” equip when ready.` })
+        signalAction(source, {
+          eventName: FEEDBACK_EVENTS.PURCHASE,
+          eventId: `purchase-${item.id}`,
+        })
+        return true
+      }
+
+      const message = purchaseResult?.error || `Could not unlock ${item.name}.`
+      setActionFeedback({ kind: "error", message })
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
+      toast.error(message)
+      return false
+    } catch (error) {
+      const message = error?.message || `Could not unlock ${item.name}.`
+      setActionFeedback({ kind: "error", message })
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
+      toast.error(message)
+      return false
+    } finally {
+      setPendingItemId(null)
+    }
+  }
+
+  async function handleEquip(item, source) {
+    if (pendingItemId) return false
+
+    setSelectedItemId(item.id)
+    setPendingItemId(item.id)
+    setActionFeedback({ kind: "pending", message: `Equipping ${item.name}â€¦` })
+    signalAction(source, { state: "pending", silent: true })
+
+    try {
+      const equipResult = await onEquip?.(item)
+      if (equipResult?.ok) {
+        celebrateShopEquip({ enabled: effectivePreferences.flashes })
+        setActionFeedback({ kind: "success", message: `${item.name} equipped. Your live loadout is updated.` })
+        signalAction(source, {
+          eventName: FEEDBACK_EVENTS.EQUIP,
+          eventId: `equip-${item.id}`,
+        })
+        return true
+      }
+
+      const message = equipResult?.error || `Could not equip ${item.name}.`
+      setActionFeedback({ kind: "error", message })
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
+      toast.error(message)
+      return false
+    } catch (error) {
+      const message = error?.message || `Could not equip ${item.name}.`
+      setActionFeedback({ kind: "error", message })
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
+      toast.error(message)
+      return false
+    } finally {
+      setPendingItemId(null)
+    }
   }
 
   return (
@@ -118,12 +181,26 @@ export default function ShopPage({
           arenaTheme={equippedArenaTheme}
           profileImage={equippedProfileImage}
           balancePulseKey={balancePulseKey}
+          selectedItem={selectedItem}
+          selectedItemStatus={selectedItemStatus}
+          isSubmitting={pendingItemId === selectedItem.id}
+          onPurchase={handlePurchase}
+          onEquip={handleEquip}
+          onShowEquipped={() => selectEquippedItemForType(selectedItem.type)}
+          actionFeedback={actionFeedback}
+          actionSourceAware
         />
 
         <ShopCategoryTabs
           tabs={tabs}
           activeCategoryId={activeCategoryId}
-          onChange={setActiveCategoryId}
+          onChange={(categoryId, source) => {
+            setActiveCategoryId(categoryId)
+            signalAction(source, {
+              eventName: FEEDBACK_EVENTS.FILTER,
+              eventId: `shop-filter-${categoryId}`,
+            })
+          }}
         />
 
         <div className="shopInventoryDeck">
@@ -146,11 +223,22 @@ export default function ShopPage({
                     item={item}
                     coins={coins}
                     ownedItemIds={ownedItems}
+                    isSelected={item.id === selectedItem.id}
+                    isSubmitting={pendingItemId === item.id}
+                    onSelect={(selectedItemValue, source) => {
+                      setSelectedItemId(selectedItemValue.id)
+                      setActionFeedback(null)
+                      signalAction(source, {
+                        eventName: FEEDBACK_EVENTS.SELECTION,
+                        eventId: `shop-select-${selectedItemValue.id}`,
+                      })
+                    }}
                     onPurchase={handlePurchase}
                     onEquip={handleEquip}
                     equippedButtonSkinId={equippedButtonSkinId}
                     equippedArenaThemeId={equippedArenaThemeId}
                     equippedProfileImageId={equippedProfileImageId}
+                    actionSourceAware
                   />
                 ))}
               </div>

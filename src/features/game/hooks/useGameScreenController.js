@@ -116,6 +116,7 @@ export function useGameScreenController({
   selectedModeId = DEFAULT_MODE_ID,
   onModeChange,
   playerLevel = 1,
+  playerCoins = 0,
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   playerRankMmr = 0,
@@ -229,6 +230,7 @@ export function useGameScreenController({
   ))
   const [roundStartBestScore, setRoundStartBestScore] = useState(playerBestScore)
   const [roundStartLevel, setRoundStartLevel] = useState(playerLevel)
+  const [roundStartCoins, setRoundStartCoins] = useState(playerCoins)
   const [roundStartXpIntoLevel, setRoundStartXpIntoLevel] = useState(playerXpIntoLevel)
   const [roundStartXpToNextLevel, setRoundStartXpToNextLevel] = useState(playerXpToNextLevel)
   const [roundStartRankMmr, setRoundStartRankMmr] = useState(playerRankMmr)
@@ -603,6 +605,7 @@ export function useGameScreenController({
     const beginCountdown = () => {
       setRoundStartBestScore(playerBestScore)
       setRoundStartLevel(playerLevel)
+      setRoundStartCoins(playerCoins)
       setRoundStartXpIntoLevel(playerXpIntoLevel)
       setRoundStartXpToNextLevel(playerXpToNextLevel)
       setRoundStartRankMmr(playerRankMmr)
@@ -680,6 +683,7 @@ export function useGameScreenController({
     playerHasRankedHistory,
     playerBestScore,
     playerLevel,
+    playerCoins,
     playerRankMmr,
     playerRankedState,
     playerXpIntoLevel,
@@ -1499,6 +1503,7 @@ export function useGameScreenController({
       accuracy,
       modeLabel: roundMode.label,
       playerLevel: roundStartLevel,
+      playerCoins: roundStartCoins,
       playerXpIntoLevel: roundStartXpIntoLevel,
       playerXpToNextLevel: roundStartXpToNextLevel,
       roundXpEarned,

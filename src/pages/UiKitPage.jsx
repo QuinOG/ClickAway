@@ -164,8 +164,8 @@ export default function UiKitPage() {
           </div>
           <div className="uiKitBrandReference">
             <div className="uiKitBrandMarks" aria-label="Authored ClickAway brand marks">
-              <img src="/brand/clickaway-mark.svg" alt="ClickAway pointer and impact mark" />
-              <img src="/brand/clickaway-favicon.svg" alt="Compact ClickAway impact mark" />
+              <img src="/brand/clickaway-mark.svg" alt="ClickAway pointer and impact mark" width="96" height="96" decoding="async" />
+              <img src="/brand/clickaway-favicon.svg" alt="Compact ClickAway impact mark" width="64" height="64" decoding="async" />
             </div>
             <div className="uiKitImpactSizes" aria-label="Small, medium, and large impact motifs">
               {["sm", "md", "lg"].map((size) => (

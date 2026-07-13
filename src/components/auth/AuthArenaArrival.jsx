@@ -24,7 +24,7 @@ export default function AuthArenaArrival({ mode = "login", children }) {
           <span className="authMobileMode" data-mode="casual" aria-hidden="true"><i /></span>
           <span className="authMobileMode" data-mode="ranked" aria-hidden="true"><i /></span>
           <span className="authMobileTarget" aria-hidden="true">
-            <img src="/brand/clickaway-mark.svg" alt="" />
+            <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
           </span>
         </div>
 
@@ -39,7 +39,7 @@ export default function AuthArenaArrival({ mode = "login", children }) {
           <span className="authDemoTarget authDemoTargetTwo" />
           <span className="authDemoTarget authDemoTargetThree" />
           <span className="authImpactLocus">
-            <img src="/brand/clickaway-mark.svg" alt="" />
+            <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
           </span>
         </div>
 

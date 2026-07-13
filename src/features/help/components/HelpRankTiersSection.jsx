@@ -8,7 +8,7 @@ export default function HelpRankTiersSection({ tiers = [] }) {
           <article key={tier.id} className="rankTierCard" data-tier={tier.id} aria-label={`${tier.label} ${tier.mmrRange}`}>
             <p className="rankTierLabel">{tier.label}</p>
             <div className="rankTierEmblemWrap" aria-hidden="true">
-              <img className="rankTierEmblem" src={tier.imageSrc} alt="" />
+              <img className="rankTierEmblem" src={tier.imageSrc} alt="" width="128" height="128" loading="lazy" decoding="async" />
             </div>
             <p className="rankTierRange">{tier.mmrRange}</p>
           </article>

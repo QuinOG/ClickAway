@@ -2,6 +2,8 @@ import { createElement, useId } from "react"
 
 import { ActionButton } from "../actions/Action.jsx"
 import { joinClassNames } from "../internal/react.js"
+import { FEEDBACK_EVENTS } from "../../../constants/feedbackEvents.js"
+import { useActionFeedback } from "../../../hooks/useActionFeedback.js"
 
 export function Badge({
   as = "span",
@@ -184,11 +186,25 @@ export function ErrorScene({
   children,
   ...restProps
 }) {
+  const { signalAction } = useActionFeedback()
+  const handleRetry = onRetry ? async (event) => {
+    const source = event.currentTarget
+    signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
+    try {
+      const result = await onRetry(event)
+      signalAction(source, {
+        state: result === false ? "denied" : "confirmed",
+        eventName: result === false ? FEEDBACK_EVENTS.ACTION_DENY : FEEDBACK_EVENTS.ACTION_CONFIRM,
+      })
+    } catch {
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
+    }
+  } : null
   const retryAction = onRetry ? (
     <ActionButton
       intent="primary"
       status="error"
-      onClick={onRetry}
+      onClick={handleRetry}
       isLoading={isRetrying}
       loadingLabel={retryingLabel}
     >

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom"
 import { Crown, Crosshair, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
+import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
 import TierBadge from "../components/TierBadge.jsx"
 import { fetchLeaderboard } from "../services/clickAwayHttpApiClient.js"
@@ -354,7 +356,7 @@ function LeaderboardControls({
 }) {
   return (
     <div className="leaderboardControls">
-      <div className="leaderboardBoardTabs" role="tablist" aria-label="Leaderboard boards">
+      <div className="leaderboardBoardTabs" role="tablist" aria-label="Ladder boards">
         {BOARD_OPTIONS.map((option) => (
           <button
             key={option.key}
@@ -362,7 +364,7 @@ function LeaderboardControls({
             role="tab"
             aria-selected={board === option.key}
             className={`leaderboardBoardTab${board === option.key ? " isActive" : ""}`}
-            onClick={() => onBoardChange(option.key)}
+            onClick={(event) => onBoardChange(option.key, event.currentTarget)}
           >
             {option.label}
           </button>
@@ -376,21 +378,23 @@ function LeaderboardControls({
           placeholder="Search players"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          aria-label="Search leaderboard players"
+          aria-label="Search Ladder players"
         />
 
-        <div className="leaderboardViewToggle" role="group" aria-label="Leaderboard view">
+        <div className="leaderboardViewToggle" role="group" aria-label="Ladder view">
           <button
             type="button"
             className={`secondaryButton${view === "top" ? " isActive" : ""}`}
-            onClick={() => onViewChange("top")}
+            aria-pressed={view === "top"}
+            onClick={(event) => onViewChange("top", event.currentTarget)}
           >
             Top Players
           </button>
           <button
             type="button"
             className={`secondaryButton${view === "aroundMe" ? " isActive" : ""}`}
-            onClick={() => onViewChange("aroundMe")}
+            aria-pressed={view === "aroundMe"}
+            onClick={(event) => onViewChange("aroundMe", event.currentTarget)}
           >
             Around Me
           </button>
@@ -398,12 +402,12 @@ function LeaderboardControls({
       </div>
 
       {view === "top" && totalPages > 1 ? (
-        <div className="leaderboardPagination" aria-label="Leaderboard pagination">
+        <div className="leaderboardPagination" aria-label="Ladder pagination">
           <button
             type="button"
             className="secondaryButton"
             disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
+            onClick={(event) => onPageChange(page - 1, event.currentTarget)}
           >
             Previous
           </button>
@@ -414,7 +418,7 @@ function LeaderboardControls({
             type="button"
             className="secondaryButton"
             disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
+            onClick={(event) => onPageChange(page + 1, event.currentTarget)}
           >
             Next
           </button>
@@ -503,6 +507,7 @@ export default function LeaderboardPage({
   roundHistory = [],
 }) {
   const navigate = useNavigate()
+  const { signalAction } = useActionFeedback()
   const [sortConfig, setSortConfig] = useState(DEFAULT_SORT)
   const [leaderboardRows, setLeaderboardRows] = useState([])
   const [board, setBoard] = useState("mmr")
@@ -531,7 +536,7 @@ export default function LeaderboardPage({
       setLeaderboardRows([])
       setLoadError("You must be logged in to view the leaderboard.")
       setIsLoading(false)
-      return
+      return false
     }
 
     setIsLoading(true)
@@ -549,9 +554,11 @@ export default function LeaderboardPage({
       setTotalCount(response.totalCount)
       setSelfRank(response.selfRank)
       setSeason(response.season)
+      return true
     } catch (error) {
       setLeaderboardRows([])
       setLoadError(error.message || "Unable to load leaderboard.")
+      return false
     } finally {
       setIsLoading(false)
     }
@@ -602,18 +609,34 @@ export default function LeaderboardPage({
     return { rows: sortedRows, selfRank, mmrGap }
   }, [currentUserId, currentUsername, leaderboardRows, selfRank, view])
 
-  function handleBoardChange(nextBoard) {
+  function handleBoardChange(nextBoard, source) {
     setBoard(nextBoard)
     setPage(1)
     setSortConfig({
       key: nextBoard === "reaction" ? "bestReactionMs" : nextBoard === "accuracy" ? "accuracyPercent" : nextBoard,
       direction: nextBoard === "reaction" ? "asc" : "desc",
     })
+    signalAction(source, {
+      eventName: FEEDBACK_EVENTS.FILTER,
+      eventId: `ladder-board-${nextBoard}`,
+    })
   }
 
-  function handleViewChange(nextView) {
+  function handleViewChange(nextView, source) {
     setView(nextView)
     setPage(1)
+    signalAction(source, {
+      eventName: FEEDBACK_EVENTS.FILTER,
+      eventId: `ladder-view-${nextView}`,
+    })
+  }
+
+  function handlePageChange(nextPage, source) {
+    setPage(nextPage)
+    signalAction(source, {
+      eventName: FEEDBACK_EVENTS.SELECTION,
+      eventId: `ladder-page-${nextPage}`,
+    })
   }
 
   function handleSort(columnKey) {
@@ -677,7 +700,7 @@ export default function LeaderboardPage({
           onViewChange={handleViewChange}
           page={page}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={handlePageChange}
         />
 
         <LeaderboardStandingPanel
@@ -694,9 +717,17 @@ export default function LeaderboardPage({
 
         {!isLoading && loadError ? (
           <div className="leaderboardStatusCard" role="alert">
-            <p className="leaderboardStatusTitle">Leaderboard unavailable</p>
+            <p className="leaderboardStatusTitle">Ladder unavailable</p>
             <p className="muted">{loadError}</p>
-            <button type="button" className="leaderboardRetryButton" onClick={loadLeaderboard}>
+            <button type="button" className="leaderboardRetryButton" onClick={async (event) => {
+              const source = event.currentTarget
+              signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
+              const succeeded = await loadLeaderboard()
+              signalAction(source, {
+                state: succeeded ? "confirmed" : "denied",
+                eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
+              })
+            }}>
               Retry
             </button>
           </div>
@@ -719,7 +750,7 @@ export default function LeaderboardPage({
 
         {!isLoading && !loadError && sortedRows.length > 0 ? (
           <>
-            <div className="leaderboardTableIntro" aria-label="Leaderboard context">
+            <div className="leaderboardTableIntro" aria-label="Ladder context">
               <span className={`leaderboardSortContextBadge${isDefaultLadderSort ? " isDefault" : ""}`}>
                 Sorted by {activeSortLabel}
                 {sortConfig.direction === "asc" ? " (Low to High)" : " (High to Low)"}

@@ -1,3 +1,4 @@
+import { ArrowRight, Coins, Lightning, Play } from "@phosphor-icons/react"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
@@ -221,11 +222,88 @@ function XpProgressBar({
   )
 }
 
+function getRankPathData(previousRankProgress = {}, projectedRankProgress = {}) {
+  if (projectedRankProgress?.isPlacement) {
+    const previous = Math.max(0, Number(previousRankProgress?.placementMatchesPlayed) || 0)
+    const next = Math.max(previous, Number(projectedRankProgress?.placementMatchesPlayed) || 0)
+    return {
+      startPercent: (previous / PLACEMENT_MATCH_COUNT) * 100,
+      endPercent: (next / PLACEMENT_MATCH_COUNT) * 100,
+      startLabel: previousRankProgress?.tierLabel || "Unranked",
+      endLabel: projectedRankProgress?.tierLabel || "Placement",
+      detail: `${next} of ${PLACEMENT_MATCH_COUNT} placements complete`,
+      deltaUnit: "placement points",
+    }
+  }
+
+  const previousRr = Math.max(0, Number(previousRankProgress?.rr) || 0)
+  const projectedRr = Math.max(0, Number(projectedRankProgress?.rr) || 0)
+  const rrMax = Math.max(1, Number(projectedRankProgress?.rrMax) || 100)
+  const changedDivision = previousRankProgress?.tierLabel !== projectedRankProgress?.tierLabel
+  const isClimb = (Number(projectedRankProgress?.rankOrder) || 0) >= (
+    Number(previousRankProgress?.rankOrder) || 0
+  )
+
+  return {
+    startPercent: changedDivision ? (isClimb ? 8 : 92) : (previousRr / rrMax) * 100,
+    endPercent: changedDivision
+      ? (isClimb ? 92 : 8)
+      : projectedRankProgress?.isTopRank ? 100 : (projectedRr / rrMax) * 100,
+    startLabel: previousRankProgress?.tierLabel || "Unranked",
+    endLabel: projectedRankProgress?.tierLabel || "Unranked",
+    detail: projectedRankProgress?.isTopRank
+      ? `${formatNumber(projectedRankProgress?.mmr)} rating`
+      : `${projectedRr} / ${rrMax} RR`,
+    deltaUnit: "RR",
+  }
+}
+
+function RankMovementPath({
+  previousRankProgress,
+  projectedRankProgress,
+  roundRankDelta,
+  prefersReducedMotion,
+}) {
+  const path = getRankPathData(previousRankProgress, projectedRankProgress)
+  const movementTone = roundRankDelta > 0 ? "positive" : roundRankDelta < 0 ? "negative" : "neutral"
+  const startPercent = Math.max(0, Math.min(100, path.startPercent))
+  const endPercent = Math.max(0, Math.min(100, path.endPercent))
+
+  return (
+    <section
+      className={`rewardRankPath is-${movementTone}`}
+      aria-label={`Rank movement: ${path.startLabel} to ${path.endLabel}, ${formatSignedValue(roundRankDelta)} ${path.deltaUnit}, ${path.detail}`}
+    >
+      <div className="rewardRankPathHeader">
+        <span>Rank movement</span>
+        <strong>{formatSignedValue(roundRankDelta)} {path.deltaUnit}</strong>
+      </div>
+      <div className="rewardRankPathLabels" aria-hidden="true">
+        <span>{path.startLabel}</span>
+        <ArrowRight weight="bold" />
+        <strong>{path.endLabel}</strong>
+      </div>
+      <div className="rewardRankTrack" aria-hidden="true">
+        <span className="rewardRankTrail" />
+        <span className="rewardRankMarker isStart" style={{ left: `${startPercent}%` }} />
+        <MotionDiv
+          className="rewardRankMarker isCurrent"
+          initial={prefersReducedMotion ? false : { left: `${startPercent}%` }}
+          animate={{ left: `${endPercent}%` }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.48, duration: 0.82, ease: OVERLAY_EASE }}
+        />
+      </div>
+      <p>{path.detail}</p>
+    </section>
+  )
+}
+
 export default function RewardsModal({
   allowsLevelProgression = false,
   allowsCoinRewards = false,
   allowsRankProgression = false,
   playerLevel = 1,
+  playerCoins = 0,
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   roundXpEarned = 0,
@@ -236,6 +314,7 @@ export default function RewardsModal({
   projectedRankLabel = "Unranked",
   isPlacementReveal = false,
   onContinue,
+  onChooseMode,
 }) {
   const { emitFeedback } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -304,6 +383,7 @@ export default function RewardsModal({
     delayMs: 240,
     disabled: prefersReducedMotion,
   })
+  const settledCoinBalance = Math.max(0, Number(playerCoins) || 0) + Math.max(0, Number(roundCoinsEarned) || 0)
 
   useEffect(() => {
     buttonRef.current?.focus()
@@ -421,9 +501,52 @@ export default function RewardsModal({
         transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 28, delay: 0.1 }}
       >
         <header className="rewardsCardHeader">
-          <h2 id="rewards-modal-title" className="rewardsCardTitle">Round Rewards</h2>
+          <p className="rewardsCardEyebrow">Performance converted</p>
+          <h2 id="rewards-modal-title" className="rewardsCardTitle">Rewards Settled</h2>
         </header>
       </MotionDiv>
+
+      <div className="rewardSettlementDock" aria-label="Updated persistent balances" aria-live="polite">
+        {allowsCoinRewards ? (
+          <span className="rewardBalanceChip isCoins">
+            <Coins weight="fill" aria-hidden="true" />
+            <small>Balance</small>
+            <strong>{formatNumber(settledCoinBalance)}</strong>
+          </span>
+        ) : null}
+        {allowsLevelProgression ? (
+          <span className="rewardBalanceChip isLevel">
+            <Lightning weight="fill" aria-hidden="true" />
+            <small>Level</small>
+            <strong>{displayedLevel}</strong>
+          </span>
+        ) : null}
+      </div>
+
+      {!prefersReducedMotion ? (
+        <div className="rewardFlightLayer" aria-hidden="true">
+          {allowsCoinRewards ? (
+            <MotionDiv
+              className="rewardFlightToken isCoins"
+              initial={{ opacity: 0, x: -72, y: 146, scale: 0.72 }}
+              animate={{ opacity: [0, 1, 1, 0], x: 76, y: 8, scale: [0.72, 1, 0.82] }}
+              transition={{ delay: 0.42, duration: 0.92, ease: OVERLAY_EASE }}
+            >
+              <Coins weight="fill" />
+            </MotionDiv>
+          ) : null}
+          {allowsLevelProgression ? (
+            <MotionDiv
+              className="rewardFlightToken isXp"
+              initial={{ opacity: 0, x: 52, y: 146, scale: 0.72 }}
+              animate={{ opacity: [0, 1, 1, 0], x: -58, y: 8, scale: [0.72, 1, 0.82] }}
+              transition={{ delay: 0.32, duration: 0.92, ease: OVERLAY_EASE }}
+            >
+              <Lightning weight="fill" />
+            </MotionDiv>
+          ) : null}
+        </div>
+      ) : null}
 
       {allowsLevelProgression ? (
         <MotionDiv
@@ -440,6 +563,15 @@ export default function RewardsModal({
             animationStepIndex={currentXpStepIndex}
           />
         </MotionDiv>
+      ) : null}
+
+      {allowsRankProgression ? (
+        <RankMovementPath
+          previousRankProgress={previousRankProgress}
+          projectedRankProgress={projectedRankProgress}
+          roundRankDelta={roundRankDelta}
+          prefersReducedMotion={prefersReducedMotion}
+        />
       ) : null}
 
       <MotionDiv
@@ -510,11 +642,17 @@ export default function RewardsModal({
           <button
             ref={buttonRef}
             type="button"
-            className="primaryButton primaryButton-lg"
+            className="primaryButton primaryButton-lg rewardReplayButton"
             onClick={onContinue}
           >
-            View Results
+            <Play weight="fill" aria-hidden="true" />
+            Play Again
           </button>
+          {onChooseMode ? (
+            <button type="button" className="rewardChangeModeButton" onClick={onChooseMode}>
+              Change mode
+            </button>
+          ) : null}
         </div>
       </MotionDiv>
     </MotionSection>

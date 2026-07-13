@@ -49,6 +49,9 @@ export default function MovingButton({
           className="targetSkinProbe"
           src={skinImageSrc}
           alt=""
+          width="512"
+          height="512"
+          decoding="async"
           onError={() => {
             failedTargetSkinSources.add(skinImageSrc)
             setFailedImageSrc(skinImageSrc)

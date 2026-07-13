@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 
 import { getUnlockText } from "../armoryUtils.js"
+import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
 // laid out as machined parts. Pointer hover and keyboard focus preview a part
@@ -15,7 +16,15 @@ function getPartStateLabel({ part, isLocked, isInstalled, isPreviewed }) {
     return isPreviewed ? `Swap with key ${part.rackedOnKey}` : `On key ${part.rackedOnKey}`
   }
   if (isPreviewed) return "Previewing"
-  return ""
+  return "Available"
+}
+
+function getPartVisualState({ part, isLocked, isInstalled, isPreviewed }) {
+  if (isLocked) return "locked"
+  if (isInstalled) return "installed"
+  if (part.rackedOnKey) return "racked"
+  if (isPreviewed) return "preview"
+  return "available"
 }
 
 export default function ArmoryPartsGallery({
@@ -85,6 +94,7 @@ export default function ArmoryPartsGallery({
           const isInstalled = part.id === installedPartId
           const isPreviewed = part.id === previewedPartId && !isInstalled
           const stateLabel = getPartStateLabel({ part, isLocked, isInstalled, isPreviewed })
+          const visualState = getPartVisualState({ part, isLocked, isInstalled, isPreviewed })
 
           return (
             <button
@@ -92,6 +102,7 @@ export default function ArmoryPartsGallery({
               type="button"
               ref={(element) => { cardRefs.current[part.id] = element }}
               data-part-id={part.id}
+              data-armory-state={visualState}
               className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isPreviewed ? "isPreviewed" : ""} ${isLocked ? "isLocked" : ""}`}
               disabled={isLocked}
               tabIndex={isLocked ? undefined : (part.id === tabStopPartId ? 0 : -1)}
@@ -116,10 +127,7 @@ export default function ArmoryPartsGallery({
                 <strong className="armoryPartLabel">{part.label}</strong>
                 <span className="armoryPartFeel">{part.description}</span>
               </span>
-              {part.rackedOnKey ? (
-                <span className="armoryPartKey" aria-hidden="true">{part.rackedOnKey}</span>
-              ) : null}
-              {stateLabel ? <span className="armoryPartState">{stateLabel}</span> : null}
+              <ArmoryStateEmblem state={visualState} label={stateLabel} compact />
               {isLocked ? <span className="armoryPartGlass" aria-hidden="true" /> : null}
             </button>
           )

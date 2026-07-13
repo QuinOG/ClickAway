@@ -39,7 +39,7 @@ export function easeOutCubic(progress) {
 }
 
 export function useCountUpNumber(targetValue, { durationMs, delayMs = 0, disabled = false }) {
-  const [displayValue, setDisplayValue] = useState(targetValue)
+  const [displayValue, setDisplayValue] = useState(() => (disabled ? targetValue : 0))
 
   useEffect(() => {
     if (disabled) {

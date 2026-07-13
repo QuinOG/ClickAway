@@ -52,7 +52,7 @@ function PlayerAvatar({ username, profileImage }) {
       aria-hidden="true"
     >
       {hasImage ? (
-        <img className="profileHoverAvatarImage" src={profileImage.imageSrc} alt="" />
+        <img className="profileHoverAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
       ) : (
         getProfileInitials(username)
       )}
@@ -70,7 +70,7 @@ function RankedIdentity({ rankProgress = null, rankLabel, rankMmr }) {
     <section className="profileHoverRankBlock" aria-label={`Ranked rating ${displayLabel}`}>
       {rankImageSrc ? (
         <span className="profileHoverRankIconSlot" aria-hidden="true">
-          <img className="profileHoverRankIcon" src={rankImageSrc} alt="" />
+          <img className="profileHoverRankIcon" src={rankImageSrc} alt="" width="128" height="128" decoding="async" />
         </span>
       ) : null}
       <div className="profileHoverRankText">

@@ -111,7 +111,7 @@ export const SHOP_CATEGORIES = [
         id: "skin_cd",
         name: "CD",
         effectClass: "skin-cd",
-        imageSrc: "/cd.png",
+        imageSrc: "/cd.avif",
         gameImageScale: 100,
         shopImageScale: 90,
         description: "y2k ahh button.",
@@ -119,7 +119,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_earth",
         name: "Earth",
-        imageSrc: "/earth.png",
+        imageSrc: "/earth.avif",
         gameImageScale: 110,
         shopImageScale: 100,
         description: "Everybody on here weird.",
@@ -127,7 +127,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_melon",
         name: "Melon",
-        imageSrc: "/melon.png",
+        imageSrc: "/melon.avif",
         gameImageScale: 105,
         shopImageScale: 90,
         description: "Flowkey juicy.",
@@ -135,7 +135,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_moon",
         name: "Moon",
-        imageSrc: "/moon.png",
+        imageSrc: "/moon.avif",
         gameImageScale: 105,
         shopImageScale: 95,
         description: "Mash the moon away to day.",
@@ -143,7 +143,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_wheel",
         name: "Wheel",
-        imageSrc: "/wheel.png",
+        imageSrc: "/wheel.avif",
         gameImageScale: 115,
         shopImageScale: 105,
         description: "The wheels on the bus go...",
@@ -191,7 +191,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_eye",
         name: "Eye",
-        imageSrc: "/eye.png",
+        imageSrc: "/eye.avif",
         gameImageScale: 150,
         shopImageScale: 150,
         description: "He's always watching...",

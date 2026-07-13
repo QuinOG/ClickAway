@@ -13,6 +13,24 @@ export default defineConfig({
   optimizeDeps: {
     include: ["@emotion/is-prop-valid"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('@phosphor-icons')) return 'vendor-icons'
+          if (id.includes('node_modules/motion') || id.includes('node_modules\\motion')) return 'vendor-motion'
+          if (
+            id.includes('/react/')
+            || id.includes('react-dom')
+            || id.includes('react-router')
+            || id.includes('scheduler')
+          ) return 'vendor-react'
+          return 'vendor'
+        },
+      },
+    },
+  },
   server: {
     // The backend sets the session as an httpOnly, SameSite=Lax cookie. Proxying
     // /api through the Vite dev server keeps the browser's view of frontend + API

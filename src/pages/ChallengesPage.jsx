@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
+import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import {
   fetchChallenges,
   fetchUserReplays,
@@ -107,7 +109,7 @@ function ChallengeCard({
               type="button"
               className="primaryButton"
               disabled={isResponding}
-              onClick={() => onRespond(challenge.id, "accept")}
+              onClick={(event) => onRespond(challenge.id, "accept", event.currentTarget)}
             >
               <Check weight="bold" aria-hidden="true" /> Accept
             </button>
@@ -115,7 +117,7 @@ function ChallengeCard({
               type="button"
               className="secondaryButton"
               disabled={isResponding}
-              onClick={() => onRespond(challenge.id, "decline")}
+              onClick={(event) => onRespond(challenge.id, "decline", event.currentTarget)}
             >
               <X weight="bold" aria-hidden="true" /> Decline
             </button>
@@ -134,6 +136,7 @@ function ChallengeCard({
 
 export default function ChallengesPage({ currentUserId = "" }) {
   const navigate = useNavigate()
+  const { signalAction } = useActionFeedback()
   const [challenges, setChallenges] = useState([])
   const [replays, setReplays] = useState([])
   const [filter, setFilter] = useState("all")
@@ -155,10 +158,12 @@ export default function ChallengesPage({ currentUserId = "" }) {
       ])
       setChallenges(Array.isArray(challengeResponse?.challenges) ? challengeResponse.challenges : [])
       setReplays(Array.isArray(replayResponse?.replays) ? replayResponse.replays : [])
+      return true
     } catch (error) {
       setChallenges([])
       setReplays([])
       setLoadError(error.message || "Unable to load challenges.")
+      return false
     } finally {
       setIsLoading(false)
     }
@@ -181,13 +186,19 @@ export default function ChallengesPage({ currentUserId = "" }) {
   )
   const launchReady = Boolean(sendForm.opponentUsername.trim() && selectedReplay)
 
-  async function handleRespond(challengeId, action) {
+  async function handleRespond(challengeId, action, source) {
     setRespondingChallengeId(challengeId)
+    signalAction(source, { state: "pending", silent: true })
     try {
       await respondToChallenge(challengeId, action)
       await loadChallenges()
+      signalAction(source, {
+        eventName: FEEDBACK_EVENTS.ACTION_CONFIRM,
+        eventId: `duel-${action}-${challengeId}`,
+      })
     } catch (error) {
       setLoadError(error.message || "Unable to update challenge.")
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
     } finally {
       setRespondingChallengeId(null)
     }
@@ -199,9 +210,11 @@ export default function ChallengesPage({ currentUserId = "" }) {
 
   async function handleSendChallenge(event) {
     event.preventDefault()
+    const source = event.nativeEvent?.submitter ?? event.currentTarget
     setSendError("")
     setSendSuccess("")
     setIsSending(true)
+    signalAction(source, { state: "pending", silent: true })
 
     try {
       const opponentUsername = sendForm.opponentUsername.trim()
@@ -213,8 +226,13 @@ export default function ChallengesPage({ currentUserId = "" }) {
       setSendSuccess(opponentUsername)
       setSendForm({ opponentUsername: "", replayId: "", message: "" })
       await loadChallenges()
+      signalAction(source, {
+        eventName: FEEDBACK_EVENTS.DUEL_LAUNCH,
+        eventId: `duel-launch-${opponentUsername}`,
+      })
     } catch (error) {
       setSendError(error.message || "Unable to send challenge.")
+      signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
     } finally {
       setIsSending(false)
     }
@@ -301,9 +319,13 @@ export default function ChallengesPage({ currentUserId = "" }) {
                         role="radio"
                         aria-checked={isSelected}
                         className={`duelReplayCard ${isSelected ? "isSelected" : ""}`}
-                        onClick={() => {
+                        onClick={(event) => {
                           setSendSuccess("")
                           setSendForm((current) => ({ ...current, replayId: String(replay.id) }))
+                          signalAction(event.currentTarget, {
+                            eventName: FEEDBACK_EVENTS.SELECTION,
+                            eventId: `duel-replay-${replay.id}`,
+                          })
                         }}
                       >
                         <span className="duelReplayMode">{replay.modeId}</span>
@@ -369,7 +391,13 @@ export default function ChallengesPage({ currentUserId = "" }) {
                   role="tab"
                   aria-selected={filter === option.id}
                   className={`leaderboardBoardTab${filter === option.id ? " isActive" : ""}`}
-                  onClick={() => setFilter(option.id)}
+                  onClick={(event) => {
+                    setFilter(option.id)
+                    signalAction(event.currentTarget, {
+                      eventName: FEEDBACK_EVENTS.FILTER,
+                      eventId: `duel-filter-${option.id}`,
+                    })
+                  }}
                 >
                   <span aria-hidden="true">{option.icon}</span>
                   {option.label}
@@ -390,7 +418,19 @@ export default function ChallengesPage({ currentUserId = "" }) {
               <span className="duelRadar" aria-hidden="true"><X weight="bold" /></span>
               <strong>Rival network unavailable</strong>
               <p>{loadError}</p>
-              <button type="button" className="leaderboardRetryButton" onClick={loadChallenges}>Retry scan</button>
+              <button
+                type="button"
+                className="leaderboardRetryButton"
+                onClick={async (event) => {
+                  const source = event.currentTarget
+                  signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
+                  const succeeded = await loadChallenges()
+                  signalAction(source, {
+                    state: succeeded ? "confirmed" : "denied",
+                    eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
+                  })
+                }}
+              >Retry scan</button>
             </div>
           ) : null}
 

@@ -264,8 +264,7 @@
 .armoryHotbarMeta,
 .armoryReviewPowerMeta,
 .armoryLaneTabMeta,
-.armoryDetailLabel,
-.armoryPartState {
+.armoryDetailLabel {
     color: rgba(197, 219, 243, 0.72);
     font-size: 11px;
     line-height: 1.4;
@@ -1570,6 +1569,92 @@
 }
 
 /* Parts gallery: a lane's modules as machined parts on a shelf. */
+.armoryStateEmblem {
+    --armory-state-color: var(--armory-line);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    color: rgba(var(--armory-state-color), 0.92);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.armoryStateEmblemIcon {
+    width: 27px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid rgba(var(--armory-state-color), 0.46);
+    background: rgba(var(--armory-state-color), 0.13);
+}
+
+.armoryStateEmblemIcon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.armoryStateEmblem.is-available,
+.armoryStateEmblem.is-owned {
+    --armory-state-color: var(--armory-accent);
+}
+
+.armoryStateEmblem.is-available .armoryStateEmblemIcon,
+.armoryStateEmblem.is-owned .armoryStateEmblemIcon {
+    border-radius: 4px;
+    clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
+}
+
+.armoryStateEmblem.is-installed,
+.armoryStateEmblem.is-ready {
+    --armory-state-color: var(--armory-tone-good);
+}
+
+.armoryStateEmblem.is-installed .armoryStateEmblemIcon,
+.armoryStateEmblem.is-ready .armoryStateEmblemIcon {
+    border-radius: 50%;
+}
+
+.armoryStateEmblem.is-locked {
+    --armory-state-color: 139, 154, 174;
+}
+
+.armoryStateEmblem.is-locked .armoryStateEmblemIcon {
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    border: 0;
+}
+
+.armoryStateEmblem.is-preview {
+    --armory-state-color: var(--armory-tone-tempo);
+}
+
+.armoryStateEmblem.is-preview .armoryStateEmblemIcon {
+    border-radius: 50%;
+    border-style: dashed;
+}
+
+.armoryStateEmblem.is-racked {
+    --armory-state-color: var(--armory-tone-power);
+}
+
+.armoryStateEmblem.is-racked .armoryStateEmblemIcon {
+    clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 7px 100%, 0 50%);
+}
+
+.armoryStateEmblem.isCompact {
+    gap: 5px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+}
+
+.armoryStateEmblem.isCompact .armoryStateEmblemIcon {
+    width: 23px;
+    height: 23px;
+}
+
 .armoryPartsGallery {
     display: grid;
     gap: var(--armory-space-md);
@@ -1582,7 +1667,7 @@
 .armoryPartCard {
     position: relative;
     min-height: 128px;
-    padding: var(--armory-space-md);
+    padding: var(--armory-space-md) var(--armory-space-md) 42px;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: start;
@@ -1666,6 +1751,13 @@
     opacity: 0.45;
 }
 
+.armoryPartCard > .armoryStateEmblem {
+    position: absolute;
+    right: var(--armory-space-sm);
+    bottom: var(--armory-space-sm);
+    z-index: 2;
+}
+
 .armoryPartGlass {
     position: absolute;
     inset: 0;
@@ -1673,6 +1765,7 @@
     background: linear-gradient(155deg, rgba(190, 215, 240, 0.12), rgba(190, 215, 240, 0.02) 55%);
     backdrop-filter: blur(1.5px);
     pointer-events: none;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
 }
 
 .armoryPartGlyph {
@@ -1708,32 +1801,6 @@
 .armoryPartBody {
     display: grid;
     gap: 4px;
-}
-
-.armoryPartState {
-    grid-column: 1 / -1;
-    margin-top: auto;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.16px;
-    text-transform: uppercase;
-}
-
-/* Key badge on a power part already racked on another key (swap affordance). */
-.armoryPartKey {
-    position: absolute;
-    top: var(--armory-space-sm);
-    right: var(--armory-space-sm);
-    width: 20px;
-    height: 20px;
-    display: grid;
-    place-items: center;
-    border-radius: var(--armory-radius-key);
-    border: 1px solid rgba(var(--armory-tone-power), 0.4);
-    background: rgba(var(--armory-tone-power), 0.16);
-    color: rgb(var(--armory-tone-power));
-    font-size: 11px;
-    font-weight: 800;
 }
 
 /* Both galleries stack their inspection footer(s) below the shelf. */
@@ -2275,6 +2342,69 @@
     gap: var(--armory-space-sm);
 }
 
+.armoryRangeReadiness {
+    display: grid;
+    grid-template-columns: auto minmax(90px, 0.55fr) minmax(0, 1.45fr);
+    align-items: center;
+    gap: var(--armory-space-md);
+    padding: var(--armory-space-md) var(--armory-space-lg);
+    border: 1px solid rgba(var(--armory-tone-good), 0.24);
+    border-radius: var(--armory-radius-panel);
+    background:
+        linear-gradient(90deg, rgba(var(--armory-tone-good), 0.08), transparent 42%),
+        rgba(7, 14, 24, 0.82);
+}
+
+.armoryRangeReadinessTrack {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    gap: 9px;
+}
+
+.armoryRangeReadinessTrack::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 50%;
+    height: 1px;
+    background: rgba(var(--armory-tone-good), 0.34);
+}
+
+.armoryRangeReadinessTrack span {
+    position: relative;
+    z-index: 1;
+    width: 13px;
+    height: 13px;
+    justify-self: center;
+    transform: rotate(45deg);
+    border: 2px solid rgb(var(--armory-tone-good));
+    background: rgb(9, 25, 27);
+    box-shadow: 0 0 12px rgba(var(--armory-tone-good), 0.34);
+}
+
+.armoryRangeReadinessChecks {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--armory-space-sm);
+}
+
+.armoryRangeReadinessChecks span {
+    display: grid;
+    gap: 2px;
+    padding-left: var(--armory-space-sm);
+    border-left: 1px solid rgba(var(--armory-line), 0.16);
+    color: rgba(var(--armory-line), 0.64);
+    font-size: 11px;
+}
+
+.armoryRangeReadinessChecks strong {
+    color: rgba(239, 249, 255, 0.94);
+    font-size: 12px;
+}
+
 /* The range takes over the whole scene: an immersive stage, not a card. */
 .armoryRange {
     position: fixed;
@@ -2751,11 +2881,11 @@
 
 .armoryUnlockWall {
     position: fixed;
-    top: 50%;
+    top: calc(50% + 32px);
     left: 50%;
     z-index: 21;
     width: min(920px, calc(100vw - 32px));
-    max-height: calc(100vh - 48px);
+    max-height: calc(100vh - 96px);
     overflow-y: auto;
     transform: translate(-50%, -50%);
     display: grid;
@@ -2787,6 +2917,71 @@
 .armoryUnlockWallTitle {
     margin: 2px 0 0;
     font-size: 20px;
+}
+
+.armoryCollectionSummary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--armory-space-lg);
+    padding: var(--armory-space-md) var(--armory-space-lg);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-accent), 0.2);
+    background:
+        radial-gradient(circle at 0 50%, rgba(var(--armory-accent), 0.12), transparent 36%),
+        rgba(255, 255, 255, 0.02);
+}
+
+.armoryCollectionRing {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: conic-gradient(
+        rgb(var(--armory-accent)) var(--armory-collection-progress),
+        rgba(var(--armory-line), 0.1) 0
+    );
+    color: #f5fbff;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
+
+.armoryCollectionRing::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: inherit;
+    background: rgb(10, 17, 29);
+}
+
+.armoryCollectionRing strong {
+    position: relative;
+    z-index: 1;
+}
+
+.armoryCollectionSummaryCopy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.armoryCollectionSummaryCopy > strong {
+    color: #f4f9ff;
+    font-size: 16px;
+}
+
+.armoryCollectionSummaryCopy > span:last-child {
+    color: rgba(var(--armory-line), 0.66);
+    font-size: 12px;
+}
+
+.armoryCollectionLegend {
+    display: grid;
+    justify-items: start;
+    gap: 6px;
 }
 
 .armoryUnlockWallGrid {
@@ -2846,6 +3041,11 @@
     filter: grayscale(0.6);
 }
 
+.armoryUnlockWallItem.isInstalled {
+    border-color: rgba(var(--armory-tone-good), 0.28);
+    background: rgba(var(--armory-tone-good), 0.045);
+}
+
 .armoryUnlockWallItem.isLocked .armoryPartGlyph {
     color: rgba(var(--armory-line), 0.5);
     background: rgba(255, 255, 255, 0.04);
@@ -2880,8 +3080,8 @@
     white-space: nowrap;
 }
 
-/* Unlock Ceremony (Phase 11): a centered reveal that blocks the workshop
-   until the player acts, one part at a time out of the queued unlocks. */
+/* Unlock collection drop: the queue is visible as one batch and can be moved
+   to the collection in one action, while individual installs remain optional. */
 .armoryCeremonyScrim {
     position: fixed;
     inset: 0;
@@ -2909,6 +3109,10 @@
     animation: armorySpecSlideIn var(--armory-motion-fast) var(--armory-motion-ease);
 }
 
+.armoryUnlockCeremony.isBatch {
+    width: min(520px, calc(100vw - 32px));
+}
+
 .armoryCeremonyEyebrow {
     margin: 0;
     font-size: 12px;
@@ -2916,6 +3120,47 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(var(--armory-accent), 0.9);
+}
+
+.armoryCeremonyBatch {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: var(--armory-space-sm);
+    border-radius: var(--armory-radius-panel);
+    border: 1px solid rgba(var(--armory-line), 0.12);
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.armoryCeremonyBatchPart {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    border-radius: var(--armory-radius-glyph);
+    color: rgba(var(--armory-line), 0.52);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.armoryCeremonyBatchPart svg {
+    width: 17px;
+    height: 17px;
+}
+
+.armoryCeremonyBatchPart.isCurrent {
+    color: rgb(var(--armory-accent));
+    border-color: rgba(var(--armory-accent), 0.72);
+    background: rgba(var(--armory-accent), 0.12);
+    box-shadow: 0 0 18px rgba(var(--armory-accent), 0.18);
+}
+
+.armoryCeremonyBatchPart.isProcessed {
+    color: rgb(var(--armory-tone-good));
+    border-radius: 50%;
+    border-color: rgba(var(--armory-tone-good), 0.38);
 }
 
 .armoryCeremonyCase {
@@ -2958,6 +3203,12 @@
     color: rgba(var(--armory-line), 0.78);
 }
 
+.armoryCeremonyOwnershipNote {
+    margin: -2px 0 0;
+    color: rgba(var(--armory-line), 0.58);
+    font-size: 11px;
+}
+
 .armoryCeremonyActions {
     display: flex;
     gap: var(--armory-space-sm);
@@ -2965,14 +3216,21 @@
 }
 
 .armoryCeremonySkipAll {
+    min-height: 38px;
     margin-top: var(--armory-space-xs);
-    border: 0;
-    background: transparent;
-    color: rgba(var(--armory-line), 0.56);
+    padding: 7px 12px;
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    border-radius: var(--armory-radius-field);
+    background: rgba(255, 255, 255, 0.025);
+    color: rgba(var(--armory-line), 0.72);
     font-size: 12px;
-    text-decoration: underline;
-    text-underline-offset: 3px;
     cursor: pointer;
+}
+
+.armoryCeremonySkipAll:hover,
+.armoryCeremonySkipAll:focus-visible {
+    color: #f2f8ff;
+    border-color: rgba(var(--armory-accent), 0.4);
 }
 
 /* Mode manifest (Phase 8): an etched plate, not a data table — each mode is a
@@ -3085,8 +3343,48 @@
         padding: var(--armory-space-lg);
     }
 
+    .armoryUnlockWall {
+        top: 50%;
+        max-height: calc(100vh - 142px);
+    }
+
     .armoryRangeReadout {
         gap: var(--armory-space-md);
+    }
+
+    .armoryRangeReadiness,
+    .armoryCollectionSummary {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .armoryRangeReadinessTrack,
+    .armoryCollectionLegend {
+        display: none;
+    }
+
+    .armoryRangeReadinessChecks {
+        grid-column: 1 / -1;
+    }
+
+    .armoryCollectionLegend {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(3, auto);
+    }
+
+    .armoryUnlockCeremony.isBatch {
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .armoryRangeReadinessChecks {
+        grid-template-columns: 1fr;
+    }
+
+    .armoryCeremonyActions {
+        width: 100%;
+        flex-direction: column;
     }
 }
 

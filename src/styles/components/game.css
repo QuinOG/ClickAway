@@ -2064,32 +2064,60 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .lobbyModeChoice {
+    --mode-accent: 65, 180, 239;
+    --mode-strong: #79d9ff;
     min-width: 0;
-    min-height: 116px;
-    padding: 14px;
+    min-height: 190px;
+    padding: 14px 15px 13px;
     border: 1px solid rgba(184, 207, 233, 0.13);
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.025);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 82% 28%, rgba(var(--mode-accent), 0.07), transparent 36%),
+        rgba(255, 255, 255, 0.025);
     color: #eaf3ff;
     font: inherit;
     text-align: left;
     cursor: pointer;
     display: grid;
-    align-content: start;
-    gap: 8px;
+    grid-template-rows: auto 1fr auto;
+    gap: 11px;
     transition: transform 0.16s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lobbyModeChoice-practice {
+    --mode-accent: 73, 215, 173;
+    --mode-strong: #80efc3;
+}
+
+.lobbyModeChoice-casual {
+    --mode-accent: 65, 180, 239;
+    --mode-strong: #79d9ff;
+}
+
+.lobbyModeChoice-ranked {
+    --mode-accent: 239, 171, 67;
+    --mode-strong: #ffd276;
 }
 
 .lobbyModeChoice:hover:not(:disabled) {
     transform: translateY(-2px);
-    border-color: rgba(190, 216, 244, 0.3);
-    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(var(--mode-accent), 0.46);
+    background:
+        radial-gradient(circle at 82% 28%, rgba(var(--mode-accent), 0.13), transparent 38%),
+        rgba(255, 255, 255, 0.04);
 }
 
 .lobbyModeChoice.isSelected {
-    border-color: rgba(var(--lobby-accent), 0.66);
-    background: linear-gradient(145deg, rgba(var(--lobby-accent), 0.16), rgba(var(--lobby-accent), 0.04));
-    box-shadow: inset 0 0 0 1px rgba(var(--lobby-accent), 0.1), 0 10px 28px rgba(var(--lobby-accent), 0.08);
+    transform: translateY(-3px);
+    border-color: rgba(var(--mode-accent), 0.78);
+    background:
+        linear-gradient(145deg, rgba(var(--mode-accent), 0.17), rgba(var(--mode-accent), 0.025)),
+        rgba(255, 255, 255, 0.025);
+    box-shadow:
+        inset 0 0 0 1px rgba(var(--mode-accent), 0.14),
+        0 13px 34px rgba(0, 0, 0, 0.24),
+        0 0 26px rgba(var(--mode-accent), 0.09);
 }
 
 .lobbyModeChoice:focus-visible,
@@ -2108,7 +2136,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .lobbyModeChoiceTopline {
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) auto;
+    grid-template-columns: 30px minmax(0, 1fr) 18px;
     align-items: center;
     gap: 9px;
 }
@@ -2121,7 +2149,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     display: grid;
     place-items: center;
     background: rgba(255, 255, 255, 0.055);
-    color: var(--lobby-accent-strong);
+    color: var(--mode-strong);
     font-size: 12px;
     font-weight: 900;
 }
@@ -2132,103 +2160,359 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     font-weight: 750;
 }
 
-.lobbyModeDuration,
-.lobbyModeReward {
-    color: rgba(205, 223, 244, 0.62);
+.lobbyModeSelectedMark {
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(var(--mode-accent), 0.28);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: transparent;
     font-size: 10px;
-    font-weight: 700;
+    transition: color 0.16s ease, background-color 0.16s ease;
 }
 
-.lobbyModeDuration {
-    padding: 4px 7px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
+.lobbyModeChoice.isSelected .lobbyModeSelectedMark {
+    border-color: rgba(var(--mode-accent), 0.78);
+    background: var(--mode-strong);
+    color: #07131c;
 }
 
-.lobbyModeSummary {
-    color: rgba(217, 231, 247, 0.72);
-    font-size: 11px;
-    line-height: 1.4;
-}
-
-.lobbyModeReward {
-    color: var(--lobby-accent-strong);
-}
-
-.lobbyModeBrief {
-    padding: 16px;
-    border: 1px solid rgba(var(--lobby-accent), 0.18);
-    border-radius: 18px;
-    background: linear-gradient(100deg, rgba(var(--lobby-accent), 0.1), rgba(255, 255, 255, 0.018));
+.lobbyModeVisuals {
+    min-width: 0;
     display: grid;
-    grid-template-columns: minmax(190px, 0.8fr) minmax(380px, 1.7fr);
-    gap: 14px 24px;
+    grid-template-columns: 66px minmax(0, 1fr);
+    align-items: center;
+    gap: 13px;
 }
 
-.lobbyModeBriefLead {
+.lobbyDurationRing {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #0b1523 57%, transparent 59%),
+        conic-gradient(from -0.25turn, rgba(var(--mode-accent), 0.95) 0turn var(--duration-turn), rgba(190, 216, 244, 0.12) var(--duration-turn) 1turn);
+    box-shadow: inset 0 0 18px rgba(var(--mode-accent), 0.08);
     display: grid;
-    align-content: center;
-    gap: 5px;
+    place-content: center;
+    color: #f4f9ff;
+    text-align: center;
 }
 
-.lobbyModeBriefLead span,
-.lobbyTargetRow small,
-.lobbyBuildReadiness small,
-.lobbyModeFacts dt {
-    color: rgba(181, 205, 232, 0.6);
-    font-size: 9px;
+.lobbyDurationRing.isUntimed {
+    border: 1px dashed rgba(var(--mode-accent), 0.66);
+    background: radial-gradient(circle, rgba(var(--mode-accent), 0.1), transparent 67%);
+}
+
+.lobbyDurationRing > span {
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 20px;
     font-weight: 800;
-    letter-spacing: 0.11em;
+    line-height: 0.9;
+}
+
+.lobbyDurationRing > small,
+.lobbyStakesCue > small,
+.lobbyRewardCue > small,
+.lobbyPressureCue > small {
+    color: rgba(196, 218, 241, 0.52);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
-.lobbyModeBriefLead strong {
-    color: rgba(239, 246, 255, 0.92);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.4;
-}
-
-.lobbyModeFacts {
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 7px;
-}
-
-.lobbyModeFacts div {
-    min-width: 0;
-    padding-left: 10px;
-    border-left: 1px solid rgba(197, 220, 244, 0.12);
+.lobbyPressureCue,
+.lobbyStakesCue,
+.lobbyRewardCue {
     display: grid;
     align-content: center;
+    gap: 6px;
+}
+
+.lobbyPressureTargets {
+    min-width: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 4px;
 }
 
-.lobbyModeFacts dd {
-    margin: 0;
-    color: #f1f7ff;
-    font-size: 12px;
-    font-weight: 750;
-    line-height: 1.25;
+.lobbyPressureTargets i {
+    position: relative;
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(var(--mode-accent), 0.78);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--mode-accent), 0.9) 0 2px, transparent 3px);
+    box-shadow: 0 0 12px rgba(var(--mode-accent), 0.08);
 }
 
-.lobbyTargetRow {
-    grid-column: 1 / -1;
-    padding-top: 12px;
-    border-top: 1px solid rgba(197, 220, 244, 0.1);
+.lobbyPressureTargets b {
+    min-width: 5px;
+    height: 1px;
+    flex: 1 1 auto;
+    background: linear-gradient(90deg, rgba(var(--mode-accent), 0.16), rgba(var(--mode-accent), 0.62));
+}
+
+.pressure-1 .lobbyPressureTargets i {
+    width: 28px;
+    height: 28px;
+}
+
+.pressure-2 .lobbyPressureTargets i:nth-of-type(2) {
+    width: 21px;
+    height: 21px;
+}
+
+.pressure-2 .lobbyPressureTargets i:nth-of-type(3) {
+    width: 14px;
+    height: 14px;
+}
+
+.pressure-3 .lobbyPressureTargets i:nth-of-type(2) {
+    width: 17px;
+    height: 17px;
+}
+
+.pressure-3 .lobbyPressureTargets i:nth-of-type(3) {
+    width: 8px;
+    height: 8px;
+    background: rgba(var(--mode-accent), 0.92);
+}
+
+.lobbyModeCueRow {
+    padding-top: 9px;
+    border-top: 1px solid rgba(var(--mode-accent), 0.13);
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr 1.2fr;
+    gap: 14px;
+}
+
+.lobbyStakesCue,
+.lobbyRewardCue {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+}
+
+.lobbyStakesShield {
+    width: 24px;
+    height: 25px;
+    padding: 5px 4px 7px;
+    clip-path: polygon(50% 0, 94% 17%, 84% 72%, 50% 100%, 16% 72%, 6% 17%);
+    background: rgba(var(--mode-accent), 0.14);
+    box-shadow: inset 0 0 0 1px rgba(var(--mode-accent), 0.72);
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 2px;
+}
+
+.lobbyStakesShield i {
+    width: 3px;
+    height: 7px;
+    border-radius: 2px;
+    background: rgba(204, 222, 242, 0.18);
+}
+
+.stakes-1 .lobbyStakesShield i:first-child,
+.stakes-3 .lobbyStakesShield i {
+    background: var(--mode-strong);
+    box-shadow: 0 0 6px rgba(var(--mode-accent), 0.5);
+}
+
+.stakes-3 .lobbyStakesShield i:nth-child(2) { height: 11px; }
+.stakes-3 .lobbyStakesShield i:nth-child(3) { height: 15px; }
+
+.lobbyRewardPips {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.lobbyRewardPips i {
+    width: 14px;
+    height: 9px;
+    border: 1px solid rgba(var(--mode-accent), 0.36);
+    border-radius: 3px;
+    transform: skewX(-12deg);
+    background: transparent;
+}
+
+.lobbyRewardPips i.isEarned {
+    border-color: rgba(var(--mode-accent), 0.82);
+    background: rgba(var(--mode-accent), 0.72);
+    box-shadow: 0 0 9px rgba(var(--mode-accent), 0.22);
+}
+
+.lobbyModeStage {
+    position: relative;
+    min-height: 132px;
+    padding: 17px 18px;
+    border: 1px solid rgba(var(--lobby-accent), 0.3);
+    border-radius: 19px;
+    overflow: hidden;
+    background:
+        linear-gradient(100deg, rgba(var(--lobby-accent), 0.15), transparent 38%),
+        radial-gradient(circle at 82% 45%, rgba(var(--lobby-accent), 0.1), transparent 31%),
+        rgba(255, 255, 255, 0.018);
+    display: grid;
+    grid-template-columns: minmax(180px, 0.72fr) minmax(390px, 1.65fr) auto;
+    align-items: center;
+    gap: 20px;
+    box-shadow: inset 0 0 42px rgba(var(--lobby-accent), 0.035);
+}
+
+.lobbyModeStageIdentity {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    align-items: center;
     gap: 12px;
 }
 
-.lobbyTargetRow span {
+.lobbyModeStageGlyph {
+    width: 52px;
+    height: 58px;
+    clip-path: polygon(50% 0, 94% 17%, 84% 72%, 50% 100%, 16% 72%, 6% 17%);
     display: grid;
-    gap: 3px;
+    place-items: center;
+    background: rgba(var(--lobby-accent), 0.18);
+    color: var(--lobby-accent-strong);
+    box-shadow: inset 0 0 0 1px rgba(var(--lobby-accent), 0.76);
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 18px;
+    font-weight: 900;
 }
 
-.lobbyTargetRow strong {
-    color: rgba(238, 246, 255, 0.9);
+.lobbyModeStageIdentity > span:nth-child(2) {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.lobbyModeStageIdentity small,
+.lobbyModeStageRecords small,
+.lobbyBuildReadiness small {
+    color: rgba(181, 205, 232, 0.6);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.lobbyModeStageIdentity strong {
+    color: #f4f9ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 23px;
+    line-height: 1;
+}
+
+.lobbyModeStageIdentity em {
+    overflow: hidden;
+    color: rgba(210, 226, 245, 0.67);
+    font-size: 10px;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lobbyRulesButton {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+    color: rgba(206, 225, 246, 0.64);
+    font: inherit;
+    font-size: 9px;
+    font-weight: 750;
+    cursor: help;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.lobbyRulesButton b {
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(var(--lobby-accent), 0.42);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--lobby-accent-strong);
+    font-size: 9px;
+}
+
+.lobbyRulesButton:focus-visible,
+.lobbyBuildIdentity:focus-visible {
+    outline: 2px solid var(--lobby-accent-strong);
+    outline-offset: 3px;
+}
+
+.lobbyModeStageSignals {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 72px minmax(58px, 0.75fr) minmax(74px, 0.9fr) minmax(130px, 1.8fr);
+    align-items: center;
+    gap: 13px;
+}
+
+.lobbyModeStageSignals > span {
+    min-width: 0;
+}
+
+.lobbyModeStage .lobbyDurationRing {
+    --mode-accent: var(--lobby-accent);
+    --mode-strong: var(--lobby-accent-strong);
+}
+
+.lobbyDurationRing.isLarge {
+    width: 68px;
+    height: 68px;
+}
+
+.lobbyStakesCue.isLarge,
+.lobbyRewardCue.isLarge {
+    --mode-accent: var(--lobby-accent);
+    --mode-strong: var(--lobby-accent-strong);
+    grid-template-columns: 1fr;
+    justify-items: start;
+}
+
+.lobbyStakesCue.isLarge .lobbyStakesShield {
+    width: 31px;
+    height: 34px;
+}
+
+.lobbyRewardCue.isLarge .lobbyRewardPips {
+    flex-wrap: wrap;
+}
+
+.lobbyPressureCue.isLarge {
+    --mode-accent: var(--lobby-accent);
+    --mode-strong: var(--lobby-accent-strong);
+}
+
+.lobbyModeStageRecords {
+    padding-left: 17px;
+    border-left: 1px solid rgba(var(--lobby-accent), 0.16);
+    display: grid;
+    gap: 10px;
+}
+
+.lobbyModeStageRecords span {
+    display: grid;
+    gap: 2px;
+}
+
+.lobbyModeStageRecords strong {
+    color: rgba(239, 247, 255, 0.92);
     font-size: 12px;
 }
 
@@ -2366,27 +2650,18 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     box-shadow: 0 0 14px rgba(var(--lobby-accent), 0.72);
 }
 
-.lobbyBuildReadiness > span:nth-child(2) {
+.lobbyBuildIdentity {
     min-width: 0;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 2px 8px;
     align-items: baseline;
+    cursor: help;
 }
 
 .lobbyBuildReadiness strong {
     color: #eff6ff;
     font-size: 13px;
-}
-
-.lobbyBuildReadiness em {
-    grid-column: 1 / -1;
-    overflow: hidden;
-    color: rgba(187, 208, 232, 0.62);
-    font-size: 10px;
-    font-style: normal;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .lobbyTextLink {
@@ -2494,54 +2769,167 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     }
 
     .lobbyModeChoice {
-        min-height: 54px;
-        padding: 8px 6px;
+        min-height: 146px;
+        padding: 9px 7px 8px;
         border-radius: 11px;
-        place-items: center;
-        align-content: center;
+        gap: 7px;
     }
 
     .lobbyModeChoiceTopline {
-        grid-template-columns: 24px auto;
+        grid-template-columns: 23px minmax(0, 1fr);
         gap: 5px;
     }
 
     .lobbyModeGlyph {
-        width: 24px;
-        height: 24px;
+        width: 23px;
+        height: 23px;
         border-radius: 7px;
         font-size: 10px;
     }
 
     .lobbyModeName {
-        font-size: 13px;
+        font-size: clamp(10px, 3.2vw, 13px);
     }
 
-    .lobbyModeDuration,
-    .lobbyModeSummary,
-    .lobbyModeReward {
+    .lobbyModeSelectedMark {
         display: none;
     }
 
-    .lobbyModeBrief {
+    .lobbyModeVisuals {
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 5px;
+    }
+
+    .lobbyDurationRing {
+        width: 40px;
+        height: 40px;
+    }
+
+    .lobbyDurationRing > span {
+        font-size: 15px;
+    }
+
+    .lobbyDurationRing > small,
+    .lobbyModeChoice .lobbyStakesCue > small,
+    .lobbyModeChoice .lobbyRewardCue > small,
+    .lobbyModeChoice .lobbyPressureCue > small {
+        display: none;
+    }
+
+    .lobbyModeChoice .lobbyPressureTargets {
+        height: 26px;
+        gap: 2px;
+    }
+
+    .lobbyModeChoice .lobbyPressureTargets i {
+        width: 18px;
+        height: 18px;
+    }
+
+    .lobbyModeChoice .pressure-2 .lobbyPressureTargets i:nth-of-type(2) {
+        width: 13px;
+        height: 13px;
+    }
+
+    .lobbyModeChoice .pressure-2 .lobbyPressureTargets i:nth-of-type(3),
+    .lobbyModeChoice .pressure-3 .lobbyPressureTargets i:nth-of-type(2) {
+        width: 9px;
+        height: 9px;
+    }
+
+    .lobbyModeChoice .pressure-3 .lobbyPressureTargets i:nth-of-type(3) {
+        width: 5px;
+        height: 5px;
+    }
+
+    .lobbyModeCueRow {
+        grid-template-columns: 23px minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .lobbyModeChoice .lobbyStakesCue,
+    .lobbyModeChoice .lobbyRewardCue {
         grid-template-columns: 1fr;
+    }
+
+    .lobbyModeChoice .lobbyStakesShield {
+        width: 21px;
+        height: 22px;
+    }
+
+    .lobbyModeChoice .lobbyRewardPips {
+        gap: 3px;
+    }
+
+    .lobbyModeChoice .lobbyRewardPips i {
+        width: clamp(7px, 2.5vw, 11px);
+        height: 7px;
+    }
+
+    .lobbyModeStage {
+        min-height: 0;
         padding: 13px;
-        gap: 12px;
-    }
-
-    .lobbyModeFacts {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 9px 5px;
-    }
-
-    .lobbyTargetRow {
         grid-template-columns: 1fr;
-        gap: 7px;
+        gap: 13px;
     }
 
-    .lobbyTargetRow span {
-        grid-template-columns: 105px 1fr;
-        align-items: baseline;
+    .lobbyModeStageIdentity {
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        gap: 9px;
+    }
+
+    .lobbyModeStageGlyph {
+        width: 42px;
+        height: 46px;
+        font-size: 15px;
+    }
+
+    .lobbyModeStageIdentity strong {
+        font-size: 19px;
+    }
+
+    .lobbyRulesButton {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .lobbyModeStageSignals {
+        grid-template-columns: 56px 42px 62px minmax(84px, 1fr);
+        gap: 6px;
+    }
+
+    .lobbyDurationRing.isLarge {
+        width: 54px;
+        height: 54px;
+    }
+
+    .lobbyStakesCue.isLarge .lobbyStakesShield {
+        width: 27px;
+        height: 29px;
+    }
+
+    .lobbyPressureCue.isLarge .lobbyPressureTargets i {
+        width: 21px;
+        height: 21px;
+    }
+
+    .lobbyPressureCue.isLarge.pressure-2 .lobbyPressureTargets i:nth-of-type(2),
+    .lobbyPressureCue.isLarge.pressure-3 .lobbyPressureTargets i:nth-of-type(2) {
+        width: 13px;
+        height: 13px;
+    }
+
+    .lobbyPressureCue.isLarge.pressure-2 .lobbyPressureTargets i:nth-of-type(3),
+    .lobbyPressureCue.isLarge.pressure-3 .lobbyPressureTargets i:nth-of-type(3) {
+        width: 7px;
+        height: 7px;
+    }
+
+    .lobbyModeStageRecords {
+        padding: 10px 0 0;
+        border-top: 1px solid rgba(var(--lobby-accent), 0.16);
+        border-left: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .practiceDrawer.isOpen {
@@ -2578,10 +2966,6 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         grid-template-columns: 8px minmax(0, 1fr) auto;
     }
 
-    .lobbyBuildReadiness em {
-        max-width: 60vw;
-    }
-
     .arenaLobbyActions {
         position: fixed;
         z-index: 4;
@@ -2608,13 +2992,9 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         padding-right: 12px;
     }
 
-    .lobbyModeBriefLead strong {
-        font-size: 12px;
-    }
-
-    .lobbyModeFacts dd,
-    .lobbyTargetRow strong {
-        font-size: 11px;
+    .lobbyModeStageSignals {
+        grid-template-columns: 52px 38px 57px minmax(76px, 1fr);
+        gap: 4px;
     }
 }
 
@@ -2622,6 +3002,431 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     .arenaLobbyBackdrop,
     .lobbyModeChoice {
         transition: none;
+    }
+}
+
+/* B3: outcome and reward continuity. */
+.gameOverEyebrow,
+.rewardsCardEyebrow {
+    margin: 0 0 5px;
+    color: rgba(126, 207, 255, 0.66);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.gameOverScorePanel.isLocking .gameOverScoreValue {
+    color: rgba(237, 247, 255, 0.78);
+}
+
+.gameOverScoreLockRail {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.gameOverScoreLockRail i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-origin: left;
+    background: linear-gradient(90deg, var(--gameover-accent-start), var(--gameover-accent-end));
+    box-shadow: 0 0 18px var(--gameover-panel-glow);
+    animation: outcomeScoreLock 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.outcomeContinuityBoard {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+}
+
+.outcomeSignature,
+.outcomeBestComparison {
+    padding: 11px 13px;
+    border: 1px solid rgba(154, 199, 241, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.026);
+}
+
+.outcomeSignatureHeader,
+.outcomeBestHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 9px;
+    color: rgba(210, 228, 248, 0.78);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.outcomeSignatureHeader span,
+.outcomeBestHeader strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.outcomeSignatureHeader span:first-child {
+    color: #6af0ca;
+}
+
+.outcomeSignatureHeader span:last-child {
+    color: #ff8c95;
+}
+
+.outcomeSignatureTrack {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(3px, 1fr));
+    gap: 3px;
+    height: 24px;
+}
+
+.outcomeSignatureCell {
+    border-radius: 3px 3px 6px 6px;
+    transform-origin: bottom;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.outcomeSignatureCell.is-hit {
+    background: linear-gradient(180deg, #8bffe0, #44cda8);
+    box-shadow: 0 0 8px rgba(83, 215, 179, 0.18);
+}
+
+.outcomeSignatureCell.is-miss {
+    height: 58%;
+    align-self: end;
+    background: linear-gradient(180deg, #ff9da5, #e45d69);
+}
+
+.outcomeBestComparison.isNewBest {
+    border-color: rgba(106, 240, 202, 0.22);
+    background: linear-gradient(110deg, rgba(106, 240, 202, 0.065), rgba(255, 255, 255, 0.02));
+}
+
+.outcomeBestHeader > span {
+    color: rgba(185, 208, 236, 0.58);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.outcomeBestHeader strong {
+    color: rgba(232, 244, 255, 0.92);
+    font-size: 11px;
+}
+
+.outcomeBestComparison.isNewBest .outcomeBestHeader strong {
+    color: #6af0ca;
+}
+
+.outcomeBestTracks {
+    display: grid;
+    gap: 6px;
+}
+
+.outcomeBestTrack {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.045);
+    overflow: hidden;
+}
+
+.outcomeBestTrack i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: rgba(169, 193, 220, 0.18);
+}
+
+.outcomeBestTrack.isCurrent i {
+    background: linear-gradient(90deg, rgba(74, 168, 255, 0.34), rgba(106, 240, 202, 0.54));
+}
+
+.outcomeBestTrack b {
+    position: relative;
+    z-index: 1;
+    padding: 0 7px;
+    color: rgba(226, 239, 253, 0.76);
+    font-size: 9px;
+    line-height: 15px;
+}
+
+.outcomeInstruments {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.outcomeInstrument {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2px 5px;
+    min-width: 0;
+    padding: 8px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.025);
+    text-align: left;
+}
+
+.outcomeInstrument svg {
+    grid-row: 1 / 3;
+    color: rgba(112, 194, 255, 0.74);
+    font-size: 17px;
+}
+
+.outcomeInstrument span {
+    overflow: hidden;
+    color: rgba(185, 208, 236, 0.52);
+    font-size: 8px;
+    letter-spacing: 0.45px;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.outcomeInstrument strong {
+    color: #f3f8ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.rewardSettlementDock {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: -8px;
+}
+
+.rewardBalanceChip {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 0 7px;
+    min-width: 118px;
+    padding: 7px 11px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.035);
+    text-align: left;
+}
+
+.rewardBalanceChip > svg {
+    grid-row: 1 / 3;
+    color: #f3c966;
+    font-size: 19px;
+}
+
+.rewardBalanceChip.isLevel > svg {
+    color: #69c5ff;
+}
+
+.rewardBalanceChip small {
+    color: rgba(202, 220, 241, 0.54);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.rewardBalanceChip strong {
+    color: #f7fbff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+}
+
+.rewardFlightLayer {
+    position: absolute;
+    z-index: 3;
+    top: 52px;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+}
+
+.rewardFlightToken {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: #08111f;
+    background: #f3c966;
+    box-shadow: 0 0 22px rgba(243, 201, 102, 0.42);
+}
+
+.rewardFlightToken.isXp {
+    background: #69c5ff;
+    box-shadow: 0 0 22px rgba(105, 197, 255, 0.42);
+}
+
+.rewardRankPath {
+    display: grid;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid rgba(243, 201, 102, 0.14);
+    border-radius: 15px;
+    background: linear-gradient(120deg, rgba(243, 201, 102, 0.055), rgba(255, 255, 255, 0.018));
+}
+
+.rewardRankPathHeader,
+.rewardRankPathLabels {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rewardRankPathHeader span {
+    color: rgba(205, 221, 242, 0.56);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.rewardRankPathHeader strong,
+.rewardRankPath.is-positive .rewardRankPathHeader strong {
+    color: #6af0ca;
+    font-size: 13px;
+}
+
+.rewardRankPath.is-negative .rewardRankPathHeader strong {
+    color: #ff8c95;
+}
+
+.rewardRankPathLabels {
+    color: rgba(222, 235, 250, 0.7);
+    font-size: 11px;
+}
+
+.rewardRankPathLabels strong {
+    color: #fff0bd;
+}
+
+.rewardRankTrack {
+    position: relative;
+    height: 18px;
+}
+
+.rewardRankTrail {
+    position: absolute;
+    inset: 7px 0 auto;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(243, 201, 102, 0.4));
+}
+
+.rewardRankMarker {
+    position: absolute;
+    z-index: 1;
+    top: 3px;
+    width: 12px;
+    height: 12px;
+    translate: -50% 0;
+    border: 2px solid rgba(189, 210, 235, 0.6);
+    border-radius: 50%;
+    background: #172338;
+}
+
+.rewardRankMarker.isCurrent {
+    border-color: #ffe59a;
+    background: #f3c966;
+    box-shadow: 0 0 14px rgba(243, 201, 102, 0.5);
+}
+
+.rewardRankPath > p {
+    margin: 0;
+    color: rgba(211, 227, 247, 0.68);
+    font-size: 10px;
+    text-align: right;
+}
+
+.rewardsCardActions {
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+}
+
+.rewardReplayButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 190px;
+}
+
+.rewardChangeModeButton {
+    min-height: 32px;
+    padding: 4px 12px;
+    border: 0;
+    background: transparent;
+    color: rgba(205, 222, 244, 0.68);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.rewardChangeModeButton:hover,
+.rewardChangeModeButton:focus-visible {
+    color: #f4f9ff;
+}
+
+@keyframes outcomeScoreLock {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+@media (max-width: 560px) {
+    .gameOverCardWithDifficulty {
+        gap: 10px;
+        padding: 16px 14px;
+    }
+
+    .gameOverScoreValue {
+        font-size: 42px;
+    }
+
+    .outcomeInstruments {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .outcomeSignatureTrack {
+        gap: 2px;
+        height: 20px;
+    }
+
+    .rewardsCard {
+        gap: 15px;
+        padding: 22px 16px 18px;
+    }
+
+    .rewardBalanceChip {
+        min-width: 0;
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gameOverScoreLockRail i {
+        animation: none;
     }
 }
 
@@ -5801,18 +6606,6 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
     background: rgba(3, 8, 17, 0.2);
 }
 
-.roundEntranceOverlay .srOnly {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
 .roundEntranceWash {
     position: absolute;
     inset: 0;
@@ -6053,5 +6846,25 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
     .entranceReticleRingOuter,
     .roundTokenProgress::after {
         animation: none;
+    }
+}
+
+/* Keep B3's action hierarchy and compact result cards authoritative after the
+   legacy game-over declarations above. */
+.rewardsCardActions {
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+}
+
+@media (max-width: 560px) {
+    .gameOverCardWithDifficulty {
+        gap: 10px;
+        padding: 16px 14px;
+    }
+
+    .rewardsCard {
+        gap: 15px;
+        padding: 22px 16px 18px;
     }
 }

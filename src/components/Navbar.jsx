@@ -24,9 +24,12 @@ import {
   getMobileNavigationState,
   getRoutesForGroup,
 } from "../app/routeMetadata.js"
+import { prefetchRouteModule } from "../app/routeModules.js"
+import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
 import PlayerHoverCard from "./PlayerHoverCard.jsx"
 import { MobileSheet } from "./ui/index.js"
+import { InterpolatedNumber } from "./ui/status/InterpolatedNumber.jsx"
 
 const ICON_BY_KEY = {
   play: GameController,
@@ -60,12 +63,19 @@ function PendingBadge({ count = 0 }) {
 }
 
 function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, showArmoryUnlockBadge = false, onNavigate }) {
+  const { signalAction } = useActionFeedback()
+
   return (
     <NavLink
       to={route.path}
       end
       className={({ isActive }) => `${className} ${isActive ? "active" : ""}`.trim()}
-      onClick={onNavigate}
+      onClick={(event) => {
+        signalAction(event.currentTarget, { silent: true })
+        onNavigate?.(event)
+      }}
+      onPointerEnter={() => prefetchRouteModule(route.path)}
+      onFocus={() => prefetchRouteModule(route.path)}
     >
       {({ isActive }) => (
         <>
@@ -112,7 +122,7 @@ function CompactAvatar({ username, profileImage }) {
       aria-hidden="true"
     >
       {hasImage ? (
-        <img className="shellAvatarImage" src={profileImage.imageSrc} alt="" />
+        <img className="shellAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
       ) : (
         getProfileInitials(username)
       )}
@@ -214,10 +224,12 @@ export default function Navbar({
           <Link
             className="brandCluster"
             to={isAuthed ? APP_ROUTE.PLAY : APP_ROUTE.LOGIN}
+            onPointerEnter={() => isAuthed && prefetchRouteModule(APP_ROUTE.PLAY)}
+            onFocus={() => isAuthed && prefetchRouteModule(APP_ROUTE.PLAY)}
             aria-label={isAuthed ? "ClickAway — go to Play" : "ClickAway — go to log in"}
           >
             <span className="brandLogo" aria-hidden="true">
-              <img className="brandLogoImage" src="/brand/clickaway-mark.svg" alt="" />
+              <img className="brandLogoImage" src="/brand/clickaway-mark.svg" alt="" width="128" height="128" decoding="async" />
             </span>
             <span className="brandText">
               <span className="brand">ClickAway</span>
@@ -295,7 +307,7 @@ export default function Navbar({
                   </span>
                 </span>
                 <span className="shellIdentityProgress" aria-label={`${displayCoins} coins, level ${displayLevel}`}>
-                  <span><Coins size={13} weight="fill" aria-hidden="true" />{displayCoins}</span>
+                  <span><Coins size={13} weight="fill" aria-hidden="true" /><InterpolatedNumber value={coins} /></span>
                   <span>Lv {displayLevel}</span>
                 </span>
               </button>

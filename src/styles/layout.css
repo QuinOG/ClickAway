@@ -223,13 +223,8 @@
     font-size: 16px;
 }
 
-@keyframes primaryCtaGlow {
-    0%, 100% { box-shadow: 0 8px 20px rgba(44, 118, 232, 0.34); }
-    50% { box-shadow: 0 8px 26px rgba(74, 148, 255, 0.54), 0 0 12px rgba(74, 148, 255, 0.2); }
-}
-
 .primaryButton.primaryButton-lg {
-    animation: primaryCtaGlow 2.2s ease-in-out infinite;
+    box-shadow: 0 8px 24px rgba(54, 134, 247, 0.42), 0 0 10px rgba(74, 148, 255, 0.14);
 }
 
 /* Help page styles live in src/styles/components/help.css */
@@ -904,6 +899,7 @@
     border: 1px solid rgb(var(--scene-accent-rgb) / 12%);
     background: conic-gradient(from 220deg, transparent 0 79%, rgb(var(--scene-accent-rgb) / 12%) 87%, transparent 94%);
     animation: route-scene-sweep 18s linear infinite;
+    will-change: transform;
 }
 
 .routeSceneOrbit {
@@ -1014,6 +1010,7 @@
     border: 1px dashed rgb(var(--scene-accent-rgb) / 22%);
     border-radius: 50%;
     animation: route-scene-sweep 5s linear infinite;
+    will-change: transform;
 }
 
 .routeFallbackCopy { display: grid; gap: 6px; min-width: 0; }
@@ -1055,14 +1052,26 @@
     display: grid;
     grid-template-columns: 1.4fr 1fr 0.7fr;
     gap: 10px;
+    opacity: 0;
+    animation: route-fallback-reveal 140ms ease-out 120ms forwards;
 }
 
 .routeFallbackSkeleton span {
+    position: relative;
     height: 52px;
+    overflow: hidden;
     border: 1px solid rgb(var(--scene-accent-rgb) / 11%);
-    background: linear-gradient(90deg, rgb(255 255 255 / 2%), rgb(var(--scene-accent-rgb) / 8%), rgb(255 255 255 / 2%));
-    background-size: 220% 100%;
-    animation: route-fallback-shimmer 1.7s linear infinite;
+    background: rgb(var(--scene-accent-rgb) / 4%);
+}
+
+.routeFallbackSkeleton span::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgb(var(--scene-accent-rgb) / 10%), transparent);
+    transform: translateX(-110%);
+    animation: route-fallback-progress 1.45s ease-in-out infinite;
+    will-change: transform;
 }
 
 .commandHeader {
@@ -1124,8 +1133,8 @@
 
 @keyframes route-scene-sweep { to { transform: rotate(360deg); } }
 @keyframes route-fallback-progress { from { transform: translateX(-110%); } to { transform: translateX(250%); } }
-@keyframes route-fallback-shimmer { to { background-position: -220% 0; } }
 @keyframes route-fallback-lock { from { transform: scale(0.94); opacity: 0.7; } to { transform: scale(1); opacity: 1; } }
+@keyframes route-fallback-reveal { to { opacity: 1; } }
 
 @media (max-width: 620px) {
     .routeSceneGrid { background-size: 48px 48px; opacity: 0.12; }

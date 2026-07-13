@@ -333,11 +333,17 @@ Completed in the first execution pass:
 - **A1:** Route scene contract, per-route atmosphere, semantic scene accents, and icon-led command header.
 - **A2:** Destination-shaped calibration loader and route-aware loading copy.
 - **A3:** Guest/mobile width hardening, compact mobile arena proof, touch-safe account layout, and shape-backed states on changed surfaces.
+- **B1:** Visual-first Practice, Casual, and Ranked selection with duration rings, stakes emblems, reward pips, pressure silhouettes, a stronger selected arena stage, compact build readiness, and exact-rule tooltips.
+- **B3:** Outcome-first round reveal with score lock-in, hit/miss signature, personal-best comparison, reward-to-balance settlement, rank movement path, promotion continuity, dominant replay action, and reduced-motion fallback.
 - **C1:** Duel command center with rival lock, visual replay rail, opposed reticle stage, launch feedback, radar empty/loading/error states, and redesigned duel cards.
 - **C2:** Seasonal ladder command header and top-three podium/player-to-beat stage.
 - **C3:** Score trajectory, mode-shaped plot points, wider replay journal, and mobile round cards replacing the dense table at small widths.
+- **D2a:** Shop state machine with icon/shape-led locked, affordable, owned, selected, and equipped states; collection progress; contextual preview actions; and purchase-to-equip continuity.
+- **D2b:** Armory state and flow polish with a shared shape/icon state contract, installed/collected/locked collection wall states, collection progress ring, one-action unlock batching, and visual test-range readiness.
 - **D3:** Icon-led field guide, visual round loop, direct lobby action, and exact-reference layer.
 - **D4:** Mobile-safe arrival composition with a compact Practice/Casual/Ranked trajectory.
-- **E3 (changed-surface gate):** Desktop and 390x844 rendered review; full lint, unit, UI, and production build pass.
+- **E1:** Shared source-linked action feedback with inline purchase/equip and duel confirmations, navigation/selection/filter/retry pulses, interpolated balance/state cues, restrained success toasts, and preference-aware sound/haptic recipes.
+- **E2:** Intent and idle route prefetch with data-saver guards, lossless AVIF conversion for the heaviest suitable cosmetics, reserved/async image decoding, compositor-safe loading/action motion, delayed skeleton reveal, and removal of obsolete feedback CSS.
+- **E3:** Full cohesion and regression gate with deterministic browser fixtures; 320–1440 responsive coverage; endpoint visual baselines for every route; keyboard, touch, pointer, reduced-motion, audio, and haptic combinations; axe accessibility checks; loading/error/empty/sparse states; critical account, Shop, Armory-adjacent, History, Ladder, Duels, and Practice journeys; static asset/terminology contracts; and a signed release checklist with owned exceptions. See `game-experience-e3-release-review-2026-07-12.md`.
 
 The remaining roadmap phases are intentionally preserved as independent future increments rather than folded into this batch.

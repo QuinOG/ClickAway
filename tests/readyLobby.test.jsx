@@ -45,7 +45,7 @@ describe("Arena lobby", () => {
     expect(within(modeRail).getByRole("button", { name: "Select Practice" })).not.toBeNull()
     expect(within(modeRail).getByRole("button", { name: "Select Casual" })).not.toBeNull()
     expect(within(modeRail).getByRole("button", { name: "Select Ranked" })).not.toBeNull()
-    expect(screen.getAllByText("XP + coins · no rank risk").length).toBeGreaterThan(0)
+    expect(screen.getByLabelText("Rewards: XP + coins · no rank risk")).not.toBeNull()
     expect(screen.getByText("Tempo Control")).not.toBeNull()
 
     await user.click(within(modeRail).getByRole("button", { name: "Select Ranked" }))
@@ -54,6 +54,35 @@ describe("Arena lobby", () => {
 
     await user.click(screen.getByRole("button", { name: "Start Ranked" }))
     expect(props.onStart).toHaveBeenCalledWith("hard")
+  })
+
+  test("distinguishes every mode through duration, stakes, reward, and pressure signals", async () => {
+    const user = userEvent.setup()
+    renderLobby()
+
+    const modeRail = screen.getByLabelText("Choose a game mode")
+    const practice = within(modeRail).getByRole("button", { name: "Select Practice" })
+    const casual = within(modeRail).getByRole("button", { name: "Select Casual" })
+    const ranked = within(modeRail).getByRole("button", { name: "Select Ranked" })
+
+    expect(practice.querySelector(".lobbyDurationRing.isUntimed")).not.toBeNull()
+    expect(casual.querySelector(".lobbyDurationRing.isTimed").textContent).toContain("30")
+    expect(ranked.querySelector(".lobbyDurationRing.isTimed").textContent).toContain("15")
+
+    expect(practice.querySelector(".lobbyStakesCue.stakes-0")).not.toBeNull()
+    expect(casual.querySelector(".lobbyStakesCue.stakes-1")).not.toBeNull()
+    expect(ranked.querySelector(".lobbyStakesCue.stakes-3")).not.toBeNull()
+    expect(practice.querySelectorAll(".lobbyRewardPips .isEarned")).toHaveLength(0)
+    expect(casual.querySelectorAll(".lobbyRewardPips .isEarned")).toHaveLength(2)
+    expect(ranked.querySelectorAll(".lobbyRewardPips .isEarned")).toHaveLength(3)
+    expect(practice.querySelector(".lobbyPressureCue.pressure-1")).not.toBeNull()
+    expect(casual.querySelector(".lobbyPressureCue.pressure-2")).not.toBeNull()
+    expect(ranked.querySelector(".lobbyPressureCue.pressure-3")).not.toBeNull()
+
+    DIFFICULTIES.forEach((mode) => expect(screen.queryByText(mode.description)).toBeNull())
+
+    await user.hover(ranked)
+    expect((await screen.findByRole("tooltip")).textContent).toContain("15s. -2 score. Aggressive target pressure")
   })
 
   test("supports arrow selection and Enter from the focused lobby", () => {

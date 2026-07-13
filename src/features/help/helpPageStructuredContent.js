@@ -69,7 +69,7 @@ export const NAVIGATION_ROWS = [
   ["Profile", "View identity, ranked insights, achievement progress, and logout controls."],
   ["Shop", "Spend coins on cosmetics and equip owned items instantly."],
   ["History", "Review past rounds (mode, score, XP, coins, rank result)."],
-  ["Leaderboard", "Compare placed ranked players and competitive rating positions."],
+  ["Ladder", "Compare placed ranked players and competitive rating positions."],
   ["Help", "Reference systems, formulas, controls, and progression rules."],
 ]
 
@@ -199,7 +199,7 @@ export const DATA_SYSTEM_POINTS = [
 export const ACCOUNT_ROWS = [
   ["Create Account", "Sign up with a 3-32 character username and an 8+ character password."],
   ["Login", "Use the same username/password later to restore your saved account progress."],
-  ["Protected Pages", "Game, Armory, Profile, Shop, History, Leaderboard, and Help all require sign-in."],
+  ["Protected Pages", "Play, Armory, Profile, Shop, History, Ladder, Duels, and Help all require sign-in."],
   ["Session Restore", "On refresh, the app checks your saved session and reloads your account automatically."],
   ["Session Expiry", "If the saved session is no longer valid, you are returned to login."],
   ["Logout", "Logout clears this browser session only. Server-side progression stays attached to your account."],
@@ -218,9 +218,9 @@ export const TRACKING_POINTS = [
   "History keeps the 50 most recent rounds, newest first, with time, mode, score, hits, misses, accuracy, coins, XP, and ranked result.",
   "After Game Over, review score, accuracy, streak, XP, coins, and ranked result before jumping into the next queue.",
   "If your account has no saved rounds yet, the History page shows an empty state with a quick link back to Game.",
-  "Leaderboard only includes players who have completed placements and currently loads up to 25 players from the server.",
+  "Ladder only includes players who have completed placements and currently loads up to 25 players from the server.",
   "Server rank order is hidden rating first, then best score, best streak, accuracy, username, and user id as tie-breakers.",
-  "Leaderboard headers let you re-sort the visible rows by rating, best score, best streak, or accuracy.",
+  "Ladder headers let you re-sort the visible rows by rating, best score, best streak, or accuracy.",
   "Hover leaderboard names for quick stats. Your own row is marked YOU and opens your profile; other players currently expose hover stats only.",
 ]
 

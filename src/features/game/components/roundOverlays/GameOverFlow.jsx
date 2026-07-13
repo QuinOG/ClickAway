@@ -34,6 +34,7 @@ export function GameOverFlow({
   accuracy,
   modeLabel,
   playerLevel = 1,
+  playerCoins = 0,
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   roundXpEarned = 0,
@@ -79,12 +80,9 @@ export function GameOverFlow({
   const showPromotion = isPromotion || isPlacementReveal
   const showRewards = allowsCoinRewards || allowsLevelProgression || allowsRankProgression
 
-  const [flowPhase] = useState(() => {
-    if (showPromotion) return "promotion"
-    if (showRewards) return "rewards"
-    return "summary"
-  })
-  const [activePhase, setActivePhase] = useState(flowPhase)
+  // Performance always lands first. Economy and promotion calculations are
+  // unchanged; this only gives every outcome the same readable reveal order.
+  const [activePhase, setActivePhase] = useState("summary")
 
   const advanceTo = (phase) => () => setActivePhase(phase)
 
@@ -110,6 +108,16 @@ export function GameOverFlow({
     onChooseMode,
     achievementStats,
     unlockedAchievementIds,
+    primaryActionLabel: showPromotion
+      ? "Reveal Rank"
+      : showRewards
+        ? "Collect Rewards"
+        : "Play Again",
+    onPrimaryAction: showPromotion
+      ? advanceTo("promotion")
+      : showRewards
+        ? advanceTo("rewards")
+        : (onRematch ?? onPlayAgain),
   }
 
   return (
@@ -137,7 +145,10 @@ export function GameOverFlow({
             isPlacementReveal={isPlacementReveal}
             currentRankLabel={currentRankLabel}
             projectedRankLabel={projectedRankLabel}
-            onContinue={advanceTo(showRewards ? "rewards" : "summary")}
+            buttonLabel={showRewards ? "Collect Rewards" : "Play Again"}
+            onContinue={showRewards
+              ? advanceTo("rewards")
+              : (onRematch ?? onPlayAgain)}
           />
         )}
 
@@ -148,6 +159,7 @@ export function GameOverFlow({
             allowsCoinRewards={allowsCoinRewards}
             allowsRankProgression={allowsRankProgression}
             playerLevel={playerLevel}
+            playerCoins={playerCoins}
             playerXpIntoLevel={playerXpIntoLevel}
             playerXpToNextLevel={playerXpToNextLevel}
             roundXpEarned={roundXpEarned}
@@ -157,7 +169,8 @@ export function GameOverFlow({
             projectedRankProgress={projectedRankProgress}
             projectedRankLabel={projectedRankLabel}
             isPlacementReveal={isPlacementReveal}
-            onContinue={advanceTo("summary")}
+            onContinue={onRematch ?? onPlayAgain}
+            onChooseMode={onChooseMode ?? onPlayAgain}
           />
         )}
 

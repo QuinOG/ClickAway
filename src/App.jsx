@@ -17,6 +17,7 @@ import { DIFFICULTIES as MODES } from "./constants/gameModesConfig.js"
 import { ROUND_PHASE } from "./constants/gameConstants.js"
 import { normalizeBuildWalkthrough } from "./constants/buildWalkthrough.js"
 import { hasUnseenUnlockedParts, normalizeSeenUnlockPartIds } from "./utils/unlockWallUtils.js"
+import { loadRouteModule } from "./app/routeModules.js"
 
 import Layout from "./components/Layout.jsx"
 import ProtectedRoute from "./components/routing/ProtectedRoute.jsx"
@@ -24,14 +25,14 @@ import ProtectedRoute from "./components/routing/ProtectedRoute.jsx"
 import LoginPage from "./pages/LoginPage.jsx"
 import SignupPage from "./pages/SignupPage.jsx"
 
-const GamePage = lazy(() => import("./pages/GamePage.jsx"))
-const HelpPage = lazy(() => import("./pages/HelpPage.jsx"))
-const HistoryPage = lazy(() => import("./pages/HistoryPage.jsx"))
-const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage.jsx"))
-const ChallengesPage = lazy(() => import("./pages/ChallengesPage.jsx"))
-const ArmoryPage = lazy(() => import("./pages/ArmoryPage.jsx"))
-const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"))
-const ShopPage = lazy(() => import("./pages/ShopPage.jsx"))
+const GamePage = lazy(() => loadRouteModule(APP_ROUTE.PLAY))
+const HelpPage = lazy(() => loadRouteModule(APP_ROUTE.HELP))
+const HistoryPage = lazy(() => loadRouteModule(APP_ROUTE.HISTORY))
+const LeaderboardPage = lazy(() => loadRouteModule(APP_ROUTE.LADDER))
+const ChallengesPage = lazy(() => loadRouteModule(APP_ROUTE.DUELS))
+const ArmoryPage = lazy(() => loadRouteModule(APP_ROUTE.ARMORY))
+const ProfilePage = lazy(() => loadRouteModule(APP_ROUTE.PROFILE))
+const ShopPage = lazy(() => loadRouteModule(APP_ROUTE.SHOP))
 const UiKitPage = import.meta.env.DEV
   ? lazy(() => import("./pages/UiKitPage.jsx"))
   : null
@@ -47,7 +48,7 @@ function SessionLoadingScreen() {
         <span className="sessionCalibrationRing" />
         <span className="sessionCalibrationRing sessionCalibrationRingInner" />
       </div>
-      <img className="sessionArrivalMark" src="/brand/clickaway-mark.svg" alt="" />
+      <img className="sessionArrivalMark" src="/brand/clickaway-mark.svg" alt="" width="128" height="128" decoding="async" />
       <span className="sessionArrivalEyebrow">Precision Arena</span>
       <h1 id="session-arrival-title">Calibrating your session</h1>
       <p>Restoring your competitor profile and arena settings…</p>
@@ -175,6 +176,7 @@ export default function App() {
     unlockedAchievementIds,
     setUnlockedAchievementIds,
     unlockedAchievementIdsFromStats,
+    sessionKey: isAuthed ? playerUserId : "",
   })
 
   const { handleRoundComplete } = usePlayerProgressionUpdates({
@@ -272,6 +274,7 @@ export default function App() {
                 selectedModeId={selectedModeId}
                 onModeChange={handleModeChange}
                 playerLevel={levelProgress.level}
+                playerCoins={coins}
                 playerXpIntoLevel={levelProgress.xpIntoLevel}
                 playerXpToNextLevel={levelProgress.xpToNextLevel}
                 playerRankMmr={rankProgress.mmr}
