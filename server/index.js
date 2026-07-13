@@ -41,6 +41,7 @@ import {
   updateUserPassword,
   updateUserRole,
   initializeSchema,
+  verifySchema,
   LEADERBOARD_BOARDS,
 } from "./playerMysqlDatabase.js"
 import { calculateRoundRewards, simulateRound } from "./roundRewards.js"
@@ -73,6 +74,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production" || CLIENT_ORIGIN.sta
 const JWT_SECRET = process.env.JWT_SECRET || ""
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin"
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || ""
+const DB_AUTO_MIGRATE = process.env.DB_AUTO_MIGRATE !== "false"
 
 // Sanity ceilings for server-owned progression numbers. Both rank and level are
 // designed to be uncapped in normal play, so these exist only to stop a corrupted
@@ -906,7 +908,11 @@ if (existsSync(distPath)) {
 }
 
 async function startServer() {
-  await initializeSchema()
+  if (DB_AUTO_MIGRATE) {
+    await initializeSchema()
+  } else {
+    await verifySchema()
+  }
   await seedAdminAccount()
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Auth server listening on http://0.0.0.0:${PORT}`)

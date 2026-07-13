@@ -76,6 +76,7 @@ These are the variables used by the app:
 | `ADMIN_USERNAME` | No | Username for the optional seeded admin account. Defaults to `admin`. |
 | `ADMIN_PASSWORD` | No | If set, the backend creates or refreshes the admin account password on startup. If empty, admin seeding is skipped. |
 | `SUPABASE_DB_URL` | Yes | Postgres connection string from Supabase Dashboard → Project Settings → Database. |
+| `DB_AUTO_MIGRATE` | No | Defaults to `true`. Set to `false` when migrations are applied separately and the runtime uses a restricted database role. |
 | `VITE_SUPABASE_URL` | No | Supabase project URL, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | No | Supabase publishable/anon key, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
 | `VITE_API_BASE_URL` | No | Frontend API base URL. Defaults to `http://localhost:4000/api`. |

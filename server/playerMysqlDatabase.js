@@ -64,6 +64,46 @@ const DEFAULT_PROGRESS = {
 
 const DEFAULT_PROGRESSION_MODE = "non_ranked"
 
+const REQUIRED_DATABASE_TABLES = [
+  "achievements_catalog",
+  "arena_themes",
+  "button_skins",
+  "challenges",
+  "profile_images",
+  "round_history",
+  "round_replays",
+  "seasons",
+  "user_achievement_progress",
+  "user_collection",
+  "user_lifetime_stats",
+  "user_loadout_stats",
+  "user_loadouts",
+  "user_season_stats",
+  "users",
+]
+
+export async function verifySchema() {
+  const [rows] = await pool.query(
+    `SELECT table_name AS tableName
+     FROM information_schema.tables
+     WHERE table_schema = 'public'
+       AND table_name = ANY(?)`,
+    [REQUIRED_DATABASE_TABLES]
+  )
+  const existingTables = new Set(rows.map((row) => row.tableName))
+  const missingTables = REQUIRED_DATABASE_TABLES.filter(
+    (tableName) => !existingTables.has(tableName)
+  )
+
+  if (missingTables.length > 0) {
+    throw new Error(
+      `Supabase schema is incomplete. Missing tables: ${missingTables.join(", ")}.`
+    )
+  }
+
+  console.log("Supabase schema verified.")
+}
+
 export async function initializeSchema() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS achievements_catalog (
@@ -247,6 +287,7 @@ export async function initializeSchema() {
     CONSTRAINT fk_loadout_user
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
   )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_loadouts_user ON user_loadouts (user_id)`)
 
   await pool.query(`CREATE TABLE IF NOT EXISTS seasons (
     id bigint GENERATED ALWAYS AS IDENTITY,
@@ -321,6 +362,7 @@ export async function initializeSchema() {
   )`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_opponent_status ON challenges (opponent_user_id, status, created_at)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_challenger_status ON challenges (challenger_user_id, status, created_at)`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_replay ON challenges (replay_id)`)
 
   await ensureActiveSeason()
 
@@ -1440,7 +1482,7 @@ async function queryRankedLeaderboardRows({
         COALESCE(ls.best_ranked_streak, 0) AS bestStreak,
         CASE
           WHEN COALESCE(ls.total_hits, 0) + COALESCE(ls.total_misses, 0) > 0
-            THEN ROUND(100 * ls.total_hits / (ls.total_hits + ls.total_misses))
+            THEN ROUND(100.0 * ls.total_hits / (ls.total_hits + ls.total_misses))
           ELSE 0
         END AS accuracyPercent,
         ls.best_reaction_ms AS bestReactionMs

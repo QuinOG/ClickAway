@@ -2,6 +2,8 @@ import "dotenv/config"
 
 import pg from "pg"
 
+import { restoreMysqlAliasCasing, toPositionalSql } from "./pgCompat.js"
+
 const { Pool } = pg
 
 // mysql2-compatible shim over `pg`. playerMysqlDatabase.js was written against
@@ -11,11 +13,6 @@ const { Pool } = pg
 // that shape so the ~90 query call sites in playerMysqlDatabase.js don't need to
 // change — only genuinely MySQL-only syntax (INSERT IGNORE, ON DUPLICATE KEY,
 // bulk `VALUES ?`, insertId) needed manual conversion at the call sites.
-
-function toPositionalSql(sql) {
-  let index = 0
-  return sql.replace(/\?/g, () => `$${++index}`)
-}
 
 function toExecResult(result) {
   const insertId = result.rows?.[0]?.id ?? null
@@ -30,17 +27,38 @@ function wrapQueryable(queryable) {
   return {
     async query(sql, params = []) {
       const result = await queryable.query(toPositionalSql(sql), params)
-      return [result.rows, result.fields]
+      return [restoreMysqlAliasCasing(sql, result.rows), result.fields]
     },
     async execute(sql, params = []) {
       const result = await queryable.query(toPositionalSql(sql), params)
-      return [toExecResult(result)]
+      return [toExecResult({
+        ...result,
+        rows: restoreMysqlAliasCasing(sql, result.rows),
+      })]
     },
   }
 }
 
+const connectionString = String(process.env.SUPABASE_DB_URL || "").trim()
+if (!connectionString) {
+  throw new Error(
+    "Missing SUPABASE_DB_URL. Copy the Postgres connection string from the Supabase Dashboard into .env."
+  )
+}
+
+let parsedConnectionUrl
+try {
+  parsedConnectionUrl = new URL(connectionString)
+} catch {
+  throw new Error("SUPABASE_DB_URL must be a valid Postgres connection string.")
+}
+
+if (!["postgres:", "postgresql:"].includes(parsedConnectionUrl.protocol)) {
+  throw new Error("SUPABASE_DB_URL must use the postgres:// or postgresql:// protocol.")
+}
+
 const pool = new Pool({
-  connectionString: process.env.SUPABASE_DB_URL,
+  connectionString,
   ssl: { rejectUnauthorized: false },
 })
 
