@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect } from "react"
 
-import { measureSpotlightRect } from "./armoryWalkthroughGeometry.js"
+import { measureSpotlightRect } from "./armoryUtils.js"
 
 /**
  * Positions the walkthrough spotlight over the active step region and keeps it in sync on scroll/resize.
@@ -10,7 +10,8 @@ export function useArmoryWalkthrough({
   currentWalkthroughStep,
   shellRef,
   workspaceRef,
-  slotEditorRef,
+  nameplateRef,
+  machineRef,
   passiveLaneRef,
   hotbarEditorRef,
   reviewPanelRef,
@@ -26,13 +27,23 @@ export function useArmoryWalkthrough({
     const shellElement = shellRef.current
     let targetElement = null
 
-    if (currentWalkthroughStep.targetId === "slot") targetElement = slotEditorRef.current
+    if (currentWalkthroughStep.targetId === "machine") targetElement = machineRef.current
+    if (currentWalkthroughStep.targetId === "nameplate") targetElement = nameplateRef.current
     if (currentWalkthroughStep.targetId === "passives") targetElement = passiveLaneRef.current
     if (currentWalkthroughStep.targetId === "hotbar") targetElement = hotbarEditorRef.current
     if (currentWalkthroughStep.targetId === "review") targetElement = reviewPanelRef.current
 
     setWalkthroughSpotlightRect(measureSpotlightRect(shellElement, targetElement))
-  }, [currentWalkthroughStep, setWalkthroughSpotlightRect, shellRef, slotEditorRef, passiveLaneRef, hotbarEditorRef, reviewPanelRef])
+  }, [
+    currentWalkthroughStep,
+    hotbarEditorRef,
+    machineRef,
+    nameplateRef,
+    passiveLaneRef,
+    reviewPanelRef,
+    setWalkthroughSpotlightRect,
+    shellRef,
+  ])
 
   useLayoutEffect(() => {
     if (!isWalkthroughVisible) {

@@ -28,8 +28,11 @@ import ArmoryMachine from "./ArmoryMachine.jsx"
 import ArmoryPartsGallery from "./ArmoryPartsGallery.jsx"
 import ArmorySpecSheet from "./ArmorySpecSheet.jsx"
 import ArmoryTestRange from "./ArmoryTestRange.jsx"
+import ArmoryUnlockCeremony from "./ArmoryUnlockCeremony.jsx"
+import ArmoryUnlockWall from "./ArmoryUnlockWall.jsx"
 import {
   ArmoryDetailPanel,
+  ArmoryFirstTouchTip,
   ArmoryHotbarButton,
   ArmoryRailStepButton,
   ArmoryStepCard,
@@ -41,6 +44,7 @@ export default function ArmoryScreen({
   shellRef,
   workspaceRef,
   nameplateRef,
+  machineRef,
   passiveLaneRef,
   hotbarEditorRef,
   reviewPanelRef,
@@ -60,6 +64,10 @@ export default function ArmoryScreen({
   specSheetApi,
   compareApi,
   walkthroughApi,
+  firstTouchApi,
+  unlockWallApi,
+  ceremonyApi,
+  blueprintApi,
 }) {
   // Identity drives the scene's lighting "weather" (see armory.css data-identity rules).
   const sceneIdentity = (activePresentation.identity.label || "Balanced").toLowerCase()
@@ -127,9 +135,12 @@ export default function ArmoryScreen({
           ))}
         </div>
 
-        <ArmoryBayWall bayApi={bayApi} />
+        <ArmoryBayWall bayApi={bayApi} blueprintApi={blueprintApi} />
 
         <div className="armoryRailActions">
+          <button type="button" className="secondaryButton" onClick={unlockWallApi.open}>
+            Unlock Wall
+          </button>
           <button type="button" className="secondaryButton" onClick={() => walkthroughApi.open("manual")}>
             Restart Walkthrough
           </button>
@@ -143,6 +154,7 @@ export default function ArmoryScreen({
         loadout={activeLoadout}
         presentation={activePresentation}
         nameplateRef={nameplateRef}
+        machineRef={machineRef}
         machineApi={machineApi}
       />
 
@@ -153,12 +165,10 @@ export default function ArmoryScreen({
         />
 
         <div className="armoryStepStack">
+          {activeStepId === "passives" ? (
           <ArmoryStepCard
             step={steps[0]}
-            index={0}
             summary={passiveApi.summary}
-            isActive={activeStepId === "passives"}
-            onActivate={() => handleOpenStep("passives")}
           >
             <div className="armoryLaneTabs" aria-label="Passive systems">
               {MODULE_SLOTS.map((slot) => {
@@ -206,6 +216,7 @@ export default function ArmoryScreen({
                 onPreviewPart={passiveApi.previewModule}
                 onClearPreview={passiveApi.clearPreview}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
+                onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <ArmoryDetailPanel
                     eyebrow={inspectedModuleId !== installedModuleId ? "Previewing part" : "Installed part"}
@@ -221,13 +232,12 @@ export default function ArmoryScreen({
               />
             </div>
           </ArmoryStepCard>
+          ) : null}
 
+          {activeStepId === "hotbar" ? (
           <ArmoryStepCard
             step={steps[1]}
-            index={1}
             summary={hotbarApi.summary}
-            isActive={activeStepId === "hotbar"}
-            onActivate={() => handleOpenStep("hotbar")}
           >
             <div className="armoryHotbarEditor" ref={hotbarEditorRef}>
               <div className="armoryHotbarTabs" aria-label="Hotbar slots">
@@ -271,6 +281,7 @@ export default function ArmoryScreen({
                 onPreviewPart={hotbarApi.previewPower}
                 onClearPreview={hotbarApi.clearPreview}
                 onInstallPart={hotbarApi.installPower}
+                onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <>
                     <ArmoryCadenceTimeline
@@ -296,13 +307,12 @@ export default function ArmoryScreen({
               />
             </div>
           </ArmoryStepCard>
+          ) : null}
 
+          {activeStepId === "review" ? (
           <ArmoryStepCard
             step={steps[2]}
-            index={2}
             summary={reviewApi.summary}
-            isActive={activeStepId === "review"}
-            onActivate={() => handleOpenStep("review")}
           >
             <div className="armoryRangeLauncher" ref={reviewPanelRef}>
               <div className="armoryReviewModeRow" aria-label="Range mode">
@@ -340,6 +350,7 @@ export default function ArmoryScreen({
               </section>
             </div>
           </ArmoryStepCard>
+          ) : null}
         </div>
       </div>
 
@@ -394,7 +405,26 @@ export default function ArmoryScreen({
         onKeepCurrentName={walkthroughApi.keepCurrentName}
         onSaveName={walkthroughApi.saveName}
         onGoToReady={walkthroughApi.goToReady}
-        onKeepTuning={walkthroughApi.keepTuning}
+        onRunRange={walkthroughApi.runRange}
+      />
+
+      <ArmoryFirstTouchTip
+        message={firstTouchApi.activeTipMessage}
+        onDismiss={firstTouchApi.dismiss}
+      />
+
+      <ArmoryUnlockWall
+        isOpen={unlockWallApi.isOpen}
+        onClose={unlockWallApi.close}
+        playerLevel={playerLevel}
+      />
+
+      <ArmoryUnlockCeremony
+        part={ceremonyApi.part}
+        remainingCount={ceremonyApi.remainingCount}
+        onInstallNow={ceremonyApi.installNow}
+        onRackIt={ceremonyApi.rackIt}
+        onSkipAll={ceremonyApi.skipAll}
       />
     </div>
   )

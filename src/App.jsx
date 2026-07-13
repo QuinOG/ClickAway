@@ -16,6 +16,7 @@ import { useShopActions } from "./app/useShopActions.js"
 import { DIFFICULTIES as MODES } from "./constants/gameModesConfig.js"
 import { ROUND_PHASE } from "./constants/gameConstants.js"
 import { normalizeBuildWalkthrough } from "./constants/buildWalkthrough.js"
+import { hasUnseenUnlockedParts, normalizeSeenUnlockPartIds } from "./utils/unlockWallUtils.js"
 
 import Layout from "./components/Layout.jsx"
 import ProtectedRoute from "./components/routing/ProtectedRoute.jsx"
@@ -94,6 +95,8 @@ export default function App() {
     setActiveLoadoutId,
     buildWalkthrough,
     setBuildWalkthrough,
+    seenUnlockPartIds,
+    setSeenUnlockPartIds,
     applyProgress,
     applyAuthenticatedSession,
     resetPlayerState,
@@ -187,6 +190,13 @@ export default function App() {
     waitForPendingProgress,
   })
 
+  const handleSeenUnlockPartIdsChange = useCallback((nextSeenUnlockPartIds = []) => {
+    const normalizedSeenUnlockPartIds = normalizeSeenUnlockPartIds(nextSeenUnlockPartIds)
+
+    setSeenUnlockPartIds(normalizedSeenUnlockPartIds)
+    void persistIntent({ seenUnlockPartIds: normalizedSeenUnlockPartIds })
+  }, [persistIntent, setSeenUnlockPartIds])
+
   const handleModeChange = useCallback((nextModeId) => {
     if (!isValidModeId(nextModeId)) return
     setSelectedModeId(nextModeId)
@@ -196,6 +206,8 @@ export default function App() {
   if (!authReady) {
     return <SessionLoadingScreen />
   }
+
+  const showArmoryUnlockBadge = hasUnseenUnlockedParts(levelProgress.level, seenUnlockPartIds)
 
   return (
     <MotionConfig reducedMotion={getMotionConfigPreference(preferences)}>
@@ -214,6 +226,7 @@ export default function App() {
             playerName={playerUsername}
             profileImageSrc={equippedProfileImage?.imageSrc}
             profileImageClassName={equippedProfileImage?.effectClass}
+            showArmoryUnlockBadge={showArmoryUnlockBadge}
           />
         }
       >
@@ -276,6 +289,7 @@ export default function App() {
                 onLoadoutStateChange={handleLoadoutStateChange}
                 buildWalkthrough={buildWalkthrough}
                 onBuildWalkthroughChange={handleBuildWalkthroughChange}
+                seenUnlockPartIds={seenUnlockPartIds}
                 buttonSkinClass={equippedButtonSkin?.effectClass}
                 buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
                 buttonSkinImageScale={
@@ -304,6 +318,8 @@ export default function App() {
                 onLoadoutStateChange={handleLoadoutStateChange}
                 buildWalkthrough={buildWalkthrough}
                 onBuildWalkthroughChange={handleBuildWalkthroughChange}
+                seenUnlockPartIds={seenUnlockPartIds}
+                onSeenUnlockPartIdsChange={handleSeenUnlockPartIdsChange}
                 buttonSkinClass={equippedButtonSkin?.effectClass}
                 buttonSkinImageSrc={equippedButtonSkin?.imageSrc}
                 buttonSkinImageScale={

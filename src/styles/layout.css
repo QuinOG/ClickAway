@@ -1332,6 +1332,20 @@
     background: rgba(224, 105, 55, 0.58);
 }
 
+.navNewBadge {
+    margin-left: 4px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    background: rgba(255, 199, 92, 0.15);
+    color: #ffd17a;
+    font-size: 8px;
+    font-weight: 800;
+    font-style: normal;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
 .guestNav {
     grid-column: 3;
     display: flex;

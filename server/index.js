@@ -167,6 +167,7 @@ function normalizeProgressPayload(body = {}) {
     savedLoadouts: body.savedLoadouts,
     selectedModeId: body.selectedModeId,
     buildWalkthrough: body.buildWalkthrough,
+    seenUnlockPartIds: body.seenUnlockPartIds,
   }
 }
 
@@ -814,6 +815,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         lifetimeStats: nextLifetimeStats,
       }),
       buildWalkthrough: currentProgress.buildWalkthrough,
+      seenUnlockPartIds: currentProgress.seenUnlockPartIds,
       historyEntry,
     })
 

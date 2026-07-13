@@ -11,6 +11,7 @@ import {
   BUILD_WALKTHROUGH_STATUS,
   normalizeBuildWalkthrough,
 } from "../src/constants/buildWalkthrough.js"
+import { normalizeSeenUnlockPartIds } from "../src/utils/unlockWallUtils.js"
 import { ACHIEVEMENTS } from "../src/game/achievements/achievementsList.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import {
@@ -58,6 +59,7 @@ const DEFAULT_PROGRESS = {
     {},
     BUILD_WALKTHROUGH_STATUS.DISMISSED
   ),
+  seenUnlockPartIds: [],
 }
 
 const DEFAULT_DATABASE_PORT = 3306
@@ -191,6 +193,7 @@ export async function initializeSchema() {
   await addColumnIfMissing("users", "demotion_protection_rounds", "int(11) NOT NULL DEFAULT 0")
   await addColumnIfMissing("users", "active_loadout_slot", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("users", "build_walkthrough_status", "varchar(60) NOT NULL DEFAULT 'not_started'")
+  await addColumnIfMissing("users", "seen_unlock_part_ids_json", "json DEFAULT NULL")
   await addColumnIfMissing("round_history", "avg_reaction_ms", "int(11) DEFAULT NULL")
   await addColumnIfMissing("round_history", "best_reaction_ms", "int(11) DEFAULT NULL")
   await addColumnIfMissing("round_history", "loadout_name", "varchar(100) DEFAULT NULL")
@@ -528,7 +531,14 @@ function normalizeProgressInput(record = {}) {
       record.buildWalkthrough ?? record.buildWalkthroughStatus,
       BUILD_WALKTHROUGH_STATUS.DISMISSED
     ),
+    seenUnlockPartIds: normalizeSeenUnlockPartIds(record.seenUnlockPartIds),
   }
+}
+
+function parseSeenUnlockPartIdsJson(value) {
+  if (!value) return []
+  const parsed = typeof value === "string" ? JSON.parse(value) : value
+  return normalizeSeenUnlockPartIds(parsed)
 }
 
 function mapUserRow(row) {
@@ -1004,7 +1014,8 @@ async function getUserStateRow(executor, userId, options = {}) {
        current_arena_theme_id AS currentArenaThemeId,
        current_profile_theme_id AS currentProfileThemeId,
        active_loadout_slot AS activeLoadoutId,
-       build_walkthrough_status AS buildWalkthroughStatus
+       build_walkthrough_status AS buildWalkthroughStatus,
+       seen_unlock_part_ids_json AS seenUnlockPartIdsJson
      FROM users
      WHERE id = ?
      LIMIT 1${lockClause}`,
@@ -1163,6 +1174,7 @@ async function buildProgressRecord(executor, userId) {
       userRow.buildWalkthroughStatus,
       BUILD_WALKTHROUGH_STATUS.DISMISSED
     ),
+    seenUnlockPartIds: parseSeenUnlockPartIdsJson(userRow.seenUnlockPartIdsJson),
   }
 }
 
@@ -1634,6 +1646,7 @@ export async function completeUserRound({
   selectedModeId,
   unlockedAchievementIds,
   buildWalkthrough,
+  seenUnlockPartIds,
   historyEntry,
 }) {
   const connection = await pool.getConnection()
@@ -1662,7 +1675,8 @@ export async function completeUserRound({
            current_arena_theme_id = ?,
            current_profile_theme_id = ?,
            active_loadout_slot = ?,
-           build_walkthrough_status = ?
+           build_walkthrough_status = ?,
+           seen_unlock_part_ids_json = ?
        WHERE id = ?`,
       [
         coins,
@@ -1676,6 +1690,7 @@ export async function completeUserRound({
         profileImage?.dbItemId ?? null,
         activeLoadoutId,
         buildWalkthrough.status,
+        JSON.stringify(normalizeSeenUnlockPartIds(seenUnlockPartIds)),
         userId,
       ]
     )
@@ -1793,7 +1808,8 @@ export async function saveUserProgress({ userId, ...progress }) {
            current_arena_theme_id = ?,
            current_profile_theme_id = ?,
            active_loadout_slot = ?,
-           build_walkthrough_status = ?
+           build_walkthrough_status = ?,
+           seen_unlock_part_ids_json = ?
        WHERE id = ?`,
       [
         normalizedProgress.coins,
@@ -1807,6 +1823,7 @@ export async function saveUserProgress({ userId, ...progress }) {
         profileImage?.dbItemId ?? null,
         normalizedProgress.activeLoadoutId,
         normalizedProgress.buildWalkthrough.status,
+        JSON.stringify(normalizedProgress.seenUnlockPartIds),
         userId,
       ]
     )

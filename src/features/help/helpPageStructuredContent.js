@@ -140,12 +140,23 @@ export const POWERUP_RULES_POINTS = [
 ]
 
 export const LOADOUT_POINTS = [
-  "Every account has 3 saved loadout slots, and Ready always uses whichever slot is active in Armory.",
-  "Each loadout contains 3 passive modules: Tempo Core, Streak Lens, and Power Rig.",
-  "Passive modules always come with tradeoffs. Faster scoring setups usually make misses or target pressure harsher.",
-  "Armory is where you rename builds, swap modules and powers, and compare how they feel in each mode.",
+  "Every account has 3 saved bays, and Ready always launches whichever bay is active in Armory.",
+  "Each bay is a machine with 3 passive parts (Tempo Core, Streak Lens, Power Rig) and a 3-key tool rack.",
+  "Hovering or focusing a part previews its effect before you install it; nothing commits until you click.",
+  "Passive parts always come with tradeoffs. Faster scoring setups usually make misses or target pressure harsher.",
+  "The Test Range runs a live, unrewarded 10-second sample of your active bay so you can feel a build before trusting it.",
   "New accounts get a one-time guided Armory walkthrough, and you can restart it later from the Armory rail.",
   "Builds are legal in every mode, including Ranked. XP, coin, and rating formulas stay the same; only gameplay conditions change.",
+]
+
+// Deep links into Armory using the URL state (?step=, ?lane=) the Armory
+// controller reads on load — see useArmoryUrlState.js.
+export const ARMORY_DEEP_LINKS = [
+  { label: "Open Tempo Core", to: "/armory?step=passives&lane=tempoCore" },
+  { label: "Open Streak Lens", to: "/armory?step=passives&lane=streakLens" },
+  { label: "Open Power Rig", to: "/armory?step=passives&lane=powerRig" },
+  { label: "Open the tool rack", to: "/armory?step=hotbar" },
+  { label: "Open the Test Range", to: "/armory?step=review" },
 ]
 
 export const SHOP_POINTS = [

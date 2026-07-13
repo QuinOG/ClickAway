@@ -9,6 +9,7 @@ import {
   BUILD_WALKTHROUGH_STATUS,
   normalizeBuildWalkthrough,
 } from "../constants/buildWalkthrough.js"
+import { normalizeSeenUnlockPartIds } from "../utils/unlockWallUtils.js"
 import { DEFAULT_EQUIPPED_IDS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
 import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/gameModesConfig.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
@@ -45,6 +46,7 @@ const DEFAULT_PROGRESS = {
     {},
     BUILD_WALKTHROUGH_STATUS.DISMISSED
   ),
+  seenUnlockPartIds: [],
 }
 
 function normalizeStringList(values = []) {
@@ -106,6 +108,7 @@ function normalizeProgress(progress = {}) {
       progress.buildWalkthrough,
       BUILD_WALKTHROUGH_STATUS.DISMISSED
     ),
+    seenUnlockPartIds: normalizeSeenUnlockPartIds(progress.seenUnlockPartIds),
   }
 }
 
@@ -154,6 +157,7 @@ export function useAppPlayerState() {
   const [savedLoadouts, setSavedLoadouts] = useState(DEFAULT_PROGRESS.savedLoadouts)
   const [activeLoadoutId, setActiveLoadoutId] = useState(DEFAULT_PROGRESS.activeLoadoutId)
   const [buildWalkthrough, setBuildWalkthrough] = useState(DEFAULT_PROGRESS.buildWalkthrough)
+  const [seenUnlockPartIds, setSeenUnlockPartIds] = useState(DEFAULT_PROGRESS.seenUnlockPartIds)
 
   const applyProgress = useCallback((progress = {}) => {
     const normalizedProgress = normalizeProgress(progress)
@@ -174,6 +178,7 @@ export function useAppPlayerState() {
     setSavedLoadouts(normalizedProgress.savedLoadouts)
     setActiveLoadoutId(normalizedProgress.activeLoadoutId)
     setBuildWalkthrough(normalizedProgress.buildWalkthrough)
+    setSeenUnlockPartIds(normalizedProgress.seenUnlockPartIds)
 
     return normalizedProgress
   }, [])
@@ -258,6 +263,8 @@ export function useAppPlayerState() {
     setActiveLoadoutId,
     buildWalkthrough,
     setBuildWalkthrough,
+    seenUnlockPartIds,
+    setSeenUnlockPartIds,
     applyProgress,
     applyPlayerState,
     applyAuthenticatedSession,

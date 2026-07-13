@@ -2,6 +2,24 @@ export function getUnlockText(unlockLevel = 1) {
   return `Unlocks at Level ${unlockLevel}`
 }
 
+// Install/hover feedback (Phase 13) reuses one sound recipe for every lane and
+// leans on `pitch` for the "per lane tone" the plan calls for, rather than
+// authoring near-duplicate recipes per lane.
+const LANE_INSTALL_PITCH = Object.freeze({
+  tempoCore: 1,
+  streakLens: 1.22,
+  powerRig: 0.84,
+})
+const HOTBAR_INSTALL_PITCH = 0.7
+
+export function getLaneInstallPitch(slotId) {
+  return LANE_INSTALL_PITCH[slotId] ?? 1
+}
+
+export function getHotbarInstallPitch() {
+  return HOTBAR_INSTALL_PITCH
+}
+
 export function normalizeDraftName(name = "", fallbackName = "Loadout") {
   const trimmed = String(name || "").trim().replace(/\s+/g, " ").slice(0, 24)
   return trimmed || fallbackName

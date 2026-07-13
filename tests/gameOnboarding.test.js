@@ -4,6 +4,7 @@ import assert from "node:assert/strict"
 import {
   BUILD_WALKTHROUGH_STATUS,
   normalizeBuildWalkthrough,
+  shouldAutoStartArmoryWalkthrough,
   shouldShowArmoryOnboardingBadge,
 } from "../src/constants/buildWalkthrough.js"
 import {
@@ -12,6 +13,7 @@ import {
   getNextOnboardingStatusAfterRound,
   isGameOnboardingStatus,
 } from "../src/constants/gameOnboarding.js"
+import { WALKTHROUGH_STEPS } from "../src/features/armory/armoryConstants.js"
 
 test("normalizeBuildWalkthrough accepts multi-step onboarding statuses", () => {
   assert.deepEqual(
@@ -64,4 +66,25 @@ test("game onboarding step copy is available for active statuses", () => {
 test("armory badge only shows before the armory tour starts", () => {
   assert.equal(shouldShowArmoryOnboardingBadge(BUILD_WALKTHROUGH_STATUS.NOT_STARTED), true)
   assert.equal(shouldShowArmoryOnboardingBadge(BUILD_WALKTHROUGH_STATUS.PRACTICE_PENDING), false)
+})
+
+test("Phase 12 re-onboarding: walkthrough is 5 fewer, stronger steps ending at the range", () => {
+  assert.equal(WALKTHROUGH_STEPS.length, 5)
+  assert.deepEqual(
+    WALKTHROUGH_STEPS.map((step) => step.id),
+    ["welcome", "machine", "module", "rack", "range"]
+  )
+  assert.equal(WALKTHROUGH_STEPS.at(-1).armoryStepId, "review")
+})
+
+test("legacy walkthrough statuses never re-trigger auto-start", () => {
+  assert.equal(shouldAutoStartArmoryWalkthrough(BUILD_WALKTHROUGH_STATUS.NOT_STARTED), true)
+  for (const status of [
+    BUILD_WALKTHROUGH_STATUS.DISMISSED,
+    BUILD_WALKTHROUGH_STATUS.PRACTICE_PENDING,
+    BUILD_WALKTHROUGH_STATUS.CASUAL_PENDING,
+    BUILD_WALKTHROUGH_STATUS.COMPLETED,
+  ]) {
+    assert.equal(shouldAutoStartArmoryWalkthrough(status), false)
+  }
 })

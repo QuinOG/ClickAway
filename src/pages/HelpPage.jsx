@@ -1,4 +1,6 @@
-﻿import HelpFlowSection from "../features/help/components/HelpFlowSection.jsx"
+﻿import { Link } from "react-router-dom"
+
+import HelpFlowSection from "../features/help/components/HelpFlowSection.jsx"
 import HelpFaqSection from "../features/help/components/HelpFaqSection.jsx"
 import HelpListSection from "../features/help/components/HelpListSection.jsx"
 import HelpQuickStartSection from "../features/help/components/HelpQuickStartSection.jsx"
@@ -6,6 +8,7 @@ import HelpRankTiersSection from "../features/help/components/HelpRankTiersSecti
 import HelpTableSection from "../features/help/components/HelpTableSection.jsx"
 import {
   ACCOUNT_ROWS,
+  ARMORY_DEEP_LINKS,
   CONTROLS_ROWS,
   DATA_SYSTEM_POINTS,
   DIFFICULTY_ROWS,
@@ -64,7 +67,16 @@ export default function HelpPage() {
           </div>
           <div className="helpGrid">
             <HelpTableSection title="Controls" columns={["Action", "Input"]} rows={CONTROLS_ROWS} />
-            <HelpListSection title="Buildcraft Loadouts" items={LOADOUT_POINTS} />
+            <div>
+              <HelpListSection title="Buildcraft Loadouts" items={LOADOUT_POINTS} />
+              <nav className="helpArmoryLinks" aria-label="Jump to Armory">
+                {ARMORY_DEEP_LINKS.map((link) => (
+                  <Link key={link.to} className="helpArmoryLink" to={link.to}>
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
           </div>
 
           <HelpTableSection

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import {
@@ -13,11 +13,21 @@ import { ARMORY_STEPS, DEFAULT_ARMORY_STEP_ID, WALKTHROUGH_STEPS } from "../armo
 import {
   buildCommittedNameResult,
   buildSwappedPowerupIds,
+  getHotbarInstallPitch,
+  getLaneInstallPitch,
   getStepSummary,
-  measureSpotlightRect,
 } from "../armoryUtils.js"
 import { useArmoryUrlState } from "../useArmoryUrlState.js"
+import { useArmoryWalkthrough } from "../useArmoryWalkthrough.js"
+import {
+  FIRST_TOUCH_TIP_MESSAGES,
+  loadSeenFirstTouchTipIds,
+  saveSeenFirstTouchTipIds,
+} from "../armoryFirstTouchTips.js"
 import { selectLoadoutStatsEntry } from "../../../utils/armoryFieldDataUtils.js"
+import { FEEDBACK_EVENTS } from "../../../constants/feedbackEvents.js"
+import { getUnseenUnlockedParts, normalizeSeenUnlockPartIds } from "../../../utils/unlockWallUtils.js"
+import { encodeBlueprint, importBlueprint } from "../../../utils/blueprintCodeUtils.js"
 
 export function useArmoryScreenController({
   modes = [],
@@ -34,11 +44,15 @@ export function useArmoryScreenController({
   buttonSkinImageScale = 100,
   arenaThemeClass = "theme-default",
   loadoutStats = [],
+  emitFeedback = null,
+  seenUnlockPartIds = [],
+  onSeenUnlockPartIdsChange,
 }) {
   const navigate = useNavigate()
   const shellRef = useRef(null)
   const workspaceRef = useRef(null)
   const nameplateRef = useRef(null)
+  const machineRef = useRef(null)
   const passiveLaneRef = useRef(null)
   const hotbarEditorRef = useRef(null)
   const reviewPanelRef = useRef(null)
@@ -72,6 +86,16 @@ export function useArmoryScreenController({
   const [walkthroughSource, setWalkthroughSource] = useState(null)
   const [walkthroughStepIndex, setWalkthroughStepIndex] = useState(0)
   const [walkthroughSpotlightRect, setWalkthroughSpotlightRect] = useState(null)
+  // First-touch tips (Phase 12): local-only, "shown once ever per browser".
+  const [seenFirstTouchTipIds, setSeenFirstTouchTipIds] = useState(loadSeenFirstTouchTipIds)
+  const [activeFirstTouchTipId, setActiveFirstTouchTipId] = useState(null)
+  // Unlock ceremony queue (Phase 11): frozen at mount, so a visit reveals
+  // whatever crossed the unlock wall since the last time this page opened.
+  const [ceremonyQueue, setCeremonyQueue] = useState(
+    () => getUnseenUnlockedParts(playerLevel, seenUnlockPartIds)
+  )
+  const [isUnlockWallOpen, setIsUnlockWallOpen] = useState(false)
+  const [blueprintNotice, setBlueprintNotice] = useState(null)
 
   const buildWalkthroughStatus = buildWalkthrough?.status ?? BUILD_WALKTHROUGH_STATUS.DISMISSED
   const currentWalkthroughStep = isWalkthroughVisible
@@ -176,23 +200,6 @@ export function useArmoryScreenController({
 
   const selectedPowerupId = activeLoadout?.powerupIds?.[editingPowerSlotIndex] ?? ""
 
-  const measureWalkthroughTarget = useCallback(() => {
-    if (!currentWalkthroughStep?.targetId) {
-      setWalkthroughSpotlightRect(null)
-      return
-    }
-
-    const shellElement = shellRef.current
-    let targetElement = null
-
-    if (currentWalkthroughStep.targetId === "nameplate") targetElement = nameplateRef.current
-    if (currentWalkthroughStep.targetId === "passives") targetElement = passiveLaneRef.current
-    if (currentWalkthroughStep.targetId === "hotbar") targetElement = hotbarEditorRef.current
-    if (currentWalkthroughStep.targetId === "review") targetElement = reviewPanelRef.current
-
-    setWalkthroughSpotlightRect(measureSpotlightRect(shellElement, targetElement))
-  }, [currentWalkthroughStep])
-
   const commitLoadoutState = useCallback((nextSavedLoadouts, nextActiveLoadoutId = localActiveLoadoutId) => {
     setLocalSavedLoadouts(nextSavedLoadouts)
     setLocalActiveLoadoutId(nextActiveLoadoutId)
@@ -221,6 +228,21 @@ export function useArmoryScreenController({
     commitLoadoutState(nextSavedLoadouts)
   }, [commitLoadoutState, localSavedLoadouts])
 
+  const triggerFirstTouchTip = useCallback((tipId) => {
+    setSeenFirstTouchTipIds((currentIds) => {
+      if (currentIds.includes(tipId)) return currentIds
+
+      const nextIds = [...currentIds, tipId]
+      saveSeenFirstTouchTipIds(nextIds)
+      setActiveFirstTouchTipId(tipId)
+      return nextIds
+    })
+  }, [])
+
+  const dismissFirstTouchTip = useCallback(() => {
+    setActiveFirstTouchTipId(null)
+  }, [])
+
   const handleActivateLoadout = useCallback((nextLoadoutId) => {
     if (!nextLoadoutId) return
 
@@ -236,8 +258,12 @@ export function useArmoryScreenController({
       return
     }
 
+    if (nextLoadoutId !== localActiveLoadoutId) {
+      emitFeedback?.(FEEDBACK_EVENTS.ARMORY_BAY_ACTIVATE)
+      triggerFirstTouchTip("baySwitch")
+    }
     commitLoadoutState(nextSavedLoadouts, nextLoadoutId)
-  }, [activeLoadout, commitLoadoutState, localActiveLoadoutId, localSavedLoadouts, nameDraft])
+  }, [activeLoadout, commitLoadoutState, emitFeedback, localActiveLoadoutId, localSavedLoadouts, nameDraft, triggerFirstTouchTip])
 
   const savedLoadoutIds = useMemo(
     () => localSavedLoadouts.map((loadout) => loadout.id),
@@ -292,16 +318,24 @@ export function useArmoryScreenController({
         [slotKey]: moduleId,
       },
     }))
-  }, [activeLoadout, updateSingleLoadout])
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_INSTALL, {
+      pitch: getLaneInstallPitch(activeModuleSlotId),
+    })
+  }, [activeLoadout, activeModuleSlotId, emitFeedback, updateSingleLoadout])
 
   const handlePreviewModule = useCallback((moduleId) => {
     if (!selectedModuleSlot) return
     setPreviewedPart({ slotKey: selectedModuleSlot.key, moduleId })
-  }, [selectedModuleSlot])
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_HOVER, { eventId: moduleId })
+  }, [emitFeedback, selectedModuleSlot])
 
   const clearModulePreview = useCallback(() => {
     setPreviewedPart(null)
   }, [])
+
+  const handleInspectLockedPart = useCallback(() => {
+    triggerFirstTouchTip("lockedPart")
+  }, [triggerFirstTouchTip])
 
   // Clicking a module housing on the machine opens that lane's parts gallery.
   const openModuleLane = useCallback((slotId) => {
@@ -320,7 +354,8 @@ export function useArmoryScreenController({
       ...loadout,
       powerupIds: buildSwappedPowerupIds(loadout.powerupIds, editingPowerSlotIndex, powerupId),
     }))
-  }, [activeLoadout, editingPowerSlotIndex, updateSingleLoadout])
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_INSTALL, { pitch: getHotbarInstallPitch() })
+  }, [activeLoadout, editingPowerSlotIndex, emitFeedback, updateSingleLoadout])
 
   // Desktop drag between rack slots (and any explicit "swap with key N" action).
   const handleSwapPowerSlots = useCallback((fromIndex, toIndex) => {
@@ -340,7 +375,8 @@ export function useArmoryScreenController({
 
   const handlePreviewPower = useCallback((powerupId) => {
     setPreviewedPowerId(powerupId)
-  }, [])
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_HOVER, { eventId: powerupId })
+  }, [emitFeedback])
 
   const clearPowerPreview = useCallback(() => {
     setPreviewedPowerId(null)
@@ -372,6 +408,94 @@ export function useArmoryScreenController({
     }))
   }, [activeLoadout, updateSingleLoadout])
 
+  const markUnlockPartsSeen = useCallback((partIds) => {
+    onSeenUnlockPartIdsChange?.(normalizeSeenUnlockPartIds([...seenUnlockPartIds, ...partIds]))
+  }, [onSeenUnlockPartIdsChange, seenUnlockPartIds])
+
+  const advanceCeremonyQueue = useCallback((seenPart) => {
+    markUnlockPartsSeen([seenPart.id])
+    setCeremonyQueue((queue) => queue.slice(1))
+  }, [markUnlockPartsSeen])
+
+  // "Install now" wires the new part straight into the active build: a
+  // module goes to its own housing, a power lands on key 1 (swapping
+  // whichever tool currently sits there) via the same swap contract the
+  // hotbar gallery uses.
+  const installCeremonyPartNow = useCallback((part) => {
+    if (activeLoadout) {
+      if (part.kind === "module") {
+        const slot = MODULE_SLOTS.find((moduleSlot) => moduleSlot.id === part.slotId)
+        if (slot) {
+          updateSingleLoadout(activeLoadout.id, (loadout) => ({
+            ...loadout,
+            moduleIds: { ...loadout.moduleIds, [slot.key]: part.id },
+          }))
+        }
+      } else if (part.kind === "power") {
+        updateSingleLoadout(activeLoadout.id, (loadout) => ({
+          ...loadout,
+          powerupIds: buildSwappedPowerupIds(loadout.powerupIds, 0, part.id),
+        }))
+      }
+    }
+
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_INSTALL, {
+      pitch: part.kind === "module" ? getLaneInstallPitch(part.slotId) : getHotbarInstallPitch(),
+    })
+    advanceCeremonyQueue(part)
+  }, [activeLoadout, advanceCeremonyQueue, emitFeedback, updateSingleLoadout])
+
+  const rackCeremonyPart = useCallback((part) => {
+    advanceCeremonyQueue(part)
+  }, [advanceCeremonyQueue])
+
+  const skipCeremonyQueue = useCallback(() => {
+    markUnlockPartsSeen(ceremonyQueue.map((part) => part.id))
+    setCeremonyQueue([])
+  }, [ceremonyQueue, markUnlockPartsSeen])
+
+  const openUnlockWall = useCallback(() => {
+    setIsUnlockWallOpen(true)
+  }, [])
+
+  const closeUnlockWall = useCallback(() => {
+    setIsUnlockWallOpen(false)
+  }, [])
+
+  // Blueprint codes (Phase 11): client-only export/import. Import re-runs the
+  // requested build through the same level-clamped normalizer the server
+  // trusts, so a code from a higher-level friend degrades gracefully.
+  const exportActiveBlueprint = useCallback(() => {
+    if (!activeLoadout) return ""
+
+    const code = encodeBlueprint(activeLoadout)
+    setBlueprintNotice({ type: "export", code, notes: [] })
+    return code
+  }, [activeLoadout])
+
+  const importBlueprintToActiveBay = useCallback((code) => {
+    if (!activeLoadout) return
+
+    const result = importBlueprint(code, playerLevel)
+    if (!result.ok) {
+      setBlueprintNotice({ type: "import-error", error: result.error })
+      return
+    }
+
+    updateSingleLoadout(activeLoadout.id, (loadout) => ({
+      ...loadout,
+      name: result.name,
+      moduleIds: result.moduleIds,
+      powerupIds: result.powerupIds,
+    }))
+    setNameDraft(result.name)
+    setBlueprintNotice({ type: "import", notes: result.notes })
+  }, [activeLoadout, playerLevel, updateSingleLoadout])
+
+  const clearBlueprintNotice = useCallback(() => {
+    setBlueprintNotice(null)
+  }, [])
+
   const requestResetLoadout = useCallback(() => {
     setPendingBayAction({ type: "reset" })
   }, [])
@@ -400,7 +524,8 @@ export function useArmoryScreenController({
     setIsSpecSheetOpen(false)
     setRangeRunToken((token) => token + 1)
     setIsRangeOpen(true)
-  }, [commitActiveLoadoutName])
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_RANGE_START)
+  }, [commitActiveLoadoutName, emitFeedback])
 
   const closeTestRange = useCallback(() => {
     setIsRangeOpen(false)
@@ -408,12 +533,14 @@ export function useArmoryScreenController({
 
   const runTestRangeAgain = useCallback(() => {
     setRangeRunToken((token) => token + 1)
-  }, [])
+    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_RANGE_START)
+  }, [emitFeedback])
 
   const openSpecSheet = useCallback(() => {
     commitActiveLoadoutName()
     setIsSpecSheetOpen(true)
-  }, [commitActiveLoadoutName])
+    triggerFirstTouchTip("blueprint")
+  }, [commitActiveLoadoutName, triggerFirstTouchTip])
 
   const closeSpecSheet = useCallback(() => {
     setIsSpecSheetOpen(false)
@@ -436,13 +563,15 @@ export function useArmoryScreenController({
     setCompareGhostLoadoutId(targetLoadoutId)
     setCompareView("bay")
     setIsCompareOpen(true)
-  }, [])
+    triggerFirstTouchTip("compare")
+  }, [triggerFirstTouchTip])
 
   const openModeMatrix = useCallback(() => {
     commitActiveLoadoutName()
     setCompareView("matrix")
     setIsCompareOpen(true)
-  }, [commitActiveLoadoutName])
+    triggerFirstTouchTip("compare")
+  }, [commitActiveLoadoutName, triggerFirstTouchTip])
 
   const closeCompareBench = useCallback(() => {
     setIsCompareOpen(false)
@@ -486,11 +615,12 @@ export function useArmoryScreenController({
     goToNextWalkthroughStep()
   }, [commitNameplateEdit, goToNextWalkthroughStep])
 
-  const handleWalkthroughKeepTuning = useCallback(() => {
+  const handleWalkthroughRunRange = useCallback(() => {
     setIsWalkthroughVisible(false)
     setWalkthroughSource(null)
     setWalkthroughSpotlightRect(null)
-  }, [])
+    openTestRange()
+  }, [openTestRange])
 
   const handleWalkthroughGoToReady = useCallback(() => {
     setIsWalkthroughVisible(false)
@@ -514,50 +644,34 @@ export function useArmoryScreenController({
       setEditingPowerSlotIndex(currentWalkthroughStep.powerSlotIndex)
     }
     if (
-      currentWalkthroughStep.id === "review" &&
+      currentWalkthroughStep.id === "range" &&
       buildWalkthroughStatus === BUILD_WALKTHROUGH_STATUS.NOT_STARTED
     ) {
       onBuildWalkthroughChange?.({ status: BUILD_WALKTHROUGH_STATUS.PRACTICE_PENDING })
     }
   }, [buildWalkthroughStatus, currentWalkthroughStep, onBuildWalkthroughChange])
 
-  useLayoutEffect(() => {
-    if (!isWalkthroughVisible) {
-      setWalkthroughSpotlightRect(null)
-      return undefined
-    }
-
-    const frameId = window.requestAnimationFrame(() => {
-      measureWalkthroughTarget()
-    })
-
-    return () => window.cancelAnimationFrame(frameId)
-  }, [
-    activeModuleSlotId,
-    activeStepId,
-    currentWalkthroughStep,
-    editingPowerSlotIndex,
+  useArmoryWalkthrough({
     isWalkthroughVisible,
-    measureWalkthroughTarget,
-    localActiveLoadoutId,
-    localSavedLoadouts,
-    selectedModeId,
-  ])
-
-  useEffect(() => {
-    if (!isWalkthroughVisible) return undefined
-
-    const handleReposition = () => measureWalkthroughTarget()
-    const workspaceElement = workspaceRef.current
-
-    window.addEventListener("resize", handleReposition)
-    workspaceElement?.addEventListener("scroll", handleReposition, { passive: true })
-
-    return () => {
-      window.removeEventListener("resize", handleReposition)
-      workspaceElement?.removeEventListener("scroll", handleReposition)
-    }
-  }, [isWalkthroughVisible, measureWalkthroughTarget])
+    currentWalkthroughStep,
+    shellRef,
+    workspaceRef,
+    nameplateRef,
+    machineRef,
+    passiveLaneRef,
+    hotbarEditorRef,
+    reviewPanelRef,
+    setWalkthroughSpotlightRect,
+    spotlightLayoutKey: [
+      activeModuleSlotId,
+      activeStepId,
+      editingPowerSlotIndex,
+      localActiveLoadoutId,
+      selectedModeId,
+      JSON.stringify(activeLoadout?.moduleIds ?? {}),
+      JSON.stringify(activeLoadout?.powerupIds ?? []),
+    ].join("|"),
+  })
 
   // Field Data (Phase 9): per-bay service records keyed on the stable
   // `loadoutId`, not the display name — a rename never orphans its history.
@@ -584,6 +698,7 @@ export function useArmoryScreenController({
     shellRef,
     workspaceRef,
     nameplateRef,
+    machineRef,
     passiveLaneRef,
     hotbarEditorRef,
     reviewPanelRef,
@@ -700,7 +815,31 @@ export function useArmoryScreenController({
       keepCurrentName: handleWalkthroughKeepCurrentName,
       saveName: handleWalkthroughSaveName,
       goToReady: handleWalkthroughGoToReady,
-      keepTuning: handleWalkthroughKeepTuning,
+      runRange: handleWalkthroughRunRange,
+    },
+    firstTouchApi: {
+      activeTipId: activeFirstTouchTipId,
+      activeTipMessage: activeFirstTouchTipId ? FIRST_TOUCH_TIP_MESSAGES[activeFirstTouchTipId] : null,
+      dismiss: dismissFirstTouchTip,
+      notifyLockedPart: handleInspectLockedPart,
+    },
+    unlockWallApi: {
+      isOpen: isUnlockWallOpen,
+      open: openUnlockWall,
+      close: closeUnlockWall,
+    },
+    ceremonyApi: {
+      part: ceremonyQueue[0] ?? null,
+      remainingCount: ceremonyQueue.length,
+      installNow: installCeremonyPartNow,
+      rackIt: rackCeremonyPart,
+      skipAll: skipCeremonyQueue,
+    },
+    blueprintApi: {
+      notice: blueprintNotice,
+      exportCode: exportActiveBlueprint,
+      importCode: importBlueprintToActiveBay,
+      clearNotice: clearBlueprintNotice,
     },
   }
 }

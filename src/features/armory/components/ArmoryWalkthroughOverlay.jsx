@@ -11,12 +11,12 @@ export default function ArmoryWalkthroughOverlay({
   onKeepCurrentName,
   onSaveName,
   onGoToReady,
-  onKeepTuning,
+  onRunRange,
 }) {
   if (!step) return null
 
   const dismissLabel = isManual ? "Close" : "Skip"
-  const note = step.id === "review" && selectedModeLabel
+  const note = step.id === "range" && selectedModeLabel
     ? `${step.note} This preview is using ${selectedModeLabel}.`
     : step.note
 
@@ -54,22 +54,22 @@ export default function ArmoryWalkthroughOverlay({
 
         <div className="armoryWalkthroughActions">
           {step.id === "welcome" ? <button type="button" className="primaryButton" onClick={onNext}>Start Walkthrough</button> : null}
-          {step.id === "slot" ? (
+          {step.id === "machine" ? (
             <>
               <button type="button" className="secondaryButton" onClick={onKeepCurrentName}>Keep Current Name</button>
               <button type="button" className="primaryButton" onClick={onSaveName}>Save Name</button>
             </>
           ) : null}
-          {(step.id.startsWith("hotbar") || step.id === "tempo" || step.id === "streak" || step.id === "rig") ? (
+          {(step.id === "module" || step.id === "rack") ? (
             <>
               <button type="button" className="secondaryButton" onClick={onBack}>Back</button>
               <button type="button" className="primaryButton" onClick={onNext}>Continue</button>
             </>
           ) : null}
-          {step.id === "review" ? (
+          {step.id === "range" ? (
             <>
               <button type="button" className="secondaryButton" onClick={onBack}>Back</button>
-              <button type="button" className="secondaryButton" onClick={onKeepTuning}>Keep Tuning</button>
+              <button type="button" className="secondaryButton" onClick={onRunRange}>Run the Range</button>
               <button type="button" className="primaryButton" onClick={onGoToReady}>Go to Ready</button>
             </>
           ) : null}

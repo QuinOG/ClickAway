@@ -4,9 +4,9 @@ import { getUnlockText } from "../armoryUtils.js"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
 // laid out as machined parts. Pointer hover and keyboard focus preview a part
-// (never persisted); click or Enter installs it. Touch gets the same contract
-// in two taps: the first tap previews, the second installs. In power mode a
-// part racked on another key stays live and installs as a one-action key swap.
+// (never persisted, purely for the inspection footer); a click or Enter always
+// installs it immediately. In power mode a part racked on another key stays
+// live and installs as a one-action key swap.
 
 function getPartStateLabel({ part, isLocked, isInstalled, isPreviewed }) {
   if (isLocked) return getUnlockText(part.unlockLevel)
@@ -29,6 +29,7 @@ export default function ArmoryPartsGallery({
   onPreviewPart,
   onClearPreview,
   onInstallPart,
+  onInspectLockedPart,
   footer = null,
 }) {
   const cardRefs = useRef({})
@@ -95,20 +96,17 @@ export default function ArmoryPartsGallery({
               disabled={isLocked}
               tabIndex={isLocked ? undefined : (part.id === tabStopPartId ? 0 : -1)}
               aria-pressed={isInstalled}
-              onMouseEnter={() => { if (!isLocked) onPreviewPart?.(part.id) }}
+              onMouseEnter={() => {
+                if (isLocked) onInspectLockedPart?.(part.id)
+                else onPreviewPart?.(part.id)
+              }}
               onFocus={() => {
                 setRovingPartId(part.id)
                 onPreviewPart?.(part.id)
               }}
               onClick={() => {
                 if (isInstalled) return
-                // Pointer hover / keyboard focus has already set the preview,
-                // so this installs. A bare tap (touch) previews first.
-                if (part.id === previewedPartId) {
-                  onInstallPart?.(part.id)
-                } else {
-                  onPreviewPart?.(part.id)
-                }
+                onInstallPart?.(part.id)
               }}
             >
               <span className={`armoryPartGlyph tone-${tone}`} aria-hidden="true">

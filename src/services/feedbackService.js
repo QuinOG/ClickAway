@@ -111,6 +111,37 @@ const EVENT_RECIPES = Object.freeze({
     type: "triangle",
     vibration: 10,
   },
+  // The workshop's voice (Phase 13): sparse, mechanical, never louder than the
+  // arena's own sounds. Install/hover reuse `pitch` for lane tone instead of
+  // three near-duplicate recipes.
+  [FEEDBACK_EVENTS.ARMORY_PART_HOVER]: {
+    notes: [880],
+    duration: 0.02,
+    gain: 0.05,
+    type: "sine",
+    vibration: 0,
+  },
+  [FEEDBACK_EVENTS.ARMORY_PART_INSTALL]: {
+    notes: [300, 200],
+    duration: 0.07,
+    gain: 0.15,
+    type: "triangle",
+    vibration: 14,
+  },
+  [FEEDBACK_EVENTS.ARMORY_BAY_ACTIVATE]: {
+    notes: [220, 330],
+    duration: 0.14,
+    gain: 0.12,
+    type: "sine",
+    vibration: 10,
+  },
+  [FEEDBACK_EVENTS.ARMORY_RANGE_START]: {
+    notes: [480, 640],
+    duration: 0.08,
+    gain: 0.1,
+    type: "triangle",
+    vibration: 8,
+  },
 })
 
 const DEFAULT_PREFERENCES = Object.freeze({

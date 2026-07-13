@@ -53,6 +53,7 @@ import {
   calculateRoundRankDelta,
 } from "../../../utils/rankUtils.js"
 import { shouldShowArmoryOnboardingBadge } from "../../../constants/buildWalkthrough.js"
+import { hasUnseenUnlockedParts } from "../../../utils/unlockWallUtils.js"
 import {
   getGameOnboardingStep,
   getNextOnboardingStatusAfterRound,
@@ -132,6 +133,7 @@ export function useGameScreenController({
   onLoadoutStateChange,
   buildWalkthrough = null,
   onBuildWalkthroughChange,
+  seenUnlockPartIds = [],
   buttonSkinClass = "skin-default",
   buttonSkinImageSrc = "",
   buttonSkinImageScale = 100,
@@ -1449,7 +1451,8 @@ export function useGameScreenController({
       activeLoadoutName: resolvedLoadout?.name ?? "Loadout",
       playerBestScore,
       activeLoadoutPresentation: previewLoadoutPresentation,
-      showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus),
+      showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus)
+        || hasUnseenUnlockedParts(playerLevel, seenUnlockPartIds),
       onboardingCoach: gameOnboardingStep
         ? {
             stepLabel: `Step ${gameOnboardingStep.stepNumber} of 3`,

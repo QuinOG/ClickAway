@@ -14,6 +14,10 @@ export const FEEDBACK_EVENTS = Object.freeze({
   REWARD: "reward.granted",
   RANK_CHANGE: "rank.changed",
   TEST: "settings.test",
+  ARMORY_PART_HOVER: "armory.part.hover",
+  ARMORY_PART_INSTALL: "armory.part.install",
+  ARMORY_BAY_ACTIVATE: "armory.bay.activate",
+  ARMORY_RANGE_START: "armory.range.start",
 })
 
 export const FEEDBACK_EVENT_NAMES = Object.freeze(Object.values(FEEDBACK_EVENTS))

@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 import {
   BuildIdentityGlyph,
   ModuleSlotGlyph,
@@ -117,7 +119,89 @@ function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi 
   )
 }
 
-export default function ArmoryBayWall({ bayApi }) {
+// Blueprint codes (Phase 11): a compact client-only export/import so a
+// friend can paste your build (or the closest legal version of it).
+function ArmoryBlueprintPanel({ blueprintApi }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [importDraft, setImportDraft] = useState("")
+
+  if (!isOpen) {
+    return (
+      <button
+        type="button"
+        className="armoryBayAction"
+        onClick={() => setIsOpen(true)}
+      >
+        Blueprint code
+      </button>
+    )
+  }
+
+  const notice = blueprintApi.notice
+
+  return (
+    <div className="armoryBlueprintPanel">
+      <div className="armoryBlueprintRow">
+        <button
+          type="button"
+          className="armoryBayAction"
+          onClick={() => {
+            const code = blueprintApi.exportCode()
+            if (code && navigator.clipboard?.writeText) {
+              void navigator.clipboard.writeText(code)
+            }
+          }}
+        >
+          Copy active build
+        </button>
+        <button
+          type="button"
+          className="armoryBayAction"
+          onClick={() => {
+            setIsOpen(false)
+            blueprintApi.clearNotice()
+          }}
+        >
+          Done
+        </button>
+      </div>
+
+      <div className="armoryBlueprintRow">
+        <input
+          type="text"
+          className="armoryBlueprintInput"
+          placeholder="Paste a blueprint code"
+          value={importDraft}
+          onChange={(event) => setImportDraft(event.target.value)}
+        />
+        <button
+          type="button"
+          className="armoryBayAction"
+          onClick={() => {
+            blueprintApi.importCode(importDraft)
+            setImportDraft("")
+          }}
+        >
+          Import into active bay
+        </button>
+      </div>
+
+      {notice?.type === "export" ? (
+        <p className="armoryBlueprintNotice">Copied to clipboard.</p>
+      ) : null}
+      {notice?.type === "import" ? (
+        <p className="armoryBlueprintNotice">
+          {notice.notes.length ? notice.notes.join(" ") : "Blueprint imported."}
+        </p>
+      ) : null}
+      {notice?.type === "import-error" ? (
+        <p className="armoryBlueprintNotice isError">{notice.error}</p>
+      ) : null}
+    </div>
+  )
+}
+
+export default function ArmoryBayWall({ bayApi, blueprintApi }) {
   return (
     <div className="armoryBayWall" aria-label="Build bays">
       {bayApi.savedLoadouts.map((loadout, index) => (
@@ -131,6 +215,8 @@ export default function ArmoryBayWall({ bayApi }) {
           bayApi={bayApi}
         />
       ))}
+
+      {blueprintApi ? <ArmoryBlueprintPanel blueprintApi={blueprintApi} /> : null}
     </div>
   )
 }

@@ -51,6 +51,7 @@ export default function Layout({
   rankLabel,
   rankMmr,
   pendingDuelCount = 0,
+  showArmoryUnlockBadge = false,
   isIdentityLoading = false,
   isOffline = false,
   onOpenSettings,
@@ -130,6 +131,7 @@ export default function Layout({
         rankLabel={rankLabel}
         rankMmr={rankMmr}
         pendingDuelCount={pendingDuelCount}
+        showArmoryUnlockBadge={showArmoryUnlockBadge}
         isIdentityLoading={isIdentityLoading}
         isOffline={isOffline}
         onOpenSettings={handleOpenSettings}

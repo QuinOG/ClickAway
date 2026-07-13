@@ -59,7 +59,7 @@ function PendingBadge({ count = 0 }) {
   )
 }
 
-function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, onNavigate }) {
+function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, showArmoryUnlockBadge = false, onNavigate }) {
   return (
     <NavLink
       to={route.path}
@@ -72,13 +72,14 @@ function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, onNa
           <span className="navItemIcon"><RouteIcon route={route} active={isActive} /></span>
           <span className="navItemLabel">{route.label}</span>
           {route.id === "duels" ? <PendingBadge count={pendingDuelCount} /> : null}
+          {route.id === "armory" && showArmoryUnlockBadge ? <b className="navNewBadge">New</b> : null}
         </>
       )}
     </NavLink>
   )
 }
 
-function NavGroup({ label, routes, pendingDuelCount }) {
+function NavGroup({ label, routes, pendingDuelCount, showArmoryUnlockBadge }) {
   return (
     <div className="navGroup">
       <span className="navGroupLabel">{label}</span>
@@ -88,6 +89,7 @@ function NavGroup({ label, routes, pendingDuelCount }) {
             key={route.id}
             route={route}
             pendingDuelCount={pendingDuelCount}
+            showArmoryUnlockBadge={showArmoryUnlockBadge}
           />
         ))}
       </div>
@@ -131,6 +133,7 @@ export default function Navbar({
   rankLabel = "Unranked",
   rankMmr = 0,
   pendingDuelCount = 0,
+  showArmoryUnlockBadge = false,
   isIdentityLoading = false,
   isOffline = false,
   onOpenSettings,
@@ -225,7 +228,11 @@ export default function Navbar({
           {isAuthed ? (
             <nav className="desktopNav" aria-label="Primary navigation">
               <ShellNavLink route={PLAY_ROUTE} className="navItem navPlay" />
-              <NavGroup label="Collection" routes={COLLECTION_ROUTES} />
+              <NavGroup
+                label="Collection"
+                routes={COLLECTION_ROUTES}
+                showArmoryUnlockBadge={showArmoryUnlockBadge}
+              />
               <NavGroup
                 label="Competition"
                 routes={COMPETITION_ROUTES}
@@ -380,6 +387,7 @@ export default function Navbar({
                           route={route}
                           className="mobileMoreLink"
                           pendingDuelCount={pendingDuelCount}
+                          showArmoryUnlockBadge={showArmoryUnlockBadge}
                           onNavigate={handleMoreNavigation}
                         />
                       ))}

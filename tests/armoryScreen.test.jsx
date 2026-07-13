@@ -448,20 +448,16 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
   })
 
-  test("touch: first tap previews, second tap installs", async () => {
-    const user = userEvent.setup()
+  test("a bare tap or click installs immediately, no separate preview step", async () => {
     const props = renderArmory()
 
-    await openStep(user, "Passive Stack")
+    await openStep(userEvent.setup(), "Passive Stack")
     props.onLoadoutStateChange.mockClear()
 
     // fireEvent.click skips hover, matching a bare tap.
     const anchorCard = getPartCard(/^Anchor/)
     fireEvent.click(anchorCard)
-    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
-    expect(document.querySelector(".armoryMachineTargetGhost")).not.toBeNull()
 
-    fireEvent.click(anchorCard)
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")

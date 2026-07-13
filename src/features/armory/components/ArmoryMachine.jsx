@@ -125,6 +125,7 @@ export default function ArmoryMachine({
   loadout,
   presentation,
   nameplateRef,
+  machineRef,
   machineApi,
 }) {
   const { buttonSkinClass = "", buttonSkinImageSrc = "", buttonSkinImageScale = 100 } = machineApi
@@ -143,11 +144,13 @@ export default function ArmoryMachine({
     <section className="armoryStage" aria-label="Active build machine">
       {/* Keyed by bay so switching bays rolls a fresh machine onto the stage
           (reduced motion crossfades instead — see armory.css). */}
-      <div className="armoryMachine" key={loadout.id}>
+      <div className="armoryMachine" key={loadout.id} ref={machineRef}>
         <div className="armoryMachineCore">
-          {presentation.moduleStack.map((module) => (
-            <MachineHousing key={module.slotId} module={module} onOpenLane={machineApi.openModuleLane} />
-          ))}
+          <div className="armoryMachineHousingRow" aria-label="Passive stack">
+            {presentation.moduleStack.map((module) => (
+              <MachineHousing key={module.slotId} module={module} onOpenLane={machineApi.openModuleLane} />
+            ))}
+          </div>
 
           <span
             className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}

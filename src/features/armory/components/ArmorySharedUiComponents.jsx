@@ -72,16 +72,13 @@ export function ArmoryRailStepButton({ step, index, isActive = false, onClick })
   )
 }
 
-export function ArmoryStepCard({ step, index, summary, isActive = false, onActivate, children }) {
+// Selection lives solely on the left rail (ArmoryRailStepButton) now, so this
+// renders only the active step: a plain (non-toggling) header over its panel,
+// not a second, redundant control for the same three steps.
+export function ArmoryStepCard({ step, summary, children }) {
   return (
-    <section className={`armoryStepCard armoryStepCard-${step.id} ${isActive ? "isActive" : ""}`}>
-      <button
-        type="button"
-        className="armoryStepToggle"
-        onClick={onActivate}
-        aria-expanded={isActive}
-      >
-        <span className="armoryStepIndex">{index + 1}</span>
+    <section className={`armoryStepCard armoryStepCard-${step.id} isActive`}>
+      <div className="armoryStepToggle">
         <span className="armoryStepGlyph" aria-hidden="true">
           <ArmoryStepGlyph stepId={step.id} className="armoryStepGlyphIcon" />
         </span>
@@ -90,8 +87,8 @@ export function ArmoryStepCard({ step, index, summary, isActive = false, onActiv
           <span className="armoryStepLead">{step.lead}</span>
         </span>
         <span className="armoryStepSummary">{summary}</span>
-      </button>
-      {isActive ? <div className="armoryStepContent">{children}</div> : null}
+      </div>
+      <div className="armoryStepContent">{children}</div>
     </section>
   )
 }
@@ -154,6 +151,19 @@ export function ArmoryHotbarButton({
         </span>
       </span>
     </button>
+  )
+}
+
+export function ArmoryFirstTouchTip({ message, onDismiss }) {
+  if (!message) return null
+
+  return (
+    <div className="armoryFirstTouchTip" role="status">
+      <span className="armoryFirstTouchTipText">{message}</span>
+      <button type="button" className="armoryFirstTouchTipDismiss" onClick={onDismiss} aria-label="Dismiss tip">
+        ×
+      </button>
+    </div>
   )
 }
 
