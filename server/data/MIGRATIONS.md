@@ -2,9 +2,10 @@
 
 **`initializeSchema()` in `server/playerMysqlDatabase.js` is the authoritative migration
 system.** It runs on every server boot, creates every table with `CREATE TABLE IF NOT
-EXISTS`, and adds any missing column with `information_schema`-checked `ALTER TABLE`
-statements. Pointing the app at a brand-new, empty database is enough — no manual SQL
-needs to be run first or after a deploy.
+EXISTS`, and adds any missing column with `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`
+(native Postgres syntax — the database is Supabase/Postgres, reached via
+`SUPABASE_DB_URL`; see `server/db/pgPool.js`). Pointing the app at a brand-new, empty
+database is enough — no manual SQL needs to be run first or after a deploy.
 
 `server/data/clickaway.sql` and the numbered files below are historical snapshots kept
 for reference only. They are not run automatically, they are not required, and they can

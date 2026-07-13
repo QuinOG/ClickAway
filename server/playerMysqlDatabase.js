@@ -1,6 +1,6 @@
 ﻿import "dotenv/config"
 
-import mysql from "mysql2/promise"
+import pool, { buildValuesClause } from "./db/pgPool.js"
 
 import {
   ACTIVE_LOADOUT_ID_DEFAULT,
@@ -62,140 +62,126 @@ const DEFAULT_PROGRESS = {
   seenUnlockPartIds: [],
 }
 
-const DEFAULT_DATABASE_PORT = 3306
 const DEFAULT_PROGRESSION_MODE = "non_ranked"
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || process.env.MYSQL_HOST || "localhost",
-  port: Number(process.env.DB_PORT || process.env.MYSQL_PORT || DEFAULT_DATABASE_PORT),
-  user: process.env.DB_USER || process.env.MYSQL_USER || "root",
-  password: process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD || "",
-  database: process.env.DB_NAME || process.env.MYSQL_DATABASE || "clickaway",
-  waitForConnections: true,
-  connectionLimit: 10,
-  multipleStatements: true,
-})
 
 export async function initializeSchema() {
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS \`achievements_catalog\` (
-      \`id\` varchar(60) NOT NULL,
-      PRIMARY KEY (\`id\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS achievements_catalog (
+      id varchar(60) NOT NULL,
+      PRIMARY KEY (id)
+    );
 
-    CREATE TABLE IF NOT EXISTS \`arena_themes\` (
-      \`id\` bigint(20) NOT NULL,
-      PRIMARY KEY (\`id\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS arena_themes (
+      id bigint NOT NULL,
+      PRIMARY KEY (id)
+    );
 
-    CREATE TABLE IF NOT EXISTS \`button_skins\` (
-      \`id\` bigint(20) NOT NULL,
-      PRIMARY KEY (\`id\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS button_skins (
+      id bigint NOT NULL,
+      PRIMARY KEY (id)
+    );
 
-    CREATE TABLE IF NOT EXISTS \`profile_images\` (
-      \`id\` bigint(20) NOT NULL,
-      PRIMARY KEY (\`id\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS profile_images (
+      id bigint NOT NULL,
+      PRIMARY KEY (id)
+    );
 
-    CREATE TABLE IF NOT EXISTS \`users\` (
-      \`id\` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-      \`username\` varchar(50) NOT NULL,
-      \`password_hash\` varchar(255) NOT NULL,
-      \`coins\` bigint(20) NOT NULL DEFAULT 0,
-      \`xp\` int(11) NOT NULL DEFAULT 0,
-      \`mmr\` int(11) NOT NULL DEFAULT 0,
-      \`current_button_skin_id\` bigint(20) DEFAULT NULL,
-      \`current_arena_theme_id\` bigint(20) DEFAULT NULL,
-      \`current_profile_theme_id\` bigint(20) DEFAULT NULL,
-      PRIMARY KEY (\`id\`),
-      UNIQUE KEY \`uq_username\` (\`username\`),
-      KEY \`idx_users_mmr_id\` (\`mmr\`, \`id\`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS users (
+      id bigint GENERATED ALWAYS AS IDENTITY,
+      username varchar(50) NOT NULL,
+      password_hash varchar(255) NOT NULL,
+      coins bigint NOT NULL DEFAULT 0,
+      xp int NOT NULL DEFAULT 0,
+      mmr int NOT NULL DEFAULT 0,
+      current_button_skin_id bigint DEFAULT NULL,
+      current_arena_theme_id bigint DEFAULT NULL,
+      current_profile_theme_id bigint DEFAULT NULL,
+      PRIMARY KEY (id),
+      UNIQUE (username)
+    );
+    CREATE INDEX IF NOT EXISTS idx_users_mmr_id ON users (mmr, id);
 
-    CREATE TABLE IF NOT EXISTS \`round_history\` (
-      \`id\` bigint(20) NOT NULL AUTO_INCREMENT,
-      \`user_id\` bigint(20) UNSIGNED NOT NULL,
-      \`mode\` varchar(50) NOT NULL DEFAULT 'normal',
-      \`progression_mode\` varchar(50) NOT NULL DEFAULT 'non_ranked',
-      \`score\` int(11) NOT NULL DEFAULT 0,
-      \`hits\` int(11) NOT NULL DEFAULT 0,
-      \`misses\` int(11) NOT NULL DEFAULT 0,
-      \`best_streak\` int(11) NOT NULL DEFAULT 0,
-      \`coins_earned\` int(11) NOT NULL DEFAULT 0,
-      \`xp_earned\` int(11) NOT NULL DEFAULT 0,
-      \`rank_delta\` int(11) NOT NULL DEFAULT 0,
-      \`played_at\` timestamp NOT NULL DEFAULT current_timestamp(),
-      PRIMARY KEY (\`id\`),
-      KEY \`idx_user_played\` (\`user_id\`, \`played_at\`),
-      KEY \`idx_round_history_progression_user\` (\`progression_mode\`, \`user_id\`),
-      CONSTRAINT \`fk_round_history_user\`
-        FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS round_history (
+      id bigint GENERATED ALWAYS AS IDENTITY,
+      user_id bigint NOT NULL,
+      mode varchar(50) NOT NULL DEFAULT 'normal',
+      progression_mode varchar(50) NOT NULL DEFAULT 'non_ranked',
+      score int NOT NULL DEFAULT 0,
+      hits int NOT NULL DEFAULT 0,
+      misses int NOT NULL DEFAULT 0,
+      best_streak int NOT NULL DEFAULT 0,
+      coins_earned int NOT NULL DEFAULT 0,
+      xp_earned int NOT NULL DEFAULT 0,
+      rank_delta int NOT NULL DEFAULT 0,
+      played_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (id),
+      CONSTRAINT fk_round_history_user
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_played ON round_history (user_id, played_at);
+    CREATE INDEX IF NOT EXISTS idx_round_history_progression_user ON round_history (progression_mode, user_id);
 
-    CREATE TABLE IF NOT EXISTS \`user_achievement_progress\` (
-      \`id\` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-      \`user_id\` bigint(20) UNSIGNED NOT NULL,
-      \`achievement_id\` varchar(60) NOT NULL,
-      \`unlocked_at\` timestamp NULL DEFAULT NULL,
-      PRIMARY KEY (\`id\`),
-      UNIQUE KEY \`uq_user_achievement\` (\`user_id\`, \`achievement_id\`),
-      KEY \`idx_user_unlocked\` (\`user_id\`, \`unlocked_at\`),
-      KEY \`idx_achprog_catalog\` (\`achievement_id\`),
-      CONSTRAINT \`fk_achprog_user\`
-        FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS user_achievement_progress (
+      id bigint GENERATED ALWAYS AS IDENTITY,
+      user_id bigint NOT NULL,
+      achievement_id varchar(60) NOT NULL,
+      unlocked_at timestamptz NULL DEFAULT NULL,
+      PRIMARY KEY (id),
+      UNIQUE (user_id, achievement_id),
+      CONSTRAINT fk_achprog_user
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_unlocked ON user_achievement_progress (user_id, unlocked_at);
+    CREATE INDEX IF NOT EXISTS idx_achprog_catalog ON user_achievement_progress (achievement_id);
 
-    CREATE TABLE IF NOT EXISTS \`user_collection\` (
-      \`id\` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-      \`user_id\` bigint(20) UNSIGNED NOT NULL,
-      \`item_type\` varchar(50) NOT NULL,
-      \`item_id\` bigint(20) NOT NULL,
-      PRIMARY KEY (\`id\`),
-      UNIQUE KEY \`uq_user_item\` (\`user_id\`, \`item_type\`, \`item_id\`),
-      CONSTRAINT \`fk_collection_user\`
-        FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    CREATE TABLE IF NOT EXISTS user_collection (
+      id bigint GENERATED ALWAYS AS IDENTITY,
+      user_id bigint NOT NULL,
+      item_type varchar(50) NOT NULL,
+      item_id bigint NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE (user_id, item_type, item_id),
+      CONSTRAINT fk_collection_user
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    );
 
-    INSERT IGNORE INTO \`arena_themes\` (\`id\`) VALUES (1),(2),(3),(4);
+    INSERT INTO arena_themes (id) VALUES (1),(2),(3),(4) ON CONFLICT (id) DO NOTHING;
 
-    INSERT IGNORE INTO \`button_skins\` (\`id\`) VALUES
-      (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16);
+    INSERT INTO button_skins (id) VALUES
+      (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16)
+      ON CONFLICT (id) DO NOTHING;
 
-    INSERT IGNORE INTO \`profile_images\` (\`id\`) VALUES (1),(2),(3),(4),(5),(6),(7);
+    INSERT INTO profile_images (id) VALUES (1),(2),(3),(4),(5),(6),(7) ON CONFLICT (id) DO NOTHING;
   `)
 
   // The achievement catalog is seeded from ACHIEVEMENTS (the single source of truth
   // shared with the frontend) instead of a hand-maintained id list, so the two can
   // never drift out of sync again.
-  await pool.query(
-    "INSERT IGNORE INTO `achievements_catalog` (`id`) VALUES ?",
-    [ACHIEVEMENTS.map((achievement) => [achievement.id])]
-  )
+  if (ACHIEVEMENTS.length > 0) {
+    const { clause, params } = buildValuesClause(
+      ACHIEVEMENTS.map((achievement) => [achievement.id])
+    )
+    await pool.query(
+      `INSERT INTO achievements_catalog (id) VALUES ${clause} ON CONFLICT (id) DO NOTHING`,
+      params
+    )
+  }
 
   // Migrations: add columns that may be missing from older deployments.
-  // MySQL 5.7 does not support ALTER TABLE ADD COLUMN IF NOT EXISTS,
-  // so we check information_schema first and skip columns that already exist.
+  // Postgres supports ADD COLUMN IF NOT EXISTS natively, unlike MySQL 5.7.
   async function addColumnIfMissing(table, column, definition) {
-    const [rows] = await pool.query(
-      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
-       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
-      [table, column]
-    )
-    if (rows[0].cnt === 0) {
-      await pool.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`)
-    }
+    await pool.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${column} ${definition}`)
   }
 
   await addColumnIfMissing("users", "role", "varchar(20) NOT NULL DEFAULT 'player'")
-  await addColumnIfMissing("users", "rank_system_version", "int(11) NOT NULL DEFAULT 0")
-  await addColumnIfMissing("users", "placement_matches_played", "int(11) NOT NULL DEFAULT 0")
-  await addColumnIfMissing("users", "demotion_protection_rounds", "int(11) NOT NULL DEFAULT 0")
+  await addColumnIfMissing("users", "rank_system_version", "int NOT NULL DEFAULT 0")
+  await addColumnIfMissing("users", "placement_matches_played", "int NOT NULL DEFAULT 0")
+  await addColumnIfMissing("users", "demotion_protection_rounds", "int NOT NULL DEFAULT 0")
   await addColumnIfMissing("users", "active_loadout_slot", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("users", "build_walkthrough_status", "varchar(60) NOT NULL DEFAULT 'not_started'")
-  await addColumnIfMissing("users", "seen_unlock_part_ids_json", "json DEFAULT NULL")
-  await addColumnIfMissing("round_history", "avg_reaction_ms", "int(11) DEFAULT NULL")
-  await addColumnIfMissing("round_history", "best_reaction_ms", "int(11) DEFAULT NULL")
+  await addColumnIfMissing("users", "seen_unlock_part_ids_json", "jsonb DEFAULT NULL")
+  await addColumnIfMissing("round_history", "avg_reaction_ms", "int DEFAULT NULL")
+  await addColumnIfMissing("round_history", "best_reaction_ms", "int DEFAULT NULL")
   await addColumnIfMissing("round_history", "loadout_name", "varchar(100) DEFAULT NULL")
   await addColumnIfMissing("round_history", "loadout_id", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("round_history", "tempo_core_id", "varchar(60) DEFAULT NULL")
@@ -205,136 +191,136 @@ export async function initializeSchema() {
   await addColumnIfMissing("round_history", "powerup_slot_2_id", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("round_history", "powerup_slot_3_id", "varchar(60) DEFAULT NULL")
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_lifetime_stats\` (
-    \`user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`total_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`ranked_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`best_streak\` int(11) NOT NULL DEFAULT 0,
-    \`best_single_score\` int(11) NOT NULL DEFAULT 0,
-    \`best_ranked_streak\` int(11) NOT NULL DEFAULT 0,
-    \`best_single_round_accuracy\` int(11) NOT NULL DEFAULT 0,
-    \`clean_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`total_coins_earned\` bigint(20) NOT NULL DEFAULT 0,
-    \`total_hits\` bigint(20) NOT NULL DEFAULT 0,
-    \`total_misses\` bigint(20) NOT NULL DEFAULT 0,
-    \`max_consecutive_ranked_wins\` int(11) NOT NULL DEFAULT 0,
-    \`current_consecutive_ranked_wins\` int(11) NOT NULL DEFAULT 0,
-    \`reaction_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`total_reaction_ms\` bigint(20) NOT NULL DEFAULT 0,
-    \`best_reaction_ms\` int(11) DEFAULT NULL,
-    PRIMARY KEY (\`user_id\`),
-    CONSTRAINT \`fk_lifetime_stats_user\`
-      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS user_lifetime_stats (
+    user_id bigint NOT NULL,
+    total_rounds int NOT NULL DEFAULT 0,
+    ranked_rounds int NOT NULL DEFAULT 0,
+    best_streak int NOT NULL DEFAULT 0,
+    best_single_score int NOT NULL DEFAULT 0,
+    best_ranked_streak int NOT NULL DEFAULT 0,
+    best_single_round_accuracy int NOT NULL DEFAULT 0,
+    clean_rounds int NOT NULL DEFAULT 0,
+    total_coins_earned bigint NOT NULL DEFAULT 0,
+    total_hits bigint NOT NULL DEFAULT 0,
+    total_misses bigint NOT NULL DEFAULT 0,
+    max_consecutive_ranked_wins int NOT NULL DEFAULT 0,
+    current_consecutive_ranked_wins int NOT NULL DEFAULT 0,
+    reaction_rounds int NOT NULL DEFAULT 0,
+    total_reaction_ms bigint NOT NULL DEFAULT 0,
+    best_reaction_ms int DEFAULT NULL,
+    PRIMARY KEY (user_id),
+    CONSTRAINT fk_lifetime_stats_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`)
 
-  await addColumnIfMissing("user_lifetime_stats", "drill_stats_json", "json DEFAULT NULL")
+  await addColumnIfMissing("user_lifetime_stats", "drill_stats_json", "jsonb DEFAULT NULL")
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_loadout_stats\` (
-    \`user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`loadout_id\` varchar(60) NOT NULL,
-    \`loadout_name\` varchar(100) NOT NULL DEFAULT 'Loadout',
-    \`total_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`ranked_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`ranked_wins\` int(11) NOT NULL DEFAULT 0,
-    \`best_score\` int(11) NOT NULL DEFAULT 0,
-    \`best_streak\` int(11) NOT NULL DEFAULT 0,
-    \`best_ranked_streak\` int(11) NOT NULL DEFAULT 0,
-    \`total_hits\` bigint(20) NOT NULL DEFAULT 0,
-    \`total_misses\` bigint(20) NOT NULL DEFAULT 0,
-    PRIMARY KEY (\`user_id\`, \`loadout_id\`),
-    KEY \`idx_loadout_stats_user_rounds\` (\`user_id\`, \`total_rounds\`),
-    CONSTRAINT \`fk_loadout_stats_user\`
-      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS user_loadout_stats (
+    user_id bigint NOT NULL,
+    loadout_id varchar(60) NOT NULL,
+    loadout_name varchar(100) NOT NULL DEFAULT 'Loadout',
+    total_rounds int NOT NULL DEFAULT 0,
+    ranked_rounds int NOT NULL DEFAULT 0,
+    ranked_wins int NOT NULL DEFAULT 0,
+    best_score int NOT NULL DEFAULT 0,
+    best_streak int NOT NULL DEFAULT 0,
+    best_ranked_streak int NOT NULL DEFAULT 0,
+    total_hits bigint NOT NULL DEFAULT 0,
+    total_misses bigint NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, loadout_id),
+    CONSTRAINT fk_loadout_stats_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_loadout_stats_user_rounds ON user_loadout_stats (user_id, total_rounds)`)
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_loadouts\` (
-    \`slot_id\` varchar(60) NOT NULL,
-    \`user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`name\` varchar(100) NOT NULL DEFAULT '',
-    \`tempo_core_id\` varchar(60) DEFAULT NULL,
-    \`streak_lens_id\` varchar(60) DEFAULT NULL,
-    \`power_rig_id\` varchar(60) DEFAULT NULL,
-    \`powerup_slot_1_id\` varchar(60) DEFAULT NULL,
-    \`powerup_slot_2_id\` varchar(60) DEFAULT NULL,
-    \`powerup_slot_3_id\` varchar(60) DEFAULT NULL,
-    PRIMARY KEY (\`slot_id\`, \`user_id\`),
-    CONSTRAINT \`fk_loadout_user\`
-      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS user_loadouts (
+    slot_id varchar(60) NOT NULL,
+    user_id bigint NOT NULL,
+    name varchar(100) NOT NULL DEFAULT '',
+    tempo_core_id varchar(60) DEFAULT NULL,
+    streak_lens_id varchar(60) DEFAULT NULL,
+    power_rig_id varchar(60) DEFAULT NULL,
+    powerup_slot_1_id varchar(60) DEFAULT NULL,
+    powerup_slot_2_id varchar(60) DEFAULT NULL,
+    powerup_slot_3_id varchar(60) DEFAULT NULL,
+    PRIMARY KEY (slot_id, user_id),
+    CONSTRAINT fk_loadout_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`)
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`seasons\` (
-    \`id\` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    \`slug\` varchar(60) NOT NULL,
-    \`name\` varchar(100) NOT NULL,
-    \`starts_at\` datetime NOT NULL,
-    \`ends_at\` datetime NOT NULL,
-    \`status\` varchar(20) NOT NULL DEFAULT 'active',
-    PRIMARY KEY (\`id\`),
-    UNIQUE KEY \`uq_season_slug\` (\`slug\`),
-    KEY \`idx_season_status_dates\` (\`status\`, \`starts_at\`, \`ends_at\`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS seasons (
+    id bigint GENERATED ALWAYS AS IDENTITY,
+    slug varchar(60) NOT NULL,
+    name varchar(100) NOT NULL,
+    starts_at timestamptz NOT NULL,
+    ends_at timestamptz NOT NULL,
+    status varchar(20) NOT NULL DEFAULT 'active',
+    PRIMARY KEY (id),
+    UNIQUE (slug)
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_season_status_dates ON seasons (status, starts_at, ends_at)`)
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`user_season_stats\` (
-    \`user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`season_id\` bigint(20) UNSIGNED NOT NULL,
-    \`ranked_rounds\` int(11) NOT NULL DEFAULT 0,
-    \`peak_mmr\` int(11) NOT NULL DEFAULT 0,
-    \`reward_tier\` int(11) NOT NULL DEFAULT 0,
-    PRIMARY KEY (\`user_id\`, \`season_id\`),
-    KEY \`idx_user_season_peak_mmr\` (\`season_id\`, \`peak_mmr\`),
-    CONSTRAINT \`fk_user_season_user\`
-      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE,
-    CONSTRAINT \`fk_user_season_season\`
-      FOREIGN KEY (\`season_id\`) REFERENCES \`seasons\` (\`id\`) ON DELETE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS user_season_stats (
+    user_id bigint NOT NULL,
+    season_id bigint NOT NULL,
+    ranked_rounds int NOT NULL DEFAULT 0,
+    peak_mmr int NOT NULL DEFAULT 0,
+    reward_tier int NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, season_id),
+    CONSTRAINT fk_user_season_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_season_season
+      FOREIGN KEY (season_id) REFERENCES seasons (id) ON DELETE CASCADE
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_season_peak_mmr ON user_season_stats (season_id, peak_mmr)`)
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`round_replays\` (
-    \`id\` bigint(20) NOT NULL AUTO_INCREMENT,
-    \`user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`username\` varchar(50) NOT NULL,
-    \`mode_id\` varchar(50) NOT NULL,
-    \`seed\` int(10) UNSIGNED NOT NULL,
-    \`events_json\` json NOT NULL,
-    \`loadout_snapshot_json\` json DEFAULT NULL,
-    \`score\` int(11) NOT NULL DEFAULT 0,
-    \`hits\` int(11) NOT NULL DEFAULT 0,
-    \`misses\` int(11) NOT NULL DEFAULT 0,
-    \`best_streak\` int(11) NOT NULL DEFAULT 0,
-    \`visibility\` varchar(20) NOT NULL DEFAULT 'public',
-    \`round_history_id\` bigint(20) DEFAULT NULL,
-    \`played_at\` timestamp NOT NULL DEFAULT current_timestamp(),
-    PRIMARY KEY (\`id\`),
-    KEY \`idx_replays_user_played\` (\`user_id\`, \`played_at\`),
-    KEY \`idx_replays_visibility_score\` (\`visibility\`, \`score\`),
-    CONSTRAINT \`fk_replays_user\`
-      FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS round_replays (
+    id bigint GENERATED ALWAYS AS IDENTITY,
+    user_id bigint NOT NULL,
+    username varchar(50) NOT NULL,
+    mode_id varchar(50) NOT NULL,
+    seed bigint NOT NULL,
+    events_json jsonb NOT NULL,
+    loadout_snapshot_json jsonb DEFAULT NULL,
+    score int NOT NULL DEFAULT 0,
+    hits int NOT NULL DEFAULT 0,
+    misses int NOT NULL DEFAULT 0,
+    best_streak int NOT NULL DEFAULT 0,
+    visibility varchar(20) NOT NULL DEFAULT 'public',
+    round_history_id bigint DEFAULT NULL,
+    played_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (id),
+    CONSTRAINT fk_replays_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_replays_user_played ON round_replays (user_id, played_at)`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_replays_visibility_score ON round_replays (visibility, score)`)
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS \`challenges\` (
-    \`id\` bigint(20) NOT NULL AUTO_INCREMENT,
-    \`challenger_user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`challenger_username\` varchar(50) NOT NULL,
-    \`opponent_user_id\` bigint(20) UNSIGNED NOT NULL,
-    \`opponent_username\` varchar(50) NOT NULL,
-    \`replay_id\` bigint(20) NOT NULL,
-    \`mode_id\` varchar(50) NOT NULL,
-    \`status\` varchar(20) NOT NULL DEFAULT 'pending',
-    \`message\` varchar(280) DEFAULT NULL,
-    \`opponent_replay_id\` bigint(20) DEFAULT NULL,
-    \`challenger_won\` tinyint(1) DEFAULT NULL,
-    \`created_at\` timestamp NOT NULL DEFAULT current_timestamp(),
-    \`responded_at\` timestamp NULL DEFAULT NULL,
-    \`completed_at\` timestamp NULL DEFAULT NULL,
-    PRIMARY KEY (\`id\`),
-    KEY \`idx_challenges_opponent_status\` (\`opponent_user_id\`, \`status\`, \`created_at\`),
-    KEY \`idx_challenges_challenger_status\` (\`challenger_user_id\`, \`status\`, \`created_at\`),
-    CONSTRAINT \`fk_challenges_challenger\`
-      FOREIGN KEY (\`challenger_user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE,
-    CONSTRAINT \`fk_challenges_opponent\`
-      FOREIGN KEY (\`opponent_user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE,
-    CONSTRAINT \`fk_challenges_replay\`
-      FOREIGN KEY (\`replay_id\`) REFERENCES \`round_replays\` (\`id\`) ON DELETE CASCADE
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`)
+  await pool.query(`CREATE TABLE IF NOT EXISTS challenges (
+    id bigint GENERATED ALWAYS AS IDENTITY,
+    challenger_user_id bigint NOT NULL,
+    challenger_username varchar(50) NOT NULL,
+    opponent_user_id bigint NOT NULL,
+    opponent_username varchar(50) NOT NULL,
+    replay_id bigint NOT NULL,
+    mode_id varchar(50) NOT NULL,
+    status varchar(20) NOT NULL DEFAULT 'pending',
+    message varchar(280) DEFAULT NULL,
+    opponent_replay_id bigint DEFAULT NULL,
+    challenger_won boolean DEFAULT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    responded_at timestamptz NULL DEFAULT NULL,
+    completed_at timestamptz NULL DEFAULT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_challenges_challenger
+      FOREIGN KEY (challenger_user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_challenges_opponent
+      FOREIGN KEY (opponent_user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_challenges_replay
+      FOREIGN KEY (replay_id) REFERENCES round_replays (id) ON DELETE CASCADE
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_opponent_status ON challenges (opponent_user_id, status, created_at)`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_challenger_status ON challenges (challenger_user_id, status, created_at)`)
 
   await ensureActiveSeason()
 
@@ -665,7 +651,7 @@ async function getLifetimeStatsRow(executor, userId, options = {}) {
 
 async function ensureLifetimeStatsRow(executor, userId) {
   await executor.query(
-    `INSERT IGNORE INTO user_lifetime_stats (user_id) VALUES (?)`,
+    `INSERT INTO user_lifetime_stats (user_id) VALUES (?) ON CONFLICT (user_id) DO NOTHING`,
     [userId]
   )
 }
@@ -811,6 +797,7 @@ async function backfillLifetimeStatsFromHistory(executor, userId) {
   ])
 
   if (loadoutRows.length > 0) {
+    const { clause, params } = buildValuesClause(loadoutRows)
     await executor.query(
       `INSERT INTO user_loadout_stats (
          user_id,
@@ -824,8 +811,8 @@ async function backfillLifetimeStatsFromHistory(executor, userId) {
          best_ranked_streak,
          total_hits,
          total_misses
-       ) VALUES ?`,
-      [loadoutRows]
+       ) VALUES ${clause}`,
+      params
     )
   }
 
@@ -857,7 +844,8 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
        powerup_slot_2_id,
        powerup_slot_3_id,
        played_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     RETURNING id`,
     [
       userId,
       normalizedEntry.modeId,
@@ -971,16 +959,16 @@ async function persistLoadoutStats(executor, userId, loadoutStats = {}) {
        total_hits,
        total_misses
      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE
-       loadout_name = VALUES(loadout_name),
-       total_rounds = VALUES(total_rounds),
-       ranked_rounds = VALUES(ranked_rounds),
-       ranked_wins = VALUES(ranked_wins),
-       best_score = VALUES(best_score),
-       best_streak = VALUES(best_streak),
-       best_ranked_streak = VALUES(best_ranked_streak),
-       total_hits = VALUES(total_hits),
-       total_misses = VALUES(total_misses)`,
+     ON CONFLICT (user_id, loadout_id) DO UPDATE SET
+       loadout_name = EXCLUDED.loadout_name,
+       total_rounds = EXCLUDED.total_rounds,
+       ranked_rounds = EXCLUDED.ranked_rounds,
+       ranked_wins = EXCLUDED.ranked_wins,
+       best_score = EXCLUDED.best_score,
+       best_streak = EXCLUDED.best_streak,
+       best_ranked_streak = EXCLUDED.best_ranked_streak,
+       total_hits = EXCLUDED.total_hits,
+       total_misses = EXCLUDED.total_misses`,
     [
       userId,
       normalizedStats.loadoutId,
@@ -1200,9 +1188,10 @@ async function syncUserCollection(executor, userId, progress) {
     .map((mappedItem) => [userId, mappedItem.collectionType, mappedItem.dbItemId])
 
   if (rows.length > 0) {
+    const { clause, params } = buildValuesClause(rows)
     await executor.query(
-      "INSERT INTO user_collection (user_id, item_type, item_id) VALUES ?",
-      [rows]
+      `INSERT INTO user_collection (user_id, item_type, item_id) VALUES ${clause}`,
+      params
     )
   }
 }
@@ -1226,6 +1215,7 @@ async function syncUserLoadouts(executor, userId, progress) {
     loadout.powerupIds?.[2] || "",
   ])
 
+  const { clause, params } = buildValuesClause(rows)
   await executor.query(
     `INSERT INTO user_loadouts (
        user_id,
@@ -1237,8 +1227,8 @@ async function syncUserLoadouts(executor, userId, progress) {
        powerup_slot_1_id,
        powerup_slot_2_id,
        powerup_slot_3_id
-     ) VALUES ?`,
-    [rows]
+     ) VALUES ${clause}`,
+    params
   )
 }
 
@@ -1252,20 +1242,21 @@ async function syncUnlockedAchievements(executor, userId, progress) {
   const [rows] = await executor.query(
     `SELECT id
      FROM achievements_catalog
-     WHERE id IN (?)`,
+     WHERE id = ANY(?)`,
     [progress.unlockedAchievementIds]
   )
 
   const insertRows = rows.map((row) => [userId, row.id, new Date()])
 
   if (insertRows.length > 0) {
+    const { clause, params } = buildValuesClause(insertRows)
     await executor.query(
       `INSERT INTO user_achievement_progress (
          user_id,
          achievement_id,
          unlocked_at
-       ) VALUES ?`,
-      [insertRows]
+       ) VALUES ${clause}`,
+      params
     )
   }
 }
@@ -1301,7 +1292,8 @@ export async function createUser({ username, passwordHash, role = "player" }) {
        password_hash,
        role,
        build_walkthrough_status
-     ) VALUES (?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?)
+     RETURNING id`,
     [
       String(username || "").trim(),
       String(passwordHash || ""),
@@ -1948,10 +1940,10 @@ export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound =
   await pool.execute(
     `INSERT INTO user_season_stats (user_id, season_id, ranked_rounds, peak_mmr, reward_tier)
      VALUES (?, ?, 1, ?, ?)
-     ON DUPLICATE KEY UPDATE
-       ranked_rounds = ranked_rounds + 1,
-       peak_mmr = GREATEST(peak_mmr, VALUES(peak_mmr)),
-       reward_tier = GREATEST(reward_tier, VALUES(reward_tier))`,
+     ON CONFLICT (user_id, season_id) DO UPDATE SET
+       ranked_rounds = user_season_stats.ranked_rounds + 1,
+       peak_mmr = GREATEST(user_season_stats.peak_mmr, EXCLUDED.peak_mmr),
+       reward_tier = GREATEST(user_season_stats.reward_tier, EXCLUDED.reward_tier)`,
     [userId, season.id, normalizedMmr, rewardTier]
   )
 
@@ -2000,7 +1992,8 @@ export async function insertRoundReplay({
        best_streak,
        visibility,
        round_history_id
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     RETURNING id`,
     [
       userId,
       String(username || "Player"),
@@ -2114,7 +2107,8 @@ export async function createChallenge({
        replay_id,
        mode_id,
        message
-     ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?)
+     RETURNING id`,
     [
       challengerUserId,
       challengerUsername,
@@ -2256,7 +2250,7 @@ export async function completeChallenge({
          challenger_won = ?,
          completed_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
-    [opponentReplayId, challengerWon ? 1 : 0, challengeId]
+    [opponentReplayId, challengerWon, challengeId]
   )
 
   return { ok: true, challenge: await findChallengeById(challengeId), challengerWon }

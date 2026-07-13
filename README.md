@@ -1,6 +1,6 @@
 # ClickAway
 
-ClickAway is a full-stack browser game built around reaction speed, accuracy, and streak management. The frontend is a Vite/React app, the backend is an Express API, and player accounts plus progression are stored in MySQL.
+ClickAway is a full-stack browser game built around reaction speed, accuracy, and streak management. The frontend is a Vite/React app, the backend is an Express API, and player accounts plus progression are stored in Supabase Postgres.
 
 This README is meant to get a new developer or reviewer from zero to running the app locally, then give enough structure to understand where the important parts of the project live.
 
@@ -16,7 +16,7 @@ This README is meant to get a new developer or reviewer from zero to running the
 
 - Frontend: React 19, React Router 7, Vite 7, Axios
 - Backend: Express 5, JSON Web Tokens, bcryptjs
-- Database: MySQL via `mysql2`
+- Database: Supabase Postgres via `pg`
 - Styling: plain CSS organized by page/component
 
 ## Prerequisites
@@ -24,8 +24,7 @@ This README is meant to get a new developer or reviewer from zero to running the
 Before you start, make sure you have:
 
 - Node.js and npm installed
-- A local MySQL server running
-- A way to create a database and import a `.sql` file
+- A Supabase project (free tier is fine) — https://supabase.com/dashboard
 
 ## First-Time Setup
 
@@ -37,18 +36,23 @@ cd ClickAway
 npm install
 ```
 
-### 2. Create the MySQL database
+### 2. Get your Supabase connection string
 
 The backend creates and migrates its own schema automatically on startup
 (`initializeSchema()` in `server/playerMysqlDatabase.js`). You only need to:
 
-1. Create an empty database named `clickaway` in MySQL, or choose another name and update `DB_NAME` in `.env`.
-2. Start the backend once — it creates every table it needs and backfills any missing
+1. In the Supabase Dashboard, open your project → Project Settings → Database →
+   Connection string, and copy the URI (use the "Transaction pooler" string for
+   serverless-friendly pooling, or the direct/session connection for a
+   long-running server like this one).
+2. Paste it into `SUPABASE_DB_URL` in `.env`.
+3. Start the backend once — it creates every table it needs and backfills any missing
    columns on older databases.
 
 No manual SQL import is required. `server/data/clickaway.sql` is kept only as a
-convenience snapshot for reading the schema by eye; see `server/data/MIGRATIONS.md`
-for details and why it should not be treated as the source of truth.
+historical snapshot of the old MySQL schema for reading by eye; see
+`server/data/MIGRATIONS.md` for details and why it should not be treated as the
+source of truth.
 
 ### 3. Create your environment file
 
@@ -71,17 +75,15 @@ These are the variables used by the app:
 | `CLIENT_ORIGIN` | No | Allowed frontend origin for CORS. Defaults to `http://localhost:5173`. |
 | `ADMIN_USERNAME` | No | Username for the optional seeded admin account. Defaults to `admin`. |
 | `ADMIN_PASSWORD` | No | If set, the backend creates or refreshes the admin account password on startup. If empty, admin seeding is skipped. |
-| `DB_HOST` | Yes | MySQL host. Usually `localhost`. |
-| `DB_PORT` | Yes | MySQL port. Usually `3306`. |
-| `DB_USER` | Yes | MySQL username. |
-| `DB_PASSWORD` | No | MySQL password. |
-| `DB_NAME` | Yes | Database name the backend connects to. |
+| `SUPABASE_DB_URL` | Yes | Postgres connection string from Supabase Dashboard → Project Settings → Database. |
+| `VITE_SUPABASE_URL` | No | Supabase project URL, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | No | Supabase publishable/anon key, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
 | `VITE_API_BASE_URL` | No | Frontend API base URL. Defaults to `http://localhost:4000/api`. |
 
 The provided `.env.example` already matches the default local development setup, so in most cases you only need to:
 
 - set `JWT_SECRET`
-- set your MySQL credentials
+- set `SUPABASE_DB_URL` to your Supabase connection string
 - keep the default ports unless something on your machine conflicts
 
 ### 5. Start the app
@@ -200,11 +202,13 @@ ClickAway/
 |- public/                         Static images and rank/cosmetic assets
 |- server/
 |  |- data/
-|  |  |- clickaway.sql             Bootstrap MySQL schema for fresh databases
+|  |  |- clickaway.sql             Historical MySQL schema snapshot (pre-Supabase)
 |  |  |- MIGRATIONS.md             Manual migration ledger and environment notes
 |  |  |- migrations/               Incremental patches for older databases
+|  |- db/
+|  |  |- pgPool.js                 Postgres pool + mysql2-compatible query shim
 |  |- index.js                     Express app and API routes
-|  |- playerMysqlDatabase.js       MySQL pool, queries, and persistence helpers
+|  |- playerMysqlDatabase.js       Postgres queries and persistence helpers
 |  |- playerStateStore.js          Purchase/equip logic for player state
 |  |- serverShopCatalogIdMappings.js   Mapping between frontend item ids and DB ids
 |- src/
@@ -233,7 +237,7 @@ At a high level, the app works like this:
 4. `src/app/useAppPlayerState.js` stores the local in-memory player state used across pages.
 5. `src/services/clickAwayHttpApiClient.js` wraps the backend API calls.
 6. The backend in `server/index.js` handles auth, shop, and progress routes.
-7. `server/playerMysqlDatabase.js` reads from and writes to MySQL.
+7. `server/playerMysqlDatabase.js` reads from and writes to Supabase Postgres.
 
 A common path looks like this:
 
@@ -258,10 +262,10 @@ If you are changing a specific part of the app, these are the main entry points:
 
 These are useful to know before making deeper changes:
 
-- The MySQL schema is created and migrated automatically by `initializeSchema()` on every server boot — no manual SQL import or migration step is needed.
+- The Postgres schema is created and migrated automatically by `initializeSchema()` on every server boot — no manual SQL import or migration step is needed.
 - The leaderboard is backend-driven through `GET /api/leaderboard`.
 - Shop metadata lives in the frontend, while the backend only knows item ids and mappings.
-- Achievement rules are evaluated in the frontend, while unlocked achievement ids are persisted in MySQL.
+- Achievement rules are evaluated in the frontend, while unlocked achievement ids are persisted in Postgres.
 - If you add or rename a cosmetic item, you usually need to update both `src/constants/shopCatalog.js` and `server/serverShopCatalogIdMappings.js`, and keep the SQL seed ids aligned.
 
 ## Troubleshooting
@@ -271,8 +275,7 @@ These are useful to know before making deeper changes:
 Check:
 
 - `JWT_SECRET` is set
-- MySQL is running
-- the database in `DB_NAME` exists (it can be empty — the server creates its own schema on startup)
+- `SUPABASE_DB_URL` is set and reachable (it can point at an empty database — the server creates its own schema on startup)
 
 ### Login/signup requests fail from the browser
 
@@ -287,8 +290,8 @@ Check:
 Check:
 
 - you are logged into the expected account
-- the backend can reach MySQL
-- the relevant tables were imported correctly
+- the backend can reach Supabase (`SUPABASE_DB_URL` is correct and the project isn't paused)
+- the relevant tables were created correctly on first boot
 
 ## Quick Orientation For A New Contributor
 
