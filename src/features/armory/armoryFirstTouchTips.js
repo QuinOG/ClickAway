@@ -15,7 +15,7 @@ export const FIRST_TOUCH_TIP_MESSAGES = Object.freeze({
   baySwitch: "This bay is now your active build — Ready always launches whichever bay is active here.",
   lockedPart: "Locked parts unlock as you level up. Everything you already have stays fully usable.",
   compare: "Ghost another bay against your active build, or read one build across all three modes.",
-  blueprint: "The spec sheet has the exact numbers behind every readout, plus this bay's field record.",
+  blueprint: "Blueprint codes are a compact copy of a build — paste one in to try someone else's bay.",
 })
 
 export function normalizeFirstTouchTipIds(value) {

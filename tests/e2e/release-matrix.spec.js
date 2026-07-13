@@ -70,6 +70,39 @@ test("critical routes have no serious or critical automated accessibility violat
   }
 })
 
+test("armory gallery, range, compare bench, and unlock wall have no serious or critical accessibility violations", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await prepareDeterministicPage(page)
+  await gotoRoute(page, { path: "/armory", heading: "Armory" })
+
+  const assertNoBlockingViolations = async (label) => {
+    const results = await new AxeBuilder({ page }).analyze()
+    const blockingViolations = results.violations.filter(
+      (violation) => violation.impact === "critical" || violation.impact === "serious"
+    )
+    expect(blockingViolations, `armory ${label} accessibility violations`).toEqual([])
+  }
+
+  await page.getByRole("button", { name: /Hotbar/i }).click()
+  await expect(page.getByRole("group", { name: "Power tools" })).toBeVisible()
+  await assertNoBlockingViolations("gallery")
+
+  await page.getByRole("button", { name: /Test Range/i }).click()
+  await page.getByRole("button", { name: "Run the Range" }).click()
+  await expect(page.getByRole("group", { name: "Test range" })).toBeVisible()
+  await assertNoBlockingViolations("range")
+  await page.getByRole("button", { name: /Exit/i }).click()
+
+  await page.getByRole("button", { name: "Compare with active" }).first().click()
+  await expect(page.getByRole("dialog", { name: "Compare bench" })).toBeVisible()
+  await assertNoBlockingViolations("compare bench")
+  await page.getByRole("dialog", { name: "Compare bench" }).getByRole("button", { name: "Close" }).click()
+
+  await page.getByRole("button", { name: "Unlock Wall" }).click()
+  await expect(page.getByRole("dialog", { name: "Unlock wall" })).toBeVisible()
+  await assertNoBlockingViolations("unlock wall")
+})
+
 test("keyboard navigation, mobile More, and settings focus restoration stay coherent", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.addInitScript(() => {

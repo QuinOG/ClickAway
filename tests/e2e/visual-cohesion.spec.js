@@ -25,6 +25,34 @@ for (const viewport of VIEWPORTS) {
   })
 }
 
+test.describe("armory scene states", () => {
+  test.use({ viewport: { width: 1440, height: 1000 } })
+
+  test("hotbar gallery, test range, compare bench, and unlock wall", async ({ page }) => {
+    await prepareDeterministicPage(page)
+    await gotoRoute(page, { path: "/armory", heading: "Armory" })
+
+    await page.getByRole("button", { name: /Hotbar/i }).click()
+    await expect(page.getByRole("group", { name: "Power tools" })).toBeVisible()
+    await expect(page).toHaveScreenshot("desktop-1440-armory-gallery.png")
+
+    await page.getByRole("button", { name: /Test Range/i }).click()
+    await page.getByRole("button", { name: "Run the Range" }).click()
+    await expect(page.getByRole("group", { name: "Test range" })).toBeVisible()
+    await expect(page).toHaveScreenshot("desktop-1440-armory-range.png")
+    await page.getByRole("button", { name: /Exit/i }).click()
+
+    await page.getByRole("button", { name: "Compare with active" }).first().click()
+    await expect(page.getByRole("dialog", { name: "Compare bench" })).toBeVisible()
+    await expect(page).toHaveScreenshot("desktop-1440-armory-compare.png")
+    await page.getByRole("dialog", { name: "Compare bench" }).getByRole("button", { name: "Close" }).click()
+
+    await page.getByRole("button", { name: "Unlock Wall" }).click()
+    await expect(page.getByRole("dialog", { name: "Unlock wall" })).toBeVisible()
+    await expect(page).toHaveScreenshot("desktop-1440-armory-unlock-wall.png")
+  })
+})
+
 test.describe("guest arrival cohesion", () => {
   for (const viewport of VIEWPORTS) {
     test(`${viewport.id} login`, async ({ page }) => {

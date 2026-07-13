@@ -15,6 +15,18 @@
     initial-value: #16233d;
 }
 
+.armoryVisuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /*
  * Armory design tokens.
  * Lane/identity tones are RGB triplets so each rule keeps its own alpha:
@@ -61,6 +73,15 @@
     --armory-motion-idle-control: 5.4s;
     --armory-motion-idle-pressure: 1.5s;
     --armory-motion-idle-utility: 2.6s;
+}
+
+/* The route's motion wrapper applies a transform (even at rest), which creates
+   a new stacking context — so no z-index inside the scene can out-rank the
+   app shell's sticky topbar on its own. These full-screen takeovers are
+   modal, so the topbar going inert while they're open is also the correct
+   a11y behavior, not just a paint-order fix. */
+body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall, .armoryUnlockCeremony) .topbar {
+    pointer-events: none;
 }
 
 /*
@@ -174,9 +195,7 @@
 .armoryStepStack,
 .armoryStepHeading,
 .armoryStepContent,
-.armoryChoiceBody,
 .armoryDetailHeader,
-.armoryReviewHeroCopy,
 .armoryReviewPowerBody,
 .armoryHotbarBody,
 .armoryLanePanelCopy,
@@ -188,7 +207,6 @@
 .armoryRailIdentityCopy,
 .armoryRailStepBody,
 .armoryStepHeading,
-.armoryChoiceBody,
 .armoryHotbarBody,
 .armoryReviewPowerBody,
 .armoryLanePanelCopy,
@@ -240,7 +258,6 @@
 .armoryBayIdentityGlyph svg,
 .armoryReviewPowerGlyph svg,
 .armoryHotbarGlyph svg,
-.armoryChoiceIcon svg,
 .armoryLanePanelIcon svg,
 .armoryLaneTabIcon svg {
     fill: none;
@@ -259,7 +276,6 @@
 .armoryRailLabel,
 .armoryStepLead,
 .armoryRailHint,
-.armoryChoiceHint,
 .armoryModeButtonMeta,
 .armoryHotbarMeta,
 .armoryReviewPowerMeta,
@@ -322,8 +338,7 @@
 .armoryBaySelect:hover,
 .armoryModeButton:hover,
 .armoryHotbarButton:hover,
-.armoryLaneTab:hover,
-.armoryChoiceCard:hover:not(:disabled) {
+.armoryLaneTab:hover {
     transform: translateY(-1px);
     border-color: rgba(145, 210, 255, 0.34);
     background: rgba(255, 255, 255, 0.05);
@@ -360,7 +375,6 @@
 .armoryStepGlyph,
 .armoryLanePanelIcon,
 .armoryLaneTabIcon,
-.armoryChoiceIcon,
 .armoryHotbarGlyph,
 .armoryReviewPowerGlyph {
     width: 34px;
@@ -377,7 +391,6 @@
 .armoryStepGlyphIcon,
 .armoryLanePanelIcon svg,
 .armoryLaneTabIcon svg,
-.armoryChoiceIcon svg,
 .armoryHotbarGlyph svg,
 .armoryReviewPowerGlyph svg {
     width: 16px;
@@ -1112,8 +1125,6 @@
 .armoryStepCard,
 .armoryLanePanel,
 .armoryDetailPanel,
-.armoryReviewHero,
-.armoryReviewPanel,
 .armoryReviewDetails,
 .armoryInstrument {
     border: 1px solid rgba(var(--armory-line), 0.12);
@@ -1124,8 +1135,6 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.armoryChoiceGrid,
-.armoryReviewGrid,
 .armoryPartsShelf {
     display: grid;
     gap: var(--armory-space-md);
@@ -1135,8 +1144,7 @@
 .armoryReviewLead,
 .armoryReviewNote,
 .armoryLanePanelLead,
-.armoryPartFeel,
-.armoryChoiceImpact {
+.armoryPartFeel {
     margin: 0;
     color: rgba(210, 228, 248, 0.8);
     font-size: 12px;
@@ -1212,12 +1220,6 @@
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.12px;
-}
-
-.armoryReviewPanel {
-    padding: 14px;
-    display: grid;
-    gap: var(--armory-space-sm);
 }
 
 .armorySnapshotChip.tone-good {
@@ -1299,10 +1301,8 @@
 .armoryLaneTabLabel,
 .armoryHotbarLabel,
 .armoryModeButtonLabel,
-.armoryReviewPanelTitle,
 .armoryPartLabel,
-.armoryReviewPowerLabel,
-.armoryChoiceLabel {
+.armoryReviewPowerLabel {
     color: #f4f9ff;
     font-size: 14px;
     line-height: 1.25;
@@ -1339,76 +1339,6 @@
     gap: var(--armory-space-sm);
 }
 
-.armoryChoiceGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.armoryChoiceGrid.armoryChoiceGrid-powers {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.armoryChoiceCard {
-    min-height: 118px;
-    padding: var(--armory-space-md);
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    gap: var(--armory-space-sm);
-    position: relative;
-    text-align: left;
-    border-radius: var(--armory-radius-panel);
-    border: 1px solid rgba(var(--armory-line), 0.16);
-    background: rgba(255, 255, 255, 0.03);
-    color: rgba(232, 243, 255, 0.9);
-    transition:
-        transform var(--armory-motion-fast) var(--armory-motion-ease),
-        border-color var(--armory-motion-fast) var(--armory-motion-ease),
-        background-color var(--armory-motion-fast) var(--armory-motion-ease);
-}
-
-.armoryChoiceCard.isSelected {
-    border-color: rgba(var(--armory-accent), 0.52);
-    background: rgba(82, 165, 255, 0.12);
-}
-
-.armoryChoiceCard:disabled {
-    opacity: 0.62;
-    cursor: not-allowed;
-}
-
-.armoryChoiceCard.tone-tempoCore::before,
-.armoryChoiceCard.tone-streakLens::before,
-.armoryChoiceCard.tone-power::before,
-.armoryChoiceCard.tone-powerRig::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 100%;
-    height: 4px;
-    border-radius: var(--armory-radius-panel) var(--armory-radius-panel) 0 0;
-}
-
-.armoryChoiceCard.tone-tempoCore::before {
-    background: linear-gradient(90deg, rgba(109, 194, 255, 0.96), rgba(80, 145, 255, 0.9));
-}
-
-.armoryChoiceCard.tone-streakLens::before {
-    background: linear-gradient(90deg, rgba(var(--armory-tone-good), 0.96), rgba(83, 215, 179, 0.9));
-}
-
-.armoryChoiceCard.tone-power::before,
-.armoryChoiceCard.tone-powerRig::before {
-    background: linear-gradient(90deg, rgba(255, 214, 113, 0.96), rgba(244, 173, 71, 0.9));
-}
-
-.armoryChoiceHint {
-    grid-column: 1 / -1;
-    margin-top: auto;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.16px;
-    text-transform: uppercase;
-}
 
 .armoryDetailPanel,
 .armoryReviewDetails {
@@ -1449,22 +1379,6 @@
 .armoryReviewPowerList {
     display: grid;
     gap: var(--armory-space-xs);
-}
-
-.armoryReviewHero {
-    padding: var(--armory-space-lg);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px;
-    align-items: center;
-    background:
-        radial-gradient(circle at 100% 0%, rgba(255, 150, 120, 0.12), rgba(255, 150, 120, 0) 34%),
-        radial-gradient(circle at 0% 100%, rgba(111, 193, 255, 0.12), rgba(111, 193, 255, 0) 26%),
-        rgba(255, 255, 255, 0.035);
-}
-
-.armoryReviewGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .armoryReviewPowerItem {
@@ -2177,7 +2091,7 @@
     left: 50%;
     bottom: var(--armory-space-lg);
     transform: translateX(-50%);
-    z-index: 40;
+    z-index: 41;
     display: flex;
     align-items: center;
     gap: var(--armory-space-sm);
@@ -2225,10 +2139,6 @@
     .armoryScene {
         grid-template-columns: 280px minmax(0, 1.5fr) minmax(0, 1fr);
     }
-
-    .armoryReviewGrid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 }
 
 @media (max-width: 940px) {
@@ -2252,7 +2162,6 @@
         min-height: 280px;
     }
 
-    .armoryReviewHero,
     .armoryStepToggle {
         grid-template-columns: 1fr;
         align-items: start;
@@ -2264,10 +2173,7 @@
 
     .armoryLaneTabs,
     .armoryHotbarTabs,
-    .armoryChoiceGrid,
-    .armoryChoiceGrid.armoryChoiceGrid-powers,
-    .armoryPartsShelf,
-    .armoryReviewGrid {
+    .armoryPartsShelf {
         grid-template-columns: 1fr;
     }
 }
@@ -2295,6 +2201,21 @@
         right: 16px;
         bottom: 16px;
         width: auto;
+    }
+
+    /* Bay wall recomposes into a horizontal shelf so it reads as a rack of
+       machines to swipe past, rather than a cramped vertical list. */
+    .armoryBayWall {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(200px, 1fr);
+        overflow-x: auto;
+        overflow-y: visible;
+        padding-bottom: var(--armory-space-xs);
+        scroll-snap-type: x proximity;
+    }
+
+    .armoryBay {
+        scroll-snap-align: start;
     }
 
     .armoryRailName,
@@ -2409,7 +2330,9 @@
 .armoryRange {
     position: fixed;
     inset: 0;
-    z-index: 20;
+    /* Above the app shell's sticky topbar (--z-sticky: 40) so the range's
+       own header controls aren't click-blocked by it underneath. */
+    z-index: 50;
     display: flex;
     flex-direction: column;
     gap: var(--armory-space-md);
@@ -2575,7 +2498,7 @@
 .armorySpecSheetScrim {
     position: fixed;
     inset: 0;
-    z-index: 18;
+    z-index: 48;
     background: rgba(3, 7, 16, 0.6);
     backdrop-filter: blur(4px);
 }
@@ -2585,7 +2508,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    z-index: 19;
+    z-index: 49;
     width: min(420px, 100%);
     padding: var(--armory-space-xl);
     overflow-y: auto;
@@ -2658,7 +2581,7 @@
 .armoryCompareScrim {
     position: fixed;
     inset: 0;
-    z-index: 20;
+    z-index: 50;
     background: rgba(3, 7, 16, 0.66);
     backdrop-filter: blur(4px);
 }
@@ -2667,7 +2590,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    z-index: 21;
+    z-index: 51;
     width: min(880px, calc(100vw - 32px));
     max-height: calc(100vh - 48px);
     overflow-y: auto;
@@ -2874,7 +2797,7 @@
 .armoryUnlockWallScrim {
     position: fixed;
     inset: 0;
-    z-index: 20;
+    z-index: 50;
     background: rgba(3, 7, 16, 0.66);
     backdrop-filter: blur(4px);
 }
@@ -2883,7 +2806,7 @@
     position: fixed;
     top: calc(50% + 32px);
     left: 50%;
-    z-index: 21;
+    z-index: 51;
     width: min(920px, calc(100vw - 32px));
     max-height: calc(100vh - 96px);
     overflow-y: auto;
@@ -3069,23 +2992,12 @@
     white-space: nowrap;
 }
 
-.armoryUnlockWallItemLevel {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 2px 7px;
-    border-radius: var(--armory-radius-pill);
-    border: 1px solid rgba(var(--armory-line), 0.2);
-    color: rgba(var(--armory-line), 0.72);
-    white-space: nowrap;
-}
-
 /* Unlock collection drop: the queue is visible as one batch and can be moved
    to the collection in one action, while individual installs remain optional. */
 .armoryCeremonyScrim {
     position: fixed;
     inset: 0;
-    z-index: 24;
+    z-index: 54;
     background: rgba(3, 7, 16, 0.78);
     backdrop-filter: blur(6px);
 }
@@ -3094,7 +3006,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    z-index: 25;
+    z-index: 55;
     width: min(420px, calc(100vw - 32px));
     transform: translate(-50%, -50%);
     display: grid;

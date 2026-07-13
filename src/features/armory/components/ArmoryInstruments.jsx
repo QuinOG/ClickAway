@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react"
+
 // Calibrated instrument column (Phase 5): the five feel readouts rendered as
 // segment dials instead of metric cards. While a part is being previewed the
 // dials show current→previewed movement before anything is committed.
@@ -54,12 +56,37 @@ export default function ArmoryInstruments({
   primaryLabel = "Active",
   compareLabel = "Ghost",
 }) {
+  const [announcement, setAnnouncement] = useState("")
+  const announceTimeoutRef = useRef(null)
+
+  const previewSummary = previewPresentation?.summaryStats
+    ?.map((stat) => {
+      const current = presentation?.summaryStats?.find((candidate) => candidate.label === stat.label)
+      return current && current.value !== stat.value
+        ? `${stat.label}: ${current.value} to ${stat.value}`
+        : null
+    })
+    .filter(Boolean)
+    .join(". ")
+
+  // Debounced so rapid hover/focus movement across the gallery doesn't spam
+  // the live region — only the settled preview gets announced.
+  useEffect(() => {
+    if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
+    announceTimeoutRef.current = setTimeout(
+      () => setAnnouncement(previewSummary || ""),
+      previewSummary ? 350 : 0
+    )
+    return () => clearTimeout(announceTimeoutRef.current)
+  }, [previewSummary])
+
   if (!presentation) return null
 
   const isComparing = Boolean(comparePresentation)
 
   return (
     <section className="armoryInstruments" aria-label="Build instruments">
+      <span className="armoryVisuallyHidden" role="status" aria-live="polite">{announcement}</span>
       {isComparing ? (
         <div className="armoryInstrumentsLegend">
           <span className="armoryInstrumentsLegendItem tone-primary">{primaryLabel}</span>
