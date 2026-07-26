@@ -99,7 +99,11 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     min-width: 0;
     width: 100%;
     display: grid;
-    grid-template-columns: 310px minmax(0, 1.5fr) minmax(0, 1fr);
+    /* Phase 2: the collection rail stays compact, the physical bench keeps a
+       stable working width, and the comparison-heavy inspector gets the most
+       room. This avoids starving part cards while the center sits empty. */
+    grid-template-columns: 272px minmax(430px, 0.92fr) minmax(520px, 1.08fr);
+    grid-template-rows: auto minmax(0, 1fr);
     overflow: hidden;
     background: linear-gradient(180deg, #0b1120, #070c17);
     transition:
@@ -179,12 +183,131 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     position: relative;
     z-index: 1;
     min-height: 0;
-    padding: var(--armory-space-xl) 18px;
+    padding: var(--armory-space-lg) 14px;
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: 18px;
+    grid-column: 1;
+    grid-row: 1 / -1;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 14px;
     border-right: 1px solid rgba(var(--armory-line), 0.1);
     background: linear-gradient(180deg, rgba(18, 26, 44, 0.6), rgba(13, 19, 33, 0.42));
+}
+
+.armoryRailHeading {
+    display: grid;
+    gap: 3px;
+    padding-top: var(--armory-space-xs);
+}
+
+.armoryRailHeading strong {
+    color: #f6fbff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 20px;
+}
+
+.armoryRailHeading span,
+.armoryRailActionLabel {
+    color: rgba(197, 219, 243, 0.68);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.armoryRailActionLabel {
+    font-weight: 800;
+    letter-spacing: 0.28px;
+    text-transform: uppercase;
+}
+
+.armoryCommandBar {
+    position: relative;
+    z-index: 2;
+    grid-column: 2 / -1;
+    grid-row: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(210px, 0.7fr) minmax(460px, 1.8fr) auto;
+    align-items: center;
+    gap: var(--armory-space-lg);
+    padding: 14px var(--armory-space-xl);
+    border-bottom: 1px solid rgba(var(--armory-line), 0.12);
+    background: rgba(10, 16, 29, 0.78);
+    backdrop-filter: blur(14px);
+}
+
+.armoryCommandIdentity {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: var(--armory-space-sm);
+}
+
+.armoryCommandIdentityGlyph {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(var(--armory-line), 0.16);
+    border-radius: var(--armory-radius-glyph);
+    color: #f1f7ff;
+    background: color-mix(in srgb, var(--armory-key-light) 12%, transparent);
+}
+
+.armoryCommandIdentityGlyph .armoryRailIdentityGlyphIcon {
+    width: 28px;
+    height: 28px;
+}
+
+.armoryCommandName {
+    overflow: hidden;
+    color: #f6fbff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 18px;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.armoryWorkflow {
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.armoryWorkflowLabel {
+    color: rgba(149, 204, 255, 0.72);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+}
+
+.armoryCommandBar .armoryRailProgress {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.armoryCommandBar .armoryRailStepButton {
+    padding: 8px 10px;
+}
+
+.armoryCommandBar .armoryRailStepGlyph {
+    display: none;
+}
+
+.armoryCommandBar .armoryRailStepLead {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.armoryCommandAction {
+    display: grid;
+    justify-items: stretch;
+    gap: 5px;
+}
+
+.armoryCommandAction .primaryButton {
+    white-space: nowrap;
 }
 
 .armoryRailTop,
@@ -404,6 +527,12 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     line-height: 1.2;
 }
 
+.armoryRailStepLead {
+    color: rgba(197, 219, 243, 0.66);
+    font-size: 10px;
+    line-height: 1.25;
+}
+
 /* ---- Bay wall: saved-build bays (Phase 4) -------------------------------- */
 
 .armoryBayWall {
@@ -412,6 +541,8 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     display: grid;
     align-content: start;
     gap: var(--armory-space-sm);
+    padding-right: 3px;
+    scrollbar-width: thin;
 }
 
 .armoryBay {
@@ -445,13 +576,13 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     width: 100%;
     border: 0;
     border-radius: var(--armory-radius-panel);
-    padding: var(--armory-space-md);
+    padding: var(--armory-space-sm);
     background: transparent;
     color: inherit;
     font: inherit;
     text-align: left;
     display: grid;
-    gap: var(--armory-space-sm);
+    gap: var(--armory-space-xs);
     cursor: pointer;
     transition:
         transform var(--armory-motion-fast) var(--armory-motion-ease),
@@ -508,7 +639,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 .armoryBayMini {
     position: relative;
-    min-height: 72px;
+    min-height: 64px;
     display: grid;
     place-items: center;
     border-radius: var(--armory-radius-field);
@@ -614,8 +745,56 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 .armoryBayFooter {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--armory-space-xs);
-    padding: 0 var(--armory-space-md) var(--armory-space-md);
+    padding: 0 var(--armory-space-sm) var(--armory-space-sm);
+}
+
+/* Docked bays are inventory choices, not full previews. Keep their identity
+   visible but collapse the miniature beside the name so all three builds and
+   the utility shelf fit within a normal desktop workbench height. */
+.armoryBay:not(.isActive) .armoryBaySelect {
+    grid-template-columns: 64px minmax(0, 1fr);
+    align-items: center;
+}
+
+.armoryBay:not(.isActive) .armoryBayHeader {
+    grid-column: 1 / -1;
+}
+
+.armoryBay:not(.isActive) .armoryBayMini {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+    min-height: 64px;
+}
+
+.armoryBay:not(.isActive) .armoryBayNameplate {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.armoryBay:not(.isActive) .armoryBayServicePlate {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 0;
+}
+
+.armoryBay:not(.isActive) .armoryBayMiniModules {
+    inset: 6px;
+}
+
+.armoryBay:not(.isActive) .armoryBayMiniModule:nth-child(2) {
+    display: none;
+}
+
+.armoryBayConfirmText,
+.armoryBayConfirmActions {
+    grid-column: 1 / -1;
+}
+
+.armoryBayFooter > .armoryBayAction {
+    padding-inline: 7px;
+    line-height: 1.15;
 }
 
 .armoryBayConfirmText {
@@ -713,11 +892,15 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     position: relative;
     z-index: 1;
     grid-column: 3 / -1;
+    grid-row: 2;
     min-height: 0;
     overflow-y: auto;
-    padding: var(--armory-space-xl);
-    gap: 18px;
+    padding: var(--armory-space-lg);
+    gap: 14px;
     scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+    border-left: 1px solid rgba(var(--armory-line), 0.08);
+    background: linear-gradient(180deg, rgba(17, 26, 44, 0.3), rgba(8, 13, 24, 0.12));
 }
 
 /* ---- Center stage: the machine (Phase 3) ---------------------------------
@@ -729,18 +912,20 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     position: relative;
     z-index: 1;
     grid-column: 2;
+    grid-row: 2;
     min-height: 0;
     min-width: 0;
     display: grid;
     align-content: center;
     justify-items: stretch;
-    padding: var(--armory-space-xl);
+    padding: clamp(18px, 2vw, 34px);
     overflow: hidden;
 }
 
 .armoryMachine {
     display: grid;
-    gap: var(--armory-space-lg);
+    width: 100%;
+    gap: 14px;
     justify-items: center;
     animation: armoryMachineRollIn 0.42s var(--armory-motion-ease) both;
 }
@@ -776,7 +961,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 .armoryMachineCore {
     position: relative;
     width: 100%;
-    min-height: 340px;
+    min-height: clamp(330px, 44vh, 470px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -847,7 +1032,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 /* Module housings rack above the target, mirroring the tool rack below it. */
 .armoryMachineHousingRow {
-    width: min(540px, 100%);
+    width: min(600px, 100%);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--armory-space-xs);
@@ -942,7 +1127,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 /* The tool rack: three keyed slots mirroring the in-game power tray's
    language (key badge + glyph + label) so round and workshop feel continuous. */
 .armoryMachineRack {
-    width: min(540px, 100%);
+    width: min(600px, 100%);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--armory-space-xs);
@@ -1164,17 +1349,18 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     padding: 14px 16px;
     color: inherit;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: var(--armory-space-md);
     border-bottom: 1px solid rgba(var(--armory-line), 0.1);
 }
 
 .armoryStepSummary {
+    grid-column: 2;
     color: rgba(225, 239, 255, 0.86);
     font-size: 12px;
     line-height: 1.4;
-    text-align: right;
+    text-align: left;
 }
 
 .armoryStepContent {
@@ -1398,7 +1584,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 .armoryInstruments {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(146px, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--armory-space-xs);
 }
 
@@ -1572,6 +1758,60 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 .armoryPartsGallery {
     display: grid;
     gap: var(--armory-space-md);
+}
+
+.armoryPreviewCommit {
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--armory-space-lg);
+    padding: 12px 14px;
+    border: 1px solid rgba(var(--armory-tone-tempo), 0.34);
+    border-radius: var(--armory-radius-field);
+    background:
+        linear-gradient(90deg, rgba(var(--armory-tone-tempo), 0.11), transparent 62%),
+        rgba(8, 14, 26, 0.96);
+    box-shadow: 0 -12px 30px rgba(3, 7, 14, 0.42);
+    backdrop-filter: blur(14px);
+}
+
+.armoryPreviewCommitCopy {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+}
+
+.armoryPreviewCommitEyebrow {
+    color: rgb(var(--armory-tone-tempo));
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.armoryPreviewCommitCopy strong {
+    color: #f6fbff;
+    font-size: 14px;
+}
+
+.armoryPreviewCommitCopy > span:last-child {
+    color: rgba(197, 219, 243, 0.7);
+    font-size: 10px;
+}
+
+.armoryPreviewCommitActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--armory-space-xs);
+}
+
+.armoryPreviewCommitActions .primaryButton,
+.armoryPreviewCommitActions .secondaryButton {
+    white-space: nowrap;
 }
 
 .armoryPartsShelf {
@@ -2135,26 +2375,60 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     }
 }
 
+@media (max-width: 1500px) {
+    .armoryInstruments {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 1100px) {
     .armoryScene {
-        grid-template-columns: 280px minmax(0, 1.5fr) minmax(0, 1fr);
+        grid-template-columns: 240px minmax(360px, 0.85fr) minmax(400px, 1.15fr);
+    }
+
+    .armoryCommandBar {
+        grid-template-columns: minmax(180px, 0.6fr) minmax(420px, 1.6fr);
+    }
+
+    .armoryCommandAction {
+        display: none;
+    }
+
+    .armoryInstruments,
+    .armoryPartsShelf {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 940px) {
     .armoryScene {
         grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
         overflow: visible;
     }
 
     .armoryRail {
+        grid-column: 1;
+        grid-row: 2;
         border-right: 0;
         border-bottom: 1px solid rgba(var(--armory-line), 0.1);
     }
 
-    .armoryWorkspace,
+    .armoryCommandBar {
+        grid-column: 1;
+        grid-row: 1;
+        grid-template-columns: 1fr;
+    }
+
     .armoryStage {
-        grid-column: auto;
+        grid-column: 1;
+        grid-row: 3;
+        overflow: visible;
+    }
+
+    .armoryWorkspace {
+        grid-column: 1;
+        grid-row: 4;
         overflow: visible;
     }
 
@@ -2180,6 +2454,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 @media (max-width: 700px) {
     .armoryRail,
+    .armoryCommandBar,
     .armoryWorkspace,
     .armoryStage {
         padding: var(--armory-space-lg);
@@ -2227,6 +2502,26 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     .armoryRailIdentity,
     .armoryLanePanelHeader {
         grid-template-columns: 1fr;
+    }
+
+    .armoryCommandBar .armoryRailProgress {
+        grid-template-columns: 1fr;
+    }
+
+    .armoryCommandBar .armoryRailStepLead {
+        white-space: normal;
+    }
+
+    .armoryPreviewCommit,
+    .armoryPreviewCommitActions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .armoryPreviewCommitActions .primaryButton,
+    .armoryPreviewCommitActions .secondaryButton {
+        width: 100%;
+        justify-content: center;
     }
 }
 

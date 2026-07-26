@@ -109,36 +109,16 @@ export default function ArmoryScreen({
       <aside className="armoryRail">
         <div className="armoryRailTop">
           <h1 className="armoryRailEyebrow">Armory</h1>
-          <div className="armoryRailIdentity">
-            <span className="armoryRailIdentityGlyph" aria-hidden="true">
-              <BuildIdentityGlyph
-                identity={activePresentation.identity.label}
-                className="armoryRailIdentityGlyphIcon"
-              />
-            </span>
-            <div className="armoryRailIdentityCopy">
-              <span className="armoryRailLabel">Active build</span>
-              <strong className="armoryRailName">{activeLoadout.name}</strong>
-              <span className="armoryRailHint">Saves instantly. Ready uses this bay next round.</span>
-            </div>
+          <div className="armoryRailHeading">
+            <strong>Build bays</strong>
+            <span>Choose the loadout you want to configure.</span>
           </div>
-        </div>
-
-        <div className="armoryRailProgress" aria-label="Armory steps">
-          {steps.map((step, index) => (
-            <ArmoryRailStepButton
-              key={step.id}
-              step={step}
-              index={index}
-              isActive={step.id === activeStepId}
-              onClick={() => handleOpenStep(step.id)}
-            />
-          ))}
         </div>
 
         <ArmoryBayWall bayApi={bayApi} blueprintApi={blueprintApi} />
 
         <div className="armoryRailActions">
+          <span className="armoryRailActionLabel">Workshop utilities</span>
           <button type="button" className="secondaryButton" onClick={unlockWallApi.open}>
             Unlock Wall
           </button>
@@ -150,6 +130,42 @@ export default function ArmoryScreen({
           </Link>
         </div>
       </aside>
+
+      <header className="armoryCommandBar">
+        <div className="armoryCommandIdentity">
+          <span className="armoryCommandIdentityGlyph" aria-hidden="true">
+            <BuildIdentityGlyph
+              identity={activePresentation.identity.label}
+              className="armoryRailIdentityGlyphIcon"
+            />
+          </span>
+          <div className="armoryRailIdentityCopy">
+            <span className="armoryRailLabel">Active build</span>
+            <strong className="armoryCommandName">{activeLoadout.name}</strong>
+            <span className="armoryRailHint">Changes save instantly to this bay.</span>
+          </div>
+        </div>
+
+        <nav className="armoryWorkflow" aria-label="Armory steps">
+          <span className="armoryWorkflowLabel">Build workflow</span>
+          <div className="armoryRailProgress">
+            {steps.map((step, index) => (
+              <ArmoryRailStepButton
+                key={step.id}
+                step={step}
+                index={index}
+                isActive={step.id === activeStepId}
+                onClick={() => handleOpenStep(step.id)}
+              />
+            ))}
+          </div>
+        </nav>
+
+        <div className="armoryCommandAction">
+          <span className="armoryRailLabel">Next round</span>
+          <Link className="primaryButton" to="/game">Deploy build</Link>
+        </div>
+      </header>
 
       <ArmoryMachine
         loadout={activeLoadout}

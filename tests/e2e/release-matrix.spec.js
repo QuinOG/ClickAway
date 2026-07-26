@@ -227,11 +227,13 @@ test("Armory install and factory reset persist their visible build state", async
   const overdrive = page.locator('[data-part-id="tempo_overdrive"]')
   await overdrive.click()
   await expect(overdrive).toHaveAttribute("aria-pressed", "true")
+  await page.getByRole("button", { name: "Install Overdrive" }).click()
+  await expect(overdrive).toHaveAttribute("data-armory-state", "installed")
 
   await page.getByRole("button", { name: "Strip to Factory Spec" }).click()
   await page.getByRole("button", { name: "Confirm Strip" }).click()
   await expect(page.locator('[data-part-id="tempo_balanced"]'))
-    .toHaveAttribute("aria-pressed", "true")
+    .toHaveAttribute("data-armory-state", "installed")
 })
 
 test("session loading, sparse, empty, and recoverable API error states remain explicit", async ({ page }) => {

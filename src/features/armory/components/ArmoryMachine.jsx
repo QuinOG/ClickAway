@@ -7,7 +7,7 @@ import {
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
-export const MACHINE_TARGET_SCALE = 1.6
+export const MACHINE_TARGET_SCALE = 1.85
 
 const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
   MODULE_SLOTS.map((slot) => [slot.id, slot.defaultModuleId])

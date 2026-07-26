@@ -55,6 +55,14 @@ function getPartCard(name) {
     .find((button) => button.className.includes("armoryPartCard"))
 }
 
+async function installPreviewedPart(user, card) {
+  await user.click(card)
+  const actions = screen.getByRole("region", { name: "Preview actions" })
+  // Keep the pointer parked on the card; moving the synthetic pointer outside
+  // the gallery intentionally cancels the preview before the commit click.
+  fireEvent.click(within(actions).getByRole("button", { name: /^(Install|Swap)/ }))
+}
+
 describe("Armory screen baseline", () => {
   test("renders three steps with the passive editor open by default", () => {
     renderArmory()
@@ -75,6 +83,21 @@ describe("Armory screen baseline", () => {
     expect(within(bayWall).getByText("Glass Cannon")).not.toBeNull()
   })
 
+  test("separates build management from the ordered workbench workflow", () => {
+    renderArmory()
+
+    const bayWall = screen.getByLabelText("Build bays")
+    const workflow = screen.getByLabelText("Armory steps")
+
+    expect(bayWall.closest(".armoryRail")).not.toBeNull()
+    expect(workflow.closest(".armoryCommandBar")).not.toBeNull()
+    expect(workflow.closest(".armoryRail")).toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Tune Systems/ })).not.toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Assign Hotbar/ })).not.toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Test Build/ })).not.toBeNull()
+    expect(screen.getByRole("link", { name: "Deploy build" })).not.toBeNull()
+  })
+
   test("activating another bay persists the new active id", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
@@ -90,7 +113,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     await openStep(user, "Passive Stack")
-    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const { savedLoadouts, activeLoadoutId } = lastLoadoutState(props)
     expect(activeLoadoutId).toBe("loadout_1")
@@ -129,7 +152,7 @@ describe("Armory screen baseline", () => {
     // displaced Time +2s → key 2).
     await user.hover(growCard)
     expect(within(growCard).getByText("Swap with key 2")).not.toBeNull()
-    await user.click(growCard)
+    await installPreviewedPart(user, growCard)
 
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
@@ -144,7 +167,7 @@ describe("Armory screen baseline", () => {
     // Hover previews, then click installs (matches the pointer contract).
     const magnetCard = getPartCard(/Magnet Center/)
     await user.hover(magnetCard)
-    await user.click(magnetCard)
+    await installPreviewedPart(user, magnetCard)
 
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
@@ -172,7 +195,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     await openStep(user, "Passive Stack")
-    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const machine = screen.getByLabelText("Active build machine")
     await user.click(within(machine).getByRole("button", { name: "Strip to Factory Spec" }))
@@ -192,7 +215,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     await openStep(user, "Passive Stack")
-    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const bayWall = getBayWall()
     const safeHandsBay = within(bayWall).getByText("Safe Hands").closest(".armoryBay")
@@ -306,7 +329,7 @@ describe("Armory machine", () => {
 
     // Installing Anchor (bigger targets) visibly grows the machine's target.
     await openStep(user, "Passive Stack")
-    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const anchorLoadout = {
       ...allRounder,
@@ -327,7 +350,7 @@ describe("Armory machine", () => {
     expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(3)
 
     await openStep(user, "Passive Stack")
-    await user.click(screen.getByRole("button", { name: /^Anchor/ }))
+    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
     expect(tempoHousing.className).not.toContain("isNeutral")
@@ -437,7 +460,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(within(anchorCard).getByText("Previewing")).not.toBeNull()
   })
 
-  test("keyboard: focus previews, Enter installs, arrows rove between parts", async () => {
+  test("keyboard: focus and Enter preview, arrows rove, and the explicit action installs", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
@@ -460,14 +483,20 @@ describe("Armory parts gallery (Phase 5)", () => {
     await user.keyboard("{ArrowLeft}")
     expect(document.activeElement).toBe(anchorCard)
 
-    // Enter installs the focused part.
+    // Enter selects the focused preview but still does not persist it.
     await user.keyboard("{Enter}")
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+
+    const actions = screen.getByRole("region", { name: "Preview actions" })
+    expect(within(actions).getByText("Your saved build has not changed.")).not.toBeNull()
+    await user.click(within(actions).getByRole("button", { name: "Install Anchor" }))
+
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
   })
 
-  test("a bare tap or click installs immediately, no separate preview step", async () => {
+  test("a bare tap or click selects a preview and requires explicit installation", async () => {
     const props = renderArmory()
 
     await openStep(userEvent.setup(), "Passive Stack")
@@ -477,9 +506,27 @@ describe("Armory parts gallery (Phase 5)", () => {
     const anchorCard = getPartCard(/^Anchor/)
     fireEvent.click(anchorCard)
 
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+    expect(within(screen.getByRole("region", { name: "Preview actions" })).getByText("Preview only")).not.toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Install Anchor" }))
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
+  })
+
+  test("cancel preview restores the installed presentation without persisting", async () => {
+    const props = renderArmory()
+
+    await openStep(userEvent.setup(), "Passive Stack")
+    fireEvent.click(getPartCard(/^Anchor/))
+    expect(document.querySelector(".armoryMachineTargetGhost")).not.toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel preview" }))
+
+    expect(screen.queryByRole("region", { name: "Preview actions" })).toBeNull()
+    expect(document.querySelector(".armoryMachineTargetGhost")).toBeNull()
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
   })
 
   test("clicking a machine housing opens that lane's parts gallery", async () => {
