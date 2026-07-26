@@ -107,7 +107,7 @@ export default function ArmorySpecSheet({
         </section>
 
         <section className="armorySpecSheetPanel">
-          <span className="armorySpecSheetPanelTitle">Hotbar cadence</span>
+          <span className="armorySpecSheetPanelTitle">Powerup timing</span>
           <div className="armoryReviewPowerList">
             {presentation.powerSlots.map((powerSlot, index) => (
               <div key={`${powerSlot.id}-${index + 1}`} className="armoryReviewPowerItem">

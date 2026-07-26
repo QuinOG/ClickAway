@@ -68,11 +68,6 @@ function getModeRules(mode) {
   return `${mode.roundLabel}. ${mode.missLabel}. ${mode.shrinkLabel} target pressure. ${mode.rewardLabel}.`
 }
 
-function formatSessionRR(netRR = 0) {
-  if (netRR === 0) return "Even"
-  return `${netRR > 0 ? "+" : ""}${netRR} RR`
-}
-
 function RankedPreflight({
   preflight,
   rankProgress,
@@ -165,62 +160,6 @@ function RankedPreflight({
   )
 }
 
-function DurationRing({ mode, large = false }) {
-  const isUntimed = mode.isTimedRound === false
-
-  return (
-    <span
-      className={`lobbyDurationRing ${isUntimed ? "isUntimed" : "isTimed"} ${large ? "isLarge" : ""}`}
-      style={{ "--duration-turn": isUntimed ? "0turn" : `${Math.min(1, mode.durationSeconds / 30)}turn` }}
-      aria-hidden="true"
-    >
-      <span>{isUntimed ? "∞" : mode.durationSeconds}</span>
-      <small>{isUntimed ? "OPEN" : "SEC"}</small>
-    </span>
-  )
-}
-
-function StakesEmblem({ mode, large = false }) {
-  return (
-    <span className={`lobbyStakesCue stakes-${mode.stakesLevel} ${large ? "isLarge" : ""}`} aria-hidden="true">
-      <span className="lobbyStakesShield">
-        <i />
-        <i />
-        <i />
-      </span>
-      <small>STAKES</small>
-    </span>
-  )
-}
-
-function RewardPips({ mode, large = false }) {
-  return (
-    <span className={`lobbyRewardCue ${large ? "isLarge" : ""}`} aria-hidden="true">
-      <span className="lobbyRewardPips">
-        {Array.from({ length: 3 }, (_, index) => (
-          <i key={index} className={index < mode.rewardLevel ? "isEarned" : ""} />
-        ))}
-      </span>
-      <small>{mode.rewardLevel ? "REWARDS" : "DRILL PB"}</small>
-    </span>
-  )
-}
-
-function PressureSilhouette({ mode, large = false }) {
-  return (
-    <span className={`lobbyPressureCue pressure-${mode.pressureLevel} ${large ? "isLarge" : ""}`} aria-hidden="true">
-      <span className="lobbyPressureTargets">
-        <i />
-        <b />
-        <i />
-        <b />
-        <i />
-      </span>
-      <small>PRESSURE</small>
-    </span>
-  )
-}
-
 function ModeChoice({ mode, isSelected, disabled, onSelect }) {
   const modeRules = getModeRules(mode)
 
@@ -241,14 +180,8 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
           <span className="lobbyModeName">{mode.label}</span>
           <span className="lobbyModeSelectedMark" aria-hidden="true">✓</span>
         </span>
-        <span className="lobbyModeVisuals" aria-hidden="true">
-          <DurationRing mode={mode} />
-          <PressureSilhouette mode={mode} />
-        </span>
-        <span className="lobbyModeCueRow" aria-hidden="true">
-          <StakesEmblem mode={mode} />
-          <RewardPips mode={mode} />
-        </span>
+        <span className="lobbyModeSummary">{mode.roundLabel} · {mode.goalLabel}</span>
+        <span className="lobbyModeReward">{mode.rewardLabel}</span>
         <span id={`lobby-mode-summary-${mode.id}`} className="uiVisuallyHidden">{modeRules}</span>
       </button>
     </Tooltip>
@@ -326,7 +259,6 @@ export function ReadyOverlay({
   canChangeMode = true,
   activeLoadoutName = "Loadout",
   activeLoadoutPresentation = null,
-  playerBestScore = 0,
   showArmoryWalkthroughBadge = false,
   onboardingCoach = null,
   showTrainingSuite = false,
@@ -338,7 +270,6 @@ export function ReadyOverlay({
   rankedPreflight = null,
   rankProgress = null,
   onStartRankedWarmup,
-  sessionStats = null,
   onClose,
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -455,10 +386,6 @@ export function ReadyOverlay({
             <h2 id="round-ready-title">{readyTitle}</h2>
             <p>{readyLead}</p>
           </div>
-          <div className="arenaLobbyShortcuts" aria-label="Lobby keyboard shortcuts">
-            <span><kbd>←</kbd><kbd>→</kbd> modes</span>
-            <span><kbd>Enter</kbd> start</span>
-          </div>
           {onboardingCoach ? (
             <div className="readyOnboardingCoach" aria-label="First session onboarding">
               <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span>
@@ -468,15 +395,6 @@ export function ReadyOverlay({
         </header>
 
         <div className="lobbyModeSelector">
-          <button
-            type="button"
-            className="lobbyModeArrow"
-            aria-label="Select previous mode"
-            disabled={!canChangeMode || !lobbyModes.length}
-            onClick={() => moveMode(-1)}
-          >
-            <span aria-hidden="true">‹</span>
-          </button>
           <div className="lobbyModeRail" aria-label="Choose a game mode">
             {lobbyModes.map((mode) => (
               <ModeChoice
@@ -488,60 +406,11 @@ export function ReadyOverlay({
               />
             ))}
           </div>
-          <button
-            type="button"
-            className="lobbyModeArrow"
-            aria-label="Select next mode"
-            disabled={!canChangeMode || !lobbyModes.length}
-            onClick={() => moveMode(1)}
-          >
-            <span aria-hidden="true">›</span>
-          </button>
         </div>
 
-        {selectedMode ? (
-          <MotionDiv
-            key={selectedMode.id}
-            className={`lobbyModeStage lobbyModeStage-${selectedMode.tone}`}
-            aria-live="polite"
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: OVERLAY_EASE }}
-          >
-            <div className="lobbyModeStageIdentity">
-              <span className="lobbyModeStageGlyph" aria-hidden="true">{selectedMode.glyph}</span>
-              <span>
-                <small>Selected arena</small>
-                <strong>{selectedMode.label}</strong>
-                <em>{selectedMode.goalLabel}</em>
-              </span>
-              <Tooltip content={selectedModeRules} placement="bottom">
-                <button type="button" className="lobbyRulesButton" aria-label={`Exact ${selectedMode.label} rules`}>
-                  <b aria-hidden="true">i</b>
-                  Rules
-                </button>
-              </Tooltip>
-            </div>
-            <div className="lobbyModeStageSignals">
-              <span role="img" aria-label={`Duration: ${selectedMode.roundLabel}`}>
-                <DurationRing mode={selectedMode} large />
-              </span>
-              <span role="img" aria-label={`Stakes: ${selectedMode.missLabel}; ${selectedMode.rewardLabel}`}>
-                <StakesEmblem mode={selectedMode} large />
-              </span>
-              <span role="img" aria-label={`Rewards: ${selectedMode.rewardLabel}`}>
-                <RewardPips mode={selectedMode} large />
-              </span>
-              <span role="img" aria-label={`Pressure: ${selectedMode.shrinkLabel}`}>
-                <PressureSilhouette mode={selectedMode} large />
-              </span>
-            </div>
-            <div className="lobbyModeStageRecords">
-              <span><small>Personal best</small><strong>{playerBestScore > 0 ? Number(playerBestScore).toLocaleString() : "No score yet"}</strong></span>
-              <span><small>Session</small><strong>{sessionStats?.rounds ? `Best ${Number(sessionStats.bestScore).toLocaleString()}` : "First round"}</strong></span>
-            </div>
-          </MotionDiv>
-        ) : null}
+        <p className="uiVisuallyHidden" aria-live="polite">
+          {selectedMode ? `${selectedMode.label} selected. ${selectedModeRules}` : "No mode selected."}
+        </p>
 
         {selectedMode?.id === "hard" ? (
           <RankedPreflight
@@ -581,25 +450,7 @@ export function ReadyOverlay({
             </Link>
           </div>
 
-          {sessionStats ? (
-            <div className="readySessionStrip" aria-label="Session summary">
-              <span className="readySessionLabel">This session</span>
-              <span className="readySessionStat">{sessionStats.rounds} {sessionStats.rounds === 1 ? "round" : "rounds"}</span>
-              <span className="readySessionDivider" aria-hidden="true" />
-              <span className="readySessionStat">Best: {Number(sessionStats.bestScore).toLocaleString()}</span>
-              {sessionStats.netRR !== 0 ? (
-                <>
-                  <span className="readySessionDivider" aria-hidden="true" />
-                  <span className={`readySessionStat ${sessionStats.netRR > 0 ? "isPositive" : "isNegative"}`}>
-                    {formatSessionRR(sessionStats.netRR)}
-                  </span>
-                </>
-              ) : null}
-            </div>
-          ) : null}
-
           <div className="arenaLobbyActions">
-            {!onboardingCoach ? <Link className="lobbyTextLink" to="/help">How to play</Link> : <span />}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

@@ -139,7 +139,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
           <ArmoryUnlockWallPanel
             tone="power"
             label="Power Tools"
-            description="The keyed tools that fill your hotbar."
+            description="Powerups you can equip to keys 1, 2, and 3."
             headerGlyph={<PowerupGlyph powerupId="" />}
             renderPartGlyph={(part) => <PowerupGlyph powerupId={part.id} />}
             parts={LOADOUT_POWERUPS}

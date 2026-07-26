@@ -35,6 +35,17 @@ afterEach(() => {
 })
 
 describe("Feedback settings", () => {
+  test("uses a viewport-contained modal on desktop and a sheet on mobile", async () => {
+    const user = userEvent.setup()
+    render(<SettingsHarness />)
+
+    await user.click(screen.getByRole("button", { name: "Open feedback settings" }))
+    const dialog = screen.getByRole("dialog", { name: "Feedback settings" })
+
+    expect(dialog.dataset.presentation).toBe("modal")
+    expect(dialog.parentElement.dataset.mobilePresentation).toBe("sheet")
+  })
+
   test("keeps a draft local until Apply and previews an unapplied mute", async () => {
     const user = userEvent.setup()
     render(<SettingsHarness />)

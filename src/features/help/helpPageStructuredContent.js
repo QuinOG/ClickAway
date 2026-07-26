@@ -263,9 +263,3 @@ export const FAQ_ITEMS = [
   },
 ]
 
-export const HELP_QUICK_NAV = [
-  { id: "core", label: "Core Gameplay" },
-  { id: "modes", label: "Modes + Ranked" },
-  { id: "progression", label: "Progression" },
-  { id: "account", label: "Account + Tracking" },
-]

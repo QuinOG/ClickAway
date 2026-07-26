@@ -230,6 +230,7 @@ test("Armory install and factory reset persist their visible build state", async
   await page.getByRole("button", { name: "Install Overdrive" }).click()
   await expect(overdrive).toHaveAttribute("data-armory-state", "installed")
 
+  await page.getByText("Build options").click()
   await page.getByRole("button", { name: "Strip to Factory Spec" }).click()
   await page.getByRole("button", { name: "Confirm Strip" }).click()
   await expect(page.locator('[data-part-id="tempo_balanced"]'))

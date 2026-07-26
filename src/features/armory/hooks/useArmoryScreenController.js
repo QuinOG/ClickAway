@@ -93,6 +93,7 @@ export function useArmoryScreenController({
   // whatever crossed the unlock wall since the last time this page opened.
   const [ceremonyParts] = useState(() => getUnseenUnlockedParts(playerLevel, seenUnlockPartIds))
   const [ceremonyQueue, setCeremonyQueue] = useState(ceremonyParts)
+  const hasAcknowledgedCeremonyRef = useRef(false)
   const [isUnlockWallOpen, setIsUnlockWallOpen] = useState(false)
   const [blueprintNotice, setBlueprintNotice] = useState(null)
 
@@ -411,10 +412,19 @@ export function useArmoryScreenController({
     onSeenUnlockPartIdsChange?.(normalizeSeenUnlockPartIds([...seenUnlockPartIds, ...partIds]))
   }, [onSeenUnlockPartIdsChange, seenUnlockPartIds])
 
-  const advanceCeremonyQueue = useCallback((seenPart) => {
-    markUnlockPartsSeen([seenPart.id])
+  // A reveal is "seen" once it has actually been presented, not only after
+  // the player chooses an action. Persist the frozen batch immediately so
+  // navigating away with the dialog open cannot reconstruct the same queue
+  // on the next Armory visit.
+  useEffect(() => {
+    if (hasAcknowledgedCeremonyRef.current || ceremonyParts.length === 0) return
+    hasAcknowledgedCeremonyRef.current = true
+    markUnlockPartsSeen(ceremonyParts.map((part) => part.id))
+  }, [ceremonyParts, markUnlockPartsSeen])
+
+  const advanceCeremonyQueue = useCallback(() => {
     setCeremonyQueue((queue) => queue.slice(1))
-  }, [markUnlockPartsSeen])
+  }, [])
 
   // "Install now" wires the new part straight into the active build: a
   // module goes to its own housing, a power lands on key 1 (swapping
@@ -441,17 +451,16 @@ export function useArmoryScreenController({
     emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_INSTALL, {
       pitch: part.kind === "module" ? getLaneInstallPitch(part.slotId) : getHotbarInstallPitch(),
     })
-    advanceCeremonyQueue(part)
+    advanceCeremonyQueue()
   }, [activeLoadout, advanceCeremonyQueue, emitFeedback, updateSingleLoadout])
 
-  const rackCeremonyPart = useCallback((part) => {
-    advanceCeremonyQueue(part)
+  const rackCeremonyPart = useCallback(() => {
+    advanceCeremonyQueue()
   }, [advanceCeremonyQueue])
 
   const skipCeremonyQueue = useCallback(() => {
-    markUnlockPartsSeen(ceremonyQueue.map((part) => part.id))
     setCeremonyQueue([])
-  }, [ceremonyQueue, markUnlockPartsSeen])
+  }, [])
 
   const openUnlockWall = useCallback(() => {
     setIsUnlockWallOpen(true)
@@ -724,6 +733,8 @@ export function useArmoryScreenController({
       confirmBayAction,
       cancelBayAction,
       openModuleLane,
+      selectedModuleSlotId: activeModuleSlotId,
+      previewModuleStack: previewPresentation?.moduleStack ?? null,
       openSpecSheet,
       openModeMatrix,
       previewInitialButtonSize: previewPresentation?.roundRules?.initialButtonSize ?? null,

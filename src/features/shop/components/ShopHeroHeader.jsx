@@ -234,7 +234,13 @@ export default function ShopHeroHeader({
                 className={`shopInlineSignal is-${actionFeedback.kind}`}
                 role={actionFeedback.kind === "error" ? "alert" : "status"}
               >
-                <span aria-hidden="true">{actionFeedback.kind === "error" ? "!" : actionFeedback.kind === "pending" ? "â€¦" : "âœ“"}</span>
+                <span aria-hidden="true">
+                  {actionFeedback.kind === "error"
+                    ? "!"
+                    : actionFeedback.kind === "pending"
+                      ? "…"
+                      : <Check size={13} weight="bold" />}
+                </span>
                 {actionFeedback.message}
               </p>
             ) : null}

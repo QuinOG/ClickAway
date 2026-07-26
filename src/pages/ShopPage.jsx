@@ -100,7 +100,7 @@ export default function ShopPage({
 
     setSelectedItemId(item.id)
     setPendingItemId(item.id)
-    setActionFeedback({ kind: "pending", message: `Unlocking ${item.name}â€¦` })
+    setActionFeedback({ kind: "pending", message: `Unlocking ${item.name}...` })
     signalAction(source, { state: "pending", silent: true })
 
     try {
@@ -108,7 +108,7 @@ export default function ShopPage({
       if (purchaseResult?.ok) {
         celebrateShopPurchase({ enabled: effectivePreferences.flashes })
         setBalancePulseKey((key) => key + 1)
-        setActionFeedback({ kind: "success", message: `${item.name} unlocked. Preview held â€” equip when ready.` })
+        setActionFeedback({ kind: "success", message: `${item.name} unlocked. Preview held - equip when ready.` })
         signalAction(source, {
           eventName: FEEDBACK_EVENTS.PURCHASE,
           eventId: `purchase-${item.id}`,
@@ -137,7 +137,7 @@ export default function ShopPage({
 
     setSelectedItemId(item.id)
     setPendingItemId(item.id)
-    setActionFeedback({ kind: "pending", message: `Equipping ${item.name}â€¦` })
+    setActionFeedback({ kind: "pending", message: `Equipping ${item.name}...` })
     signalAction(source, { state: "pending", silent: true })
 
     try {

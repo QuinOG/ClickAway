@@ -45,7 +45,7 @@ describe("Arena lobby", () => {
     expect(within(modeRail).getByRole("button", { name: "Select Practice" })).not.toBeNull()
     expect(within(modeRail).getByRole("button", { name: "Select Casual" })).not.toBeNull()
     expect(within(modeRail).getByRole("button", { name: "Select Ranked" })).not.toBeNull()
-    expect(screen.getByLabelText("Rewards: XP + coins · no rank risk")).not.toBeNull()
+    expect(within(modeRail).getByText("XP + coins · no rank risk")).not.toBeNull()
     expect(screen.getByText("Tempo Control")).not.toBeNull()
 
     await user.click(within(modeRail).getByRole("button", { name: "Select Ranked" }))
@@ -56,7 +56,7 @@ describe("Arena lobby", () => {
     expect(props.onStart).toHaveBeenCalledWith("hard")
   })
 
-  test("distinguishes every mode through duration, stakes, reward, and pressure signals", async () => {
+  test("distinguishes every mode with a compact duration, goal, and reward summary", async () => {
     const user = userEvent.setup()
     renderLobby()
 
@@ -65,19 +65,12 @@ describe("Arena lobby", () => {
     const casual = within(modeRail).getByRole("button", { name: "Select Casual" })
     const ranked = within(modeRail).getByRole("button", { name: "Select Ranked" })
 
-    expect(practice.querySelector(".lobbyDurationRing.isUntimed")).not.toBeNull()
-    expect(casual.querySelector(".lobbyDurationRing.isTimed").textContent).toContain("30")
-    expect(ranked.querySelector(".lobbyDurationRing.isTimed").textContent).toContain("15")
-
-    expect(practice.querySelector(".lobbyStakesCue.stakes-0")).not.toBeNull()
-    expect(casual.querySelector(".lobbyStakesCue.stakes-1")).not.toBeNull()
-    expect(ranked.querySelector(".lobbyStakesCue.stakes-3")).not.toBeNull()
-    expect(practice.querySelectorAll(".lobbyRewardPips .isEarned")).toHaveLength(0)
-    expect(casual.querySelectorAll(".lobbyRewardPips .isEarned")).toHaveLength(2)
-    expect(ranked.querySelectorAll(".lobbyRewardPips .isEarned")).toHaveLength(3)
-    expect(practice.querySelector(".lobbyPressureCue.pressure-1")).not.toBeNull()
-    expect(casual.querySelector(".lobbyPressureCue.pressure-2")).not.toBeNull()
-    expect(ranked.querySelector(".lobbyPressureCue.pressure-3")).not.toBeNull()
+    expect(within(practice).getByText("No limit · Sharpen accuracy or choose a drill")).not.toBeNull()
+    expect(within(casual).getByText("30s · Push your personal best")).not.toBeNull()
+    expect(within(ranked).getByText("15s · Climb your division")).not.toBeNull()
+    expect(within(practice).getByText("No stakes · drill PBs")).not.toBeNull()
+    expect(within(casual).getByText("XP + coins · no rank risk")).not.toBeNull()
+    expect(within(ranked).getByText("XP + coins · rank at stake")).not.toBeNull()
 
     DIFFICULTIES.forEach((mode) => expect(screen.queryByText(mode.description)).toBeNull())
 

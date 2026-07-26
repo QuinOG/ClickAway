@@ -59,6 +59,7 @@ export function ArmoryRailStepButton({ step, index, isActive = false, onClick })
       type="button"
       className={`armoryRailStepButton ${isActive ? "isActive" : ""}`}
       onClick={onClick}
+      aria-current={isActive ? "step" : undefined}
     >
       <span className="armoryRailStepIndex">{index + 1}</span>
       <span className="armoryRailStepGlyph" aria-hidden="true">
@@ -146,7 +147,7 @@ export function ArmoryHotbarButton({
           <PowerupGlyph powerupId={powerupId} />
         </span>
         <span className="armoryHotbarBody">
-          <strong className="armoryHotbarLabel">{powerup?.label ?? "Choose Power"}</strong>
+          <strong className="armoryHotbarLabel">{powerup?.label ?? "Choose a powerup"}</strong>
           <span className="armoryHotbarMeta">{cadenceLabel || "No cadence"}</span>
         </span>
       </span>

@@ -8,7 +8,7 @@ import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import {
   ActionButton,
   Badge,
-  MobileSheet,
+  Modal,
   SegmentedControl,
 } from "./ui/index.js"
 
@@ -253,16 +253,17 @@ export default function FeedbackSettingsSheet({
   triggerRef,
 }) {
   return (
-    <MobileSheet
+    <Modal
       open={open}
       onOpenChange={onOpenChange}
       triggerRef={triggerRef}
       title="Feedback settings"
       description="Tune sound, motion, flashes, shake, and optional touch cues independently."
       size="sm"
+      mobilePresentation="sheet"
       surfaceClassName="feedbackSettingsSheet"
     >
       {open ? <FeedbackSettingsForm onRequestClose={() => onOpenChange(false)} /> : null}
-    </MobileSheet>
+    </Modal>
   )
 }

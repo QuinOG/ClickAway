@@ -19,6 +19,38 @@ function getScaleIndex(scale, value) {
   return index === -1 ? scale.indexOf("Standard") : index
 }
 
+function formatSigned(value, digits = 0, suffix = "") {
+  const rounded = Number(value).toFixed(digits)
+  return `${value > 0 ? "+" : ""}${rounded}${suffix}`
+}
+
+function getExactMetric(label, rules = {}) {
+  if (label === "Aim Window") {
+    return { value: Number(rules.initialButtonSize) || 0, text: `${Number(rules.initialButtonSize) || 0}px`, digits: 0, suffix: "px" }
+  }
+  if (label === "Shrink Pace") {
+    const value = (1 - (Number(rules.shrinkFactor) || 1)) * 100
+    return { value, text: `${value.toFixed(1)}% / hit`, digits: 1, suffix: "%" }
+  }
+  if (label === "Combo Ramp") {
+    const value = Number(rules.comboStep) || 0
+    return { value, text: `every ${value} hits`, digits: 0, suffix: " hits" }
+  }
+  if (label === "Miss Cost") {
+    const value = Number(rules.missPenalty) || 0
+    return { value, text: `${value} points`, digits: 0, suffix: " pts" }
+  }
+
+  const value = Number(rules.powerupAwardMultiplier) || 1
+  const charges = Number(rules.startingPowerupCharges) || 0
+  return {
+    value,
+    text: charges > 0 ? `x${value.toFixed(2)} · ${charges} ready` : `x${value.toFixed(2)} cadence`,
+    digits: 2,
+    suffix: "x",
+  }
+}
+
 function InstrumentDial({ scale, currentIndex, previewIndex, compareIndex }) {
   const isPreviewing = previewIndex !== null && previewIndex !== currentIndex
   const litIndex = isPreviewing ? Math.min(currentIndex, previewIndex) : currentIndex
@@ -108,6 +140,11 @@ export default function ArmoryInstruments({
           (candidate) => candidate.label === stat.label
         )
         const compareIndex = compareStat ? getScaleIndex(scale, compareStat.value) : null
+        const currentExact = getExactMetric(stat.label, presentation.roundRules)
+        const previewExact = previewPresentation
+          ? getExactMetric(stat.label, previewPresentation.roundRules)
+          : null
+        const exactDelta = previewExact ? previewExact.value - currentExact.value : 0
 
         return (
           <article
@@ -132,6 +169,15 @@ export default function ArmoryInstruments({
               ) : null}
               {isComparing && compareStat ? (
                 <span className="armoryInstrumentCompareValue">{compareStat.value}</span>
+              ) : null}
+            </span>
+            <span className="armoryInstrumentExact">
+              <span>{currentExact.text}</span>
+              {hasDelta && previewExact ? (
+                <span className="armoryInstrumentExactPreview">
+                  <span aria-hidden="true">→</span> {previewExact.text}
+                  <em>({formatSigned(exactDelta, currentExact.digits, currentExact.suffix)})</em>
+                </span>
               ) : null}
             </span>
           </article>

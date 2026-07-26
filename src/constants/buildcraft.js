@@ -276,7 +276,7 @@ const BUILDCRAFT_POWERUPS = [
 const STARTER_LOADOUTS = [
   {
     id: "loadout_1",
-    name: "All-Rounder",
+    name: "Loadout 1",
     moduleIds: {
       tempoCoreId: "tempo_balanced",
       streakLensId: "streak_balanced",
@@ -286,7 +286,7 @@ const STARTER_LOADOUTS = [
   },
   {
     id: "loadout_2",
-    name: "Safe Hands",
+    name: "Loadout 2",
     moduleIds: {
       tempoCoreId: "tempo_anchor",
       streakLensId: "streak_stabilizer",
@@ -296,7 +296,7 @@ const STARTER_LOADOUTS = [
   },
   {
     id: "loadout_3",
-    name: "Glass Cannon",
+    name: "Loadout 3",
     moduleIds: {
       tempoCoreId: "tempo_overdrive",
       streakLensId: "streak_momentum",
@@ -305,6 +305,12 @@ const STARTER_LOADOUTS = [
     powerupIds: ["time_boost", "size_boost", "freeze_movement"],
   },
 ]
+
+const LEGACY_STARTER_LOADOUT_NAMES = Object.freeze({
+  loadout_1: "All-Rounder",
+  loadout_2: "Safe Hands",
+  loadout_3: "Glass Cannon",
+})
 
 const PASSIVE_MODULES_BY_ID = Object.fromEntries(
   PASSIVE_MODULES.map((module) => [module.id, module])
@@ -436,7 +442,7 @@ export function normalizeLoadoutSnapshotForLevel(level = 1, snapshot = {}) {
 export function buildLoadoutSnapshot(loadout = {}) {
   return {
     loadoutId: String(loadout.id || loadout.loadoutId || DEFAULT_ACTIVE_LOADOUT_ID),
-    loadoutName: normalizeLoadoutName(loadout.name || loadout.loadoutName, "All-Rounder"),
+    loadoutName: normalizeLoadoutName(loadout.name || loadout.loadoutName, "Loadout 1"),
     moduleIds: {
       tempoCoreId: String(loadout.moduleIds?.tempoCoreId || "tempo_balanced"),
       streakLensId: String(loadout.moduleIds?.streakLensId || "streak_balanced"),
@@ -460,9 +466,14 @@ export function normalizeLoadoutState(level = 1, savedLoadouts = [], activeLoado
       ?? providedLoadouts[index]
       ?? fallbackLoadout
 
+    const normalizedName = normalizeLoadoutName(providedLoadout?.name, fallbackLoadout.name)
+    const name = normalizedName === LEGACY_STARTER_LOADOUT_NAMES[loadoutId]
+      ? fallbackLoadout.name
+      : normalizedName
+
     return {
       id: loadoutId,
-      name: normalizeLoadoutName(providedLoadout?.name, fallbackLoadout.name),
+      name,
       moduleIds: normalizeModuleIds(level, providedLoadout?.moduleIds, fallbackLoadout),
       powerupIds: fillPowerupIds(level, providedLoadout?.powerupIds, fallbackLoadout.powerupIds),
     }

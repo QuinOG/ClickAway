@@ -1518,6 +1518,10 @@
     flex: 0 0 auto;
 }
 
+.shopInlineSignal > span svg {
+    display: block;
+}
+
 .shopInlineSignal.is-pending { color: #cdeaff; border-color: rgba(125, 199, 255, 0.34); background: rgba(80, 156, 231, 0.1); }
 .shopInlineSignal.is-error { color: #ffc3c8; border-color: rgba(255, 106, 117, 0.38); background: rgba(196, 55, 68, 0.11); }
 

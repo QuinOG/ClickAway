@@ -69,18 +69,21 @@ describe("Armory screen baseline", () => {
 
     const rail = screen.getByLabelText("Armory steps")
     expect(within(rail).queryByRole("button", { name: /Build Slot/ })).toBeNull()
-    expect(within(rail).getByRole("button", { name: /Passive Stack/ })).not.toBeNull()
-    expect(within(rail).getByRole("button", { name: /Hotbar/ })).not.toBeNull()
-    expect(within(rail).getByRole("button", { name: /Test Range/ })).not.toBeNull()
+    expect(within(rail).getByRole("button", { name: /Mods/ })).not.toBeNull()
+    expect(within(rail).getByRole("button", { name: /Powerups/ })).not.toBeNull()
+    expect(within(rail).getByRole("button", { name: /Test Run/ })).not.toBeNull()
 
     expect(screen.getByRole("heading", { name: "Tempo Core" })).not.toBeNull()
     expect(screen.queryByLabelText("Build name")).toBeNull()
     expect(screen.queryByRole("button", { name: "Reset This Slot" })).toBeNull()
 
     const bayWall = getBayWall()
-    expect(within(bayWall).getByText("All-Rounder")).not.toBeNull()
-    expect(within(bayWall).getByText("Safe Hands")).not.toBeNull()
-    expect(within(bayWall).getByText("Glass Cannon")).not.toBeNull()
+    expect(within(bayWall).getByText("Loadout 1")).not.toBeNull()
+    expect(within(bayWall).getByText("Loadout 2")).not.toBeNull()
+    expect(within(bayWall).getByText("Loadout 3")).not.toBeNull()
+    expect(within(bayWall).queryByText(/^Bay [123]$/)).toBeNull()
+    expect(within(bayWall).queryByRole("button", { name: "Copy active build here" })).toBeNull()
+    expect(within(bayWall).queryByRole("button", { name: "Blueprint code" })).toBeNull()
   })
 
   test("separates build management from the ordered workbench workflow", () => {
@@ -92,10 +95,11 @@ describe("Armory screen baseline", () => {
     expect(bayWall.closest(".armoryRail")).not.toBeNull()
     expect(workflow.closest(".armoryCommandBar")).not.toBeNull()
     expect(workflow.closest(".armoryRail")).toBeNull()
-    expect(within(workflow).getByRole("button", { name: /Tune Systems/ })).not.toBeNull()
-    expect(within(workflow).getByRole("button", { name: /Assign Hotbar/ })).not.toBeNull()
-    expect(within(workflow).getByRole("button", { name: /Test Build/ })).not.toBeNull()
-    expect(screen.getByRole("link", { name: "Deploy build" })).not.toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Mods/ })).not.toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Powerups/ })).not.toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Test Run/ })).not.toBeNull()
+    expect(screen.getByRole("link", { name: "Play" })).not.toBeNull()
+    expect(within(workflow).getByRole("button", { name: /Mods/ }).getAttribute("aria-current")).toBe("step")
   })
 
   test("activating another bay persists the new active id", async () => {
@@ -103,7 +107,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     const bayWall = getBayWall()
-    await user.click(within(bayWall).getByRole("button", { name: /Safe Hands/ }))
+    await user.click(within(bayWall).getByRole("button", { name: /Loadout 2/ }))
 
     expect(lastLoadoutState(props).activeLoadoutId).toBe("loadout_2")
   })
@@ -112,7 +116,7 @@ describe("Armory screen baseline", () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const { savedLoadouts, activeLoadoutId } = lastLoadoutState(props)
@@ -125,7 +129,7 @@ describe("Armory screen baseline", () => {
     const user = userEvent.setup()
     renderArmory({ playerLevel: 5 })
 
-    await openStep(user, "Hotbar")
+    await openStep(user, "Powerups")
 
     const comboSurge = screen.getByRole("button", { name: /Combo Surge/ })
     expect(comboSurge.disabled).toBe(true)
@@ -141,7 +145,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     // Editing key 1 while Grow +10 sits on key 2 and Freeze 1s on key 3.
-    await openStep(user, "Hotbar")
+    await openStep(user, "Powerups")
 
     // No longer a dead disabled card: it shows its key and offers a swap.
     const growCard = getPartCard(/Grow \+10/)
@@ -163,7 +167,7 @@ describe("Armory screen baseline", () => {
     const user = userEvent.setup()
     const props = renderArmory({ playerLevel: 5 })
 
-    await openStep(user, "Hotbar")
+    await openStep(user, "Powerups")
     // Hover previews, then click installs (matches the pointer contract).
     const magnetCard = getPartCard(/Magnet Center/)
     await user.hover(magnetCard)
@@ -179,7 +183,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     const machine = screen.getByLabelText("Active build machine")
-    await user.click(within(machine).getByRole("button", { name: /All-Rounder/ }))
+    await user.click(within(machine).getByRole("button", { name: /Loadout 1/ }))
 
     const nameInput = screen.getByLabelText("Build name")
     await user.clear(nameInput)
@@ -194,10 +198,11 @@ describe("Armory screen baseline", () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const machine = screen.getByLabelText("Active build machine")
+    await user.click(within(machine).getByText("Build options"))
     await user.click(within(machine).getByRole("button", { name: "Strip to Factory Spec" }))
     expect(within(machine).getByText("Strip this build to factory spec?")).not.toBeNull()
 
@@ -205,30 +210,9 @@ describe("Armory screen baseline", () => {
 
     const { savedLoadouts } = lastLoadoutState(props)
     const resetLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
-    expect(resetLoadout.name).toBe("All-Rounder")
+    expect(resetLoadout.name).toBe("Loadout 1")
     expect(resetLoadout.moduleIds.tempoCoreId).toBe("tempo_balanced")
     expect(resetLoadout.powerupIds).toEqual(["time_boost", "size_boost", "freeze_movement"])
-  })
-
-  test("copying the active build to another bay overwrites after confirm", async () => {
-    const user = userEvent.setup()
-    const props = renderArmory()
-
-    await openStep(user, "Passive Stack")
-    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
-
-    const bayWall = getBayWall()
-    const safeHandsBay = within(bayWall).getByText("Safe Hands").closest(".armoryBay")
-    await user.click(within(safeHandsBay).getByRole("button", { name: "Copy active build here" }))
-    expect(within(bayWall).getByText("Overwrite Safe Hands?")).not.toBeNull()
-
-    await user.click(within(bayWall).getByRole("button", { name: "Overwrite" }))
-
-    const { savedLoadouts } = lastLoadoutState(props)
-    const copiedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_2")
-    expect(copiedLoadout.name).toBe("All-Rounder")
-    expect(copiedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
-    expect(copiedLoadout.powerupIds).toEqual(["time_boost", "size_boost", "freeze_movement"])
   })
 
   test("?step=slot deep link aliases to the default passive stage", () => {
@@ -241,7 +225,7 @@ describe("Armory screen baseline", () => {
   test("?step=hotbar&powerSlot=2 deep link opens the hotbar editor on key 2", () => {
     renderArmory({ url: "/armory?step=hotbar&powerSlot=2" })
 
-    const hotbarTabs = screen.getByLabelText("Hotbar slots")
+    const hotbarTabs = screen.getByLabelText("Powerup keys")
     // Key 2 is the selected editing slot: its tab is active and the detail panel shows it.
     const activeTab = hotbarTabs.querySelector(".armoryHotbarButton.isActive .armoryHotbarKey")
     expect(activeTab?.textContent).toBe("2")
@@ -279,7 +263,7 @@ describe("Armory scene shell", () => {
     expect(scene.dataset.identity).toBe(expectedIdentityFor("loadout_1"))
 
     const bayWall = getBayWall()
-    await user.click(within(bayWall).getByRole("button", { name: /Glass Cannon/ }))
+    await user.click(within(bayWall).getByRole("button", { name: /Loadout 3/ }))
 
     const glassCannonIdentity = expectedIdentityFor("loadout_3")
     expect(scene.dataset.identity).toBe(glassCannonIdentity)
@@ -303,7 +287,7 @@ describe("Armory machine", () => {
     renderArmory()
 
     const machine = getMachine()
-    expect(within(machine).getByText("All-Rounder")).not.toBeNull()
+    expect(within(machine).getByText("Loadout 1")).not.toBeNull()
 
     // Housings carry the installed module of each lane.
     expect(within(machine).getByText("Tempo Core")).not.toBeNull()
@@ -311,8 +295,8 @@ describe("Armory machine", () => {
     expect(within(machine).getByText("Balanced Streak")).not.toBeNull()
     expect(within(machine).getByText("Balanced Rig")).not.toBeNull()
 
-    // The rack mirrors the in-game tray: three keyed tools with cadence.
-    const rack = within(machine).getByLabelText("Racked hotbar")
+    // The rack mirrors the in-game tray: three keyed powerups with timing.
+    const rack = within(machine).getByLabelText("Equipped powerups")
     expect(within(rack).getByText("Time +2s")).not.toBeNull()
     expect(within(rack).getByText("Grow +10")).not.toBeNull()
     expect(within(rack).getByText("Freeze 1s")).not.toBeNull()
@@ -328,7 +312,7 @@ describe("Armory machine", () => {
     expect(target.style.width).toBe(expectedTargetSize(allRounder))
 
     // Installing Anchor (bigger targets) visibly grows the machine's target.
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const anchorLoadout = {
@@ -349,12 +333,29 @@ describe("Armory machine", () => {
     // All-Rounder ships all-default: every housing is a neutral plate.
     expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(3)
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
     expect(tempoHousing.className).not.toContain("isNeutral")
     expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(2)
+  })
+
+  test("the selected rig node previews a candidate before installation", () => {
+    const props = renderArmory()
+    const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
+
+    expect(tempoHousing.className).toContain("isSelected")
+    expect(tempoHousing.dataset.moduleState).toBe("installed")
+    expect(within(tempoHousing).getByText("Balanced Tempo")).not.toBeNull()
+
+    fireEvent.click(getPartCard(/^Anchor/))
+
+    expect(tempoHousing.dataset.moduleState).toBe("preview")
+    expect(tempoHousing.className).toContain("isPreviewing")
+    expect(within(tempoHousing).getByText("Anchor")).not.toBeNull()
+    expect(within(tempoHousing).getByText("Preview")).not.toBeNull()
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
   })
 
   test("the shop-equipped image skin dresses the target", () => {
@@ -399,13 +400,15 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(instruments.querySelectorAll(".armoryInstrument")).toHaveLength(5)
     expect(within(instruments).getByText("Aim Window")).not.toBeNull()
     expect(document.querySelector(".armoryMetricCard")).toBeNull()
+    expect(within(instruments).getByText("100px")).not.toBeNull()
+    expect(within(instruments).getByText(/% \/ hit/)).not.toBeNull()
   })
 
   test("hover-previewing a part shows instrument deltas and a target ghost without persisting", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     await user.hover(getPartCard(/^Anchor/))
 
     // The machine ghost-resizes to the previewed build's target size.
@@ -418,6 +421,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     const instruments = screen.getByLabelText("Build instruments")
     expect(instruments.querySelectorAll(".armoryInstrument.isPreviewing").length).toBeGreaterThan(0)
     expect(instruments.querySelectorAll(".armoryInstrumentDelta").length).toBeGreaterThan(0)
+    expect(instruments.querySelectorAll(".armoryInstrumentExactPreview").length).toBeGreaterThan(0)
 
     // Nothing persisted: previewing never touches the loadout path.
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
@@ -433,7 +437,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     const user = userEvent.setup()
     renderArmory()
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     expect(screen.getByText("Installed part")).not.toBeNull()
 
     await user.hover(getPartCard(/^Anchor/))
@@ -445,7 +449,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     const user = userEvent.setup()
     renderArmory({ playerLevel: 5 })
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     const balancedCard = getPartCard(/^Balanced Tempo/)
     const anchorCard = getPartCard(/^Anchor/)
     const lockedCard = getPartCard(/Flashpoint/)
@@ -464,7 +468,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
-    await openStep(user, "Passive Stack")
+    await openStep(user, "Mods")
     const anchorCard = getPartCard(/^Anchor/)
     // fireEvent.focus dispatches inside act so the preview state flushes before
     // we assert; user.keyboard below drives the roving-focus navigation.
@@ -499,7 +503,7 @@ describe("Armory parts gallery (Phase 5)", () => {
   test("a bare tap or click selects a preview and requires explicit installation", async () => {
     const props = renderArmory()
 
-    await openStep(userEvent.setup(), "Passive Stack")
+    await openStep(userEvent.setup(), "Mods")
     props.onLoadoutStateChange.mockClear()
 
     // fireEvent.click skips hover, matching a bare tap.
@@ -518,7 +522,7 @@ describe("Armory parts gallery (Phase 5)", () => {
   test("cancel preview restores the installed presentation without persisting", async () => {
     const props = renderArmory()
 
-    await openStep(userEvent.setup(), "Passive Stack")
+    await openStep(userEvent.setup(), "Mods")
     fireEvent.click(getPartCard(/^Anchor/))
     expect(document.querySelector(".armoryMachineTargetGhost")).not.toBeNull()
 
@@ -543,7 +547,7 @@ describe("Armory parts gallery (Phase 5)", () => {
 
 describe("Armory tool rack (Phase 6)", () => {
   async function openHotbar(user) {
-    await openStep(user, "Hotbar")
+    await openStep(user, "Powerups")
   }
 
   test("the cadence timeline marks each racked tool's charge streaks", async () => {
@@ -585,7 +589,7 @@ describe("Armory tool rack (Phase 6)", () => {
     const props = renderArmory()
 
     await openHotbar(user)
-    const tabs = screen.getByLabelText("Hotbar slots")
+    const tabs = screen.getByLabelText("Powerup keys")
     const keyButtons = tabs.querySelectorAll(".armoryHotbarButton")
 
     const dataTransfer = {
@@ -609,17 +613,17 @@ describe("Armory test range (Phase 7)", () => {
     const user = userEvent.setup()
     renderArmory()
 
-    await openStep(user, "Test Range")
+    await openStep(user, "Test Run")
 
-    expect(screen.getByRole("button", { name: "Run the Range" })).not.toBeNull()
+    expect(screen.getByRole("button", { name: "Start test run" })).not.toBeNull()
     // The old review readout content is gone from the step (it lives in the spec sheet).
     expect(screen.queryByText("Strengths")).toBeNull()
     // Mode selection is integrated into the launcher.
-    const modeRow = screen.getByLabelText("Range mode")
+    const modeRow = screen.getByLabelText("Game mode")
     expect(within(modeRow).getByText("Casual")).not.toBeNull()
     expect(within(modeRow).getByText("Ranked")).not.toBeNull()
 
-    const readiness = screen.getByLabelText("All-Rounder range readiness")
+    const readiness = screen.getByLabelText("Loadout 1 test run readiness")
     expect(readiness.querySelector('[data-armory-state="ready"]')).not.toBeNull()
     expect(within(readiness).getAllByText("3/3", { selector: "strong" })).toHaveLength(2)
     expect(within(readiness).getByText("Casual", { selector: "strong" })).not.toBeNull()
@@ -628,15 +632,15 @@ describe("Armory test range (Phase 7)", () => {
   test("?step=review deep-links to the range launcher", () => {
     renderArmory({ url: "/armory?step=review" })
 
-    expect(screen.getByRole("button", { name: "Run the Range" })).not.toBeNull()
+    expect(screen.getByRole("button", { name: "Start test run" })).not.toBeNull()
   })
 
   test("running the range opens an ephemeral, unrewarded live sample", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
-    await openStep(user, "Test Range")
-    await user.click(screen.getByRole("button", { name: "Run the Range" }))
+    await openStep(user, "Test Run")
+    await user.click(screen.getByRole("button", { name: "Start test run" }))
 
     const range = screen.getByLabelText("Test range")
     expect(range).not.toBeNull()
@@ -691,7 +695,7 @@ describe("Armory collection flow (Phase D2b)", () => {
     expect(lockedPart.dataset.armoryState).toBe("locked")
   })
 
-  test("a large unlock batch can be moved to collection in one action", async () => {
+  test("an unlock batch is marked seen when presented and can be dismissed in one action", async () => {
     const user = userEvent.setup()
     const onSeenUnlockPartIdsChange = vi.fn()
     renderArmory({
@@ -703,12 +707,13 @@ describe("Armory collection flow (Phase D2b)", () => {
     const ceremony = screen.getByRole("dialog", { name: "Part unlocked" })
     expect(within(ceremony).getByText(/Collection drop/)).not.toBeNull()
     expect(within(ceremony).getByText("Added to collection")).not.toBeNull()
+    expect(onSeenUnlockPartIdsChange).toHaveBeenCalledTimes(1)
+    expect(onSeenUnlockPartIdsChange.mock.calls[0][0].length).toBeGreaterThan(1)
 
     await user.click(within(ceremony).getByRole("button", { name: /Keep all .* parts in collection/ }))
 
     expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
     expect(onSeenUnlockPartIdsChange).toHaveBeenCalledTimes(1)
-    expect(onSeenUnlockPartIdsChange.mock.calls[0][0].length).toBeGreaterThan(1)
   })
 })
 
@@ -732,12 +737,12 @@ describe("Armory bay wall", () => {
     })
   })
 
-  test("only inactive bays offer copy actions", () => {
+  test("inactive bays only offer comparison", () => {
     renderArmory()
 
     const bayWall = getBayWall()
-    const copyButtons = within(bayWall).getAllByRole("button", { name: "Copy active build here" })
-    expect(copyButtons).toHaveLength(2)
+    expect(within(bayWall).getAllByRole("button", { name: "Compare with active" })).toHaveLength(2)
+    expect(within(bayWall).queryByRole("button", { name: "Copy active build here" })).toBeNull()
   })
 })
 
@@ -751,7 +756,7 @@ describe("Armory compare bench (Phase 8)", () => {
     await user.click(within(bayWall).getAllByRole("button", { name: "Compare with active" })[0])
 
     const bench = screen.getByRole("dialog", { name: "Compare bench" })
-    expect(within(bench).getAllByText("All-Rounder").length).toBeGreaterThan(0)
+    expect(within(bench).getAllByText("Loadout 1").length).toBeGreaterThan(0)
     expect(within(bench).getAllByText(otherLoadout.name).length).toBeGreaterThan(0)
     expect(bench.querySelectorAll(".armoryCompareMachine")).toHaveLength(2)
     expect(within(bench).getByLabelText("Build instruments").querySelectorAll(".armoryInstrument").length).toBeGreaterThan(0)

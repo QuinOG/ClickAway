@@ -120,7 +120,7 @@ export function getStepSummary(stepId, activeLoadout, activePresentation, select
     return activePresentation?.moduleStack?.map((module) => module.label).join(" / ") || "3 passive systems"
   }
   if (stepId === "hotbar") {
-    return activePresentation?.powerSlots?.map((powerSlot) => `${powerSlot.slotKey}: ${powerSlot.label}`).join(" / ") || "3 hotbar tools"
+    return activePresentation?.powerSlots?.map((powerSlot) => `${powerSlot.slotKey}: ${powerSlot.label}`).join(" / ") || "3 powerups"
   }
 
   return selectedMode?.label ? `${selectedMode.label} preview` : "Current mode preview"

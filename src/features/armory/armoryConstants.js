@@ -1,7 +1,7 @@
 export const ARMORY_STEPS = [
-  { id: "passives", label: "Tune Systems", lead: "Passive Stack · Shape the round." },
-  { id: "hotbar", label: "Assign Hotbar", lead: "Choose tools for keys 1, 2, and 3." },
-  { id: "review", label: "Test Build", lead: "Test Range · Run a live sample." },
+  { id: "passives", label: "Mods", lead: "Pick perks for your build." },
+  { id: "hotbar", label: "Powerups", lead: "Choose powerups for keys 1, 2, and 3." },
+  { id: "review", label: "Test Run", lead: "Try your build for 10 seconds." },
 ]
 
 export const ARMORY_STEP_IDS = new Set(ARMORY_STEPS.map((step) => step.id))
@@ -28,7 +28,7 @@ export const WALKTHROUGH_STEPS = [
     id: "machine",
     targetId: "machine",
     title: "This is your machine",
-    instruction: "The passive stack racks on top, the target sits center, and your hotbar racks below. Click the nameplate to rename it, or keep the current name and move on.",
+    instruction: "Your mods are above the target and your powerups are below it. Click the name to rename this build, or keep it and move on.",
     note: "Ready will launch this exact machine next round.",
   },
   {
@@ -45,8 +45,8 @@ export const WALKTHROUGH_STEPS = [
     armoryStepId: "hotbar",
     targetId: "hotbar",
     powerSlotIndex: 0,
-    title: "Rack one tool",
-    instruction: "Select a power for key 1, inspect the preview, then confirm the install. A tool on another key is offered as an explicit swap.",
+    title: "Equip a powerup",
+    instruction: "Choose a powerup for key 1, preview it, then equip it. If it is already on another key, the two powerups swap.",
     note: "Keys 2 and 3 work exactly the same way.",
   },
   {

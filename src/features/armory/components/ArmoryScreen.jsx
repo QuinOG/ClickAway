@@ -122,9 +122,15 @@ export default function ArmoryScreen({
           <button type="button" className="secondaryButton" onClick={unlockWallApi.open}>
             Unlock Wall
           </button>
-          <button type="button" className="secondaryButton" onClick={() => walkthroughApi.open("manual")}>
-            Restart Walkthrough
-          </button>
+          <details className="armoryRailHelp">
+            <summary>Workshop help</summary>
+            <div className="armoryRailHelpPanel">
+              <p>Replay the guided build tour when you need a refresher.</p>
+              <button type="button" className="secondaryButton" onClick={() => walkthroughApi.open("manual")}>
+                Restart Walkthrough
+              </button>
+            </div>
+          </details>
           <Link className="secondaryButton secondaryButton-lg" to="/game">
             Back to Game
           </Link>
@@ -146,8 +152,11 @@ export default function ArmoryScreen({
           </div>
         </div>
 
-        <nav className="armoryWorkflow" aria-label="Armory steps">
-          <span className="armoryWorkflowLabel">Build workflow</span>
+        <nav className="armoryWorkflow" aria-label="Armory steps" aria-describedby="armory-workflow-help">
+          <span className="armoryWorkflowLabel">Build setup</span>
+          <span id="armory-workflow-help" className="armoryVisuallyHidden">
+            Choose mods, equip powerups, or test the active build.
+          </span>
           <div className="armoryRailProgress">
             {steps.map((step, index) => (
               <ArmoryRailStepButton
@@ -162,8 +171,8 @@ export default function ArmoryScreen({
         </nav>
 
         <div className="armoryCommandAction">
-          <span className="armoryRailLabel">Next round</span>
-          <Link className="primaryButton" to="/game">Deploy build</Link>
+          <span className="armoryRailLabel">Ready?</span>
+          <Link className="primaryButton" to="/game">Play</Link>
         </div>
       </header>
 
@@ -257,7 +266,7 @@ export default function ArmoryScreen({
             summary={hotbarApi.summary}
           >
             <div className="armoryHotbarEditor" ref={hotbarEditorRef}>
-              <div className="armoryHotbarTabs" aria-label="Hotbar slots">
+              <div className="armoryHotbarTabs" aria-label="Powerup keys">
                 {activePresentation.powerSlots.map((powerSlot, index) => (
                   <ArmoryHotbarButton
                     key={`${powerSlot.id}-${index + 1}`}
@@ -289,7 +298,7 @@ export default function ArmoryScreen({
 
               <ArmoryPartsGallery
                 tone="power"
-                galleryLabel="Power tools"
+                galleryLabel="Powerups"
                 parts={powerParts}
                 playerLevel={playerLevel}
                 installedPartId={hotbarApi.selectedPowerupId}
@@ -308,7 +317,7 @@ export default function ArmoryScreen({
                     />
                     <ArmoryDetailPanel
                       eyebrow={`Key ${hotbarApi.editingPowerSlotIndex + 1}`}
-                      title={inspectedPower?.label ?? "Choose Power"}
+                      title={inspectedPower?.label ?? "Choose a powerup"}
                       lead={inspectedPowerCopy.youGet}
                       rows={[
                         { label: "Tradeoff", value: inspectedPowerCopy.youGiveUp },
@@ -332,7 +341,7 @@ export default function ArmoryScreen({
             summary={reviewApi.summary}
           >
             <div className="armoryRangeLauncher" ref={reviewPanelRef}>
-              <div className="armoryReviewModeRow" aria-label="Range mode">
+              <div className="armoryReviewModeRow" aria-label="Game mode">
                 {reviewApi.modes.map((mode) => (
                   <ReviewModeButton
                     key={mode.id}
@@ -346,35 +355,35 @@ export default function ArmoryScreen({
               <section className="armoryRangeLauncherHero">
                 <div className="armoryRangeLauncherCopy">
                   <p className="armoryReviewEyebrow">{selectedMode.label} rules</p>
-                  <h3 className="armoryReviewTitle">Take {activeLoadout.name} to the range</h3>
+                  <h3 className="armoryReviewTitle">Test {activeLoadout.name}</h3>
                   <p className="armoryReviewLead">
-                    Run a live 10-second sample with real shrink, movement, and your hotbar.
+                    Try a 10-second run with your current mods and powerups.
                   </p>
                   <p className="armoryReviewNote">No XP, no coins, no rank — nothing is saved.</p>
                 </div>
                 <div className="armoryRangeLauncherActions">
                   <button type="button" className="primaryButton" onClick={rangeApi.open}>
-                    Run the Range
+                    Start test run
                   </button>
                   <button
                     type="button"
                     className="secondaryButton"
                     onClick={specSheetApi.open}
                   >
-                    Open Spec Sheet
+                    Build details
                   </button>
                 </div>
               </section>
-              <section className="armoryRangeReadiness" aria-label={`${activeLoadout.name} range readiness`}>
-                <ArmoryStateEmblem state="ready" label="Range ready" />
+              <section className="armoryRangeReadiness" aria-label={`${activeLoadout.name} test run readiness`}>
+                <ArmoryStateEmblem state="ready" label="Ready to test" />
                 <div className="armoryRangeReadinessTrack" aria-hidden="true">
                   <span className="isReady" />
                   <span className="isReady" />
                   <span className="isReady" />
                 </div>
                 <div className="armoryRangeReadinessChecks">
-                  <span><strong>3/3</strong> systems installed</span>
-                  <span><strong>3/3</strong> tools racked</span>
+                  <span><strong>3/3</strong> mods equipped</span>
+                  <span><strong>3/3</strong> powerups equipped</span>
                   <span><strong>{selectedMode.label}</strong> rules loaded</span>
                 </div>
               </section>

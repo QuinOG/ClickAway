@@ -1,5 +1,3 @@
-import { useState } from "react"
-
 import {
   BuildIdentityGlyph,
   ModuleSlotGlyph,
@@ -29,12 +27,11 @@ function ArmoryBayServicePlate({ stats }) {
   )
 }
 
-function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi }) {
+function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi }) {
   const identity = (presentation?.identity.label || "Balanced").toLowerCase()
   const miniTargetSize = Math.round(
     presentation.roundRules.initialButtonSize * BAY_TARGET_SCALE
   )
-  const isConfirmingCopy = bayApi.pendingCopyTargetId === loadout.id
 
   return (
     <div className={`armoryBay ${isActive ? "isActive" : ""}`} data-identity={identity}>
@@ -45,7 +42,6 @@ function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi 
         aria-pressed={isActive}
       >
         <span className="armoryBayHeader">
-          <span className="armoryBayLabel">Bay {index + 1}</span>
           <span className="armoryBayLamp" aria-hidden="true" />
           <span className="armoryBayLampLabel">{isActive ? "Active" : "Docked"}</span>
         </span>
@@ -79,136 +75,26 @@ function ArmoryBay({ loadout, index, presentation, isActive, onActivate, bayApi 
 
       {isActive ? null : (
         <div className="armoryBayFooter">
-          {isConfirmingCopy ? (
-            <>
-              <span className="armoryBayConfirmText">Overwrite {loadout.name}?</span>
-              <div className="armoryBayConfirmActions">
-                <button type="button" className="armoryBayAction" onClick={bayApi.cancelBayAction}>
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="armoryBayAction isDanger"
-                  onClick={bayApi.confirmBayAction}
-                >
-                  Overwrite
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="armoryBayAction"
-                onClick={() => bayApi.requestCopyToBay(loadout.id)}
-              >
-                Copy active build here
-              </button>
-              <button
-                type="button"
-                className="armoryBayAction"
-                onClick={() => bayApi.openBayCompare(loadout.id)}
-              >
-                Compare with active
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            className="armoryBayAction"
+            onClick={() => bayApi.openBayCompare(loadout.id)}
+          >
+            Compare with active
+          </button>
         </div>
       )}
     </div>
   )
 }
 
-// Blueprint codes (Phase 11): a compact client-only export/import so a
-// friend can paste your build (or the closest legal version of it).
-function ArmoryBlueprintPanel({ blueprintApi }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [importDraft, setImportDraft] = useState("")
-
-  if (!isOpen) {
-    return (
-      <button
-        type="button"
-        className="armoryBayAction"
-        onClick={() => setIsOpen(true)}
-      >
-        Blueprint code
-      </button>
-    )
-  }
-
-  const notice = blueprintApi.notice
-
-  return (
-    <div className="armoryBlueprintPanel">
-      <div className="armoryBlueprintRow">
-        <button
-          type="button"
-          className="armoryBayAction"
-          onClick={() => {
-            const code = blueprintApi.exportCode()
-            if (code && navigator.clipboard?.writeText) {
-              void navigator.clipboard.writeText(code)
-            }
-          }}
-        >
-          Copy active build
-        </button>
-        <button
-          type="button"
-          className="armoryBayAction"
-          onClick={() => {
-            setIsOpen(false)
-            blueprintApi.clearNotice()
-          }}
-        >
-          Done
-        </button>
-      </div>
-
-      <div className="armoryBlueprintRow">
-        <input
-          type="text"
-          className="armoryBlueprintInput"
-          placeholder="Paste a blueprint code"
-          value={importDraft}
-          onChange={(event) => setImportDraft(event.target.value)}
-        />
-        <button
-          type="button"
-          className="armoryBayAction"
-          onClick={() => {
-            blueprintApi.importCode(importDraft)
-            setImportDraft("")
-          }}
-        >
-          Import into active bay
-        </button>
-      </div>
-
-      {notice?.type === "export" ? (
-        <p className="armoryBlueprintNotice">Copied to clipboard.</p>
-      ) : null}
-      {notice?.type === "import" ? (
-        <p className="armoryBlueprintNotice">
-          {notice.notes.length ? notice.notes.join(" ") : "Blueprint imported."}
-        </p>
-      ) : null}
-      {notice?.type === "import-error" ? (
-        <p className="armoryBlueprintNotice isError">{notice.error}</p>
-      ) : null}
-    </div>
-  )
-}
-
-export default function ArmoryBayWall({ bayApi, blueprintApi }) {
+export default function ArmoryBayWall({ bayApi }) {
   return (
     <div className="armoryBayWall" aria-label="Build bays">
-      {bayApi.savedLoadouts.map((loadout, index) => (
+      {bayApi.savedLoadouts.map((loadout) => (
         <ArmoryBay
           key={loadout.id}
           loadout={loadout}
-          index={index}
           presentation={bayApi.loadoutPresentations[loadout.id]}
           isActive={loadout.id === bayApi.activeLoadoutId}
           onActivate={() => bayApi.activateLoadout(loadout.id)}
@@ -216,7 +102,6 @@ export default function ArmoryBayWall({ bayApi, blueprintApi }) {
         />
       ))}
 
-      {blueprintApi ? <ArmoryBlueprintPanel blueprintApi={blueprintApi} /> : null}
     </div>
   )
 }

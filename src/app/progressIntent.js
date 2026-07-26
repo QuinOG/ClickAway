@@ -3,6 +3,7 @@ export const PROGRESS_INTENT_FIELDS = new Set([
   "activeLoadoutId",
   "buildWalkthrough",
   "selectedModeId",
+  "seenUnlockPartIds",
 ])
 
 export function pickProgressIntent(payload = {}) {

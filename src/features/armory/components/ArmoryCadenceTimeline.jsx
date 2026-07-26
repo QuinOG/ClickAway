@@ -37,7 +37,7 @@ export default function ArmoryCadenceTimeline({
   return (
     <section className="armoryCadenceTimeline" aria-label="Charge cadence timeline">
       <header className="armoryCadenceHeader">
-        <span className="armoryCadenceTitle">Charge timeline</span>
+        <span className="armoryCadenceTitle">Powerup charges</span>
         <span className="armoryCadenceScale">
           {startingCharges > 0 ? `+${startingCharges} charge at start · ` : ""}
           streak 1–{CADENCE_MAX_STREAK}

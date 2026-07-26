@@ -962,11 +962,43 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     position: relative;
     width: 100%;
     min-height: clamp(330px, 44vh, 470px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--armory-space-lg);
+    display: grid;
+    place-items: center;
+}
+
+.armoryRailHelp {
+    color: rgba(197, 219, 243, 0.72);
+    font-size: 11px;
+}
+
+.armoryRailHelp summary {
+    padding: 7px 9px;
+    border-radius: var(--armory-radius-key);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.armoryRailHelp summary:hover,
+.armoryRailHelp summary:focus-visible {
+    color: #f6fbff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.armoryRailHelpPanel {
+    display: grid;
+    gap: var(--armory-space-xs);
+    padding: var(--armory-space-xs) 0;
+}
+
+.armoryRailHelpPanel p {
+    margin: 0;
+    color: rgba(197, 219, 243, 0.62);
+    line-height: 1.4;
+}
+
+.armoryPage :is(button, a, summary, input):focus-visible {
+    outline: 2px solid rgba(var(--armory-accent), 0.9);
+    outline-offset: 2px;
 }
 
 /* Bench glow: the key light pooling under the machine ties it to the weather. */
@@ -990,6 +1022,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 /* The live target. Defaults mirror the in-game button's material so the bench
    and the arena read as the same object; shop image skins override it. */
 .armoryMachineTarget {
+    z-index: 1;
     border-radius: var(--armory-radius-pill);
     background: linear-gradient(145deg, #6af0ca, #34b892);
     box-shadow:
@@ -1031,14 +1064,48 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 }
 
 /* Module housings rack above the target, mirroring the tool rack below it. */
-.armoryMachineHousingRow {
+.armoryMachineAssembly {
+    position: relative;
     width: min(600px, 100%);
+    height: clamp(340px, 42vh, 420px);
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--armory-space-xs);
+    place-items: center;
+}
+
+.armoryMachineConduits {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.armoryMachineConduits path,
+.armoryMachineConduits circle {
+    fill: none;
+    stroke: rgba(var(--armory-line), 0.16);
+    stroke-width: 2;
+    stroke-dasharray: 5 7;
+}
+
+.armoryMachineConduits path {
+    transition:
+        stroke var(--armory-motion-fast) var(--armory-motion-ease),
+        filter var(--armory-motion-fast) var(--armory-motion-ease);
+}
+
+.armoryMachineHousingRow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
 }
 
 .armoryMachineHousing {
+    position: absolute;
+    z-index: 2;
+    width: min(178px, 31%);
+    min-height: 62px;
     display: flex;
     align-items: center;
     gap: var(--armory-space-sm);
@@ -1048,6 +1115,52 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     background: linear-gradient(180deg, rgba(22, 32, 54, 0.86), rgba(14, 21, 37, 0.78));
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
     min-width: 0;
+    pointer-events: auto;
+}
+
+.armoryMachineHousing.housing-tempoCore {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.armoryMachineHousing.housing-streakLens {
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+.armoryMachineHousing.housing-powerRig {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.armoryMachineHousing.isSelected {
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--armory-key-light) 45%, transparent),
+        0 0 28px color-mix(in srgb, var(--armory-key-light) 18%, transparent);
+}
+
+.armoryMachineHousing.isPreviewing {
+    border-style: dashed;
+    background:
+        linear-gradient(180deg, rgba(var(--armory-tone-tempo), 0.14), rgba(14, 21, 37, 0.9));
+}
+
+.armoryMachineHousingState {
+    color: rgb(var(--armory-tone-tempo));
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.26px;
+    text-transform: uppercase;
+}
+
+.armoryMachineAssembly:has(.housing-tempoCore.isSelected, .housing-tempoCore.isPreviewing) .conduit-tempoCore,
+.armoryMachineAssembly:has(.housing-streakLens.isSelected, .housing-streakLens.isPreviewing) .conduit-streakLens,
+.armoryMachineAssembly:has(.housing-powerRig.isSelected, .housing-powerRig.isPreviewing) .conduit-powerRig {
+    stroke: var(--armory-key-light);
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--armory-key-light) 72%, transparent));
 }
 
 .armoryMachineHousing.tone-tempoCore {
@@ -1119,9 +1232,8 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     color: rgba(255, 255, 255, 0.94);
     font-size: 12px;
     font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
 }
 
 /* The tool rack: three keyed slots mirroring the in-game power tray's
@@ -1361,6 +1473,53 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     font-size: 12px;
     line-height: 1.4;
     text-align: left;
+}
+
+.armoryMachineActionStack {
+    display: grid;
+    justify-items: center;
+    gap: var(--armory-space-xs);
+}
+
+.armoryMachineOptions {
+    position: relative;
+    color: rgba(197, 219, 243, 0.7);
+    font-size: 10px;
+}
+
+.armoryMachineOptions summary {
+    padding: 5px 8px;
+    border-radius: var(--armory-radius-key);
+    cursor: pointer;
+    font-weight: 700;
+    list-style-position: inside;
+}
+
+.armoryMachineOptions summary:hover,
+.armoryMachineOptions summary:focus-visible {
+    color: #f6fbff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.armoryMachineOptionsPanel {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 7px);
+    z-index: 8;
+    width: 250px;
+    padding: var(--armory-space-md);
+    transform: translateX(-50%);
+    border: 1px solid rgba(var(--armory-tone-risk), 0.24);
+    border-radius: var(--armory-radius-field);
+    background: rgba(9, 15, 27, 0.98);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.46);
+}
+
+.armoryMachineOptionsPanel p {
+    margin: 0 0 var(--armory-space-sm);
+    color: rgba(210, 228, 248, 0.74);
+    font-size: 11px;
+    line-height: 1.4;
 }
 
 .armoryStepContent {
@@ -1758,6 +1917,27 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 .armoryPartsGallery {
     display: grid;
     gap: var(--armory-space-md);
+}
+
+.armoryInstrumentExact {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    flex-wrap: wrap;
+    color: rgba(197, 219, 243, 0.62);
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+}
+
+.armoryInstrumentExactPreview {
+    color: rgba(226, 240, 255, 0.9);
+}
+
+.armoryInstrumentExactPreview em {
+    margin-left: 3px;
+    color: rgb(var(--armory-tone-good));
+    font-style: normal;
+    font-weight: 750;
 }
 
 .armoryPreviewCommit {
@@ -2450,6 +2630,19 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     .armoryPartsShelf {
         grid-template-columns: 1fr;
     }
+
+    .armoryBayWall {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(220px, 1fr);
+        overflow-x: auto;
+        overflow-y: visible;
+        padding-bottom: var(--armory-space-xs);
+        scroll-snap-type: x proximity;
+    }
+
+    .armoryBay {
+        scroll-snap-align: start;
+    }
 }
 
 @media (max-width: 700px) {
@@ -2466,9 +2659,32 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         padding-top: var(--armory-space-lg);
     }
 
+    .armoryMachineAssembly {
+        height: auto;
+        gap: var(--armory-space-xl);
+    }
+
+    .armoryMachineConduits {
+        display: none;
+    }
+
     .armoryMachineHousingRow {
+        position: relative;
+        inset: auto;
+        display: grid;
         grid-template-columns: 1fr;
+        gap: var(--armory-space-xs);
         width: min(320px, 100%);
+    }
+
+    .armoryMachineHousing,
+    .armoryMachineHousing.housing-tempoCore,
+    .armoryMachineHousing.housing-streakLens,
+    .armoryMachineHousing.housing-powerRig {
+        position: relative;
+        inset: auto;
+        width: 100%;
+        transform: none;
     }
 
     .armoryWalkthroughPanel {

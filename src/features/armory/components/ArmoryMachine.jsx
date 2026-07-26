@@ -22,13 +22,16 @@ function getTargetSkinStyle({ targetSize, imageSrc, imageScale }) {
   }
 }
 
-function MachineHousing({ module, onOpenLane }) {
+function MachineHousing({ module, previewModule = null, isSelected = false, onOpenLane }) {
   const isNeutral = module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId]
+  const isPreviewing = Boolean(previewModule && previewModule.moduleId !== module.moduleId)
+  const displayedModule = isPreviewing ? previewModule : module
 
   return (
     <button
       type="button"
-      className={`armoryMachineHousing housing-${module.slotId} tone-${module.slotId} ${isNeutral ? "isNeutral" : ""}`}
+      className={`armoryMachineHousing housing-${module.slotId} tone-${module.slotId} ${isNeutral && !isPreviewing ? "isNeutral" : ""} ${isSelected ? "isSelected" : ""} ${isPreviewing ? "isPreviewing" : ""}`}
+      data-module-state={isPreviewing ? "preview" : "installed"}
       onClick={() => onOpenLane?.(module.slotId)}
       title={`Open ${module.slotLabel} parts`}
     >
@@ -37,11 +40,12 @@ function MachineHousing({ module, onOpenLane }) {
       </span>
       {/* Keyed by installed module so a fresh part visibly seats into place. */}
       <span
-        key={module.moduleId || module.slotId}
+        key={displayedModule.moduleId || module.slotId}
         className="armoryMachineHousingBody armoryPartSeat"
       >
         <span className="armoryMachineHousingSlot">{module.slotLabel}</span>
-        <strong className="armoryMachineHousingLabel">{module.label}</strong>
+        <strong className="armoryMachineHousingLabel">{displayedModule.label}</strong>
+        {isPreviewing ? <span className="armoryMachineHousingState">Preview</span> : null}
       </span>
     </button>
   )
@@ -107,16 +111,24 @@ function MachineWorkshopActions({ machineApi }) {
   }
 
   return (
-    <div className="armoryMachineActions">
-      <button type="button" className="secondaryButton" onClick={machineApi.openSpecSheet}>
-        Spec Sheet
-      </button>
-      <button type="button" className="secondaryButton" onClick={machineApi.openModeMatrix}>
-        Compare Modes
-      </button>
-      <button type="button" className="secondaryButton" onClick={machineApi.requestReset}>
-        Strip to Factory Spec
-      </button>
+    <div className="armoryMachineActionStack">
+      <div className="armoryMachineActions" aria-label="Build analysis">
+        <button type="button" className="secondaryButton" onClick={machineApi.openSpecSheet}>
+          Spec Sheet
+        </button>
+        <button type="button" className="secondaryButton" onClick={machineApi.openModeMatrix}>
+          Compare Modes
+        </button>
+      </div>
+      <details className="armoryMachineOptions">
+        <summary>Build options</summary>
+        <div className="armoryMachineOptionsPanel">
+          <p>Restore this bay to its original parts and name.</p>
+          <button type="button" className="secondaryButton armoryDangerButton" onClick={machineApi.requestReset}>
+            Strip to Factory Spec
+          </button>
+        </div>
+      </details>
     </div>
   )
 }
@@ -139,6 +151,9 @@ export default function ArmoryMachine({
     ? Math.round(machineApi.previewInitialButtonSize * MACHINE_TARGET_SCALE)
     : null
   const showGhost = previewTargetSize !== null && previewTargetSize !== targetSize
+  const previewModuleBySlotId = Object.fromEntries(
+    (machineApi.previewModuleStack ?? []).map((module) => [module.slotId, module])
+  )
 
   return (
     <section className="armoryStage" aria-label="Active build machine">
@@ -146,31 +161,46 @@ export default function ArmoryMachine({
           (reduced motion crossfades instead — see armory.css). */}
       <div className="armoryMachine" key={loadout.id} ref={machineRef}>
         <div className="armoryMachineCore">
-          <div className="armoryMachineHousingRow" aria-label="Passive stack">
-            {presentation.moduleStack.map((module) => (
-              <MachineHousing key={module.slotId} module={module} onOpenLane={machineApi.openModuleLane} />
-            ))}
-          </div>
+          <div className="armoryMachineAssembly">
+            <svg className="armoryMachineConduits" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
+              <path className="conduit-tempoCore" d="M300 205 L92 205" />
+              <path className="conduit-streakLens" d="M300 205 L300 62" />
+              <path className="conduit-powerRig" d="M300 205 L508 205" />
+              <circle cx="300" cy="205" r="116" />
+            </svg>
 
-          <span
-            className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}
-            style={getTargetSkinStyle({
-              targetSize,
-              imageSrc: buttonSkinImageSrc,
-              imageScale: buttonSkinImageScale,
-            })}
-            aria-hidden="true"
-          >
-            {showGhost ? (
-              <span
-                className="armoryMachineTargetGhost"
-                style={{ width: `${previewTargetSize}px`, height: `${previewTargetSize}px` }}
-              />
-            ) : null}
-          </span>
+            <div className="armoryMachineHousingRow" aria-label="Passive stack">
+              {presentation.moduleStack.map((module) => (
+                <MachineHousing
+                  key={module.slotId}
+                  module={module}
+                  previewModule={previewModuleBySlotId[module.slotId]}
+                  isSelected={machineApi.selectedModuleSlotId === module.slotId}
+                  onOpenLane={machineApi.openModuleLane}
+                />
+              ))}
+            </div>
+
+            <span
+              className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}
+              style={getTargetSkinStyle({
+                targetSize,
+                imageSrc: buttonSkinImageSrc,
+                imageScale: buttonSkinImageScale,
+              })}
+              aria-hidden="true"
+            >
+              {showGhost ? (
+                <span
+                  className="armoryMachineTargetGhost"
+                  style={{ width: `${previewTargetSize}px`, height: `${previewTargetSize}px` }}
+                />
+              ) : null}
+            </span>
+          </div>
         </div>
 
-        <div className="armoryMachineRack" aria-label="Racked hotbar">
+        <div className="armoryMachineRack" aria-label="Equipped powerups">
           {presentation.powerSlots.map((powerSlot, index) => (
             <div key={`${powerSlot.id}-${index + 1}`} className="armoryMachineRackSlot">
               <span className="armoryMachineRackKey" aria-hidden="true">{index + 1}</span>

@@ -6,11 +6,9 @@ import {
   Coins,
   Crosshair,
   GameController,
-  Lightning,
   Question,
   ShieldChevron,
   Target,
-  Wrench,
 } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
@@ -27,7 +25,6 @@ import {
   DATA_SYSTEM_POINTS,
   DIFFICULTY_ROWS,
   FAQ_ITEMS,
-  HELP_QUICK_NAV,
   LOADOUT_POINTS,
   MODE_EXPLANATION_POINTS,
   MODE_TUNING_ROWS,
@@ -91,27 +88,6 @@ function HelpMissionMap() {
   )
 }
 
-function RoundLoopDiagram() {
-  return (
-    <section className="helpRoundLoop" aria-labelledby="help-round-loop-title">
-      <div className="helpRoundLoopCopy">
-        <p className="commandHeaderEyebrow">One-glance briefing</p>
-        <h2 id="help-round-loop-title">The round loop</h2>
-        <p>Choose pressure, lock your build, then follow the target.</p>
-        <Link className="helpRoundLoopAction" to="/game">
-          Enter lobby <GameController weight="fill" aria-hidden="true" />
-        </Link>
-      </div>
-      <ol className="helpRoundLoopTrack">
-        <li data-step="ready"><span><Wrench weight="duotone" /></span><strong>Ready</strong><small>Mode + build</small></li>
-        <li data-step="count"><span><ClockCountdown weight="duotone" /></span><strong>3 · 2 · 1</strong><small>Eyes center</small></li>
-        <li data-step="hit"><span><Target weight="duotone" /></span><strong>Hit</strong><small>Chain streak</small></li>
-        <li data-step="reward"><span><Lightning weight="duotone" /></span><strong>Reward</strong><small>XP + rank</small></li>
-      </ol>
-    </section>
-  )
-}
-
 export default function HelpPage() {
   return (
     <div className="pageCenter helpPageScene">
@@ -125,16 +101,6 @@ export default function HelpPage() {
         />
 
         <HelpMissionMap />
-        <RoundLoopDiagram />
-
-        <nav className="helpQuickNav helpQuickNavCompact" aria-label="Quick help navigation">
-          <span className="helpQuickNavLabel">Exact reference</span>
-          <div className="helpQuickNavLinks">
-            {HELP_QUICK_NAV.map((item) => (
-              <a key={item.id} className="helpQuickNavLink" href={`#${item.id}`}>{item.label}</a>
-            ))}
-          </div>
-        </nav>
 
         <section id="start" className="helpTopicGroup" aria-label="Start here">
           <div className="helpGroupHeader">

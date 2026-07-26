@@ -25,9 +25,11 @@ const PROGRESS_ERROR_TOAST_STYLE = {
 export function useProgressSync({ isAuthed, applyProgress }) {
   const persistQueueRef = useRef(Promise.resolve(null))
   const sessionEpochRef = useRef(0)
+  const latestIntentSequenceRef = useRef(0)
 
   useEffect(() => {
     sessionEpochRef.current += 1
+    latestIntentSequenceRef.current = 0
     persistQueueRef.current = Promise.resolve(null)
   }, [isAuthed])
 
@@ -42,12 +44,16 @@ export function useProgressSync({ isAuthed, applyProgress }) {
     }
 
     const requestEpoch = sessionEpochRef.current
+    const intentSequence = ++latestIntentSequenceRef.current
 
     persistQueueRef.current = persistQueueRef.current
       .catch(() => null)
       .then(async () => {
         const response = await updatePlayerProgress(payload)
-        if (sessionEpochRef.current !== requestEpoch) {
+        if (
+          sessionEpochRef.current !== requestEpoch
+          || intentSequence !== latestIntentSequenceRef.current
+        ) {
           return null
         }
 
