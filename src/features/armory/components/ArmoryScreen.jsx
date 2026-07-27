@@ -76,19 +76,13 @@ export default function ArmoryScreen({
   // Which rack key is mid-drag, so its tab reads as lifted off the rack.
   const [draggedKeyIndex, setDraggedKeyIndex] = useState(null)
 
-  // Inspection footer for the passive parts gallery: previewed part wins over
-  // the installed one so hovering answers "what would I get?" before commit.
   const installedModuleId = activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] ?? ""
-  const inspectedModuleId = passiveApi.previewedModuleId ?? installedModuleId
-  const inspectedModule = getPassiveModuleById(inspectedModuleId)
+  const inspectedModule = getPassiveModuleById(installedModuleId)
   const inspectedModuleCopy = getModuleOptionPresentation(inspectedModule?.id)
 
-  // Same contract for the tool rack, plus the cadence recomputed for the
-  // previewed arrangement (buildRoundRules applies powerupAwardMultiplier).
-  const inspectedPowerId = hotbarApi.previewedPowerId ?? hotbarApi.selectedPowerupId
-  const inspectedPower = getPowerupById(inspectedPowerId)
-  const inspectedPowerCopy = getPowerupOptionPresentation(inspectedPowerId)
-  const editingSlotPresentation = (hotbarApi.previewPresentation ?? activePresentation)
+  const inspectedPower = getPowerupById(hotbarApi.selectedPowerupId)
+  const inspectedPowerCopy = getPowerupOptionPresentation(hotbarApi.selectedPowerupId)
+  const editingSlotPresentation = activePresentation
     .powerSlots?.[hotbarApi.editingPowerSlotIndex] ?? null
 
   // Powers racked on another key stay live in the gallery and install as a swap.
@@ -187,7 +181,6 @@ export default function ArmoryScreen({
       <div className="armoryWorkspace" ref={workspaceRef}>
         <ArmoryInstruments
           presentation={activePresentation}
-          previewPresentation={passiveApi.previewPresentation}
         />
 
         <div className="armoryStepStack">
@@ -237,15 +230,12 @@ export default function ArmoryScreen({
                 parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
                 playerLevel={playerLevel}
                 installedPartId={installedModuleId}
-                previewedPartId={passiveApi.previewedModuleId}
                 renderPartGlyph={() => <ModuleSlotGlyph slotId={passiveApi.selectedModuleSlot.id} />}
-                onPreviewPart={passiveApi.previewModule}
-                onClearPreview={passiveApi.clearPreview}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <ArmoryDetailPanel
-                    eyebrow={inspectedModuleId !== installedModuleId ? "Previewing part" : "Installed part"}
+                    eyebrow="Equipped mod"
                     title={inspectedModule?.label ?? passiveApi.selectedModuleSlot.label}
                     lead={inspectedModuleCopy.youGet}
                     rows={[
@@ -302,17 +292,13 @@ export default function ArmoryScreen({
                 parts={powerParts}
                 playerLevel={playerLevel}
                 installedPartId={hotbarApi.selectedPowerupId}
-                previewedPartId={hotbarApi.previewedPowerId}
                 renderPartGlyph={(part) => <PowerupGlyph powerupId={part.id} />}
-                onPreviewPart={hotbarApi.previewPower}
-                onClearPreview={hotbarApi.clearPreview}
                 onInstallPart={hotbarApi.installPower}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <>
                     <ArmoryCadenceTimeline
                       powerSlots={activePresentation.powerSlots}
-                      previewPowerSlots={hotbarApi.previewPresentation?.powerSlots ?? null}
                       startingCharges={activePresentation.roundRules.startingPowerupCharges}
                     />
                     <ArmoryDetailPanel

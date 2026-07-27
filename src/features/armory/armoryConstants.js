@@ -37,8 +37,8 @@ export const WALKTHROUGH_STEPS = [
     targetId: "passives",
     moduleSlotId: "tempoCore",
     title: "Install one part",
-    instruction: "Select a part to preview its effect on the machine and instruments, then use Install to commit the change.",
-    note: "Streak Lens and Power Rig work the same way — preview, then commit.",
+    instruction: "Click a mod to equip it instantly.",
+    note: "Streak Lens and Power Rig work the same way.",
   },
   {
     id: "rack",
@@ -46,7 +46,7 @@ export const WALKTHROUGH_STEPS = [
     targetId: "hotbar",
     powerSlotIndex: 0,
     title: "Equip a powerup",
-    instruction: "Choose a powerup for key 1, preview it, then equip it. If it is already on another key, the two powerups swap.",
+    instruction: "Click a powerup to equip it on key 1. If it is already on another key, the two powerups swap.",
     note: "Keys 2 and 3 work exactly the same way.",
   },
   {

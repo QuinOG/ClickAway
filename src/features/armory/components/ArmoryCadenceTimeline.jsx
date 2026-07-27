@@ -3,8 +3,7 @@ import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 // The cadence timeline (Phase 6): a streak ruler from 1 to CADENCE_MAX_STREAK
 // with a marker wherever each racked tool charges. awardEvery arrives already
 // recomputed with the build's powerupAwardMultiplier (buildRoundRules), so the
-// ruler is the primary cadence display, not the "Every N streak" text. While a
-// power is previewed the affected rows show the would-be arrangement.
+// ruler is the primary cadence display, not the "Every N streak" text.
 
 export const CADENCE_MAX_STREAK = 20
 
@@ -20,18 +19,15 @@ function getCadenceMarkerStreaks(awardEvery = 0, maxStreak = CADENCE_MAX_STREAK)
   return markerStreaks
 }
 
-function describeCadenceRow(keyNumber, slot, markerStreaks, isPreview) {
+function describeCadenceRow(keyNumber, slot, markerStreaks) {
   const cadenceText = markerStreaks.length
     ? `charges at streak ${markerStreaks.join(", ")}`
     : `first charges at streak ${slot.awardEvery}, past this ruler`
-  const previewSuffix = isPreview ? " (previewing)" : ""
-
-  return `Key ${keyNumber}: ${slot.label} ${cadenceText}${previewSuffix}`
+  return `Key ${keyNumber}: ${slot.label} ${cadenceText}`
 }
 
 export default function ArmoryCadenceTimeline({
   powerSlots = [],
-  previewPowerSlots = null,
   startingCharges = 0,
 }) {
   return (
@@ -45,25 +41,21 @@ export default function ArmoryCadenceTimeline({
       </header>
 
       {powerSlots.map((powerSlot, index) => {
-        const previewSlot = previewPowerSlots?.[index] ?? null
-        const isPreview = Boolean(previewSlot)
-          && (previewSlot.id !== powerSlot.id || previewSlot.awardEvery !== powerSlot.awardEvery)
-        const shownSlot = isPreview ? previewSlot : powerSlot
-        const markerStreaks = getCadenceMarkerStreaks(shownSlot.awardEvery)
+        const markerStreaks = getCadenceMarkerStreaks(powerSlot.awardEvery)
         const markerSet = new Set(markerStreaks)
 
         return (
           <div
             key={`${powerSlot.id}-${index + 1}`}
-            className={`armoryCadenceRow ${isPreview ? "isPreview" : ""}`}
+            className="armoryCadenceRow"
             role="img"
-            aria-label={describeCadenceRow(index + 1, shownSlot, markerStreaks, isPreview)}
+            aria-label={describeCadenceRow(index + 1, powerSlot, markerStreaks)}
           >
             <span className="armoryCadenceKey" aria-hidden="true">{index + 1}</span>
             <span className="armoryCadenceGlyph" aria-hidden="true">
-              <PowerupGlyph powerupId={shownSlot.id} />
+              <PowerupGlyph powerupId={powerSlot.id} />
             </span>
-            <span className="armoryCadenceLabel" aria-hidden="true">{shownSlot.label}</span>
+            <span className="armoryCadenceLabel" aria-hidden="true">{powerSlot.label}</span>
             <span className="armoryCadenceTrack" aria-hidden="true">
               {startingCharges > 0 ? <span className="armoryCadenceStartPip" /> : null}
               {Array.from({ length: CADENCE_MAX_STREAK }, (_, tickIndex) => tickIndex + 1).map((streak) => (
@@ -73,7 +65,7 @@ export default function ArmoryCadenceTimeline({
                 />
               ))}
             </span>
-            <span className="armoryCadenceEvery" aria-hidden="true">{shownSlot.cadenceLabel}</span>
+            <span className="armoryCadenceEvery" aria-hidden="true">{powerSlot.cadenceLabel}</span>
           </div>
         )
       })}

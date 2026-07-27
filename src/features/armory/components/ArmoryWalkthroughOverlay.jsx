@@ -17,7 +17,7 @@ export default function ArmoryWalkthroughOverlay({
 
   const dismissLabel = isManual ? "Close" : "Skip"
   const note = step.id === "range" && selectedModeLabel
-    ? `${step.note} This preview is using ${selectedModeLabel}.`
+    ? `${step.note} This test run uses ${selectedModeLabel}.`
     : step.note
 
   return (

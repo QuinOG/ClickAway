@@ -72,7 +72,7 @@ export function getModuleExactChips(module = null) {
 
 // Installing a power that is already racked on another key swaps the two keys
 // instead of duplicating, so the exactly-3-unique-powers invariant holds by
-// construction. Also used to build the pre-commit preview arrangement.
+// construction and direct powerup swaps.
 export function buildSwappedPowerupIds(powerupIds = [], targetIndex = 0, powerupId = "") {
   const nextPowerupIds = [...powerupIds]
   const existingIndex = nextPowerupIds.indexOf(powerupId)
@@ -123,7 +123,7 @@ export function getStepSummary(stepId, activeLoadout, activePresentation, select
     return activePresentation?.powerSlots?.map((powerSlot) => `${powerSlot.slotKey}: ${powerSlot.label}`).join(" / ") || "3 powerups"
   }
 
-  return selectedMode?.label ? `${selectedMode.label} preview` : "Current mode preview"
+  return selectedMode?.label ? `${selectedMode.label} test run` : "Current mode test run"
 }
 
 export function clamp(value, min, max) {

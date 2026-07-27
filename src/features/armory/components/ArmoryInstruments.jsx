@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-
 // Calibrated instrument column (Phase 5): the five feel readouts rendered as
-// segment dials instead of metric cards. While a part is being previewed the
-// dials show current→previewed movement before anything is committed.
+// segment dials instead of metric cards.
 
 // Ordered worst→best along each gauge so a fill level and a direction arrow
 // mean something. Values come from buildLoadoutPresentation's summaryStats.
@@ -17,11 +14,6 @@ const INSTRUMENT_SCALES = {
 function getScaleIndex(scale, value) {
   const index = scale.indexOf(value)
   return index === -1 ? scale.indexOf("Standard") : index
-}
-
-function formatSigned(value, digits = 0, suffix = "") {
-  const rounded = Number(value).toFixed(digits)
-  return `${value > 0 ? "+" : ""}${rounded}${suffix}`
 }
 
 function getExactMetric(label, rules = {}) {
@@ -51,22 +43,17 @@ function getExactMetric(label, rules = {}) {
   }
 }
 
-function InstrumentDial({ scale, currentIndex, previewIndex, compareIndex }) {
-  const isPreviewing = previewIndex !== null && previewIndex !== currentIndex
-  const litIndex = isPreviewing ? Math.min(currentIndex, previewIndex) : currentIndex
-
+function InstrumentDial({ scale, currentIndex, compareIndex }) {
   return (
     <span className="armoryInstrumentDial" aria-hidden="true">
       {scale.map((step, index) => {
-        const isLit = index <= litIndex
-        const isGain = isPreviewing && index > currentIndex && index <= previewIndex
-        const isLoss = isPreviewing && index > previewIndex && index <= currentIndex
+        const isLit = index <= currentIndex
         const isCompareMarker = compareIndex !== null && compareIndex !== undefined && index === compareIndex
 
         return (
           <span
             key={step}
-            className={`armoryInstrumentSegment ${isLit ? "isLit" : ""} ${isGain ? "isGain" : ""} ${isLoss ? "isLoss" : ""} ${isCompareMarker ? "isCompareMarker" : ""}`}
+            className={`armoryInstrumentSegment ${isLit ? "isLit" : ""} ${isCompareMarker ? "isCompareMarker" : ""}`}
           />
         )
       })}
@@ -75,50 +62,21 @@ function InstrumentDial({ scale, currentIndex, previewIndex, compareIndex }) {
 }
 
 /**
- * Calibrated instrument column. Two independent overlay modes share the same
- * dial: `previewPresentation` (Phase 5, pre-commit part hover — a single
- * gain/loss animation) and `comparePresentation` (Phase 8, Compare Bench — a
- * second named series read alongside the primary, no gain/loss framing since
- * neither build is "about to become" the other).
+ * Calibrated instrument column. Compare mode adds a second named series
+ * alongside the active build.
  */
 export default function ArmoryInstruments({
   presentation,
-  previewPresentation = null,
   comparePresentation = null,
   primaryLabel = "Active",
   compareLabel = "Ghost",
 }) {
-  const [announcement, setAnnouncement] = useState("")
-  const announceTimeoutRef = useRef(null)
-
-  const previewSummary = previewPresentation?.summaryStats
-    ?.map((stat) => {
-      const current = presentation?.summaryStats?.find((candidate) => candidate.label === stat.label)
-      return current && current.value !== stat.value
-        ? `${stat.label}: ${current.value} to ${stat.value}`
-        : null
-    })
-    .filter(Boolean)
-    .join(". ")
-
-  // Debounced so rapid hover/focus movement across the gallery doesn't spam
-  // the live region — only the settled preview gets announced.
-  useEffect(() => {
-    if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
-    announceTimeoutRef.current = setTimeout(
-      () => setAnnouncement(previewSummary || ""),
-      previewSummary ? 350 : 0
-    )
-    return () => clearTimeout(announceTimeoutRef.current)
-  }, [previewSummary])
-
   if (!presentation) return null
 
   const isComparing = Boolean(comparePresentation)
 
   return (
     <section className="armoryInstruments" aria-label="Build instruments">
-      <span className="armoryVisuallyHidden" role="status" aria-live="polite">{announcement}</span>
       {isComparing ? (
         <div className="armoryInstrumentsLegend">
           <span className="armoryInstrumentsLegendItem tone-primary">{primaryLabel}</span>
@@ -129,56 +87,31 @@ export default function ArmoryInstruments({
       {presentation.summaryStats.map((stat) => {
         const scale = INSTRUMENT_SCALES[stat.label] ?? [stat.value]
         const currentIndex = getScaleIndex(scale, stat.value)
-        const previewStat = previewPresentation?.summaryStats?.find(
-          (candidate) => candidate.label === stat.label
-        )
-        const previewIndex = previewStat ? getScaleIndex(scale, previewStat.value) : null
-        const hasDelta = Boolean(previewStat) && previewStat.value !== stat.value
-        const direction = hasDelta && previewIndex > currentIndex ? "up" : "down"
-
         const compareStat = comparePresentation?.summaryStats?.find(
           (candidate) => candidate.label === stat.label
         )
         const compareIndex = compareStat ? getScaleIndex(scale, compareStat.value) : null
         const currentExact = getExactMetric(stat.label, presentation.roundRules)
-        const previewExact = previewPresentation
-          ? getExactMetric(stat.label, previewPresentation.roundRules)
-          : null
-        const exactDelta = previewExact ? previewExact.value - currentExact.value : 0
 
         return (
           <article
             key={stat.label}
-            className={`armoryInstrument ${hasDelta ? "isPreviewing" : ""} ${isComparing ? "isComparing" : ""}`}
+            className={`armoryInstrument ${isComparing ? "isComparing" : ""}`}
           >
             <span className="armoryInstrumentLabel">{stat.label}</span>
             <InstrumentDial
               scale={scale}
               currentIndex={currentIndex}
-              previewIndex={hasDelta ? previewIndex : null}
               compareIndex={isComparing ? compareIndex : null}
             />
             <span className="armoryInstrumentReadout">
               <span className="armoryInstrumentValue">{stat.value}</span>
-              {hasDelta ? (
-                <span className={`armoryInstrumentDelta delta-${direction}`}>
-                  <span aria-hidden="true">{direction === "up" ? "▲" : "▼"}</span>
-                  {" "}
-                  {previewStat.value}
-                </span>
-              ) : null}
               {isComparing && compareStat ? (
                 <span className="armoryInstrumentCompareValue">{compareStat.value}</span>
               ) : null}
             </span>
             <span className="armoryInstrumentExact">
               <span>{currentExact.text}</span>
-              {hasDelta && previewExact ? (
-                <span className="armoryInstrumentExactPreview">
-                  <span aria-hidden="true">→</span> {previewExact.text}
-                  <em>({formatSigned(exactDelta, currentExact.digits, currentExact.suffix)})</em>
-                </span>
-              ) : null}
             </span>
           </article>
         )

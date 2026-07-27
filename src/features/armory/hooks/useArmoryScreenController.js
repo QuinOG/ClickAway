@@ -62,11 +62,6 @@ export function useArmoryScreenController({
   const [activeModuleSlotId, setActiveModuleSlotId] = useState(MODULE_SLOTS[0]?.id ?? "tempoCore")
   const [editingPowerSlotIndex, setEditingPowerSlotIndex] = useState(0)
   const [nameDraft, setNameDraft] = useState("")
-  // Pre-commit part preview (Phase 5): { slotKey, moduleId } or null. Purely
-  // derived presentation below — never persisted through the loadout path.
-  const [previewedPart, setPreviewedPart] = useState(null)
-  // Pre-commit tool preview (Phase 6): powerup id aimed at the editing key.
-  const [previewedPowerId, setPreviewedPowerId] = useState(null)
   const [isEditingNameplate, setIsEditingNameplate] = useState(false)
   // One pending workshop confirm at a time: { type: "reset" } or { type: "copy", targetLoadoutId }.
   const [pendingBayAction, setPendingBayAction] = useState(null)
@@ -153,45 +148,6 @@ export function useArmoryScreenController({
 
     setEditingPowerSlotIndex(0)
   }, [activeLoadout])
-
-  // Hypothetical presentation for the previewed part. Null while the preview
-  // matches the installed module so consumers can treat "no preview" and
-  // "previewing the installed part" the same way.
-  const previewPresentation = useMemo(() => {
-    if (!previewedPart || !activeLoadout || !selectedMode) return null
-    if (activeLoadout.moduleIds?.[previewedPart.slotKey] === previewedPart.moduleId) return null
-
-    return buildLoadoutPresentation(selectedMode, {
-      ...activeLoadout,
-      moduleIds: {
-        ...activeLoadout.moduleIds,
-        [previewedPart.slotKey]: previewedPart.moduleId,
-      },
-    })
-  }, [activeLoadout, previewedPart, selectedMode])
-
-  // The would-be hotbar while a power is previewed on the editing key: the
-  // previewed tool lands on that key and any key it currently occupies takes
-  // the displaced tool (a swap). Null when it matches the racked arrangement.
-  const powerPreviewPresentation = useMemo(() => {
-    if (!previewedPowerId || !activeLoadout || !selectedMode) return null
-    if (activeLoadout.powerupIds?.[editingPowerSlotIndex] === previewedPowerId) return null
-
-    return buildLoadoutPresentation(selectedMode, {
-      ...activeLoadout,
-      powerupIds: buildSwappedPowerupIds(
-        activeLoadout.powerupIds,
-        editingPowerSlotIndex,
-        previewedPowerId
-      ),
-    })
-  }, [activeLoadout, editingPowerSlotIndex, previewedPowerId, selectedMode])
-
-  // A preview aimed at one lane/key/build/mode means nothing in another context.
-  useEffect(() => {
-    setPreviewedPart(null)
-    setPreviewedPowerId(null)
-  }, [activeModuleSlotId, activeStepId, editingPowerSlotIndex, localActiveLoadoutId, selectedModeId])
 
   const selectedModuleSlot = useMemo(
     () => MODULE_SLOTS.find((slot) => slot.id === activeModuleSlotId) ?? MODULE_SLOTS[0] ?? null,
@@ -323,16 +279,6 @@ export function useArmoryScreenController({
     })
   }, [activeLoadout, activeModuleSlotId, emitFeedback, updateSingleLoadout])
 
-  const handlePreviewModule = useCallback((moduleId) => {
-    if (!selectedModuleSlot) return
-    setPreviewedPart({ slotKey: selectedModuleSlot.key, moduleId })
-    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_HOVER, { eventId: moduleId })
-  }, [emitFeedback, selectedModuleSlot])
-
-  const clearModulePreview = useCallback(() => {
-    setPreviewedPart(null)
-  }, [])
-
   const handleInspectLockedPart = useCallback(() => {
     triggerFirstTouchTip("lockedPart")
   }, [triggerFirstTouchTip])
@@ -372,15 +318,6 @@ export function useArmoryScreenController({
       return { ...loadout, powerupIds: nextPowerupIds }
     })
   }, [activeLoadout, updateSingleLoadout])
-
-  const handlePreviewPower = useCallback((powerupId) => {
-    setPreviewedPowerId(powerupId)
-    emitFeedback?.(FEEDBACK_EVENTS.ARMORY_PART_HOVER, { eventId: powerupId })
-  }, [emitFeedback])
-
-  const clearPowerPreview = useCallback(() => {
-    setPreviewedPowerId(null)
-  }, [])
 
   const handleResetLoadout = useCallback(() => {
     if (!activeLoadout) return
@@ -734,10 +671,8 @@ export function useArmoryScreenController({
       cancelBayAction,
       openModuleLane,
       selectedModuleSlotId: activeModuleSlotId,
-      previewModuleStack: previewPresentation?.moduleStack ?? null,
       openSpecSheet,
       openModeMatrix,
-      previewInitialButtonSize: previewPresentation?.roundRules?.initialButtonSize ?? null,
     },
     bayApi: {
       savedLoadouts: localSavedLoadouts,
@@ -756,12 +691,6 @@ export function useArmoryScreenController({
       setActiveModuleSlotId,
       moduleOptionsBySlot,
       selectModule: handleSelectModule,
-      previewedModuleId: previewedPart?.slotKey === selectedModuleSlot?.key
-        ? previewedPart.moduleId
-        : null,
-      previewPresentation,
-      previewModule: handlePreviewModule,
-      clearPreview: clearModulePreview,
       summary: passiveStepSummary,
     },
     hotbarApi: {
@@ -770,10 +699,6 @@ export function useArmoryScreenController({
       selectedPowerupId,
       installPower: handleInstallPower,
       swapPowerSlots: handleSwapPowerSlots,
-      previewedPowerId,
-      previewPresentation: powerPreviewPresentation,
-      previewPower: handlePreviewPower,
-      clearPreview: clearPowerPreview,
       summary: hotbarStepSummary,
     },
     reviewApi: {

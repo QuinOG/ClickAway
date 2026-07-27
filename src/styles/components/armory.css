@@ -750,7 +750,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     padding: 0 var(--armory-space-sm) var(--armory-space-sm);
 }
 
-/* Docked bays are inventory choices, not full previews. Keep their identity
+/* Docked bays are compact inventory choices. Keep their identity
    visible but collapse the miniature beside the name so all three builds and
    the utility shelf fit within a normal desktop workbench height. */
 .armoryBay:not(.isActive) .armoryBaySelect {
@@ -1142,23 +1142,9 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         0 0 28px color-mix(in srgb, var(--armory-key-light) 18%, transparent);
 }
 
-.armoryMachineHousing.isPreviewing {
-    border-style: dashed;
-    background:
-        linear-gradient(180deg, rgba(var(--armory-tone-tempo), 0.14), rgba(14, 21, 37, 0.9));
-}
-
-.armoryMachineHousingState {
-    color: rgb(var(--armory-tone-tempo));
-    font-size: 8px;
-    font-weight: 800;
-    letter-spacing: 0.26px;
-    text-transform: uppercase;
-}
-
-.armoryMachineAssembly:has(.housing-tempoCore.isSelected, .housing-tempoCore.isPreviewing) .conduit-tempoCore,
-.armoryMachineAssembly:has(.housing-streakLens.isSelected, .housing-streakLens.isPreviewing) .conduit-streakLens,
-.armoryMachineAssembly:has(.housing-powerRig.isSelected, .housing-powerRig.isPreviewing) .conduit-powerRig {
+.armoryMachineAssembly:has(.housing-tempoCore.isSelected) .conduit-tempoCore,
+.armoryMachineAssembly:has(.housing-streakLens.isSelected) .conduit-streakLens,
+.armoryMachineAssembly:has(.housing-powerRig.isSelected) .conduit-powerRig {
     stroke: var(--armory-key-light);
     filter: drop-shadow(0 0 5px color-mix(in srgb, var(--armory-key-light) 72%, transparent));
 }
@@ -1739,7 +1725,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 /* ---- Phase 5: instrument column + parts gallery ---------------------------
    The five feel readouts become calibrated segment dials, passive modules
-   become machined parts on a shelf, and previews ghost onto the machine. */
+   become machined parts on a shelf. */
 
 .armoryInstruments {
     display: grid;
@@ -1752,10 +1738,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     display: grid;
     gap: 6px;
     transition: border-color var(--armory-motion-fast) var(--armory-motion-ease);
-}
-
-.armoryInstrument.isPreviewing {
-    border-color: rgba(var(--armory-accent), 0.42);
 }
 
 .armoryInstrumentLabel {
@@ -1781,24 +1763,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 .armoryInstrumentSegment.isLit {
     background: color-mix(in srgb, var(--armory-key-light) 82%, white 8%);
     box-shadow: 0 0 8px color-mix(in srgb, var(--armory-key-light) 36%, transparent);
-}
-
-/* Preview movement along the gauge: gained segments glow good-tone, lost
-   segments cool to risk-tone; both blink until the part commits or clears. */
-.armoryInstrumentSegment.isGain {
-    background: rgba(var(--armory-tone-good), 0.9);
-    animation: armoryInstrumentBlink 0.9s var(--armory-motion-loop-ease) infinite;
-}
-
-.armoryInstrumentSegment.isLoss {
-    background: rgba(var(--armory-tone-risk), 0.5);
-    animation: armoryInstrumentBlink 0.9s var(--armory-motion-loop-ease) infinite;
-}
-
-@keyframes armoryInstrumentBlink {
-    50% {
-        opacity: 0.45;
-    }
 }
 
 .armoryInstrumentReadout {
@@ -1886,15 +1850,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     border: 0;
 }
 
-.armoryStateEmblem.is-preview {
-    --armory-state-color: var(--armory-tone-tempo);
-}
-
-.armoryStateEmblem.is-preview .armoryStateEmblemIcon {
-    border-radius: 50%;
-    border-style: dashed;
-}
-
 .armoryStateEmblem.is-racked {
     --armory-state-color: var(--armory-tone-power);
 }
@@ -1929,71 +1884,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     font-variant-numeric: tabular-nums;
 }
 
-.armoryInstrumentExactPreview {
-    color: rgba(226, 240, 255, 0.9);
-}
-
-.armoryInstrumentExactPreview em {
-    margin-left: 3px;
-    color: rgb(var(--armory-tone-good));
-    font-style: normal;
-    font-weight: 750;
-}
-
-.armoryPreviewCommit {
-    position: sticky;
-    bottom: 0;
-    z-index: 6;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--armory-space-lg);
-    padding: 12px 14px;
-    border: 1px solid rgba(var(--armory-tone-tempo), 0.34);
-    border-radius: var(--armory-radius-field);
-    background:
-        linear-gradient(90deg, rgba(var(--armory-tone-tempo), 0.11), transparent 62%),
-        rgba(8, 14, 26, 0.96);
-    box-shadow: 0 -12px 30px rgba(3, 7, 14, 0.42);
-    backdrop-filter: blur(14px);
-}
-
-.armoryPreviewCommitCopy {
-    min-width: 0;
-    display: grid;
-    gap: 2px;
-}
-
-.armoryPreviewCommitEyebrow {
-    color: rgb(var(--armory-tone-tempo));
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-}
-
-.armoryPreviewCommitCopy strong {
-    color: #f6fbff;
-    font-size: 14px;
-}
-
-.armoryPreviewCommitCopy > span:last-child {
-    color: rgba(197, 219, 243, 0.7);
-    font-size: 10px;
-}
-
-.armoryPreviewCommitActions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--armory-space-xs);
-}
-
-.armoryPreviewCommitActions .primaryButton,
-.armoryPreviewCommitActions .secondaryButton {
-    white-space: nowrap;
-}
-
 .armoryPartsShelf {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -2011,6 +1901,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     cursor: pointer;
     color: rgba(232, 243, 255, 0.9);
     border-radius: var(--armory-radius-panel);
+    overflow: hidden;
     border: 1px solid rgba(var(--armory-line), 0.16);
     background:
         linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015) 62%),
@@ -2053,26 +1944,28 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     border-color: rgba(var(--armory-accent), 0.4);
 }
 
-.armoryPartCard.isPreviewed {
-    border-color: rgba(var(--armory-accent), 0.52);
-    background: rgba(82, 165, 255, 0.1);
+/* Equipped parts read as the current choice at a glance, independent of lane. */
+.armoryPartCard.isInstalled {
+    border-color: rgba(83, 215, 179, 0.82);
+    background:
+        linear-gradient(145deg, rgba(83, 215, 179, 0.18), rgba(83, 215, 179, 0.035) 68%),
+        rgba(255, 255, 255, 0.025);
+    box-shadow:
+        inset 0 0 0 1px rgba(83, 215, 179, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 20px rgba(83, 215, 179, 0.12);
 }
 
-/* The installed part sits visibly seated: lane ring + inner glow. */
-.armoryPartCard.isInstalled.tone-tempoCore {
-    border-color: rgba(var(--armory-tone-tempo), 0.55);
-    box-shadow: inset 0 0 0 1px rgba(var(--armory-tone-tempo), 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+.armoryPartCard.isInstalled::before {
+    height: 6px;
+    background: linear-gradient(90deg, #54d8b3, #8df0cf);
+    box-shadow: 0 0 12px rgba(83, 215, 179, 0.42);
 }
 
-.armoryPartCard.isInstalled.tone-streakLens {
-    border-color: rgba(var(--armory-tone-streak), 0.55);
-    box-shadow: inset 0 0 0 1px rgba(var(--armory-tone-streak), 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.armoryPartCard.isInstalled.tone-powerRig,
-.armoryPartCard.isInstalled.tone-power {
-    border-color: rgba(var(--armory-tone-power), 0.55);
-    box-shadow: inset 0 0 0 1px rgba(var(--armory-tone-power), 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+.armoryPartCard.isInstalled .armoryPartGlyph {
+    color: #a9f6dd;
+    background: rgba(83, 215, 179, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(116, 235, 197, 0.34);
 }
 
 /* Locked parts sit behind glass. */
@@ -2133,8 +2026,15 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 }
 
 .armoryPartBody {
+    min-width: 0;
     display: grid;
     gap: 4px;
+}
+
+.armoryPartLabel,
+.armoryPartFeel {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 /* Both galleries stack their inspection footer(s) below the shelf. */
@@ -2143,27 +2043,8 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     gap: var(--armory-space-md);
 }
 
-/* Preview ghost on the machine: the would-be target size as a dashed ring. */
 .armoryMachineTarget {
     position: relative;
-}
-
-.armoryMachineTargetGhost {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: var(--armory-radius-pill);
-    border: 2px dashed color-mix(in srgb, var(--armory-key-light) 72%, white 12%);
-    box-shadow: 0 0 18px color-mix(in srgb, var(--armory-key-light) 28%, transparent);
-    animation: armoryGhostPulse 1.6s var(--armory-motion-loop-ease) infinite;
-    pointer-events: none;
-}
-
-@keyframes armoryGhostPulse {
-    50% {
-        opacity: 0.5;
-    }
 }
 
 /* Housings are buttons now: clicking one opens its lane's parts gallery. */
@@ -2259,11 +2140,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     transition: border-color var(--armory-motion-fast) var(--armory-motion-ease);
 }
 
-.armoryCadenceRow.isPreview {
-    border-color: rgba(var(--armory-accent), 0.46);
-    background: rgba(82, 165, 255, 0.08);
-}
-
 .armoryCadenceKey {
     width: 20px;
     height: 20px;
@@ -2325,11 +2201,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     box-shadow: 0 0 8px rgba(var(--armory-tone-power), 0.5);
 }
 
-.armoryCadenceRow.isPreview .armoryCadenceTick.isCharge {
-    background: color-mix(in srgb, rgb(var(--armory-accent)) 70%, white 8%);
-    box-shadow: 0 0 8px rgba(var(--armory-accent), 0.5);
-}
-
 /* Reserve-rig starting charge sits before the ruler's first streak tick. */
 .armoryCadenceStartPip {
     width: 8px;
@@ -2351,9 +2222,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .armoryInstrumentSegment.isGain,
-    .armoryInstrumentSegment.isLoss,
-    .armoryMachineTargetGhost,
     .armoryPartSeat,
     .armoryHotbarSwap {
         animation: none;
@@ -2728,17 +2596,6 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         white-space: normal;
     }
 
-    .armoryPreviewCommit,
-    .armoryPreviewCommitActions {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .armoryPreviewCommitActions .primaryButton,
-    .armoryPreviewCommitActions .secondaryButton {
-        width: 100%;
-        justify-content: center;
-    }
 }
 
 /* ---- Phase 7: Test Range launcher, live range, and spec sheet ---- */

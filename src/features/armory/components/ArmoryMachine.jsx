@@ -22,16 +22,14 @@ function getTargetSkinStyle({ targetSize, imageSrc, imageScale }) {
   }
 }
 
-function MachineHousing({ module, previewModule = null, isSelected = false, onOpenLane }) {
+function MachineHousing({ module, isSelected = false, onOpenLane }) {
   const isNeutral = module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId]
-  const isPreviewing = Boolean(previewModule && previewModule.moduleId !== module.moduleId)
-  const displayedModule = isPreviewing ? previewModule : module
 
   return (
     <button
       type="button"
-      className={`armoryMachineHousing housing-${module.slotId} tone-${module.slotId} ${isNeutral && !isPreviewing ? "isNeutral" : ""} ${isSelected ? "isSelected" : ""} ${isPreviewing ? "isPreviewing" : ""}`}
-      data-module-state={isPreviewing ? "preview" : "installed"}
+      className={`armoryMachineHousing housing-${module.slotId} tone-${module.slotId} ${isNeutral ? "isNeutral" : ""} ${isSelected ? "isSelected" : ""}`}
+      data-module-state="installed"
       onClick={() => onOpenLane?.(module.slotId)}
       title={`Open ${module.slotLabel} parts`}
     >
@@ -40,12 +38,11 @@ function MachineHousing({ module, previewModule = null, isSelected = false, onOp
       </span>
       {/* Keyed by installed module so a fresh part visibly seats into place. */}
       <span
-        key={displayedModule.moduleId || module.slotId}
+        key={module.moduleId || module.slotId}
         className="armoryMachineHousingBody armoryPartSeat"
       >
         <span className="armoryMachineHousingSlot">{module.slotLabel}</span>
-        <strong className="armoryMachineHousingLabel">{displayedModule.label}</strong>
-        {isPreviewing ? <span className="armoryMachineHousingState">Preview</span> : null}
+        <strong className="armoryMachineHousingLabel">{module.label}</strong>
       </span>
     </button>
   )
@@ -145,16 +142,6 @@ export default function ArmoryMachine({
   const targetSize = Math.round(
     presentation.roundRules.initialButtonSize * MACHINE_TARGET_SCALE
   )
-  // Ghost-resize (Phase 5): while a part is previewed the target shows the
-  // would-be size as a dashed ring; nothing commits until install.
-  const previewTargetSize = machineApi.previewInitialButtonSize
-    ? Math.round(machineApi.previewInitialButtonSize * MACHINE_TARGET_SCALE)
-    : null
-  const showGhost = previewTargetSize !== null && previewTargetSize !== targetSize
-  const previewModuleBySlotId = Object.fromEntries(
-    (machineApi.previewModuleStack ?? []).map((module) => [module.slotId, module])
-  )
-
   return (
     <section className="armoryStage" aria-label="Active build machine">
       {/* Keyed by bay so switching bays rolls a fresh machine onto the stage
@@ -174,7 +161,6 @@ export default function ArmoryMachine({
                 <MachineHousing
                   key={module.slotId}
                   module={module}
-                  previewModule={previewModuleBySlotId[module.slotId]}
                   isSelected={machineApi.selectedModuleSlotId === module.slotId}
                   onOpenLane={machineApi.openModuleLane}
                 />
@@ -190,12 +176,6 @@ export default function ArmoryMachine({
               })}
               aria-hidden="true"
             >
-              {showGhost ? (
-                <span
-                  className="armoryMachineTargetGhost"
-                  style={{ width: `${previewTargetSize}px`, height: `${previewTargetSize}px` }}
-                />
-              ) : null}
             </span>
           </div>
         </div>

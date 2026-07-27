@@ -55,12 +55,8 @@ function getPartCard(name) {
     .find((button) => button.className.includes("armoryPartCard"))
 }
 
-async function installPreviewedPart(user, card) {
+async function equipPart(user, card) {
   await user.click(card)
-  const actions = screen.getByRole("region", { name: "Preview actions" })
-  // Keep the pointer parked on the card; moving the synthetic pointer outside
-  // the gallery intentionally cancels the preview before the commit click.
-  fireEvent.click(within(actions).getByRole("button", { name: /^(Install|Swap)/ }))
 }
 
 describe("Armory screen baseline", () => {
@@ -117,7 +113,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     await openStep(user, "Mods")
-    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
+    await equipPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const { savedLoadouts, activeLoadoutId } = lastLoadoutState(props)
     expect(activeLoadoutId).toBe("loadout_1")
@@ -152,11 +148,8 @@ describe("Armory screen baseline", () => {
     expect(growCard.disabled).toBe(false)
     expect(within(growCard).getByText("On key 2")).not.toBeNull()
 
-    // Hovering previews the swap; clicking commits it (Grow → key 1, the
-    // displaced Time +2s → key 2).
-    await user.hover(growCard)
-    expect(within(growCard).getByText("Swap with key 2")).not.toBeNull()
-    await installPreviewedPart(user, growCard)
+    // Clicking swaps it onto key 1 and moves the displaced powerup to key 2.
+    await equipPart(user, growCard)
 
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
@@ -168,10 +161,8 @@ describe("Armory screen baseline", () => {
     const props = renderArmory({ playerLevel: 5 })
 
     await openStep(user, "Powerups")
-    // Hover previews, then click installs (matches the pointer contract).
     const magnetCard = getPartCard(/Magnet Center/)
-    await user.hover(magnetCard)
-    await installPreviewedPart(user, magnetCard)
+    await equipPart(user, magnetCard)
 
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
@@ -199,7 +190,7 @@ describe("Armory screen baseline", () => {
     const props = renderArmory()
 
     await openStep(user, "Mods")
-    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
+    await equipPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const machine = screen.getByLabelText("Active build machine")
     await user.click(within(machine).getByText("Build options"))
@@ -313,7 +304,7 @@ describe("Armory machine", () => {
 
     // Installing Anchor (bigger targets) visibly grows the machine's target.
     await openStep(user, "Mods")
-    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
+    await equipPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const anchorLoadout = {
       ...allRounder,
@@ -334,14 +325,14 @@ describe("Armory machine", () => {
     expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(3)
 
     await openStep(user, "Mods")
-    await installPreviewedPart(user, screen.getByRole("button", { name: /^Anchor/ }))
+    await equipPart(user, screen.getByRole("button", { name: /^Anchor/ }))
 
     const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
     expect(tempoHousing.className).not.toContain("isNeutral")
     expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(2)
   })
 
-  test("the selected rig node previews a candidate before installation", () => {
+  test("clicking a mod equips it on the selected rig node", () => {
     const props = renderArmory()
     const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
 
@@ -351,11 +342,10 @@ describe("Armory machine", () => {
 
     fireEvent.click(getPartCard(/^Anchor/))
 
-    expect(tempoHousing.dataset.moduleState).toBe("preview")
-    expect(tempoHousing.className).toContain("isPreviewing")
+    expect(tempoHousing.dataset.moduleState).toBe("installed")
+    expect(tempoHousing.className).not.toContain("isPreviewing")
     expect(within(tempoHousing).getByText("Anchor")).not.toBeNull()
-    expect(within(tempoHousing).getByText("Preview")).not.toBeNull()
-    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+    expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
   })
 
   test("the shop-equipped image skin dresses the target", () => {
@@ -380,13 +370,6 @@ describe("Armory machine", () => {
 })
 
 describe("Armory parts gallery (Phase 5)", () => {
-  const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
-  const allRounder = DEFAULT_SAVED_LOADOUTS.find((loadout) => loadout.id === "loadout_1")
-  const anchorLoadout = {
-    ...allRounder,
-    moduleIds: { ...allRounder.moduleIds, tempoCoreId: "tempo_anchor" },
-  }
-
   function getPartCard(name) {
     return screen
       .getAllByRole("button", { name })
@@ -404,50 +387,9 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(within(instruments).getByText(/% \/ hit/)).not.toBeNull()
   })
 
-  test("hover-previewing a part shows instrument deltas and a target ghost without persisting", async () => {
+  test("part cards expose available, installed, and locked states", async () => {
     const user = userEvent.setup()
-    const props = renderArmory()
-
-    await openStep(user, "Mods")
-    await user.hover(getPartCard(/^Anchor/))
-
-    // The machine ghost-resizes to the previewed build's target size.
-    const ghost = document.querySelector(".armoryMachineTargetGhost")
-    const { roundRules } = buildLoadoutPresentation(normalMode, anchorLoadout)
-    expect(ghost).not.toBeNull()
-    expect(ghost.style.width).toBe(`${Math.round(roundRules.initialButtonSize * MACHINE_TARGET_SCALE)}px`)
-
-    // Instruments show current→previewed movement where the feel changes.
-    const instruments = screen.getByLabelText("Build instruments")
-    expect(instruments.querySelectorAll(".armoryInstrument.isPreviewing").length).toBeGreaterThan(0)
-    expect(instruments.querySelectorAll(".armoryInstrumentDelta").length).toBeGreaterThan(0)
-    expect(instruments.querySelectorAll(".armoryInstrumentExactPreview").length).toBeGreaterThan(0)
-
-    // Nothing persisted: previewing never touches the loadout path.
-    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
-
-    // Leaving the gallery clears the preview.
-    await user.unhover(getPartCard(/^Anchor/))
-    fireEvent.mouseLeave(document.querySelector(".armoryPartsGallery"))
-    expect(document.querySelector(".armoryMachineTargetGhost")).toBeNull()
-    expect(document.querySelectorAll(".armoryInstrument.isPreviewing")).toHaveLength(0)
-  })
-
-  test("the inspection footer follows the previewed part", async () => {
-    const user = userEvent.setup()
-    renderArmory()
-
-    await openStep(user, "Mods")
-    expect(screen.getByText("Installed part")).not.toBeNull()
-
-    await user.hover(getPartCard(/^Anchor/))
-    expect(screen.getByText("Previewing part")).not.toBeNull()
-    expect(screen.getByText("Bigger targets and slower shrink.")).not.toBeNull()
-  })
-
-  test("part cards expose shape-led available, preview, installed, and locked states", async () => {
-    const user = userEvent.setup()
-    renderArmory({ playerLevel: 5 })
+    const props = renderArmory({ playerLevel: 5 })
 
     await openStep(user, "Mods")
     const balancedCard = getPartCard(/^Balanced Tempo/)
@@ -459,24 +401,17 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(anchorCard.dataset.armoryState).toBe("available")
     expect(lockedCard.dataset.armoryState).toBe("locked")
 
-    await user.hover(anchorCard)
-    expect(anchorCard.dataset.armoryState).toBe("preview")
-    expect(within(anchorCard).getByText("Previewing")).not.toBeNull()
+    await user.click(anchorCard)
+    expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
   })
 
-  test("keyboard: focus and Enter preview, arrows rove, and the explicit action installs", async () => {
+  test("keyboard: arrows rove and Enter equips immediately", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
     await openStep(user, "Mods")
     const anchorCard = getPartCard(/^Anchor/)
-    // fireEvent.focus dispatches inside act so the preview state flushes before
-    // we assert; user.keyboard below drives the roving-focus navigation.
     anchorCard.focus()
-    fireEvent.focus(anchorCard)
-
-    // Focus alone previews without persisting.
-    expect(document.querySelector(".armoryMachineTargetGhost")).not.toBeNull()
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
 
     // Arrow keys rove focus along the shelf.
@@ -487,50 +422,29 @@ describe("Armory parts gallery (Phase 5)", () => {
     await user.keyboard("{ArrowLeft}")
     expect(document.activeElement).toBe(anchorCard)
 
-    // Enter selects the focused preview but still does not persist it.
+    // Enter equips the focused mod immediately.
     await user.keyboard("{Enter}")
-    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
-
-    const actions = screen.getByRole("region", { name: "Preview actions" })
-    expect(within(actions).getByText("Your saved build has not changed.")).not.toBeNull()
-    await user.click(within(actions).getByRole("button", { name: "Install Anchor" }))
+    expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
 
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
   })
 
-  test("a bare tap or click selects a preview and requires explicit installation", async () => {
+  test("a bare tap or click equips immediately", async () => {
     const props = renderArmory()
 
     await openStep(userEvent.setup(), "Mods")
     props.onLoadoutStateChange.mockClear()
 
-    // fireEvent.click skips hover, matching a bare tap.
     const anchorCard = getPartCard(/^Anchor/)
     fireEvent.click(anchorCard)
 
-    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
-    expect(within(screen.getByRole("region", { name: "Preview actions" })).getByText("Preview only")).not.toBeNull()
-
-    fireEvent.click(screen.getByRole("button", { name: "Install Anchor" }))
+    expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
+    expect(screen.queryByRole("region", { name: "Preview actions" })).toBeNull()
     const { savedLoadouts } = lastLoadoutState(props)
     const updatedLoadout = savedLoadouts.find((loadout) => loadout.id === "loadout_1")
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
-  })
-
-  test("cancel preview restores the installed presentation without persisting", async () => {
-    const props = renderArmory()
-
-    await openStep(userEvent.setup(), "Mods")
-    fireEvent.click(getPartCard(/^Anchor/))
-    expect(document.querySelector(".armoryMachineTargetGhost")).not.toBeNull()
-
-    fireEvent.click(screen.getByRole("button", { name: "Cancel preview" }))
-
-    expect(screen.queryByRole("region", { name: "Preview actions" })).toBeNull()
-    expect(document.querySelector(".armoryMachineTargetGhost")).toBeNull()
-    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
   })
 
   test("clicking a machine housing opens that lane's parts gallery", async () => {
@@ -570,7 +484,7 @@ describe("Armory tool rack (Phase 6)", () => {
     expect(freezeRow.querySelectorAll(".armoryCadenceTick.isCharge")).toHaveLength(1)
   })
 
-  test("previewing a power recomputes its cadence row without persisting", async () => {
+  test("hovering a power does not change the build or cadence", async () => {
     const user = userEvent.setup()
     const props = renderArmory({ playerLevel: 5 })
 
@@ -580,7 +494,7 @@ describe("Armory tool rack (Phase 6)", () => {
     await user.hover(getPartCard(/Magnet Center/))
 
     const timeline = screen.getByLabelText("Charge cadence timeline")
-    expect(timeline.querySelectorAll(".armoryCadenceRow.isPreview").length).toBeGreaterThan(0)
+    expect(timeline.querySelectorAll(".armoryCadenceRow.isPreview")).toHaveLength(0)
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
   })
 

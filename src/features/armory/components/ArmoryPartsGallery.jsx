@@ -4,25 +4,21 @@ import { getUnlockText } from "../armoryUtils.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
-// laid out as machined parts. Cards select a reversible preview; the explicit
-// action below the shelf is the only persistence boundary. This keeps pointer,
-// keyboard, and touch on the same preview -> inspect -> install contract.
+// laid out as machined parts. Clicking an unlocked card equips it immediately.
 
-function getPartStateLabel({ part, isLocked, isInstalled, isPreviewed }) {
+function getPartStateLabel({ part, isLocked, isInstalled }) {
   if (isLocked) return getUnlockText(part.unlockLevel)
   if (isInstalled) return "Installed"
   if (part.rackedOnKey) {
-    return isPreviewed ? `Swap with key ${part.rackedOnKey}` : `On key ${part.rackedOnKey}`
+    return `On key ${part.rackedOnKey}`
   }
-  if (isPreviewed) return "Previewing"
   return "Available"
 }
 
-function getPartVisualState({ part, isLocked, isInstalled, isPreviewed }) {
+function getPartVisualState({ part, isLocked, isInstalled }) {
   if (isLocked) return "locked"
   if (isInstalled) return "installed"
   if (part.rackedOnKey) return "racked"
-  if (isPreviewed) return "preview"
   return "available"
 }
 
@@ -32,10 +28,7 @@ export default function ArmoryPartsGallery({
   parts = [],
   playerLevel = 1,
   installedPartId = "",
-  previewedPartId = null,
   renderPartGlyph,
-  onPreviewPart,
-  onClearPreview,
   onInstallPart,
   onInspectLockedPart,
   footer = null,
@@ -46,11 +39,6 @@ export default function ArmoryPartsGallery({
   const tabStopPartId = rovingPartId ?? installedPartId
 
   const unlockedParts = parts.filter((part) => playerLevel >= part.unlockLevel)
-  const previewedPart = parts.find((part) => part.id === previewedPartId) ?? null
-  const hasPendingPreview = Boolean(previewedPart && previewedPart.id !== installedPartId)
-  const commitLabel = previewedPart?.rackedOnKey
-    ? `Swap ${previewedPart.label} from key ${previewedPart.rackedOnKey}`
-    : `Install ${previewedPart?.label ?? "part"}`
 
   const moveFocus = (offset) => {
     if (!unlockedParts.length) return
@@ -74,13 +62,6 @@ export default function ArmoryPartsGallery({
       event.preventDefault()
       moveFocus(-1)
     }
-    if (event.key === "Escape") {
-      onClearPreview?.()
-    }
-  }
-
-  const handleGalleryBlur = (event) => {
-    if (!event.currentTarget.contains(event.relatedTarget)) onClearPreview?.()
   }
 
   return (
@@ -89,16 +70,13 @@ export default function ArmoryPartsGallery({
       role="group"
       aria-label={galleryLabel}
       onKeyDown={handleGalleryKeyDown}
-      onMouseLeave={() => onClearPreview?.()}
-      onBlur={handleGalleryBlur}
     >
       <div className={`armoryPartsShelf tone-${tone}`}>
         {parts.map((part) => {
           const isLocked = playerLevel < part.unlockLevel
           const isInstalled = part.id === installedPartId
-          const isPreviewed = part.id === previewedPartId && !isInstalled
-          const stateLabel = getPartStateLabel({ part, isLocked, isInstalled, isPreviewed })
-          const visualState = getPartVisualState({ part, isLocked, isInstalled, isPreviewed })
+          const stateLabel = getPartStateLabel({ part, isLocked, isInstalled })
+          const visualState = getPartVisualState({ part, isLocked, isInstalled })
 
           return (
             <button
@@ -107,24 +85,18 @@ export default function ArmoryPartsGallery({
               ref={(element) => { cardRefs.current[part.id] = element }}
               data-part-id={part.id}
               data-armory-state={visualState}
-              className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isPreviewed ? "isPreviewed" : ""} ${isLocked ? "isLocked" : ""}`}
+              className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isLocked ? "isLocked" : ""}`}
               disabled={isLocked}
               tabIndex={isLocked ? undefined : (part.id === tabStopPartId ? 0 : -1)}
-              aria-pressed={isPreviewed}
+              aria-pressed={isInstalled}
               onMouseEnter={() => {
                 if (isLocked) onInspectLockedPart?.(part.id)
-                else onPreviewPart?.(part.id)
               }}
               onFocus={() => {
                 setRovingPartId(part.id)
-                onPreviewPart?.(part.id)
               }}
               onClick={() => {
-                if (isInstalled) {
-                  onClearPreview?.()
-                  return
-                }
-                onPreviewPart?.(part.id)
+                if (!isInstalled) onInstallPart?.(part.id)
               }}
             >
               <span className={`armoryPartGlyph tone-${tone}`} aria-hidden="true">
@@ -140,31 +112,6 @@ export default function ArmoryPartsGallery({
           )
         })}
       </div>
-
-      {hasPendingPreview ? (
-        <div className="armoryPreviewCommit" role="region" aria-label="Preview actions">
-          <div className="armoryPreviewCommitCopy">
-            <span className="armoryPreviewCommitEyebrow">Preview only</span>
-            <strong>{previewedPart.label}</strong>
-            <span>Your saved build has not changed.</span>
-          </div>
-          <div className="armoryPreviewCommitActions">
-            <button type="button" className="secondaryButton" onClick={() => onClearPreview?.()}>
-              Cancel preview
-            </button>
-            <button
-              type="button"
-              className="primaryButton"
-              onClick={() => {
-                onInstallPart?.(previewedPart.id)
-                onClearPreview?.()
-              }}
-            >
-              {commitLabel}
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       {footer ? <div className="armoryGalleryFooter">{footer}</div> : null}
     </div>
