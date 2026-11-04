@@ -102,6 +102,7 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await page.waitForTimeout(1000)
     if (SCENE === "spec") await page.getByRole("button", { name: "Spec Sheet" }).click()
     if (SCENE === "compare") await page.getByRole("button", { name: "Compare Modes" }).click()
+    if (SCENE === "wall") await page.getByRole("button", { name: "Unlock Wall" }).click()
     await page.waitForTimeout(700)
     await page.screenshot({ path: SHOT })
   } else if (SCENE === "countdown") {

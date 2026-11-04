@@ -40,6 +40,7 @@ function ArmoryUnlockWallPanel({
               key={part.id}
               className={`armoryUnlockWallItem tone-${tone} ${isOwned ? "isOwned" : "isLocked"} ${isInstalled ? "isInstalled" : ""}`}
               data-armory-state={visualState}
+              title={part.description}
             >
               <span className={`armoryPartGlyph tone-${tone}`} aria-hidden="true">{renderPartGlyph(part)}</span>
               <span className="armoryUnlockWallItemBody">
@@ -93,6 +94,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
           </button>
         </header>
 
+        <div className="armoryUnlockWallTop">
         <section className="armoryCollectionSummary" aria-label="Parts collection summary">
           <div
             className="armoryCollectionRing"
@@ -137,6 +139,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
             </span>
           </section>
         ) : null}
+        </div>
 
         <div className="armoryUnlockWallTabs" role="tablist" aria-label="Part categories">
           {WALL_TABS.map((tab) => (
