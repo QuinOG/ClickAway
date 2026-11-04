@@ -2,26 +2,31 @@ import { useEffect } from "react"
 
 import GameArena from "../../game/components/GameArena.jsx"
 import PowerupTray from "../../game/components/PowerupTray.jsx"
-import { RANGE_PHASE, useArmoryRangeRound } from "../hooks/useArmoryRangeRound.js"
+import { RANGE_DURATION_SECONDS, RANGE_PHASE, useArmoryRangeRound } from "../hooks/useArmoryRangeRound.js"
 
 function RangeReadout({ range }) {
+  const progress = Math.max(0, Math.min(1, range.timeLeft / RANGE_DURATION_SECONDS))
   return (
     <div className="armoryRangeReadout" aria-hidden="true">
-      <div className="armoryRangeReadoutStat">
+      <div className="armoryRangeReadoutStat isScore">
         <span className="armoryRangeReadoutLabel">Score</span>
         <strong className="armoryRangeReadoutValue">{range.score}</strong>
       </div>
-      <div className="armoryRangeReadoutStat">
+      <div
+        className={`armoryRangeReadoutStat isTime ${range.timeLeft <= 3 ? "isLow" : ""}`}
+        style={{ "--range-time": `${progress * 360}deg` }}
+      >
+        <strong className="armoryRangeReadoutValue">{range.timeLeft}</strong>
+        <span className="armoryRangeReadoutLabel">sec</span>
+      </div>
+      <div className="armoryRangeReadoutStat isStreak">
         <span className="armoryRangeReadoutLabel">Streak</span>
         <strong className="armoryRangeReadoutValue">
           {range.streak}
-          {range.comboMultiplier > 1 ? <span className="armoryRangeCombo"> x{range.comboMultiplier}</span> : null}
+          {range.comboMultiplier > 1 ? <span className="armoryRangeCombo">x{range.comboMultiplier}</span> : null}
         </strong>
       </div>
-      <div className="armoryRangeReadoutStat">
-        <span className="armoryRangeReadoutLabel">Time</span>
-        <strong className="armoryRangeReadoutValue">{range.timeLeft}s</strong>
-      </div>
+      <span className="armoryRangeReadoutTag">Test sample · no rewards</span>
     </div>
   )
 }

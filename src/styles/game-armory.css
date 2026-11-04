@@ -836,3 +836,79 @@
 }
 .armoryUnlockWallGrid.tab-all { grid-template-columns: 1fr 1fr 1fr 1.45fr; }
 .armoryUnlockWallGrid .armoryUnlockWallList { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+
+/* r22: the test range gets a real scoreboard — score left, a 10-second ring
+   timer in the centre, streak + combo right, and a "no rewards" tag. */
+.armoryRangeStage .armoryRangeReadout {
+    position: relative;
+    display: grid;
+    grid-template-columns: 170px 92px 170px;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    width: auto;
+    min-height: 0;
+    padding: 6px 26px 8px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #1f3049, #131f33);
+    box-shadow: var(--skin-frame-soft, 0 0 0 2px #071019), 0 4px 0 #0a1220;
+}
+.armoryRangeReadout .armoryRangeReadoutStat { display: grid; gap: 0; padding: 0; background: none; box-shadow: none; min-width: 0; }
+.armoryRangeReadout .armoryRangeReadoutStat.isScore { justify-items: end; text-align: right; }
+.armoryRangeReadout .armoryRangeReadoutStat.isStreak { justify-items: start; }
+.armoryRangeReadout .armoryRangeReadoutLabel { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; color: rgb(200 216 236 / 70%); }
+.armoryRangeReadout .armoryRangeReadoutValue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-family: var(--ca-font-display);
+    font-size: 44px;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-text-stroke: 2px var(--skin-ink, #071019);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--skin-ink, #071019);
+}
+.armoryRangeReadout .armoryRangeCombo {
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #ffd45e, #f0a52a);
+    color: #2a1600;
+    font-size: 20px;
+    -webkit-text-stroke: 0;
+    text-shadow: none;
+    box-shadow: 0 0 0 2px var(--skin-ink, #071019);
+}
+.armoryRangeReadout .armoryRangeReadoutStat.isTime {
+    --ring: 98, 230, 186;
+    width: 82px;
+    height: 82px;
+    margin-block: -14px -18px;
+    place-content: center;
+    justify-items: center;
+    border-radius: 50%;
+    background:
+        radial-gradient(closest-side, #101b2d 80%, transparent 81%),
+        conic-gradient(rgb(var(--ring)) var(--range-time), rgb(255 255 255 / 10%) 0);
+    box-shadow: 0 0 0 3px var(--skin-ink, #071019), 0 0 18px rgba(var(--ring), 0.35);
+}
+.armoryRangeReadout .armoryRangeReadoutStat.isTime.isLow { --ring: 255, 100, 100; }
+.armoryRangeReadout .armoryRangeReadoutStat.isTime .armoryRangeReadoutValue { font-size: 34px; }
+.armoryRangeReadout .armoryRangeReadoutStat.isTime .armoryRangeReadoutLabel { font-size: 10px; letter-spacing: 0.1em; }
+.armoryRangeReadoutTag {
+    position: absolute;
+    left: 50%;
+    bottom: -11px;
+    translate: -50% 0;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #0b1424;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+    color: rgb(200 216 236 / 70%);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}

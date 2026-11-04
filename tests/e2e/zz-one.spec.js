@@ -1,5 +1,5 @@
 // Single-scene before/after capture for one-change-per-round UI polish.
-// Run: SCENE=armory|live|rankup|results|miss|mods|range|lobby|countdown|ready|spec|compare|wall|final SHOT=<file.png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
+// Run: SCENE=armory|live|rankup|results|miss|mods|range|lobby|countdown|ready|spec|compare|wall|final|rangelive SHOT=<file.png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
 import { test } from "@playwright/test"
 import { AUTHENTICATED_ROUTES, gotoRoute, installApiMocks } from "./fixtures.js"
 
@@ -116,6 +116,16 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await page.waitForTimeout(10_600)
     await page.screenshot({ path: SHOT })
     if (process.env.MEASURE) for (const s of [".arena", ".arenaFinalCount", ".hudTimerAnchor", ".arena.isFinalDanger"]) console.log(s, JSON.stringify(await page.locator(s).first().boundingBox().catch(() => null)))
+  } else if (SCENE === "rangelive") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(1000)
+    await page.locator(".armoryRailStepButton", { hasText: "Test Run" }).click()
+    await page.waitForTimeout(500)
+    await page.getByRole("button", { name: "Start test run" }).click()
+    await page.waitForTimeout(3500)
+    await hitTargets(page, 6)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "countdown") {
     const page = await newPage(browser)
     await gotoRoute(page, route("play"))
