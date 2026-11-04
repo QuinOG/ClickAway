@@ -43,7 +43,7 @@
 
 .commandHeaderSubtitle { display: none; }
 .commandHeaderEyebrow { margin: 0 0 2px; }
-.commandHeaderTitle { font-size: clamp(26px, 2.4vw, 34px); -webkit-text-stroke: 1px var(--skin-ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--skin-ink); }
+.commandHeaderTitle { font-size: clamp(26px, 2.4vw, 34px); text-shadow: 0 3px 0 var(--skin-ink); }
 
 /* Shared framed-panel material for page sections. */
 .leaderboardSeasonBanner,
@@ -97,3 +97,225 @@
     .lobbyStageLoadout small { display: none; }
     .lobbyStageLoadout { grid-template-columns: minmax(0, 1fr) auto; }
 }
+
+/* Duels: challenges lead as versus panels; the composer follows. */
+.duelInbox { margin-top: 0; margin-bottom: 22px; }
+.duelCommandSurface .challengeList { grid-template-columns: 1fr; }
+
+.duelCommandSurface .challengeCard {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr) auto;
+    grid-template-areas: "versus header actions" "versus target actions" "versus meta actions" "versus time actions";
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 4px;
+    padding: 18px 22px;
+    border-radius: 16px;
+}
+
+.challengeVersus { grid-area: versus; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+.challengeVersusSide {
+    width: 74px;
+    height: 74px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    box-shadow: 0 0 0 3px var(--skin-ink), inset 0 2px 0 rgb(255 255 255 / 30%), 0 4px 0 #0a1220;
+    font-family: var(--ca-font-display);
+    color: #ffffff;
+    -webkit-text-stroke: 1.5px var(--skin-ink);
+    paint-order: stroke fill;
+}
+
+.challengeVersusSide.isYou { background: linear-gradient(160deg, #3fd0ff, #1477b8); font-size: 18px; }
+.challengeVersusSide.isRival { background: linear-gradient(160deg, #ff7a9a, #b8325a); font-size: 32px; }
+
+.challengeVersusBadge {
+    font: 400 22px/1 var(--ca-font-display);
+    color: #ffe27a;
+    -webkit-text-stroke: 2px var(--skin-ink);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--skin-ink);
+    transform: rotate(-8deg);
+}
+
+.duelCommandSurface .challengeCardHeader { grid-area: header; }
+.duelCommandSurface .challengeTargetLine { grid-area: target; margin: 6px 0; }
+.duelCommandSurface .challengeCardMessage { grid-area: meta; margin: 0; }
+.duelCommandSurface .challengeCardTimestamp { grid-area: time; margin: 0; font-size: 12px; }
+.duelCommandSurface .challengeCardActions { grid-area: actions; flex-direction: column; }
+.duelCommandSurface .challengeCardActions .primaryButton { min-width: 150px; min-height: 52px; font-size: 18px; }
+.challengeRivalCrest { display: none; }
+.challengeTargetScore strong { font-family: var(--ca-font-display); font-weight: 400; font-size: 30px; }
+
+@media (max-width: 760px) {
+    .duelCommandSurface .challengeCard { grid-template-columns: 1fr; grid-template-areas: "versus" "header" "target" "meta" "time" "actions"; }
+    .duelCommandSurface .challengeCardActions { flex-direction: row; }
+}
+
+/* History: match tickets are the primary record. */
+.historyTableWrap { display: none; }
+.historyRoundDeck { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+.historyRoundCard {
+    position: relative;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 14px;
+    background:
+        linear-gradient(90deg, rgb(var(--ticket-accent, 85 217 255) / 16%), transparent 45%),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame-soft), 0 4px 0 #0a1220;
+}
+
+.historyRoundCard.isRanked { --ticket-accent: 243 196 90; }
+.historyRoundCard.isPractice { --ticket-accent: 78 221 184; }
+
+/* Ticket perforation */
+.historyRoundCard::after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    right: 118px;
+    border-right: 2px dashed rgb(255 255 255 / 10%);
+}
+
+.historyRoundCardSignal {
+    width: 56px;
+    height: 56px;
+    border: 0;
+    border-radius: 14px;
+    background: radial-gradient(circle, rgb(var(--ticket-accent, 85 217 255) / 26%), rgb(0 0 0 / 25%) 75%);
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 35%);
+}
+
+.historyRoundCardScore { font-family: var(--ca-font-display); font-weight: 400; font-size: 30px; text-shadow: 0 2px 0 var(--skin-ink); }
+.historyRoundCardOutcome { width: 100px; align-items: center; }
+.historyRoundCardMeters span { display: inline-flex; align-items: center; gap: 4px; }
+
+@media (max-width: 760px) {
+    .historyRoundDeck { grid-template-columns: 1fr; }
+}
+
+/* Ladder podium: tier crests on stepped plinths. */
+.leaderboardPodiumCrest,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest {
+    position: relative;
+    width: auto;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 4px 0 rgb(0 0 0 / 45%));
+}
+.leaderboardPodiumCrown { position: absolute; left: 50%; top: -24px; transform: translateX(-50%) rotate(-8deg); }
+.leaderboardPodiumPlayer {
+    border: 0;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(180deg, #24395a 0%, #152238 100%);
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 1px 0 rgb(255 255 255 / 14%);
+}
+.leaderboardPodiumPlayer.isRank1 { background: linear-gradient(180deg, #5a4416 0%, #2a2210 100%); padding-top: 22px; }
+.leaderboardPodiumPlayer > strong { font-family: var(--ca-font-display); font-weight: 400; font-size: 16px; }
+.leaderboardPodiumRating { font-family: var(--ca-font-display); font-weight: 400; text-shadow: 0 2px 0 var(--skin-ink); }
+
+/* ---- Round 2: content is the header ------------------------------------
+ * The title bar loses its card: a compact emblem + title sits on the world
+ * backdrop, so each page's own centerpiece leads.
+ * ------------------------------------------------------------------------ */
+.commandHeader {
+    padding: 0;
+    margin-bottom: 14px;
+    background: none;
+    box-shadow: none;
+}
+
+.commandHeaderGlyph,
+.commandHeaderGlyph[aria-hidden] { width: 48px; height: 48px; }
+.commandHeaderGlyph svg.gameIcon { width: 36px; height: 36px; }
+.commandHeaderEyebrow { display: none; }
+.commandHeaderTitle { font-size: clamp(24px, 2vw, 30px); }
+
+/* "Hardware" frame for primary panels: bevel + corner notches. */
+.leaderboardPodium,
+.historyTrajectory,
+.shopCommandSurface,
+.duelComposer,
+.duelCommandSurface .challengeCard,
+.profileCockpit {
+    position: relative;
+}
+
+.leaderboardPodium::after,
+.historyTrajectory::after,
+.shopCommandSurface::after,
+.duelComposer::after,
+.duelCommandSurface .challengeCard::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) left top / 14px 2px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) left top / 2px 14px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) right top / 14px 2px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) right top / 2px 14px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) left bottom / 14px 2px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) left bottom / 2px 14px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) right bottom / 14px 2px no-repeat,
+        linear-gradient(var(--skin-cyan), var(--skin-cyan)) right bottom / 2px 14px no-repeat;
+    opacity: 0.55;
+}
+
+/* Profile: a player banner and framed cockpit. */
+.profileCockpit {
+    border: 0;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 140px),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame);
+}
+
+.profileCockpitGrid { display: none; }
+
+.profileCommandHeader {
+    margin: calc(-1 * clamp(18px, 2.5vw, 30px)) calc(-1 * clamp(18px, 2.5vw, 30px)) 18px;
+    padding: 22px clamp(18px, 2.5vw, 30px);
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    background:
+        radial-gradient(ellipse 40% 120% at 0% 50%, rgba(var(--rank-accent-rgb), 0.35), transparent 70%),
+        repeating-linear-gradient(135deg, rgb(255 255 255 / 3%) 0 12px, transparent 12px 24px),
+        linear-gradient(90deg, #1c2d48, #121f33);
+    box-shadow: inset 0 -2px 0 var(--skin-ink), inset 0 -4px 0 rgba(var(--rank-accent-rgb), 0.4);
+}
+
+.profileAvatar {
+    width: 76px;
+    height: 76px;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 0 0 6px rgba(var(--rank-accent-rgb), 0.85), 0 6px 0 3px #0a1220;
+    font-family: var(--ca-font-display);
+    font-size: 30px;
+}
+
+.profilePlayerName { font-size: clamp(30px, 3vw, 40px); text-shadow: 0 3px 0 var(--skin-ink); }
+
+.profileInstrument,
+.achievementTile {
+    border: 0;
+    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
+}
+
+.profileInstrumentValue { font-family: var(--ca-font-display); font-weight: 400; }
+.leaderboardPodiumCrest svg.gameIcon { width: 52px; height: 52px; }
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 64px; height: 64px; }
+.leaderboardPodiumCrown svg.gameIcon { width: 30px; height: 30px; }
+.leaderboardPodiumPlayer { height: 168px; padding-top: 16px; }
+.leaderboardPodiumPlayer.isRank1 { height: 200px; padding-top: 34px; }
+.leaderboardPodiumPlayer.isRank3 { height: 156px; }
+.leaderboardPodiumCrown { top: -32px; }

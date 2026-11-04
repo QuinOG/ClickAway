@@ -259,3 +259,148 @@
     .lobbyStageLoadout { grid-template-columns: minmax(0, 1fr) auto; }
     .lobbyStageEdit { display: none; }
 }
+
+/* ---- Round 2: full-bleed lobby ------------------------------------------
+ * The pedestal scene is the screen. Header, modes and launch sit in a framed
+ * console on the right; the build strip anchors the bottom-left.
+ * ------------------------------------------------------------------------ */
+.gameOverlayStage > .gameOverlay.arenaLobbyBackdrop { padding: 0; }
+
+.readyCard.arenaLobby {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    min-height: 100%;
+    padding: clamp(20px, 3vw, 40px);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+        ". header"
+        ". modes"
+        ". spacer"
+        ". footer";
+    column-gap: clamp(24px, 4vw, 64px);
+    row-gap: 16px;
+    align-content: stretch;
+}
+
+.readyCard.arenaLobby::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    top: clamp(12px, 2vw, 24px);
+    bottom: clamp(12px, 2vw, 24px);
+    right: clamp(12px, 2vw, 24px);
+    width: calc(min(440px, 38vw) + 2 * clamp(12px, 1.6vw, 22px));
+    min-width: 404px;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 160px),
+        linear-gradient(180deg, rgb(18 31 51 / 94%) 0%, rgb(10 18 32 / 96%) 100%);
+    box-shadow: var(--skin-frame);
+}
+
+.readyCard.arenaLobby > :not(.lobbyStage) { position: relative; z-index: 2; }
+
+.readyCard.arenaLobby .lobbyStage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    min-height: 0;
+    height: auto;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Hero target sits in the open left area, large and lit. */
+.readyCard.arenaLobby .lobbyStage .lobbyStageTarget,
+.readyCard.arenaLobby .lobbyStageOrbit,
+.readyCard.arenaLobby .lobbyStageBeam,
+.readyCard.arenaLobby .lobbyStagePedestal { left: calc((100% - 480px) / 2); }
+
+.readyCard.arenaLobby .lobbyStage .lobbyStageTarget { width: clamp(150px, 16vw, 230px); height: clamp(150px, 16vw, 230px); top: 44%; }
+.readyCard.arenaLobby .lobbyStageOrbit.isOuter { width: clamp(300px, 32vw, 460px); height: clamp(300px, 32vw, 460px); top: 44%; }
+.readyCard.arenaLobby .lobbyStageOrbit.isInner { width: clamp(210px, 23vw, 330px); height: clamp(210px, 23vw, 330px); top: 44%; }
+.readyCard.arenaLobby .lobbyStagePedestal { width: clamp(220px, 22vw, 320px); height: clamp(56px, 5vw, 76px); top: 64%; }
+.readyCard.arenaLobby .lobbyStageBeam { width: clamp(220px, 22vw, 320px); }
+
+.readyCard.arenaLobby .lobbyStageLoadout {
+    left: clamp(20px, 3vw, 40px);
+    right: auto;
+    bottom: clamp(20px, 3vw, 40px);
+    width: min(560px, calc(100% - 560px));
+    z-index: 2;
+}
+
+.arenaLobbyHeader { padding: 8px 6px 0; }
+.arenaLobbyFooter { grid-area: footer; }
+
+@keyframes lobbyTargetIdle { 0%, 100% { transform: translate(-50%, -52%); } 50% { transform: translate(-50%, -46%); } }
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-template-areas: "header" "stage" "modes" "footer";
+        padding: 16px 14px 0;
+        overflow-y: auto;
+    }
+
+    .readyCard.arenaLobby::before { display: none; }
+
+    .readyCard.arenaLobby .lobbyStage {
+        position: relative;
+        inset: auto;
+        grid-area: stage;
+        min-height: 230px;
+        border-radius: 14px;
+        box-shadow: 0 0 0 2px var(--skin-ink);
+    }
+
+    .readyCard.arenaLobby .lobbyStage .lobbyStageTarget,
+    .readyCard.arenaLobby .lobbyStageOrbit,
+    .readyCard.arenaLobby .lobbyStageBeam,
+    .readyCard.arenaLobby .lobbyStagePedestal { left: 50%; }
+
+    .readyCard.arenaLobby .lobbyStage .lobbyStageTarget { width: 96px; height: 96px; top: 40%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isOuter { width: 190px; height: 190px; top: 40%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isInner { width: 130px; height: 130px; top: 40%; }
+    .readyCard.arenaLobby .lobbyStagePedestal { width: 150px; height: 40px; top: 56%; }
+    .readyCard.arenaLobby .lobbyStageLoadout { left: 10px; right: 10px; bottom: 10px; width: auto; }
+
+    /* Start stays reachable above the bottom dock. */
+    .arenaLobbyFooter {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, transparent, var(--skin-face-low) 30%);
+    }
+}
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby { padding: 12px 12px 10px; row-gap: 10px; }
+    .arenaLobbyHeader p { display: none; }
+    .arenaLobbyHeader h2 { font-size: 28px; }
+    .readyCard.arenaLobby .lobbyStage { min-height: 168px; }
+    .readyCard.arenaLobby .lobbyStage .lobbyStageTarget { width: 78px; height: 78px; top: 36%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isOuter { width: 150px; height: 150px; top: 36%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isInner { width: 104px; height: 104px; top: 36%; }
+    .readyCard.arenaLobby .lobbyStagePedestal { width: 120px; height: 30px; top: 50%; }
+    .readyCard.arenaLobby .lobbyStageLoadout { padding: 6px 8px; }
+    .lobbyStagePower { width: 32px; height: 32px; }
+    .lobbyModeRail { gap: 8px; }
+    .lobbyModeChoice { padding: 8px 12px 8px 68px; }
+    .lobbyModeEmblem { left: 10px; width: 46px; height: 46px; }
+    .lobbyModeEmblem svg { width: 40px; height: 40px; }
+    .lobbyModeName { font-size: 17px; }
+    .arenaLobbyFooter { position: static; padding: 0; background: none; }
+    .arenaLobby .arenaLobbyStart { min-height: 58px; }
+    .arenaLobbyStart span { font-size: 20px; }
+}

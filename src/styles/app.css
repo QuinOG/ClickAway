@@ -25,6 +25,7 @@
 @import "./game-lobby.css";
 @import "./game-play.css";
 @import "./game-pages.css";
+@import "./game-armory.css";
 
 /* Shared animations */
 @import "./animations.css";

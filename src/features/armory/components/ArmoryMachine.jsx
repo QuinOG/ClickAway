@@ -4,6 +4,7 @@ import {
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { ModuleEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
@@ -34,7 +35,7 @@ function MachineHousing({ module, isSelected = false, onOpenLane }) {
       title={`Open ${module.slotLabel} parts`}
     >
       <span className={`armoryMachineHousingGlyph tone-${module.slotId}`} aria-hidden="true">
-        <ModuleSlotGlyph slotId={module.slotId} />
+        <ModuleEmblem slotId={module.slotId} size={40} />
       </span>
       {/* Keyed by installed module so a fresh part visibly seats into place. */}
       <span
@@ -185,7 +186,7 @@ export default function ArmoryMachine({
             <div key={`${powerSlot.id}-${index + 1}`} className="armoryMachineRackSlot">
               <span className="armoryMachineRackKey" aria-hidden="true">{index + 1}</span>
               <span className="armoryMachineRackGlyph" aria-hidden="true">
-                <PowerupGlyph powerupId={powerSlot.id} />
+                <PowerEmblem powerupId={powerSlot.id} size={28} />
               </span>
               <span className="armoryMachineRackBody">
                 <strong className="armoryMachineRackLabel">{powerSlot.label}</strong>

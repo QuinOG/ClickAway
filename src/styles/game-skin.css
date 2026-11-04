@@ -49,6 +49,9 @@ body {
     background-attachment: fixed;
 }
 
+/* Russo One ships a single weight: never let the browser fake bold on it. */
+body { font-synthesis-weight: none; }
+
 h1, h2, h3,
 .commandHeaderTitle,
 .cardTitle,

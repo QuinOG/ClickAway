@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import { CoinIcon, GemIcon, ModeEmblem } from "../components/art/GameIcons.jsx"
 import { HISTORY_PREVIEW_FIELDS } from "../features/history/historyPageTableFieldsAndInsights.js"
 import { buildHistorySnapshot } from "../features/history/historyRoundsSnapshotBuilder.js"
 import { fetchHistoryPage } from "../services/clickAwayHttpApiClient.js"
@@ -197,10 +198,15 @@ function HistoryTrajectory({ rounds = [] }) {
   )
 }
 
+function getModeTone(round) {
+  const label = getModeLabelFromHistoryEntry(round).toLowerCase()
+  return label === "ranked" ? "ranked" : label === "practice" ? "practice" : "casual"
+}
+
 function HistoryRoundCard({ round, markers = [] }) {
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
-      <div className="historyRoundCardSignal" aria-hidden="true"><Crosshair weight="duotone" /></div>
+      <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
       <div className="historyRoundCardMain">
         <div className="historyRoundCardTopline">
           <span className={`historyModeBadge ${getModeToneClassName(round)}`}>
@@ -213,8 +219,8 @@ function HistoryRoundCard({ round, markers = [] }) {
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
-          <span><Coins weight="fill" aria-hidden="true" /> {formatNumber(round.coinsEarned)}</span>
-          <span><Lightning weight="fill" aria-hidden="true" /> {formatNumber(round.xpEarned ?? 0)}</span>
+          <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
+          <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
         </div>
       </div>
       <div className="historyRoundCardOutcome">

@@ -306,6 +306,49 @@ export function OverclockIcon(props) {
   )
 }
 
+
+export function TempoCoreIcon(props) {
+  return (
+    <Svg {...props}>
+      <circle cx="24" cy="25" r="18" fill="#1a6f8f" />
+      <circle cx="24" cy="23" r="18" fill="#3fd0ff" />
+      <circle cx="24" cy="23" r="12" fill="#0f2a44" strokeWidth="2" />
+      <path d="M24 23 31 16" fill="none" stroke="#ffe27a" strokeWidth="3" />
+      <circle cx="24" cy="23" r="3" fill="#ffe27a" strokeWidth="1.8" />
+      <path d="M16 15.5 18 17.5M32 15.5 30 17.5M14 23h3M34 23h-3" fill="none" stroke="#9fe9ff" strokeWidth="2" />
+    </Svg>
+  )
+}
+
+export function StreakLensIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 24c5-9 12-14 20-14s15 5 20 14c-5 9-12 14-20 14S9 33 4 24Z" fill="#c9a2ff" />
+      <circle cx="24" cy="24" r="9" fill="#5b2bb5" strokeWidth="2" />
+      <circle cx="24" cy="24" r="4" fill="#f3e9ff" strokeWidth="1.8" />
+      <path d="M11 20c3-4 7-6 11-6.5" fill="none" stroke="#f3e9ff" strokeWidth="2" />
+    </Svg>
+  )
+}
+
+export function PowerRigIcon(props) {
+  return (
+    <Svg {...props}>
+      <rect x="6" y="13" width="32" height="22" rx="4" fill="#ffb03a" />
+      <path d="M38 19h4v10h-4Z" fill="#c97a12" />
+      <path d="M25 16 17 26h6l-2 7 9-11h-6Z" fill="#fff6d6" strokeWidth="2" />
+      <path d="M10 17h8" fill="none" stroke="#ffe3a8" strokeWidth="2" />
+    </Svg>
+  )
+}
+
+const MODULE_ICONS = { tempoCore: TempoCoreIcon, streakLens: StreakLensIcon, powerRig: PowerRigIcon }
+
+export function ModuleEmblem({ slotId, ...props }) {
+  const Icon = MODULE_ICONS[slotId] ?? TempoCoreIcon
+  return <Icon {...props} />
+}
+
 const ROUTE_ICONS = {
   play: TargetIcon,
   armory: ArmoryIcon,

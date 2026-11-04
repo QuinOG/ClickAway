@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom"
 import { Crown, Crosshair, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
+
+function getCrestTone(rankLabel = "") {
+  const tier = String(rankLabel).split(" ")[0].toLowerCase()
+  return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
+}
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
@@ -459,7 +465,8 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
             >
               <span className="leaderboardPodiumRank">#{player.rank}</span>
               <span className="leaderboardPodiumCrest" aria-hidden="true">
-                {player.rank === 1 ? <Crown weight="fill" /> : player.username?.charAt(0)?.toUpperCase()}
+                <CrestIcon tone={getCrestTone(player.rankLabel)} size={player.rank === 1 ? 64 : 52} />
+                {player.rank === 1 ? <span className="leaderboardPodiumCrown"><CrownIcon size={30} /></span> : null}
               </span>
               <strong>{player.username}</strong>
               <span className="leaderboardPodiumTier">{player.rankLabel}</span>

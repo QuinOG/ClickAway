@@ -157,8 +157,8 @@ function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionM
   const instruments = [
     { label: "Accuracy", value: accuracy, icon: <Gauge weight="bold" aria-hidden="true" /> },
     { label: "Best streak", value: bestStreak, icon: <Fire weight="bold" aria-hidden="true" /> },
-    { label: "Avg reaction", value: formatReactionTime(avgReactionMs), icon: <Timer weight="bold" aria-hidden="true" /> },
-    { label: "Fastest", value: formatReactionTime(bestReactionMs), icon: <Crosshair weight="bold" aria-hidden="true" /> },
+    { label: "Avg", value: formatReactionTime(avgReactionMs), icon: <Timer weight="bold" aria-hidden="true" /> },
+    { label: "Best", value: formatReactionTime(bestReactionMs), icon: <Crosshair weight="bold" aria-hidden="true" /> },
   ]
 
   return (
@@ -286,7 +286,7 @@ export function GameOverOverlay({
       exit="exit"
     >
       <header className="gameOverHeader">
-        <p className="gameOverEyebrow">Outcome locked / {modeLabel}</p>
+        <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? " · New personal best" : hasCleanRun && hits > 0 ? " · Flawless" : ""}</p>
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
       </header>
 
@@ -301,7 +301,7 @@ export function GameOverOverlay({
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
         <p className="gameOverScoreBadge">{scoreBadgeText}</p>
-        {hasCleanRun || isNewBestScore ? (
+        {(hasCleanRun && hits > 0) || isNewBestScore ? (
           <span className={`gameOverMedal ${isNewBestScore ? "isBest" : "isClean"}`} aria-hidden="true">
             <CrestIcon tone={isNewBestScore ? "gold" : "platinum"} size={64} />
             <b>{isNewBestScore ? "PB" : "Clean"}</b>

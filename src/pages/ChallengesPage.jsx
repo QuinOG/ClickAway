@@ -61,6 +61,11 @@ function ChallengeCard({
 
   return (
     <article className="challengeCard" data-status={challenge.status}>
+      <div className="challengeVersus" aria-hidden="true">
+        <span className="challengeVersusSide isYou"><b>You</b></span>
+        <span className="challengeVersusBadge">VS</span>
+        <span className="challengeVersusSide isRival"><b>{opponentLabel?.charAt(0)?.toUpperCase() || "?"}</b></span>
+      </div>
       <div className="challengeCardHeader">
         <div className="challengeRivalIdentity">
           <span className="challengeRivalCrest" aria-hidden="true">
@@ -80,7 +85,7 @@ function ChallengeCard({
         className="challengeTargetLine"
         aria-label={`${challenge.modeId} target score ${Number(challenge.replayScore || 0).toLocaleString()}`}
       >
-        <span className="challengeTargetMode">{challenge.modeId}</span>
+        <span className="challengeTargetMode">{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })}</span>
         <span className="challengeTargetBeam" aria-hidden="true"><i /></span>
         <span className="challengeTargetScore">
           <small>Beat</small>
@@ -256,6 +261,90 @@ export default function ChallengesPage({ currentUserId = "" }) {
           )}
         />
 
+
+        <section className="duelInbox" aria-labelledby="duel-inbox-title">
+          <div className="duelInboxHeader">
+            <div>
+              <p className="commandHeaderEyebrow">Rival radar</p>
+              <h2 id="duel-inbox-title">Duel signals</h2>
+            </div>
+            <div className="challengeFilterRow" role="tablist" aria-label="Challenge filters">
+              {[
+                { id: "all", label: "All", icon: <Crosshair /> },
+                { id: "incoming", label: "Incoming", icon: <Ghost /> },
+                { id: "outgoing", label: "Sent", icon: <PaperPlaneTilt /> },
+              ].map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={filter === option.id}
+                  className={`leaderboardBoardTab${filter === option.id ? " isActive" : ""}`}
+                  onClick={(event) => {
+                    setFilter(option.id)
+                    signalAction(event.currentTarget, {
+                      eventName: FEEDBACK_EVENTS.FILTER,
+                      eventId: `duel-filter-${option.id}`,
+                    })
+                  }}
+                >
+                  <span aria-hidden="true">{option.icon}</span>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="duelRadarState isLoading" aria-live="polite">
+              <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
+              <strong>Scanning rival channels</strong>
+            </div>
+          ) : null}
+
+          {!isLoading && loadError ? (
+            <div className="duelRadarState isError" role="alert">
+              <span className="duelRadar" aria-hidden="true"><X weight="bold" /></span>
+              <strong>Rival network unavailable</strong>
+              <p>{loadError}</p>
+              <button
+                type="button"
+                className="leaderboardRetryButton"
+                onClick={async (event) => {
+                  const source = event.currentTarget
+                  signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
+                  const succeeded = await loadChallenges()
+                  signalAction(source, {
+                    state: succeeded ? "confirmed" : "denied",
+                    eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
+                  })
+                }}
+              >Retry scan</button>
+            </div>
+          ) : null}
+
+          {!isLoading && !loadError && challenges.length === 0 ? (
+            <div className="duelRadarState" role="status">
+              <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
+              <strong>No rival signals</strong>
+              <p>Your radar is clear. Launch a replay above to start a rivalry.</p>
+            </div>
+          ) : null}
+
+          <div className="challengeList">
+            {challenges.map((challenge) => (
+              <ChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                currentUserId={currentUserId}
+                onRespond={handleRespond}
+                onRaceGhost={handleRaceGhost}
+                isResponding={respondingChallengeId === challenge.id}
+              />
+            ))}
+          </div>
+        </section>
+
         <section className="duelComposer" aria-labelledby="duel-composer-title">
           <div className="duelVersusStage" aria-hidden="true">
             <div className="duelCombatant is-player">
@@ -377,89 +466,6 @@ export default function ChallengesPage({ currentUserId = "" }) {
               </p>
             ) : null}
           </form>
-        </section>
-
-        <section className="duelInbox" aria-labelledby="duel-inbox-title">
-          <div className="duelInboxHeader">
-            <div>
-              <p className="commandHeaderEyebrow">Rival radar</p>
-              <h2 id="duel-inbox-title">Duel signals</h2>
-            </div>
-            <div className="challengeFilterRow" role="tablist" aria-label="Challenge filters">
-              {[
-                { id: "all", label: "All", icon: <Crosshair /> },
-                { id: "incoming", label: "Incoming", icon: <Ghost /> },
-                { id: "outgoing", label: "Sent", icon: <PaperPlaneTilt /> },
-              ].map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === option.id}
-                  className={`leaderboardBoardTab${filter === option.id ? " isActive" : ""}`}
-                  onClick={(event) => {
-                    setFilter(option.id)
-                    signalAction(event.currentTarget, {
-                      eventName: FEEDBACK_EVENTS.FILTER,
-                      eventId: `duel-filter-${option.id}`,
-                    })
-                  }}
-                >
-                  <span aria-hidden="true">{option.icon}</span>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="duelRadarState isLoading" aria-live="polite">
-              <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
-              <strong>Scanning rival channels</strong>
-            </div>
-          ) : null}
-
-          {!isLoading && loadError ? (
-            <div className="duelRadarState isError" role="alert">
-              <span className="duelRadar" aria-hidden="true"><X weight="bold" /></span>
-              <strong>Rival network unavailable</strong>
-              <p>{loadError}</p>
-              <button
-                type="button"
-                className="leaderboardRetryButton"
-                onClick={async (event) => {
-                  const source = event.currentTarget
-                  signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
-                  const succeeded = await loadChallenges()
-                  signalAction(source, {
-                    state: succeeded ? "confirmed" : "denied",
-                    eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
-                  })
-                }}
-              >Retry scan</button>
-            </div>
-          ) : null}
-
-          {!isLoading && !loadError && challenges.length === 0 ? (
-            <div className="duelRadarState" role="status">
-              <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
-              <strong>No rival signals</strong>
-              <p>Your radar is clear. Launch a replay above to start a rivalry.</p>
-            </div>
-          ) : null}
-
-          <div className="challengeList">
-            {challenges.map((challenge) => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                currentUserId={currentUserId}
-                onRespond={handleRespond}
-                onRaceGhost={handleRaceGhost}
-                isResponding={respondingChallengeId === challenge.id}
-              />
-            ))}
-          </div>
         </section>
       </section>
     </div>
