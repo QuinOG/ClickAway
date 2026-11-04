@@ -41,3 +41,4 @@ Each round = one major visible change, before/after in docs/ui-polish/rN/. Captu
 - r12: streak break = arena moment: desaturated stage, red edge vignette, slammed red STREAK BROKEN watermark, 54px loss value + red lost-streak plate
 - r13: lobby: selected mode opens into a briefing card (100px emblem, 30px name, Time / Miss / Pressure-pip stats)
 Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Armory bay wall; spec sheet.
+- r14: countdown is a cinematic title card — letterbox bars carry the mode + build banner, a sweeping ring frames the number, three count pips fill.

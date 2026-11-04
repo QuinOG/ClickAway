@@ -1007,3 +1007,95 @@
 @media (prefers-reduced-motion: reduce) {
     .arena:has(.clickFeedback.streakBreak) .arenaStreakMark { animation: none; }
 }
+
+/* r14: countdown as a cinematic title card — letterbox bars, a centered
+   build banner, a sweeping ring around the number and three count pips. */
+.roundEntranceLetterbox {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 13%;
+    z-index: 1;
+    background: #02050b;
+    pointer-events: none;
+    animation: entranceLetterboxIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.roundEntranceLetterbox.isTop { top: 0; box-shadow: 0 1px 0 rgba(var(--entrance-rgb), 0.55), 0 10px 30px rgba(0, 0, 0, 0.5); }
+.roundEntranceLetterbox.isBottom { bottom: 0; box-shadow: 0 -1px 0 rgba(var(--entrance-rgb), 0.55), 0 -10px 30px rgba(0, 0, 0, 0.5); }
+.roundEntranceLetterbox.isBottom { animation-name: entranceLetterboxInBottom; }
+.roundEntranceOverlay.isGo .roundEntranceLetterbox { transform: scaleY(0); transition: transform 0.18s ease-in; }
+@keyframes entranceLetterboxIn { from { transform: translateY(-100%); } }
+@keyframes entranceLetterboxInBottom { from { transform: translateY(100%); } }
+
+.roundEntranceOverlay .roundEntranceBrief {
+    top: 0;
+    left: 50%;
+    height: 13%;
+    translate: -50% 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: entranceLetterboxIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    text-align: center;
+    white-space: nowrap;
+}
+.roundEntranceBriefKicker {
+    padding: 4px 14px;
+    border: 1px solid rgba(var(--entrance-rgb), 0.5);
+    border-radius: 999px;
+    background: rgba(var(--entrance-rgb), 0.12);
+    color: var(--entrance-color);
+    font-size: 12px;
+    letter-spacing: 0.24em;
+}
+.roundEntranceOverlay .roundEntranceBrief .roundEntranceBriefName {
+    color: #f4f8ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(24px, 2.6vw, 34px);
+    font-weight: 760;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    text-shadow: 0 0 24px rgba(var(--entrance-rgb), 0.45);
+}
+.roundEntranceOverlay.isGo .roundEntranceBrief { opacity: 0; transition: opacity 0.12s; }
+
+.roundEntranceOverlay .entranceReticle {
+    width: clamp(220px, 34vmin, 320px);
+    filter: drop-shadow(0 0 18px rgba(var(--entrance-rgb), 0.5));
+}
+.roundEntranceOverlay .entranceReticleRingInner {
+    inset: 8%;
+    border: 0;
+    background: conic-gradient(var(--entrance-color) var(--sweep, 0deg), rgba(var(--entrance-rgb), 0.14) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    animation: entranceRingSweep 1s linear infinite;
+    opacity: 1;
+}
+.roundEntranceOverlay .entranceReticleCore { display: none; }
+@property --sweep { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes entranceRingSweep { from { --sweep: 0deg; } to { --sweep: 360deg; } }
+
+.roundCountdownPips {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+.roundCountdownPips i {
+    width: 34px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(var(--entrance-rgb), 0.18);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.roundCountdownPips i.isLit {
+    background: var(--entrance-color);
+    box-shadow: 0 0 12px rgba(var(--entrance-rgb), 0.8);
+}
+.roundEntranceOverlay .roundCountdownInstruction { font-size: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .roundEntranceLetterbox, .roundEntranceOverlay .entranceReticleRingInner { animation: none; }
+    .roundEntranceOverlay .entranceReticleRingInner { --sweep: 360deg; }
+}

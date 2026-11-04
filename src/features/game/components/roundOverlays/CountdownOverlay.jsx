@@ -51,9 +51,12 @@ export function CountdownOverlay({
       <div className="roundEntranceWash" aria-hidden="true" />
       <CalibrationReticle />
 
+      <span className="roundEntranceLetterbox isTop" aria-hidden="true" />
+      <span className="roundEntranceLetterbox isBottom" aria-hidden="true" />
+
       <div className="roundEntranceBrief" aria-hidden="true">
-        <span>{modeLabel} arena</span>
-        <strong>{loadoutName}</strong>
+        <span className="roundEntranceBriefKicker">{modeLabel} arena</span>
+        <strong className="roundEntranceBriefName">{loadoutName}</strong>
       </div>
 
       <span className="uiVisuallyHidden" role="status" aria-live="polite" aria-atomic="true">
@@ -89,6 +92,11 @@ export function CountdownOverlay({
               {isGoCue ? "GO" : countdownValue}
             </MotionDiv>
           </AnimatePresence>
+          <span className="roundCountdownPips">
+            {[3, 2, 1].map((step) => (
+              <i key={step} className={isGoCue || countdownValue <= step ? "isLit" : ""} />
+            ))}
+          </span>
           <span className="roundCountdownInstruction">
             {isGoCue ? "Target live" : "Input locked · center your aim"}
           </span>
