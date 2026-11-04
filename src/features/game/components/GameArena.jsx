@@ -44,6 +44,8 @@ export default function GameArena({
           </g>
         </svg>
         <span className="arenaFloor" />
+        <span className="arenaHeatGlow" />
+        <span className="arenaStreakMark" />
         <span className="arenaCorner isTL" />
         <span className="arenaCorner isTR" />
         <span className="arenaCorner isBL" />
