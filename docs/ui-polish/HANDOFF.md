@@ -55,3 +55,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r25: results instruments become a round rating card — letter grade (S–D, tinted) beside five rated 10-segment bars (accuracy, streak, avg speed, fastest, vs best) with exact values; replaces four truncated chips.
 - r26: lobby Casual gets a mode-record scoreboard — gold Best / Average / Rounds tiles beside a ten-slot bar chart of recent scores (best gold, latest lit, dashed average) and a last-round trend; fills the empty gap above Start.
 - r27: lobby build strip becomes a mini spec card — four rated 10-segment specs (target, shrink, combo, charge; shared armorySpecRatings.js with the spec sheet) beside the powerup keys.
+- r28: featured mod's You gain / You give up chips become a Swap impact meter — per changed stat a rated 10-segment bar (kept blue, gained green pulsing, lost red-striped) with old → new values, computed from the real candidate round rules.

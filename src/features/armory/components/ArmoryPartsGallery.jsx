@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 
 import { getModuleDeltaChips, getUnlockText } from "../armoryUtils.js"
+import { getProfileStats } from "../armorySpecRatings.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
@@ -22,6 +23,45 @@ function getPartVisualState({ part, isLocked, isInstalled }) {
   return "available"
 }
 
+// What a swap does to the build's rated profile: one 10-segment bar per stat
+// that changes, with gained segments lit green and lost segments struck red.
+function getSwapImpact(currentRules, nextRules) {
+  if (!currentRules || !nextRules) return []
+  const nextByKey = Object.fromEntries(getProfileStats(nextRules).map((stat) => [stat.key, stat]))
+  return getProfileStats(currentRules).flatMap((stat) => {
+    const next = nextByKey[stat.key]
+    if (!next || next.value === stat.value) return []
+    return [{ key: stat.key, label: stat.label, from: stat, to: next }]
+  })
+}
+
+function SwapImpact({ rows }) {
+  return (
+    <div className="armorySwapImpact" aria-label="Swap impact">
+      <span className="armorySwapImpactTitle">Swap impact</span>
+      {rows.map(({ key, label, from, to }) => {
+        const low = Math.min(from.rating, to.rating)
+        const high = Math.max(from.rating, to.rating)
+        const tone = to.rating > from.rating ? "isGain" : to.rating < from.rating ? "isLoss" : "isEven"
+        return (
+          <div key={key} className={`armorySwapImpactRow ${tone}`}>
+            <span className="armorySwapImpactLabel">{label}</span>
+            <span className="armorySwapImpactBar" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, index) => {
+                const segment = index < low ? "isOn" : index < high ? (to.rating > from.rating ? "isGained" : "isLost") : ""
+                return <i key={index} className={segment} />
+              })}
+            </span>
+            <span className="armorySwapImpactValue">
+              <s>{from.value}</s> {"→"} <b>{to.value}</b>
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function ArmoryPartsGallery({
   tone = "",
   galleryLabel = "Parts",
@@ -32,6 +72,8 @@ export default function ArmoryPartsGallery({
   onInstallPart,
   onInspectLockedPart,
   footer = null,
+  currentRules = null,
+  getCandidateRules = null,
 }) {
   const cardRefs = useRef({})
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
@@ -51,6 +93,9 @@ export default function ArmoryPartsGallery({
   const featuredChips = featuredPart?.effects ? getModuleDeltaChips(featuredPart, installedPart) : []
   const featuredGains = featuredChips.filter((chip) => chip.tone === "gain")
   const featuredCosts = featuredChips.filter((chip) => chip.tone === "cost")
+  const swapImpact = featuredPart && getCandidateRules
+    ? getSwapImpact(currentRules, getCandidateRules(featuredPart.id))
+    : []
 
   const moveFocus = (offset) => {
     if (!unlockedParts.length) return
@@ -95,7 +140,7 @@ export default function ArmoryPartsGallery({
             <strong className="armoryPartFeatureName">{featuredPart.label}</strong>
             <span className="armoryPartFeatureFeel">{featuredPart.description}</span>
           </div>
-          {featuredPart.effects ? (
+          {swapImpact.length ? <SwapImpact rows={swapImpact} /> : featuredPart.effects ? (
             <div className="armoryPartFeatureTrade">
               <div className="armoryPartFeatureSide is-gain">
                 <span className="armoryPartFeatureSideLabel">You gain</span>

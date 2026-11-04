@@ -22,6 +22,7 @@ import {
   getModuleExactChips,
   getPowerupExactChips,
 } from "../armoryUtils.js"
+import { buildRoundRules } from "../../../constants/buildcraft.js"
 import ArmoryBayWall from "./ArmoryBayWall.jsx"
 import ArmoryCadenceTimeline from "./ArmoryCadenceTimeline.jsx"
 import ArmoryCompareBench from "./ArmoryCompareBench.jsx"
@@ -232,6 +233,11 @@ export default function ArmoryScreen({
                 renderPartGlyph={(part) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} size={30} />}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
+                currentRules={activePresentation.roundRules}
+                getCandidateRules={(moduleId) => buildRoundRules(selectedMode, {
+                  ...activeLoadout,
+                  moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: moduleId },
+                })}
                 footer={(
                   <ArmoryDetailPanel
                     eyebrow="Equipped mod"
