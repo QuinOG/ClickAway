@@ -37,4 +37,5 @@ Each round = one major visible change, before/after in docs/ui-polish/rN/. Captu
 - r8: results spotlight: unlocked/next part as a 156px emblem hero card in the empty right column; 112px final score
 - r9: streak milestones relight the arena (lights, floor grid, heat glow recolour cyan>teal>gold>orange>pink) + giant outline HOT / ON FIRE / UNSTOPPABLE mark
 - r10: Armory parts: featured candidate card (112px emblem, name, You gain / You give up columns, Install) above a compact tile picker; hover/focus features a part
-Next candidates: miss feedback; test-run results; lobby.
+- r11: test-run results as a duel: previous vs latest score plates (64px, VS), winner glows green/red, verdict pill; score row removed from table
+Next candidates: miss feedback; lobby.

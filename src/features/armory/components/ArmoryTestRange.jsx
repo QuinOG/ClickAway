@@ -58,6 +58,17 @@ function RangeResults({ results, previous, partsChanged, runNumber, loadoutName,
   return (
     <div className="armoryRangeResults" role="dialog" aria-label="Range results">
       <p className="armoryRangeResultsEyebrow">Test complete · Run {runNumber}</p>
+      <div className={`armoryRangeDuel ${verdict.tone}`} aria-hidden="true">
+        <div className={`armoryRangeDuelPlate isPrev ${previous ? "" : "isEmpty"}`}>
+          <span className="armoryRangeDuelLabel">{prevLabel}</span>
+          <strong className="armoryRangeDuelScore">{previous ? previous.score ?? 0 : "—"}</strong>
+        </div>
+        <span className="armoryRangeDuelVs">VS</span>
+        <div className="armoryRangeDuelPlate isLatest">
+          <span className="armoryRangeDuelLabel">{latestLabel}</span>
+          <strong className="armoryRangeDuelScore">{results.score ?? 0}</strong>
+        </div>
+      </div>
       <p className={`armoryRangeResultsVerdict ${verdict.tone}`}>{verdict.text}</p>
       <p className="armoryRangeResultsBuild">
         <strong>{loadoutName}</strong> · {modeLabel} rules
