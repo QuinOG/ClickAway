@@ -27,3 +27,11 @@ Styles live in `src/styles/game-*.css`; art in `src/components/art/`.
   6. Part identity: distinct illustrated silhouettes per core/lens/rig (src/components/art), used in rig, part cards, unlocks.
 
 Note: armory slot tabs are hidden; capture clicks `.armoryMachineHousing`. Results flow is now Play Again primary / View Rewards secondary (tests updated).
+
+
+## One-change rounds (no judges, from 2026-11-04)
+Each round = one major visible change, before/after in docs/ui-polish/rN/. Capture: SCENE=armory|live|rankup SHOT=<png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
+- r5: Armory core on its own stage, slot cards in a toned row beneath (fixes ring/name overlap)
+- r6: centred HUD cluster, 132px timer medallion between score and streak
+- r7: promotion ceremony: 220px tier-tinted crest hero, tier ribbon, 360px primary CTA, rematch as text link
+Next candidates: streak milestones transform the arena; Armory featured part candidate + trade-off; results emblem hero.

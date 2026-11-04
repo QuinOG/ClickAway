@@ -187,6 +187,7 @@ export default function PromotionModal({
   return (
     <MotionSection
       className="gameOverPromotionCard"
+      data-tier={getCrestToneFromLabel(projectedRankLabel)}
       aria-labelledby="promotion-modal-title"
       aria-live="polite"
       variants={cardVariants}
@@ -208,7 +209,8 @@ export default function PromotionModal({
 
       <MotionDiv className="gameOverPromotionEmblem" aria-hidden="true" variants={newBadgeVariants}>
         <span className="gameOverPromotionRays" />
-        <CrestIcon tone={getCrestToneFromLabel(projectedRankLabel)} size={150} />
+        <span className="gameOverPromotionPedestal" />
+        <CrestIcon tone={getCrestToneFromLabel(projectedRankLabel)} size={220} />
         <strong className="gameOverPromotionEmblemLabel">{projectedRankLabel}</strong>
       </MotionDiv>
 
@@ -232,7 +234,7 @@ export default function PromotionModal({
         </p>
       </MotionDiv>
 
-      <MotionDiv variants={itemVariants}>
+      <MotionDiv className="gameOverPromotionActions" variants={itemVariants}>
         <button
           ref={buttonRef}
           type="button"

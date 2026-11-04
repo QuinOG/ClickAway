@@ -776,3 +776,49 @@
 }
 @keyframes hudTimerThrob { to { transform: scale(1.06); } }
 @media (prefers-reduced-motion: reduce) { .hudTimerAnchor.is-danger { animation: none; } }
+
+/* ---- Polish r7: promotion as a ceremony — the crest is the hero, one big next action ---- */
+.gameOverPromotionCard { --tier: 255 201 74; }
+.gameOverPromotionCard[data-tier="silver"] { --tier: 200 220 240; }
+.gameOverPromotionCard[data-tier="bronze"] { --tier: 226 150 92; }
+.gameOverPromotionCard[data-tier="platinum"] { --tier: 120 230 220; }
+.gameOverPromotionCard[data-tier="diamond"] { --tier: 140 190 255; }
+.gameOverPromotionCard {
+    width: min(620px, 92vw);
+    max-width: none;
+    padding: 26px 40px 30px;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 60% 48% at 50% 46%, rgb(var(--tier) / 30%), transparent 70%),
+        conic-gradient(from 180deg at 50% 46%, transparent 0 150deg, rgb(var(--tier) / 10%) 170deg 190deg, transparent 210deg),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame), inset 0 4px 0 rgb(var(--tier) / 85%), 0 0 120px rgb(var(--tier) / 22%);
+}
+.gameOverPromotionEyebrow {
+    display: inline-block; margin: 0; padding: 5px 16px; border-radius: 999px;
+    font: 400 12px/1 var(--ca-font-display); letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--skin-ink, #0a1322); background: rgb(var(--tier));
+    box-shadow: 0 3px 0 rgb(0 0 0 / 40%);
+}
+.gameOverPromotionTitle { margin: 10px 0 0; font-size: clamp(34px, 4.4vw, 50px); line-height: 1; color: #ffffff; text-shadow: 0 4px 0 var(--skin-ink); }
+.gameOverPromotionEmblem { margin: 8px auto 0; gap: 0; }
+.gameOverPromotionEmblem svg.gameIcon { width: 220px; height: 220px; filter: drop-shadow(0 0 28px rgb(var(--tier) / 55%)); }
+.gameOverPromotionRays {
+    width: 460px; height: 460px; translate: -50% -54%;
+    background: repeating-conic-gradient(from 0deg, rgb(var(--tier) / 30%) 0 7deg, transparent 7deg 18deg);
+    mask-image: radial-gradient(circle, #000 20%, transparent 68%);
+}
+.gameOverPromotionPedestal {
+    position: absolute; left: 50%; bottom: 38px; width: 240px; height: 38px; translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgb(var(--tier) / 45%), transparent 70%);
+}
+.gameOverPromotionEmblemLabel { margin-top: -6px; font-size: 40px; color: rgb(var(--tier)); text-shadow: 0 4px 0 var(--skin-ink), 0 0 24px rgb(var(--tier) / 45%); }
+.gameOverPromotionTierRow { margin-top: 6px; transform: none; opacity: 0.8; }
+.gameOverPromotionLead { margin: 6px 0 0; font-size: 15px; color: rgb(232 242 255 / 78%); }
+.gameOverPromotionActions { display: grid; justify-items: center; gap: 8px; margin-top: 18px; }
+.gameOverPromotionActions .gameOverPromotionButton {
+    width: 360px; max-width: 100%; min-height: 60px; font-size: 20px;
+    box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 6px 0 rgb(0 0 0 / 45%), 0 0 34px rgb(var(--tier) / 35%);
+}
+.gameOverPromotionActions .gameOverRematch { margin-left: 0; min-height: 0; padding: 6px 14px; background: none; box-shadow: none; color: rgb(232 242 255 / 72%); text-decoration: underline; text-underline-offset: 3px; }
