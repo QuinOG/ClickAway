@@ -30,6 +30,7 @@ import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvata
 import PlayerHoverCard from "./PlayerHoverCard.jsx"
 import { MobileSheet } from "./ui/index.js"
 import { InterpolatedNumber } from "./ui/status/InterpolatedNumber.jsx"
+import { CoinIcon, GemIcon, GearIcon, RouteEmblem } from "./art/GameIcons.jsx"
 
 const ICON_BY_KEY = {
   play: GameController,
@@ -42,11 +43,19 @@ const ICON_BY_KEY = {
   help: Question,
 }
 
-const COLLECTION_ROUTES = getRoutesForGroup(ROUTE_GROUP.COLLECTION)
-const COMPETITION_ROUTES = getRoutesForGroup(ROUTE_GROUP.COMPETITION)
-const PLAY_ROUTE = getRoutesForGroup(ROUTE_GROUP.PRIMARY)[0]
+const ALL_SHELL_ROUTES = [
+  ...getRoutesForGroup(ROUTE_GROUP.PRIMARY),
+  ...getRoutesForGroup(ROUTE_GROUP.COLLECTION),
+  ...getRoutesForGroup(ROUTE_GROUP.COMPETITION),
+  ...getRoutesForGroup(ROUTE_GROUP.SUPPORT),
+]
+const PRIMARY_TILE_IDS = ["play", "armory", "shop", "ladder", "duels"]
+const UTILITY_IDS = ["profile", "history", "help"]
+const PRIMARY_TILE_ROUTES = PRIMARY_TILE_IDS.map((id) => ALL_SHELL_ROUTES.find((route) => route.id === id)).filter(Boolean)
+const UTILITY_ROUTES = UTILITY_IDS.map((id) => ALL_SHELL_ROUTES.find((route) => route.id === id)).filter(Boolean)
 
-function RouteIcon({ route, size = 17, active = false }) {
+function RouteIcon({ route, size = 17, active = false, illustrated = false }) {
+  if (illustrated && route?.icon) return <RouteEmblem routeKey={route.icon} size={size} />
   const Icon = ICON_BY_KEY[route?.icon] ?? DotsThree
   return <Icon size={size} weight={active ? "fill" : "bold"} aria-hidden="true" />
 }
@@ -62,7 +71,7 @@ function PendingBadge({ count = 0 }) {
   )
 }
 
-function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, showArmoryUnlockBadge = false, onNavigate }) {
+function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, showArmoryUnlockBadge = false, onNavigate, illustrated = false, iconSize = 17, iconOnly = false }) {
   const { signalAction } = useActionFeedback()
 
   return (
@@ -76,11 +85,13 @@ function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, show
       }}
       onPointerEnter={() => prefetchRouteModule(route.path)}
       onFocus={() => prefetchRouteModule(route.path)}
+      aria-label={iconOnly ? route.label : undefined}
+      title={iconOnly ? route.label : undefined}
     >
       {({ isActive }) => (
         <>
-          <span className="navItemIcon"><RouteIcon route={route} active={isActive} /></span>
-          <span className="navItemLabel">{route.label}</span>
+          <span className="navItemIcon"><RouteIcon route={route} active={isActive} illustrated={illustrated} size={iconSize} /></span>
+          <span className={iconOnly ? "navItemLabel uiVisuallyHidden" : "navItemLabel"}>{route.label}</span>
           {route.id === "duels" ? <PendingBadge count={pendingDuelCount} /> : null}
           {route.id === "armory" && showArmoryUnlockBadge ? <b className="navNewBadge">New</b> : null}
         </>
@@ -238,29 +249,41 @@ export default function Navbar({
           </Link>
 
           {isAuthed ? (
-            <nav className="desktopNav" aria-label="Primary navigation">
-              <ShellNavLink route={PLAY_ROUTE} className="navItem navPlay" />
-              <NavGroup
-                label="Collection"
-                routes={COLLECTION_ROUTES}
-                showArmoryUnlockBadge={showArmoryUnlockBadge}
-              />
-              <NavGroup
-                label="Competition"
-                routes={COMPETITION_ROUTES}
-                pendingDuelCount={pendingDuelCount}
-              />
-              <div className="navUtility">
-                <ShellNavLink route={getRoutesForGroup(ROUTE_GROUP.SUPPORT)[0]} />
+            <nav className="desktopNav gameHudNav" aria-label="Primary navigation">
+              <div className="hudMenuTiles">
+                {PRIMARY_TILE_ROUTES.map((route) => (
+                  <ShellNavLink
+                    key={route.id}
+                    route={route}
+                    className={`navItem hudMenuTile hudMenuTile-${route.id}`}
+                    illustrated
+                    iconSize={30}
+                    pendingDuelCount={pendingDuelCount}
+                    showArmoryUnlockBadge={showArmoryUnlockBadge}
+                  />
+                ))}
+              </div>
+              <div className="navUtility hudUtility">
+                {UTILITY_ROUTES.map((route) => (
+                  <ShellNavLink
+                    key={route.id}
+                    route={route}
+                    className="navItem hudUtilityButton"
+                    illustrated
+                    iconSize={22}
+                    iconOnly
+                  />
+                ))}
                 <button
                   type="button"
-                  className="navItem navSettingsButton"
+                  className="navItem navSettingsButton hudUtilityButton"
                   onClick={onOpenSettings}
                   disabled={!onOpenSettings}
                   aria-label="Open feedback settings"
+                  title="Settings"
                 >
-                  <GearSix size={17} weight="bold" aria-hidden="true" />
-                  <span className="navItemLabel">Settings</span>
+                  <GearIcon size={22} />
+                  <span className="navItemLabel uiVisuallyHidden">Settings</span>
                 </button>
               </div>
             </nav>
@@ -307,8 +330,8 @@ export default function Navbar({
                   </span>
                 </span>
                 <span className="shellIdentityProgress" aria-label={`${displayCoins} coins, level ${displayLevel}`}>
-                  <span><Coins size={13} weight="fill" aria-hidden="true" /><InterpolatedNumber value={coins} /></span>
-                  <span>Lv {displayLevel}</span>
+                  <span className="hudResource hudResourceCoins"><CoinIcon size={20} /><InterpolatedNumber value={coins} /></span>
+                  <span className="hudResource hudResourceLevel"><GemIcon size={20} />Lv {displayLevel}</span>
                 </span>
               </button>
 

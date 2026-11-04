@@ -2,6 +2,8 @@ import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
+import { ModeEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
+
 import { Tooltip } from "../../../../components/ui/index.js"
 import { formatDrillBestMetric } from "../../../../utils/drillStatsUtils.js"
 import { getRankImageSrc, getRankToneClassName } from "../../../../utils/rankUtils.js"
@@ -160,6 +162,53 @@ function RankedPreflight({
   )
 }
 
+function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlots, showArmoryBadge }) {
+  const hasImage = Boolean(targetPreview?.imageSrc)
+  const targetStyle = hasImage
+    ? { backgroundImage: `url(${targetPreview.imageSrc})`, backgroundSize: `${targetPreview.imageScale ?? 100}%` }
+    : undefined
+
+  return (
+    <div className={`lobbyStage lobbyStage-${tone} ${targetPreview?.arenaThemeClass ?? "theme-default"}`}>
+      <span className="lobbyStageFloor" aria-hidden="true" />
+      <span className="lobbyStageBeam" aria-hidden="true" />
+      <span className="lobbyStageOrbit isOuter" aria-hidden="true" />
+      <span className="lobbyStageOrbit isInner" aria-hidden="true" />
+      <span className="lobbyStagePedestal" aria-hidden="true" />
+      <span
+        aria-hidden="true"
+        className={`lobbyStageTarget bigCircleButton ${hasImage ? "hasImage" : targetPreview?.skinClass ?? "skin-default"}`}
+        style={targetStyle}
+      >
+        {hasImage ? null : (
+          <span className="targetFace">
+            <i className="targetFaceRing" />
+            <i className="targetFaceCore" />
+          </span>
+        )}
+      </span>
+      <div className="lobbyStageLoadout" aria-label="Current active build">
+        <small>Build ready</small>
+        <Tooltip content={loadoutDetail} placement="top">
+          <strong tabIndex="0">{loadoutName || "Loadout"}</strong>
+        </Tooltip>
+        <Link className="lobbyTextLink lobbyStageEdit" to="/armory">
+          View in Armory
+          {showArmoryBadge ? <b>New</b> : null}
+        </Link>
+        <span className="lobbyStagePowers" aria-hidden="true">
+          {powerSlots.slice(0, 3).map((slot, index) => (
+            <span key={`${slot.id ?? index}`} className="lobbyStagePower">
+              <PowerEmblem powerupId={slot.id} size={22} />
+              <kbd>{index + 1}</kbd>
+            </span>
+          ))}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function ModeChoice({ mode, isSelected, disabled, onSelect }) {
   const modeRules = getModeRules(mode)
 
@@ -175,6 +224,7 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
         disabled={disabled}
         onClick={() => onSelect(mode.id)}
       >
+        <span className="lobbyModeEmblem" aria-hidden="true"><ModeEmblem tone={mode.tone} size={56} /></span>
         <span className="lobbyModeChoiceTopline">
           <span className="lobbyModeGlyph" aria-hidden="true">{mode.glyph}</span>
           <span className="lobbyModeName">{mode.label}</span>
@@ -271,6 +321,7 @@ export function ReadyOverlay({
   rankProgress = null,
   onStartRankedWarmup,
   onClose,
+  targetPreview = null,
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const lobbyRef = useRef(null)
@@ -394,6 +445,15 @@ export function ReadyOverlay({
           ) : null}
         </header>
 
+        <LobbyStage
+          targetPreview={targetPreview}
+          tone={selectedMode?.tone ?? "casual"}
+          loadoutName={activeLoadoutName}
+          loadoutDetail={loadoutDetail}
+          powerSlots={activeLoadoutPresentation?.powerSlots ?? []}
+          showArmoryBadge={showArmoryWalkthroughBadge}
+        />
+
         <div className="lobbyModeSelector">
           <div className="lobbyModeRail" aria-label="Choose a game mode">
             {lobbyModes.map((mode) => (
@@ -436,19 +496,6 @@ export function ReadyOverlay({
         ) : null}
 
         <footer className="arenaLobbyFooter">
-          <div className="lobbyBuildReadiness" aria-label="Current active build">
-            <span className="lobbyBuildStatus" aria-hidden="true" />
-            <Tooltip content={loadoutDetail} placement="top">
-              <span className="lobbyBuildIdentity" tabIndex="0">
-                <small>Build ready</small>
-                <strong>{activeLoadoutName || "Loadout"}</strong>
-              </span>
-            </Tooltip>
-            <Link className="lobbyTextLink" to="/armory">
-              View in Armory
-              {showArmoryWalkthroughBadge ? <b>New</b> : null}
-            </Link>
-          </div>
 
           <div className="arenaLobbyActions">
             <button

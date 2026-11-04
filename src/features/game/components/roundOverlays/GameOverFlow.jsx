@@ -108,6 +108,10 @@ export function GameOverFlow({
     onChooseMode,
     achievementStats,
     unlockedAchievementIds,
+    roundCoinsEarned,
+    roundXpEarned,
+    roundRankDelta,
+    showSecondaryRematch: showRewards || showPromotion,
     primaryActionLabel: showPromotion
       ? "Reveal Rank"
       : showRewards

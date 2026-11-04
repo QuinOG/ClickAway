@@ -58,7 +58,13 @@ export default function MovingButton({
           }}
         />
       ) : null}
-      {label}
+      {showImage ? null : (
+        <span className="targetFace" aria-hidden="true">
+          <i className="targetFaceRing" />
+          <i className="targetFaceCore" />
+        </span>
+      )}
+      <span className="uiVisuallyHidden">{label}</span>
     </button>
   )
 }

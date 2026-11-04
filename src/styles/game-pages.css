@@ -1,0 +1,99 @@
+/*
+ * Main pages (phase 2): no website hero or outer page card. Pages are a slim
+ * game title bar over the world backdrop, and every section is its own framed
+ * panel in the shared material.
+ */
+
+/* Outer page cards become transparent stages. */
+.leaderboardPageScene .leaderboardPageCard,
+.historyPageScene .historyPageCard,
+.shopCard,
+.duelCommandSurface {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    clip-path: none;
+    overflow: visible;
+}
+
+.shopCard::before { display: none; }
+
+/* Slim title bar: emblem + title + status, no marketing subtitle. */
+.commandHeader {
+    margin-bottom: 18px;
+    padding: 10px 16px 10px 12px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, var(--skin-face-high) 0%, var(--skin-face) 100%);
+    box-shadow: var(--skin-frame-soft), 0 4px 0 #0a1220;
+    gap: 14px;
+}
+
+.commandHeaderGlyph,
+.commandHeaderGlyph[aria-hidden] {
+    width: 56px;
+    height: 56px;
+    border: 0;
+    border-radius: 12px;
+    background: radial-gradient(circle, rgb(var(--scene-accent-rgb) / 26%), rgb(0 0 0 / 20%) 72%);
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 35%);
+    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 35%));
+}
+
+.commandHeaderSubtitle { display: none; }
+.commandHeaderEyebrow { margin: 0 0 2px; }
+.commandHeaderTitle { font-size: clamp(26px, 2.4vw, 34px); -webkit-text-stroke: 1px var(--skin-ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--skin-ink); }
+
+/* Shared framed-panel material for page sections. */
+.leaderboardSeasonBanner,
+.leaderboardPodium,
+.historyTrajectory,
+.historyHighlightCard,
+.historyTrendStrip,
+.shopCommandSurface,
+.shopTabRail,
+.duelComposer,
+.duelCommandSurface .challengeCard,
+.leaderboardStandingPanel,
+.table {
+    border: 0;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 80px),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame-soft), 0 5px 0 #0a1220;
+}
+
+.leaderboardSeasonBanner,
+.leaderboardPodium,
+.historyTrajectory,
+.shopCommandSurface,
+.duelComposer,
+.table { border-radius: 14px; }
+
+/* Tables: game scoreboard rows instead of a spreadsheet. */
+.table { margin-top: 12px; border-collapse: separate; border-spacing: 0; }
+.table thead { background: rgb(0 0 0 / 22%); }
+.table th { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.05em; color: var(--ca-color-ink-muted); }
+.table tbody tr:nth-child(even) { background: transparent; }
+.table th,
+.table td { border-bottom: 1px solid rgb(255 255 255 / 6%); }
+.leaderboardTable td,
+.leaderboardTable th { background: transparent !important; }
+
+/* Shop item cards share the material. */
+.shopItemCard {
+    border: 0;
+    box-shadow: var(--skin-frame-soft), 0 5px 0 #0a1220;
+}
+
+/* Illustrated emblems keep their drawn size over legacy glyph sizing. */
+.commandHeaderGlyph svg.gameIcon { width: 42px; height: 42px; }
+.navItem.hudMenuTile svg.gameIcon { width: 32px; height: 32px; }
+.navItem.hudUtilityButton svg.gameIcon { width: 24px; height: 24px; }
+.hudResource svg.gameIcon { width: 20px; height: 20px; }
+
+@media (max-width: 900px) {
+    .lobbyStageLoadout small { display: none; }
+    .lobbyStageLoadout { grid-template-columns: minmax(0, 1fr) auto; }
+}

@@ -1,4 +1,4 @@
-import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 const SEGMENT_COUNT = 5
 
@@ -86,7 +86,7 @@ export default function PowerupTray({
                     {powerup.slotKey}
                   </div>
                   <span className="powerupIconWrap" aria-hidden="true">
-                    <PowerupGlyph powerupId={powerup.id} />
+                    <PowerEmblem powerupId={powerup.id} size={30} />
                   </span>
                 </div>
                 <div className="powerupHeadingCopy">

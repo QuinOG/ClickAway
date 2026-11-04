@@ -20,6 +20,13 @@ export default function GameArena({
 }) {
   return (
     <div className={`arena ${arenaThemeClass}`} ref={arenaRef} onClick={onArenaClick}>
+      <div className="arenaStage" aria-hidden="true">
+        <span className="arenaFloor" />
+        <span className="arenaCorner isTL" />
+        <span className="arenaCorner isTR" />
+        <span className="arenaCorner isBL" />
+        <span className="arenaCorner isBR" />
+      </div>
       {isTargetVisible ? (
         <MovingButton
           key={`target-spawn-${targetSpawnSequence}`}

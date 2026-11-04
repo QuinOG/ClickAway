@@ -1,3 +1,4 @@
+import { CoinIcon, CrestIcon, GemIcon } from "../../../../components/art/GameIcons.jsx"
 import {
   Crosshair,
   Fire,
@@ -127,7 +128,7 @@ function PersonalBestComparison({ score, bestScore }) {
   let comparisonCopy = "First score on record"
   if (normalizedBest > 0 && isNewBest) comparisonCopy = `New best by ${formatNumber(delta)}`
   if (normalizedBest > 0 && !isNewBest && delta === 0) comparisonCopy = "Personal best matched"
-  if (normalizedBest > 0 && delta < 0) comparisonCopy = `${formatNumber(Math.abs(delta))} below your best`
+  if (normalizedBest > 0 && delta < 0) comparisonCopy = `${Math.round((score / normalizedBest) * 100)}% of your best`
 
   return (
     <section className={`outcomeBestComparison ${isNewBest ? "isNewBest" : ""}`} aria-label="Personal best comparison">
@@ -194,6 +195,12 @@ export function GameOverOverlay({
   unlockedAchievementIds = [],
   primaryActionLabel = "Play Again",
   onPrimaryAction,
+  roundCoinsEarned = 0,
+  roundXpEarned = 0,
+  roundRankDelta = 0,
+  showSecondaryRematch = false,
+  onRematch,
+  onPlayAgain,
 }) {
   const { effectivePreferences } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -294,6 +301,12 @@ export function GameOverOverlay({
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
         <p className="gameOverScoreBadge">{scoreBadgeText}</p>
+        {hasCleanRun || isNewBestScore ? (
+          <span className={`gameOverMedal ${isNewBestScore ? "isBest" : "isClean"}`} aria-hidden="true">
+            <CrestIcon tone={isNewBestScore ? "gold" : "platinum"} size={64} />
+            <b>{isNewBestScore ? "PB" : "Clean"}</b>
+          </span>
+        ) : null}
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}
@@ -301,6 +314,26 @@ export function GameOverOverlay({
           </p>
         ) : null}
       </MotionDiv>
+
+      {allowsCoinRewards || allowsLevelProgression || allowsRankProgression ? (
+        <MotionDiv
+          className="gameOverRewards"
+          aria-label="Round rewards"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 340, damping: 22, delay: 0.42 }}
+        >
+          {allowsCoinRewards ? (
+            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>coins</small></span>
+          ) : null}
+          {allowsLevelProgression ? (
+            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP</small></span>
+          ) : null}
+          {allowsRankProgression ? (
+            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
+          ) : null}
+        </MotionDiv>
+      ) : null}
 
       <div className="gameOverBody">
         <MotionDiv
@@ -371,6 +404,11 @@ export function GameOverOverlay({
         >
           {primaryActionLabel}
         </button>
+        {showSecondaryRematch && (onRematch || onPlayAgain) ? (
+          <button className="secondaryButton gameOverRematch" type="button" onClick={onRematch ?? onPlayAgain}>
+            Rematch
+          </button>
+        ) : null}
       </MotionDiv>
     </MotionSection>
   )
