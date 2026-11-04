@@ -38,4 +38,5 @@ Each round = one major visible change, before/after in docs/ui-polish/rN/. Captu
 - r9: streak milestones relight the arena (lights, floor grid, heat glow recolour cyan>teal>gold>orange>pink) + giant outline HOT / ON FIRE / UNSTOPPABLE mark
 - r10: Armory parts: featured candidate card (112px emblem, name, You gain / You give up columns, Install) above a compact tile picker; hover/focus features a part
 - r11: test-run results as a duel: previous vs latest score plates (64px, VS), winner glows green/red, verdict pill; score row removed from table
-Next candidates: miss feedback; lobby.
+- r12: streak break = arena moment: desaturated stage, red edge vignette, slammed red STREAK BROKEN watermark, 54px loss value + red lost-streak plate
+Next candidates: lobby.

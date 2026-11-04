@@ -971,3 +971,39 @@
 @media (prefers-reduced-motion: reduce) {
     .arenaStreakMark { animation: none !important; transition: none; }
 }
+
+/* ---- Polish r12: a broken streak lands as a full-arena moment ---- */
+.arena:has(.clickFeedback.miss, .clickFeedback.streakBreak) .arenaHeatGlow {
+    inset: 0;
+    height: auto;
+    opacity: 1;
+    background: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 45%, rgb(255 40 60 / 32%) 100%);
+    transition: none;
+}
+.arena:has(.clickFeedback.miss, .clickFeedback.streakBreak) .arenaStage { filter: saturate(0.35) brightness(0.8); transition: none; }
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark {
+    opacity: 1;
+    color: rgb(255 59 72 / 16%);
+    -webkit-text-stroke: 3px rgb(255 90 100 / 85%);
+    text-shadow: 0 0 46px rgb(255 40 60 / 45%);
+    animation: arenaStreakBreakSlam 260ms cubic-bezier(.2,1.6,.4,1) both;
+    transition: none;
+}
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark::before { content: "STREAK BROKEN"; }
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark { font-size: clamp(56px, 7vw, 104px); }
+@keyframes arenaStreakBreakSlam {
+    from { transform: translate(-50%, -50%) skewX(-8deg) scale(1.25) rotate(-2deg); opacity: 0.4; }
+}
+.clickFeedback.streakBreak .clickFeedbackValue { font-size: 54px; color: #ff6b6b; text-shadow: 0 4px 0 #2a0710, 0 0 22px rgb(255 59 72 / 60%); }
+.clickFeedback.streakBreak .clickFeedbackDetail {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 20px;
+    background: #ff3b48;
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 4px 0 #2a0710;
+}
+@media (prefers-reduced-motion: reduce) {
+    .arena:has(.clickFeedback.streakBreak) .arenaStreakMark { animation: none; }
+}
