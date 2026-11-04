@@ -1,5 +1,5 @@
 // Single-scene before/after capture for one-change-per-round UI polish.
-// Run: SCENE=armory|live|rankup|results|miss|mods|range|lobby|countdown|ready|spec|compare|wall SHOT=<file.png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
+// Run: SCENE=armory|live|rankup|results|miss|mods|range|lobby|countdown|ready|spec|compare|wall|final SHOT=<file.png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
 import { test } from "@playwright/test"
 import { AUTHENTICATED_ROUTES, gotoRoute, installApiMocks } from "./fixtures.js"
 
@@ -105,6 +105,17 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     if (SCENE === "wall") await page.getByRole("button", { name: "Unlock Wall" }).click()
     await page.waitForTimeout(700)
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "final") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(800)
+    await page.getByRole("button", { name: "Select Ranked" }).click()
+    await page.getByRole("button", { name: /Start Ranked/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 6, 110)
+    await page.waitForTimeout(10_600)
+    await page.screenshot({ path: SHOT })
+    if (process.env.MEASURE) for (const s of [".arena", ".arenaFinalCount", ".hudTimerAnchor", ".arena.isFinalDanger"]) console.log(s, JSON.stringify(await page.locator(s).first().boundingBox().catch(() => null)))
   } else if (SCENE === "countdown") {
     const page = await newPage(browser)
     await gotoRoute(page, route("play"))

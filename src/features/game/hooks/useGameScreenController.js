@@ -1441,6 +1441,7 @@ export function useGameScreenController({
       clickFeedbackItems,
       targetSpawnSequence,
       isTargetVisible: phase === ROUND_PHASE.PLAYING,
+      finalSeconds: isPlaying && isTimedRound && timeLeft > 0 && timeLeft <= 5 ? timeLeft : null,
     },
     powerupTrayProps: {
       powerupSlots,

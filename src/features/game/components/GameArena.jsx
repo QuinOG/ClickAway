@@ -18,9 +18,15 @@ export default function GameArena({
   targetSpawnSequence = 0,
   isTargetVisible = true,
   roundOverlay = null,
+  finalSeconds = null,
 }) {
+  const isFinalSeconds = finalSeconds !== null
   return (
-    <div className={`arena ${arenaThemeClass}`} ref={arenaRef} onClick={onArenaClick}>
+    <div
+      className={`arena ${arenaThemeClass} ${isFinalSeconds ? `isFinalSeconds${finalSeconds <= 3 ? " isFinalDanger" : ""}` : ""}`}
+      ref={arenaRef}
+      onClick={onArenaClick}
+    >
       <div className="arenaStage" aria-hidden="true">
         <ArenaWorldArt />
         <svg className="arenaHorizon" viewBox="0 0 1200 220" preserveAspectRatio="none">
@@ -46,6 +52,9 @@ export default function GameArena({
         <span className="arenaFloor" />
         <span className="arenaHeatGlow" />
         <span className="arenaStreakMark" />
+        {isFinalSeconds ? (
+          <span key={`final-${finalSeconds}`} className="arenaFinalCount">{finalSeconds}</span>
+        ) : null}
         <span className="arenaCorner isTL" />
         <span className="arenaCorner isTR" />
         <span className="arenaCorner isBL" />

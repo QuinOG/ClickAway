@@ -1185,3 +1185,54 @@
 @media (prefers-reduced-motion: reduce) {
     .powerupItem.ready::after, .powerupItem.ready .powerupIconWrap, .powerupReadyFlag { animation: none; }
 }
+
+/* r20: the final five seconds take over the arena — a giant ghost numeral
+   slams in behind the target each second, the edges pulse red and the
+   streak watermark steps aside. */
+.arenaFinalCount {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    translate: -50% -52%;
+    color: rgb(255 214 120 / 13%);
+    font-family: var(--ca-font-display, "Space Grotesk", sans-serif);
+    font-size: clamp(260px, 44vh, 420px);
+    line-height: 1;
+    -webkit-text-stroke: 4px rgb(255 196 92 / 55%);
+    text-shadow: 0 0 60px rgb(255 170 60 / 35%);
+    pointer-events: none;
+    animation: arenaFinalSlam 1s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.arena.isFinalDanger .arenaFinalCount {
+    color: rgb(255 90 90 / 15%);
+    -webkit-text-stroke-color: rgb(255 92 92 / 70%);
+    text-shadow: 0 0 70px rgb(255 60 60 / 45%);
+}
+@keyframes arenaFinalSlam {
+    0% { opacity: 0; transform: scale(1.6); }
+    18% { opacity: 1; transform: scale(0.96); }
+    30% { transform: scale(1); }
+    100% { opacity: 0.55; transform: scale(0.92); }
+}
+.arena.isFinalSeconds .arenaStreakMark { opacity: 0; }
+.arena.isFinalSeconds::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 3px rgb(255 190 90 / 70%), inset 0 0 70px rgb(255 160 60 / 30%);
+    animation: arenaFinalPulse 1s ease-out infinite;
+}
+.arena.isFinalDanger::after {
+    box-shadow: inset 0 0 0 4px rgb(255 80 80 / 85%), inset 0 0 110px rgb(255 50 50 / 42%);
+    animation-duration: 0.5s;
+}
+@keyframes arenaFinalPulse { 0% { opacity: 1; } 100% { opacity: 0.35; } }
+.gameHud .hudTimerAnchor.is-urgent .timerText,
+.gameHud .hudTimerAnchor.is-danger .timerText { animation: hudTimerThump 1s ease-out infinite; }
+.gameHud .hudTimerAnchor.is-danger .timerText { color: #ff6b6b; }
+@keyframes hudTimerThump { 0% { transform: scale(1.35); } 35% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+    .arenaFinalCount, .arena.isFinalSeconds::after, .gameHud .hudTimerAnchor .timerText { animation: none; }
+}
