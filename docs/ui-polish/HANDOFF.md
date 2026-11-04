@@ -50,3 +50,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r20: final five seconds take over the arena — a giant ghost numeral slams in each second (gold at 5-4, red at 3-1), arena edges pulse, HUD timer thumps.
 - r21: HUD streak gets equal billing with score — 48px streak number, combo multiplier on a gold skewed plate, next-multiplier pip bar beside it; HUD height unchanged.
 - r22: test range gets a real scoreboard — 44px score and streak (gold combo chip) flanking a 10-second ring timer (red at 3s), with a 'test sample · no rewards' tag.
+- r23: Armory powerup rack is a three-key hotbar mirroring the in-round tray — key cap, 52px gold-ringed emblem, name and cadence per card (30px shorter than the list).
