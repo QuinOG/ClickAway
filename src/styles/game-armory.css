@@ -1094,3 +1094,42 @@
 .armorySwapImpactRow.isEven .armorySwapImpactValue b { color: #e6f1ff; }
 @keyframes swapGainPulse { 50% { filter: brightness(1.35); } }
 @media (prefers-reduced-motion: reduce) { .armorySwapImpactBar i.isGained { animation: none; } }
+
+/* ---- r29: instrument gauges ----------------------------------------------
+ * Each feel readout becomes a 180-degree dial: filled arc + needle at the
+ * build's 1-10 rating (shared with the spec sheet), tone-coloured, with the
+ * exact value beneath and the plain-language read as a chip.
+ * ------------------------------------------------------------------------ */
+.armoryInstrument.hasGauge {
+    --gauge: #5fb4ff;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    row-gap: 2px;
+    text-align: center;
+}
+.armoryInstrument.hasGauge.isHigh { --gauge: #4fe3a6; }
+.armoryInstrument.hasGauge.isLow { --gauge: #ff8a6e; }
+.armoryInstrument.hasGauge .armoryInstrumentLabel { justify-self: stretch; text-align: left; }
+.armoryInstrumentGauge { width: 78px; height: 46px; overflow: visible; }
+.armoryGaugeTrack,
+.armoryGaugeFill { fill: none; stroke-width: 8; stroke-linecap: round; }
+.armoryGaugeTrack { stroke: rgb(255 255 255 / 8%); }
+.armoryGaugeFill { stroke: var(--gauge); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gauge) 60%, transparent)); }
+.armoryGaugeTick { stroke: rgb(255 255 255 / 28%); stroke-width: 1.4; }
+.armoryGaugeNeedle { stroke: #f5f9ff; stroke-width: 2.6; stroke-linecap: round; }
+.armoryGaugeNeedle.isCompare { stroke: #c9a7ff; stroke-width: 2; stroke-dasharray: 3 2.5; opacity: 0.9; }
+.armoryGaugeHub { fill: #f5f9ff; stroke: rgb(6 12 24 / 90%); stroke-width: 2; }
+.armoryInstrument.hasGauge .armoryInstrumentReadout { justify-content: center; }
+.armoryInstrument.hasGauge .armoryInstrumentValue { font-size: 14px; }
+.armoryInstrument.hasGauge .armoryInstrumentExact span {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    color: var(--gauge);
+    background: color-mix(in srgb, var(--gauge) 14%, transparent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+.armoryInstrumentGauge { width: 88px; height: 52px; margin-block: 2px 0; }
