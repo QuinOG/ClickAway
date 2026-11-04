@@ -161,8 +161,9 @@ export async function installApiMocks(page, {
   authenticated = true,
   dataState = "rich",
   authDelayMs = 0,
+  progressOverrides = {},
 } = {}) {
-  let currentProgress = structuredClone(sessionFixture.progress)
+  let currentProgress = { ...structuredClone(sessionFixture.progress), ...progressOverrides }
   let currentChallenges = structuredClone(challenges)
 
   await page.route("**/api/**", async (route) => {
