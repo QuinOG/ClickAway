@@ -1412,3 +1412,89 @@
 .outcomeRatingRow.isHigh .outcomeRatingSegments b.isOn { background: linear-gradient(180deg, #7ff5c4, #2fc48a); box-shadow: 0 0 6px rgb(80 230 160 / 40%); }
 .outcomeRatingRow.isLow .outcomeRatingSegments b.isOn { background: linear-gradient(180deg, #ffb09a, #e8644a); box-shadow: none; }
 .outcomeRatingRow.isHigh svg { color: #6ff0bd; }
+
+/* ---- r32: PB race strip ---------------------------------------------------
+ * Fills the empty left side of the score plate: a track whose finish flag is
+ * the personal best, your score as the fill, PB pace as a ghost marker.
+ * ------------------------------------------------------------------------ */
+.gameHud .hudScoreAnchor { position: relative; }
+.hudPaceRace {
+    position: absolute;
+    left: 16px;
+    top: 22px;
+    display: grid;
+    gap: 6px;
+    width: 92px;
+    text-align: left;
+    pointer-events: none;
+}
+.hudPaceRace small {
+    color: rgb(185 208 236 / 60%);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.hudPaceRaceTrack {
+    position: relative;
+    display: block;
+    height: 10px;
+    border-radius: 5px;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+.hudPaceRaceFill {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #3f9fe6, #8fd8ff);
+    transition: width 0.25s ease-out;
+}
+.hudPaceRace.is-ahead .hudPaceRaceFill { background: linear-gradient(90deg, #2fc48a, #8bffcf); box-shadow: 0 0 10px rgb(80 230 160 / 55%); }
+.hudPaceRace.is-behind .hudPaceRaceFill { background: linear-gradient(90deg, #b86a2e, #ffb36b); }
+.hudPaceRaceGhost {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: #f5f9ff;
+    box-shadow: 0 0 8px rgb(255 255 255 / 70%);
+    transition: left 0.25s linear;
+}
+.hudPaceRaceFlag {
+    position: absolute;
+    right: -2px;
+    top: -6px;
+    width: 4px;
+    height: 22px;
+    border-radius: 1px;
+    background: repeating-linear-gradient(180deg, #fff 0 3px, #111 3px 6px);
+}
+.hudPaceRace { left: 14px; right: 14px; top: auto; bottom: 5px; width: auto; }
+.hudPaceRace small { display: none; }
+.hudPaceRaceTrack { height: 6px; border-radius: 3px; }
+.hudPaceRaceFill { border-radius: 3px; min-width: 6px; }
+.hudPaceRaceGhost { top: -4px; bottom: -4px; }
+.hudPaceRaceFlag { top: -5px; height: 16px; }
+.hudPaceRace {
+    inset: 14px 14px 9px;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
+    gap: 0;
+}
+.hudPaceRace small { display: block; }
+.hudPaceRaceDelta { font-family: var(--ca-font-display); font-size: 24px; font-weight: 400; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.hudPaceRace.is-ahead .hudPaceRaceDelta { color: #7ff5c4; }
+.hudPaceRace.is-behind .hudPaceRaceDelta { color: #ffb36b; }
+.hudPaceRaceTrack { align-self: end; }
+.hudScoreAnchor:has(.hudPaceRace) .hudPace {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}

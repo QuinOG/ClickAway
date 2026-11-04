@@ -47,6 +47,10 @@ export default function GameHud({
   const ghostLead = ghostDelta === null ? null : ghostDelta >= 0
   const paceLabel = pbPaceStatus === "ahead" ? "Ahead of PB pace" : "Behind PB pace"
   const paceDeltaLabel = pbPaceDelta === null ? "" : ` ${formatSignedDelta(pbPaceDelta)}`
+  // PB race strip: score fill vs the ghost marker where PB pace sits now,
+  // on a track whose finish flag is the personal best itself.
+  const showPaceRace = Boolean(pbPaceStatus) && playerBestScore > 0 && pbPaceDelta !== null
+  const toRacePercent = (value) => Math.max(0, Math.min(100, (value / playerBestScore) * 100))
 
   return (
     <header className="gameHud" aria-label="Round status">
@@ -56,6 +60,17 @@ export default function GameHud({
           <span key={`score-${score}`} className={`scoreNumber${comboActive ? " comboActive" : ""}`}>
             {score.toLocaleString()}
           </span>
+          {showPaceRace ? (
+            <span className={`hudPaceRace is-${pbPaceStatus}`} aria-hidden="true">
+              <small>PB pace</small>
+              <strong className="hudPaceRaceDelta">{formatSignedDelta(pbPaceDelta)}</strong>
+              <span className="hudPaceRaceTrack">
+                <i className="hudPaceRaceFill" style={{ width: `${toRacePercent(score)}%` }} />
+                <b className="hudPaceRaceGhost" style={{ left: `${toRacePercent(score - pbPaceDelta)}%` }} />
+                <em className="hudPaceRaceFlag" />
+              </span>
+            </span>
+          ) : null}
           {pbPaceStatus ? (
             <span className={`hudPace hudPace-${pbPaceStatus}`} aria-label={`${paceLabel}${paceDeltaLabel}`}>
               <span aria-hidden="true">{pbPaceStatus === "ahead" ? "\u2191" : "\u2193"}</span>
