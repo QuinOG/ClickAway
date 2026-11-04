@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
+import PlayerPortrait from "./art/PlayerPortrait.jsx"
 
-import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
+import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import { formatPercent } from "../utils/gameMath.js"
 import { PLACEMENT_MATCH_COUNT, getRankImageSrc } from "../utils/rankUtils.js"
 
@@ -54,7 +55,7 @@ function PlayerAvatar({ username, profileImage }) {
       {hasImage ? (
         <img className="profileHoverAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
       ) : (
-        getProfileInitials(username)
+        <PlayerPortrait name={username} size={48} />
       )}
     </span>
   )

@@ -26,7 +26,8 @@ import {
 } from "../app/routeMetadata.js"
 import { prefetchRouteModule } from "../app/routeModules.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
-import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
+import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
+import PlayerPortrait from "./art/PlayerPortrait.jsx"
 import PlayerHoverCard from "./PlayerHoverCard.jsx"
 import { MobileSheet } from "./ui/index.js"
 import { InterpolatedNumber } from "./ui/status/InterpolatedNumber.jsx"
@@ -135,7 +136,7 @@ function CompactAvatar({ username, profileImage }) {
       {hasImage ? (
         <img className="shellAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
       ) : (
-        getProfileInitials(username)
+        <PlayerPortrait name={username} size={36} />
       )}
     </span>
   )

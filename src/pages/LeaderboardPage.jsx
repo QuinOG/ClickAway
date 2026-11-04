@@ -4,6 +4,7 @@ import { Crown, Crosshair, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
+import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
 
 function getCrestTone(rankLabel = "") {
   const tier = String(rankLabel).split(" ")[0].toLowerCase()
@@ -799,6 +800,7 @@ export default function LeaderboardPage({
                       <td>
                         <div className="leaderboardEntryHoverWrap">
                           <span className="leaderboardPlayerName">
+                            <PlayerPortrait name={player.username} size={30} className="leaderboardPlayerPortrait" />
                             {player.username}
                             {isCurrentUser ? <span className="leaderboardYouBadge">YOU</span> : null}
                           </span>

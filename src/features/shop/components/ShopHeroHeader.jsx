@@ -1,6 +1,7 @@
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
-import { getProfileAvatarStyle, getProfileInitials } from "../../../utils/profileAvatarStyling.js"
+import { getProfileAvatarStyle } from "../../../utils/profileAvatarStyling.js"
+import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { InterpolatedNumber } from "../../../components/ui/status/InterpolatedNumber.jsx"
 import { CommandHeader } from "../../../components/RouteScene.jsx"
 
@@ -40,7 +41,7 @@ function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPrev
           {hasProfileImage ? (
             <img className="shopCommandLoadoutAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
           ) : (
-            getProfileInitials(playerName)
+            <PlayerPortrait name={playerName} size={64} />
           )}
         </span>
       </div>

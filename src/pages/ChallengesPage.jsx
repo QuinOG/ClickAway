@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import { getModeLabel } from "../utils/gameModeLabelsAndRankedFilters.js"
@@ -70,14 +71,14 @@ function ChallengeCard({
   return (
     <article className="challengeCard" data-status={challenge.status}>
       <div className="challengeVersus" aria-hidden="true">
-        <span className="challengeVersusSide isYou"><b>You</b></span>
+        <span className="challengeVersusSide isYou"><PlayerPortrait name="You" size={52} /></span>
         <span className="challengeVersusBadge">VS</span>
-        <span className="challengeVersusSide isRival"><b>{opponentLabel?.charAt(0)?.toUpperCase() || "?"}</b></span>
+        <span className="challengeVersusSide isRival"><PlayerPortrait name={opponentLabel || "Rival"} size={52} /></span>
       </div>
       <div className="challengeCardHeader">
         <div className="challengeRivalIdentity">
           <span className="challengeRivalCrest" aria-hidden="true">
-            {opponentLabel?.charAt(0)?.toUpperCase() || "?"}
+            <PlayerPortrait name={opponentLabel || "Rival"} size={44} />
           </span>
           <div>
             <p className="leaderboardSectionEyebrow">
@@ -367,7 +368,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
             <div className={`duelCombatant is-rival ${sendForm.opponentUsername.trim() ? "isLocked" : ""}`}>
               <span className="duelCombatantCrest">
                 {sendForm.opponentUsername.trim()
-                  ? sendForm.opponentUsername.trim().charAt(0).toUpperCase()
+                  ? <PlayerPortrait name={sendForm.opponentUsername.trim()} size={56} />
                   : <Crosshair weight="duotone" />}
               </span>
               <small>{sendForm.opponentUsername.trim() || "Rival"}</small>

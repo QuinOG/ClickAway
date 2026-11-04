@@ -14,7 +14,8 @@ import {
   buildProfileStatsFromLifetime,
 } from "../utils/lifetimeStatsUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
-import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
+import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
+import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankImageSrc,
@@ -238,7 +239,6 @@ export default function ProfilePage({
     bestStreak: profileStats.bestStreak,
     rankLabel,
   })
-  const playerInitials = getProfileInitials(playerName)
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
   const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
@@ -260,7 +260,7 @@ export default function ProfilePage({
             <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
               {hasProfileImage
                 ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
-                : playerInitials}
+                : <PlayerPortrait name={playerName} size={76} />}
             </div>
             <div className="profileIdentityText">
               <span className="profileIdentityKicker">Player profile</span>
