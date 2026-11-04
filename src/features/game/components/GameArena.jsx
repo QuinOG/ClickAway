@@ -1,4 +1,5 @@
 import MovingButton from "../../../components/MovingButton.jsx"
+import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import ClickFeedbackLayer from "./ClickFeedbackLayer.jsx"
 
 export default function GameArena({
@@ -21,6 +22,7 @@ export default function GameArena({
   return (
     <div className={`arena ${arenaThemeClass}`} ref={arenaRef} onClick={onArenaClick}>
       <div className="arenaStage" aria-hidden="true">
+        <ArenaWorldArt />
         <svg className="arenaHorizon" viewBox="0 0 1200 220" preserveAspectRatio="none">
           <path className="arenaHorizonStands" d="M0 220V150l80-20 70 8 90-34 110 18 80-26 120 30 100-22 120 24 90-30 110 20 80-14 150 30v86Z" />
           <g className="arenaHorizonArchitecture">

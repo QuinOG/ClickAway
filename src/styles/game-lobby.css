@@ -43,6 +43,11 @@
         linear-gradient(180deg, #0b1830 0%, #08111f 100%);
 }
 
+.lobbyStage > .arenaWorldArt {
+    opacity: 0.28;
+    mask-image: linear-gradient(to bottom, #000 0 48%, transparent 100%);
+}
+
 .lobbyStage.theme-sunset { background: radial-gradient(ellipse 60% 50% at 50% 42%, rgb(255 150 110 / 30%), transparent 70%), linear-gradient(160deg, #2a1236, #57261f); }
 .lobbyStage.theme-forest { background: radial-gradient(ellipse 60% 50% at 50% 42%, rgb(120 240 170 / 22%), transparent 70%), linear-gradient(165deg, #0f2a24, #1c3d27); }
 .lobbyStage.theme-arcade { background: radial-gradient(ellipse 60% 50% at 50% 42%, rgb(150 120 255 / 30%), transparent 70%), linear-gradient(160deg, #121838, #2c1650); }

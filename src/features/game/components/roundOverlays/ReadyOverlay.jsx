@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { ModeEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
+import ArenaWorldArt from "../../../../components/art/ArenaWorldArt.jsx"
 
 import { Tooltip } from "../../../../components/ui/index.js"
 import { formatDrillBestMetric } from "../../../../utils/drillStatsUtils.js"
@@ -170,6 +171,7 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
 
   return (
     <div className={`lobbyStage lobbyStage-${tone} ${targetPreview?.arenaThemeClass ?? "theme-default"}`}>
+      <ArenaWorldArt />
       <span className="lobbyStageFloor" aria-hidden="true" />
       <span className="lobbyStageBeam" aria-hidden="true" />
       <span className="lobbyStageOrbit isOuter" aria-hidden="true" />
