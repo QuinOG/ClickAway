@@ -508,3 +508,81 @@
 .lobbyModeBriefPips { display: flex; gap: 4px; height: 22px; align-items: center; }
 .lobbyModeBriefPips i { width: 14px; height: 14px; border-radius: 4px; background: rgb(255 255 255 / 14%); transform: skewX(-12deg); }
 .lobbyModeBriefPips i.isOn { background: rgb(var(--mode-accent)); box-shadow: 0 0 8px rgba(var(--mode-accent), 0.7); }
+
+/* ---- r26: mode record scoreboard ----------------------------------------
+ * The selected mode's best / average / rounds as tiles over a ten-round bar
+ * chart (best bar gold, latest bar lit, dashed average line).
+ * ------------------------------------------------------------------------ */
+.lobbyModeRecord {
+    grid-column: 2;
+    display: grid;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-radius: 14px;
+    background: rgb(0 0 0 / 22%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+.lobbyModeRecordHeader { display: flex; justify-content: space-between; align-items: baseline; }
+.lobbyModeRecordHeader span {
+    color: #7fc8ff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.lobbyModeRecordHeader small { font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lobbyModeRecordHeader small.isUp { color: #6ff0bd; }
+.lobbyModeRecordHeader small.isDown { color: #ff9a8a; }
+.lobbyModeRecordTiles { display: grid; grid-template-columns: 1.3fr 1fr 0.8fr; gap: 6px; }
+.lobbyModeRecordTiles > span {
+    display: grid;
+    padding: 6px 9px;
+    border-radius: 9px;
+    background: rgb(255 255 255 / 4%);
+}
+.lobbyModeRecordTiles small {
+    color: rgb(185 208 236 / 58%);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.lobbyModeRecordTiles b {
+    color: #f3f8ff;
+    font-family: var(--ca-font-display);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+.lobbyModeRecordTiles .isBest { background: linear-gradient(135deg, rgb(255 209 102 / 16%), rgb(255 209 102 / 4%)); box-shadow: inset 0 0 0 1px rgb(255 209 102 / 30%); }
+.lobbyModeRecordTiles .isBest b { color: #ffd166; }
+.lobbyModeRecordChart {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+    gap: 5px;
+    height: 46px;
+    padding-top: 2px;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+.lobbyModeRecordChart b {
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, rgb(127 200 255 / 55%), rgb(63 159 230 / 25%));
+}
+.lobbyModeRecordChart b.isLatest { background: linear-gradient(180deg, #8fd8ff, #3f9fe6); box-shadow: 0 0 10px rgb(95 180 255 / 45%); }
+.lobbyModeRecordChart b.isBest { background: linear-gradient(180deg, #ffe08a, #e0a934); box-shadow: 0 0 10px rgb(255 200 90 / 40%); }
+.lobbyModeRecordAvg {
+    position: absolute;
+    inset-inline: 0;
+    border-top: 1px dashed rgb(255 255 255 / 30%);
+    pointer-events: none;
+}
+.lobbyModeRecord { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 12px; row-gap: 6px; padding: 9px 12px 10px; }
+.lobbyModeRecordHeader { grid-column: 1 / -1; }
+.lobbyModeRecordTiles > span { padding: 4px 8px; }
+.lobbyModeRecordTiles b { font-size: 18px; }
+.lobbyModeRecordChart { height: auto; min-height: 40px; gap: 3px; }
+.lobbyModeRecordChart b.isEmpty { height: 4px; background: rgb(255 255 255 / 7%); }

@@ -315,6 +315,43 @@ function PracticeDrawer({
   )
 }
 
+// The selected mode's track record as a mini scoreboard: best / average /
+// rounds tiles over a bar chart of the last ten scores (oldest left).
+function ModeRecord({ mode, recentRounds = [] }) {
+  const rounds = recentRounds.filter((round) => round.modeId === mode.id).slice(0, 10)
+  if (!rounds.length) return null
+  const scores = rounds.map((round) => Number(round.score) || 0).reverse()
+  const best = Math.max(...scores, 1)
+  const average = Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length)
+  const latest = scores[scores.length - 1]
+  const trend = scores.length > 1 ? latest - scores[scores.length - 2] : 0
+
+  return (
+    <section className="lobbyModeRecord" aria-label={`${mode.label} record`}>
+      <header className="lobbyModeRecordHeader">
+        <span>{mode.label} record</span>
+        <small className={trend >= 0 ? "isUp" : "isDown"}>Last {latest.toLocaleString()} {trend >= 0 ? "▲" : "▼"} {Math.abs(trend).toLocaleString()}</small>
+      </header>
+      <div className="lobbyModeRecordTiles">
+        <span className="isBest"><small>Best</small><b>{best.toLocaleString()}</b></span>
+        <span><small>Average</small><b>{average.toLocaleString()}</b></span>
+        <span><small>Rounds</small><b>{rounds.length}</b></span>
+      </div>
+      <div className="lobbyModeRecordChart" aria-hidden="true">
+        <i className="lobbyModeRecordAvg" style={{ bottom: `${(average / best) * 100}%` }} />
+        {Array.from({ length: 10 - scores.length }, (_, index) => <b key={`empty-${index}`} className="isEmpty" />)}
+        {scores.map((value, index) => (
+          <b
+            key={index}
+            className={`${value === best ? "isBest" : ""} ${index === scores.length - 1 ? "isLatest" : ""}`}
+            style={{ height: `${Math.max(6, (value / best) * 100)}%` }}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export function ReadyOverlay({
   onStart,
   modes = [],
@@ -336,6 +373,7 @@ export function ReadyOverlay({
   onStartRankedWarmup,
   onClose,
   targetPreview = null,
+  recentRounds = [],
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const lobbyRef = useRef(null)
@@ -485,6 +523,8 @@ export function ReadyOverlay({
         <p className="uiVisuallyHidden" aria-live="polite">
           {selectedMode ? `${selectedMode.label} selected. ${selectedModeRules}` : "No mode selected."}
         </p>
+
+        {selectedMode?.id === "normal" ? <ModeRecord mode={selectedMode} recentRounds={recentRounds} /> : null}
 
         {selectedMode?.id === "hard" ? (
           <RankedPreflight

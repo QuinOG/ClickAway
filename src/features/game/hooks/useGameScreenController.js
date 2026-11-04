@@ -1458,6 +1458,7 @@ export function useGameScreenController({
       canChangeMode,
       activeLoadoutName: resolvedLoadout?.name ?? "Loadout",
       playerBestScore,
+      recentRounds: playerRecentRounds,
       activeLoadoutPresentation: previewLoadoutPresentation,
       showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus)
         || hasUnseenUnlockedParts(playerLevel, seenUnlockPartIds),
