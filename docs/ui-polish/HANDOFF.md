@@ -15,13 +15,13 @@ Styles live in `src/styles/game-*.css`; art in `src/components/art/`.
 ## Round log
 - g1 (round-6 build): Terra 7.0, Astra 7.3, Sol 7.3 → **avg 7.2**. Fixes chosen: layout obstructions, armory stat deltas/exact values/compact rig, merged results + promotion emblem, live feel cues.
 - g2 (round 1, `c14fb89`): Terra 7.0, Astra 7.5, Sol 7.6 → **avg 7.4** (posted to PR).
-- **NEXT = round 2 → capture as g3.** Implement these consensus fixes:
-  1. Practice lobby: 2nd drill row still clipped at Start — when Practice is selected, show all 4 drills in the left stage area (or a compact mode switch), Start in its own footer.
-  2. Armory: shrink rig + build-bay sidebar, widen parts workspace, no truncated descriptions, consistent benefit/cost rows per part.
-  3. Compare bench + mod cards: aligned installed → candidate numeric rows (shrink rate, min target, score %) with deltas; no adjectives as values.
-  4. Live: one unmistakable hit boundary (drop extra concentric rings), strong miss X + "streak lost / -N" cue, next-multiplier indicator near HUD.
-  5. Test-run results: show previous run under same rules beside latest + "Keep build" / "Back to slot" actions.
-  6. Results: show newly unlocked part / level gain + Armory link; carry arena framing into results.
-  Then write `C:/Users/Quinlan/ui-shots/g3-changes.md`, capture g3, commit, launch judges with PREVIOUS_DIR=g2.
+- g3 (round 2, `db86132`): Terra 7.0, Astra 7.6, Sol 7.4 → **avg 7.3** (posted). Capture trimmed to 12 shots (6 loop, 6 armory) — keep it that way.
+- **NEXT = round 3 → capture as g4** (PREVIOUS_DIR=g3, CHANGES_FILE=g4-changes.md). Consensus fixes:
+  1. Armory rig regression: r2 shrank rig → slot names + powerups truncated ("Ti…"). Restore full names; powerups as full-width rows (name + charge timing) under a compact rig; collapse installed-part card into a compact baseline header.
+  2. Results: fold "View Rewards" settlement into the main results screen (one screen); feature the unlocked/next part with icon, benefit, and Equip/Test-in-Armory action.
+  3. Live: enlarge next-multiplier countdown beside streak (`.hudComboNext`); miss text high contrast (replace dark-on-red "STREAK LOST" stamp with bright text + lost-streak count); distinguish streak-heat vs failure frame.
+  4. Overlays: compare bench + unlock wall must sit below nav (top ≥ 78px), pinned header, internal scroll; unlock wall compact category tabs.
+  5. Test-run results: label each run with its build/changed parts; add Score row.
+  6. Part identity: distinct illustrated silhouettes per core/lens/rig (src/components/art), used in rig, part cards, unlocks.
 
 Note: armory slot tabs are hidden; capture clicks `.armoryMachineHousing`. Results flow is now Play Again primary / View Rewards secondary (tests updated).
