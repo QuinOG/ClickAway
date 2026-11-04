@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 
+import { PartEmblem } from "../../../components/art/GameIcons.jsx"
+
 import {
   LOADOUT_POWERUPS,
   MODULE_SLOTS,
@@ -227,7 +229,7 @@ export default function ArmoryScreen({
                 parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
                 playerLevel={playerLevel}
                 installedPartId={installedModuleId}
-                renderPartGlyph={() => <ModuleSlotGlyph slotId={passiveApi.selectedModuleSlot.id} />}
+                renderPartGlyph={(part) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} size={30} />}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(

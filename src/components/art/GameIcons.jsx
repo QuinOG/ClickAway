@@ -349,6 +349,53 @@ export function ModuleEmblem({ slotId, ...props }) {
   return <Icon {...props} />
 }
 
+
+export function AnchorIcon(props) {
+  return (
+    <Svg {...props}>
+      <circle cx="24" cy="9" r="4.5" fill="#8fa3bd" />
+      <path d="M24 13.5V40" fill="none" strokeWidth="5" />
+      <path d="M24 13.5V40" fill="none" stroke="#c5d3e4" strokeWidth="2.4" />
+      <path d="M16 20h16" fill="none" strokeWidth="4.5" />
+      <path d="M16 20h16" fill="none" stroke="#c5d3e4" strokeWidth="2" />
+      <path d="M8 28c0 9 7 14 16 14s16-5 16-14l-5 3M8 28l5 3" fill="none" strokeWidth="5" />
+      <path d="M8 28c0 9 7 14 16 14s16-5 16-14" fill="none" stroke="#3fd0ff" strokeWidth="2.4" />
+    </Svg>
+  )
+}
+
+export function VaultIcon(props) {
+  return (
+    <Svg {...props}>
+      <rect x="6" y="8" width="36" height="32" rx="5" fill="#8fa3bd" />
+      <circle cx="24" cy="24" r="10" fill="#2a3850" />
+      <path d="M24 16v16M16 24h16" fill="none" stroke="#ffc94a" strokeWidth="3" />
+      <path d="M10 40v4M38 40v4" fill="none" strokeWidth="3.4" />
+    </Svg>
+  )
+}
+
+const PART_ICONS = {
+  tempo_anchor: AnchorIcon,
+  tempo_overdrive: FlameIcon,
+  tempo_bastion: ShieldIcon,
+  tempo_flashpoint: BoltIcon,
+  streak_momentum: GrowIcon,
+  streak_stabilizer: TargetIcon,
+  streak_rapidfire: BoltIcon,
+  streak_ironnerve: ShieldIcon,
+  power_surge: BoltIcon,
+  power_reserve: HeartIcon,
+  power_overcharge: OverclockIcon,
+  power_vault: VaultIcon,
+}
+
+export function PartEmblem({ partId, slotId, ...props }) {
+  const Icon = PART_ICONS[partId] ?? null
+  if (Icon) return <Icon {...props} />
+  return <ModuleEmblem slotId={slotId} {...props} />
+}
+
 const ROUTE_ICONS = {
   play: TargetIcon,
   armory: ArmoryIcon,

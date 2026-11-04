@@ -27,7 +27,15 @@ function formatTimestamp(value) {
   if (!value) return "Unknown"
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return "Unknown"
-  return parsed.toLocaleString()
+  const elapsedMs = Date.now() - parsed.getTime()
+  const minutes = Math.round(elapsedMs / 60_000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.round(hours / 24)
+  if (days < 14) return `${days}d ago`
+  return parsed.toLocaleDateString()
 }
 
 function ChallengeStatusBadge({ status = "pending" }) {

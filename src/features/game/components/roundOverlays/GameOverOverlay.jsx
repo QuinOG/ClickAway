@@ -128,7 +128,7 @@ function PersonalBestComparison({ score, bestScore }) {
   let comparisonCopy = "First score on record"
   if (normalizedBest > 0 && isNewBest) comparisonCopy = `New best by ${formatNumber(delta)}`
   if (normalizedBest > 0 && !isNewBest && delta === 0) comparisonCopy = "Personal best matched"
-  if (normalizedBest > 0 && delta < 0) comparisonCopy = `${Math.round((score / normalizedBest) * 100)}% of your best`
+  if (normalizedBest > 0 && delta < 0) comparisonCopy = `Personal best ${formatNumber(normalizedBest)} — keep climbing`
 
   return (
     <section className={`outcomeBestComparison ${isNewBest ? "isNewBest" : ""}`} aria-label="Personal best comparison">

@@ -266,3 +266,50 @@
 /* Overlays (lobby, results) sit above the docked HUD and powerup tray. */
 .gameOverlay.gameOverlayStage { z-index: 10; }
 .gameOverTitle { font-family: "Russo One", var(--ca-font-display); font-size: clamp(30px, 3vw, 40px); text-shadow: 0 3px 0 var(--skin-ink); }
+
+/* ---- Round 3: arena environment + streak heat ------------------------- */
+.arenaHorizon {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 34%;
+    width: 100%;
+    height: 24%;
+    opacity: 0.9;
+}
+
+.arenaHorizonStands { fill: #0a1628; stroke: rgb(79 216 255 / 28%); stroke-width: 2; }
+.arenaHorizonPylons path { stroke: #1d3352; stroke-width: 6; fill: none; }
+.arenaHorizonLights circle { fill: #c8f4ff; filter: drop-shadow(0 0 10px #4fd8ff); }
+
+.arenaStage { background:
+        radial-gradient(ellipse 18% 40% at 12.5% 18%, rgb(79 216 255 / 16%), transparent 70%),
+        radial-gradient(ellipse 18% 40% at 43% 12%, rgb(79 216 255 / 14%), transparent 70%),
+        radial-gradient(ellipse 18% 40% at 73% 14%, rgb(79 216 255 / 14%), transparent 70%),
+        radial-gradient(ellipse 18% 40% at 90% 20%, rgb(79 216 255 / 16%), transparent 70%); }
+
+.arenaFloor { top: 50%; bottom: 0; height: auto; }
+
+/* Spawn pad ring around every target. */
+.arena .bigCircleButton {
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 0 0 10px rgb(79 216 255 / 14%), 0 0 0 12px rgb(79 216 255 / 30%), 0 12px 0 rgb(0 0 0 / 30%), 0 0 36px rgb(79 216 255 / 40%);
+}
+
+/* Combo heat: the arena frame warms as the streak tier climbs. */
+.gameScreen.streakTier1 .arena { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #1f4a5a, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 50%), 0 0 40px rgb(78 221 184 / 30%); }
+.gameScreen.streakTier2 .arena { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #5a4a1f, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 45%), 0 0 50px rgb(255 201 74 / 35%); }
+.gameScreen.streakTier3 .arena,
+.gameScreen.streakTier4 .arena { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #6a2a1f, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 40%), 0 0 60px rgb(255 110 60 / 45%); }
+.gameScreen.streakTier2 .arenaCorner { border-color: #ffc94a; filter: drop-shadow(0 0 8px #ffc94a); }
+.gameScreen.streakTier3 .arenaCorner,
+.gameScreen.streakTier4 .arenaCorner { border-color: #ff7a4a; filter: drop-shadow(0 0 10px #ff7a4a); }
+
+/* HUD readouts as framed plates. */
+.hudScoreAnchor,
+.hudTimerAnchor,
+.hudCenterChannel {
+    padding: 6px 14px;
+    border-radius: 12px;
+    background: rgb(0 0 0 / 25%);
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(255 255 255 / 6%);
+}

@@ -119,3 +119,20 @@
 .armoryPartCard.isLocked .armoryPartGlyph,
 .armoryPartCard.isLocked .armoryPartBody { opacity: 0.6; filter: grayscale(0.7); }
 .armoryMachineRackMeta { white-space: normal; line-height: 1.15; }
+/* The lane tab already names the slot; the repeated panel header goes. */
+.armoryLanePanelHeader { display: none; }
+
+/* Build bays collapse into compact plates; inactive bays drop their preview. */
+.armoryScene { grid-template-columns: 230px minmax(420px, 0.92fr) minmax(540px, 1.08fr); }
+.armoryBay:not(.isActive) .armoryBayMini,
+.armoryBay:not(.isActive) .armoryBayServicePlate { display: none; }
+.armoryBayServicePlate.isEmpty { display: none; }
+.armoryBay {
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #1c2c45, #131f33);
+    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
+}
+.armoryBay.isActive { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px var(--skin-cyan), 0 0 20px rgb(79 216 255 / 25%), 0 3px 0 #0a1220; }
+.armoryBayName { font-family: var(--ca-font-display); font-weight: 400; }
+.armoryRailHeading span { display: none; }

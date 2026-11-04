@@ -404,3 +404,20 @@
     .arenaLobby .arenaLobbyStart { min-height: 58px; }
     .arenaLobbyStart span { font-size: 20px; }
 }
+
+/* Mode tiles are selected by their glow, not a radio circle. */
+.lobbyModeSelectedMark { display: none; }
+.lobbyModeChoiceTopline { grid-template-columns: minmax(0, 1fr); }
+.lobbyModeChoice.isSelected::after {
+    content: "SELECTED";
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgb(var(--mode-accent));
+    color: var(--skin-ink);
+    font: 400 11px/16px var(--ca-font-display);
+    letter-spacing: 0.06em;
+    box-shadow: 0 0 0 2px var(--skin-ink);
+}
