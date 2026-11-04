@@ -9,6 +9,7 @@ import { Tooltip } from "../../../../components/ui/index.js"
 import { formatDrillBestMetric } from "../../../../utils/drillStatsUtils.js"
 import { getRankImageSrc, getRankToneClassName } from "../../../../utils/rankUtils.js"
 import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
+import { getProfileStats } from "../../../armory/armorySpecRatings.js"
 
 const MotionSection = motion.section
 const MotionDiv = motion.div
@@ -163,7 +164,10 @@ function RankedPreflight({
   )
 }
 
-function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlots, showArmoryBadge }) {
+const LOBBY_SPEC_LABELS = { size: "Target", shrink: "Shrink", combo: "Combo", charge: "Charge" }
+
+function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlots, showArmoryBadge, roundRules }) {
+  const specs = roundRules ? getProfileStats(roundRules).filter((stat) => LOBBY_SPEC_LABELS[stat.key]) : []
   const hasImage = Boolean(targetPreview?.imageSrc)
   const targetStyle = hasImage
     ? { backgroundImage: `url(${targetPreview.imageSrc})`, backgroundSize: `${targetPreview.imageScale ?? 100}%` }
@@ -206,6 +210,19 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
             </span>
           ))}
         </span>
+        {specs.length ? (
+          <span className="lobbyStageSpecs" aria-label="Build ratings">
+            {specs.map((stat) => (
+              <span key={stat.key} className={`lobbyStageSpec ${stat.rating >= 7 ? "isHigh" : stat.rating <= 3 ? "isLow" : ""}`}>
+                <small>{LOBBY_SPEC_LABELS[stat.key]}</small>
+                <b>{stat.value}</b>
+                <i aria-hidden="true">
+                  {Array.from({ length: 10 }, (_, index) => <em key={index} className={index < stat.rating ? "isOn" : ""} />)}
+                </i>
+              </span>
+            ))}
+          </span>
+        ) : null}
       </div>
     </div>
   )
@@ -504,6 +521,7 @@ export function ReadyOverlay({
           loadoutDetail={loadoutDetail}
           powerSlots={activeLoadoutPresentation?.powerSlots ?? []}
           showArmoryBadge={showArmoryWalkthroughBadge}
+          roundRules={activeLoadoutPresentation?.roundRules}
         />
 
         <div className="lobbyModeSelector">
