@@ -1,7 +1,5 @@
-import {
-  BuildIdentityGlyph,
-  ModuleSlotGlyph,
-} from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { BuildIdentityGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { PartEmblem } from "../../../components/art/GameIcons.jsx"
 
 // Bay miniatures echo the center-stage machine at wall scale, so build size
 // differences stay readable even from across the room.
@@ -27,7 +25,7 @@ function ArmoryBayServicePlate({ stats }) {
   )
 }
 
-function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi }) {
+function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNumber }) {
   const identity = (presentation?.identity.label || "Balanced").toLowerCase()
   const miniTargetSize = Math.round(
     presentation.roundRules.initialButtonSize * BAY_TARGET_SCALE
@@ -41,6 +39,7 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi }) {
         onClick={onActivate}
         aria-pressed={isActive}
       >
+        <span className="armoryBayNumber" aria-hidden="true">{String(bayNumber).padStart(2, "0")}</span>
         <span className="armoryBayHeader">
           <span className="armoryBayLamp" aria-hidden="true" />
           <span className="armoryBayLampLabel">{isActive ? "Active" : "Docked"}</span>
@@ -54,7 +53,7 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi }) {
           <span className="armoryBayMiniModules">
             {presentation.moduleStack.map((module) => (
               <span key={module.slotId} className={`armoryBayMiniModule tone-${module.slotId}`}>
-                <ModuleSlotGlyph slotId={module.slotId} />
+                <PartEmblem partId={module.moduleId} slotId={module.slotId} size={22} />
               </span>
             ))}
           </span>
@@ -91,9 +90,10 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi }) {
 export default function ArmoryBayWall({ bayApi }) {
   return (
     <div className="armoryBayWall" aria-label="Build bays">
-      {bayApi.savedLoadouts.map((loadout) => (
+      {bayApi.savedLoadouts.map((loadout, index) => (
         <ArmoryBay
           key={loadout.id}
+          bayNumber={index + 1}
           loadout={loadout}
           presentation={bayApi.loadoutPresentations[loadout.id]}
           isActive={loadout.id === bayApi.activeLoadoutId}
