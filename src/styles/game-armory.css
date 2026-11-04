@@ -965,3 +965,84 @@
 .armoryMachine .armoryMachineRackBody { display: grid; justify-items: center; gap: 1px; min-width: 0; }
 .armoryMachine .armoryMachineRackLabel { font-family: var(--ca-font-display); font-weight: 400; font-size: 15px; letter-spacing: 0.02em; }
 .armoryMachine .armoryMachineRackMeta { color: #ffd98a; font-size: 11px; font-weight: 750; }
+
+/* ---- Layout fix pass (r24) ---- */
+/* 1. Shelf tiles: the state emblem no longer sits on top of the part name.
+   Available/owned parts get an icon-only corner badge; locked parts show
+   their unlock level as its own line under the name. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) { position: relative; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    bottom: auto;
+    gap: 0;
+    font-size: 0;
+    letter-spacing: 0;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem .armoryStateEmblemIcon { width: 20px; height: 20px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem .armoryStateEmblemIcon svg { width: 12px; height: 12px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem {
+    position: static;
+    max-width: 100%;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 45%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+    color: rgb(225 233 246 / 85%);
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem .armoryStateEmblemIcon { display: none; }
+/* 5. The Mods step fits the viewport: the equipped-mod detail panel repeated
+   the installed row + featured trade-off and pushed 200px below the fold. */
+.armoryStepCard-passives .armoryPartsGallery > .armoryGalleryFooter { display: none; }
+.armoryStepStack .armoryPartsGallery > .armoryGalleryFooter { display: none; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) { gap: 4px; padding: 9px 6px 8px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) .armoryPartGlyph { width: 36px; height: 36px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem { font-size: 9.5px; white-space: nowrap; letter-spacing: 0.02em; }
+.armoryPartsGallery .armoryPartsShelf { gap: 6px; }
+
+/* 2-3. Bay lockers: the etched number moves beside the build name instead of
+   colliding with the ACTIVE/DOCKED label, part emblems render at full size,
+   and the service plate stays on one line. */
+.armoryBayWall .armoryBayNumber { top: 100px; right: 10px; font-size: 34px; }
+.armoryBayWall .armoryBay .armoryBayMiniModule svg,
+.armoryBayWall .armoryBay .armoryBayMiniModule .gameIcon { width: 22px; height: 22px; }
+.armoryBayWall .armoryBayServicePlate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+.armoryBayWall .armoryBayNameplate { padding-right: 44px; }
+.armoryBayWall .armoryBay .armoryBayMiniModule { width: 32px; height: 32px; }
+.armoryBayWall .armoryBay .armoryBayMiniModule svg,
+.armoryBayWall .armoryBay .armoryBayMiniModule .gameIcon { width: 28px; height: 28px; }
+.armoryBayWall .armoryBay .armoryBayMini { gap: 8px; }
+/* 4. Instrument strip: values stay on one line so every card shares a height. */
+.armoryInstruments .armoryInstrumentValue { white-space: nowrap; font-size: 14px; letter-spacing: -0.01em; }
+.armoryInstruments .armoryInstrument { min-width: 0; }
+/* 6-7. Unlock wall tiles: the lock pill is a short "Lv N" that fits its tile,
+   and the installed state is an icon-only corner check, clear of the emblem. */
+.armoryUnlockWallGrid .armoryUnlockWallItemLock::before { content: "🔒 "; font-size: 9px; }
+.armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled > .armoryStateEmblem,
+.armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled > :last-child:not(.armoryUnlockWallItemBody) {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    gap: 0;
+    font-size: 0;
+    transform: none;
+}
+.armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled .armoryStateEmblemIcon { width: 18px; height: 18px; }
+.armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled .armoryStateEmblemIcon svg { width: 11px; height: 11px; }
+.armoryUnlockWallGrid .armoryUnlockWallItem { padding-top: 12px; }
+.armoryUnlockWallGrid .armoryUnlockWallItem { padding-top: 20px; }
+.armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled > .armoryStateEmblem { top: 3px; right: 3px; }
+/* 8. Mode manifest: the identity glyph rendered as a solid black disc because
+   its SVG had no stroke styling here. */
+.armoryModeManifestColumnGlyph { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: rgba(var(--mode, 120, 184, 255), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--mode, 120, 184, 255), 0.45); }
+.armoryModeManifestColumnGlyph svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 8; stroke-linejoin: round; }
+/* 9. Test range: its z-index 50 was trapped inside the isolated main content,
+   so the app topbar painted over the range header (title + Exit Range).
+   Lift the whole content layer above the topbar while the range is open. */
+.mainContent:has(.armoryRange) { z-index: 60; }
+.routeOutlet:has(.armoryRange) { z-index: 60; }

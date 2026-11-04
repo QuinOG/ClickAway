@@ -96,13 +96,14 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await hitTargets(page, 6, 110)
     await page.waitForTimeout(500)
     await page.screenshot({ path: SHOT })
-  } else if (SCENE === "spec" || SCENE === "compare" || SCENE === "wall") {
+  } else if (SCENE === "spec" || SCENE === "compare" || SCENE === "wall" || SCENE === "powers") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
     await page.waitForTimeout(1000)
     if (SCENE === "spec") await page.getByRole("button", { name: "Spec Sheet" }).click()
     if (SCENE === "compare") await page.getByRole("button", { name: "Compare Modes" }).click()
     if (SCENE === "wall") await page.getByRole("button", { name: "Unlock Wall" }).click()
+    if (SCENE === "powers") await page.locator(".armoryRailStepButton", { hasText: "Powerups" }).click()
     await page.waitForTimeout(700)
     await page.screenshot({ path: SHOT })
   } else if (SCENE === "final") {
@@ -133,6 +134,7 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await page.getByRole("button", { name: /Start Casual/i }).click()
     await page.waitForTimeout(1400)
     await page.screenshot({ path: SHOT })
+    if (process.env.MEASURE) for (const s of [".entranceReticle", ".roundCountdownInstruction", ".roundCountdownPips", ".arena"]) console.log(s, JSON.stringify(await page.locator(s).first().boundingBox().catch(() => null)))
   } else if (SCENE === "lobby") {
     const page = await newPage(browser)
     await gotoRoute(page, route("play"))

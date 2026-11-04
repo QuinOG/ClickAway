@@ -1331,3 +1331,13 @@
 .gameHud .hudComboNextLabel { text-align: right; }
 .gameHud .hudBestReadout { margin-top: 2px; }
 .gameHud .hudStreakValue { font-size: 48px; line-height: 0.88; }
+
+/* r24 fix 10: the countdown instruction sat inside the sweeping ring; it now
+   drops below the ring on a dark pill that also masks the crosshair line. */
+.roundEntranceOverlay .roundCountdownInstruction {
+    transform: translateY(calc(clamp(220px, 34vmin, 320px) / 2 - 28px));
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: rgb(3 8 17 / 92%);
+    box-shadow: inset 0 0 0 1px rgba(var(--entrance-rgb), 0.35);
+}

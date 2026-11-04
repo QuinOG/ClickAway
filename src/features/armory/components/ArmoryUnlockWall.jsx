@@ -46,7 +46,11 @@ function ArmoryUnlockWallPanel({
               <span className="armoryUnlockWallItemBody">
                 <strong className="armoryUnlockWallItemLabel">{part.label}</strong>
                 <span className="armoryUnlockWallItemMeta">{part.description}</span>
-                {isOwned ? null : <span className="armoryUnlockWallItemLock">{getUnlockText(part.unlockLevel)}</span>}
+                {isOwned ? null : (
+                  <span className="armoryUnlockWallItemLock" aria-label={getUnlockText(part.unlockLevel)}>
+                    Lv {part.unlockLevel}
+                  </span>
+                )}
               </span>
               {isInstalled ? <ArmoryStateEmblem state="installed" label="Installed" compact /> : null}
             </li>
