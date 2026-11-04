@@ -10,7 +10,7 @@ export default function GameStatusRow({ streak, comboMultiplier, bestStreak }) {
         <span key={`streak-${streak}`} className="hudStreakValue">{streak}</span>
       </div>
       <div className="hudComboReadout">
-        <span key={`combo-${comboMultiplier}`} className="hudComboValue">\u00d7{comboMultiplier}</span>
+        <span key={`combo-${comboMultiplier}`} className="hudComboValue">{"\u00d7"}{comboMultiplier}</span>
         <span className="hudComboLabel">Combo</span>
       </div>
       <span className="hudBestReadout">Best {bestStreak}</span>

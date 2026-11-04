@@ -350,7 +350,7 @@ export function GameOverOverlay({
                 onClick={() => setIsWorkshopNoteDismissed(true)}
                 aria-label="Dismiss workshop note"
               >
-                \u00d7
+                {"\u00d7"}
               </button>
             </div>
           </div>
