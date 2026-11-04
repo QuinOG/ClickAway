@@ -303,6 +303,9 @@ export default function ProfilePage({
             <div className="profileXpReadout">
               <span><strong>{levelProgressPercent}%</strong> to next level</span>
               <span>{formatNumber(xpToNextLevel)} XP to LV {nextLevelValue}</span>
+              <span className="profileXpTrack" aria-hidden="true">
+                <i style={{ width: `${Math.max(0, Math.min(100, levelProgressPercent))}%` }} />
+              </span>
             </div>
           </section>
 
@@ -373,7 +376,7 @@ export default function ProfilePage({
           <section className="profileBuildSignature" aria-labelledby="build-signature-title">
             <div className="profileMiniHeading">
               <div>
-                <span className="profileSectionKicker">Build signature</span>
+                <span className="profileSectionKicker">Top build · this loadout only</span>
                 <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
               </div>
             </div>

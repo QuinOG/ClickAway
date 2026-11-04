@@ -705,16 +705,6 @@ export default function LeaderboardPage({
           onPageChange={handlePageChange}
         />
 
-        <LeaderboardStandingPanel
-          currentVisiblePlayer={currentVisiblePlayer}
-          currentRankProgress={currentRankProgress}
-          currentLeaderboardStats={currentLeaderboardStats}
-          rankedRounds={rankedRounds.length}
-          selfRank={selfRank}
-          totalCount={totalCount}
-          season={season}
-        />
-
         {isLoading ? <LeaderboardTableSkeleton /> : null}
 
         {!isLoading && loadError ? (
@@ -837,6 +827,16 @@ export default function LeaderboardPage({
             </table>
           </>
         ) : null}
+
+        <LeaderboardStandingPanel
+          currentVisiblePlayer={currentVisiblePlayer}
+          currentRankProgress={currentRankProgress}
+          currentLeaderboardStats={currentLeaderboardStats}
+          rankedRounds={rankedRounds.length}
+          selfRank={selfRank}
+          totalCount={totalCount}
+          season={season}
+        />
       </section>
     </div>
   )

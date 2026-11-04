@@ -126,7 +126,7 @@ export default function ShopHeroHeader({
     <section className="shopArmoryHeader" aria-label="Shop overview">
       <CommandHeader
         routeId="shop"
-        eyebrow="Collection"
+        eyebrow="Cosmetics"
         title="Cosmetic shop"
         subtitle="Preview skins, arenas and portraits on your live loadout before you spend."
         status={(

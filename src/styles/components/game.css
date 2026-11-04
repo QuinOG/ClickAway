@@ -6888,3 +6888,18 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
 
 /* The lobby card receives programmatic focus for screen readers; it is not an interactive control. */
 .readyCard.arenaLobby[tabindex="-1"]:focus { outline: none; }
+
+/* Round 3 mobile lobby: the start action follows the loadout row instead of floating far below it. */
+@media (max-width: 760px) {
+    .arenaLobbyFooter { padding-bottom: 0; gap: 14px; }
+
+    .arenaLobbyActions {
+        position: static;
+        grid-column: 1;
+        grid-row: auto;
+        padding: 0;
+        background: none;
+    }
+
+    .lobbyModeChoice { padding: 14px 16px; }
+}

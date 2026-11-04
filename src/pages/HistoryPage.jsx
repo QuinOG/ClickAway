@@ -119,7 +119,9 @@ function HistoryTrajectory({ rounds = [] }) {
   const plottedRounds = rounds.slice(0, 8).reverse()
   const scores = plottedRounds.map((round) => Number(round.score) || 0)
   const highestScore = Math.max(...scores, 1)
-  const lowestScore = Math.min(...scores, 0)
+  const minimumScore = scores.length > 0 ? Math.min(...scores) : 0
+  // Start the scale just under the lowest run so real movement is visible.
+  const lowestScore = Math.max(0, Math.floor((minimumScore - (highestScore - minimumScore) * 0.35) / 10) * 10)
   const scoreRange = Math.max(1, highestScore - lowestScore)
   const points = plottedRounds.map((round, index) => {
     const x = plottedRounds.length === 1 ? 300 : 24 + (index * 552) / (plottedRounds.length - 1)
@@ -171,6 +173,15 @@ function HistoryTrajectory({ rounds = [] }) {
             style={{ left: `${(point.x / 600) * 100}%`, top: `${(point.y / 150) * 100}%` }}
           />
         ))}
+        {points.length > 0 ? (
+          <span
+            className="historyTrajectoryEndLabel"
+            style={{ left: `${(points.at(-1).x / 600) * 100}%`, top: `${(points.at(-1).y / 150) * 100}%` }}
+          >
+            {formatNumber(points.at(-1).round.score)}
+          </span>
+        ) : null}
+        <span className="historyTrajectoryAxis isMid">{formatNumber(Math.round((highestScore + lowestScore) / 2))}</span>
         <span className="historyTrajectoryAxis isTop">{formatNumber(highestScore)}</span>
         <span className="historyTrajectoryAxis isBottom">{formatNumber(lowestScore)}</span>
         <span className="historyTrajectoryAxis isStart">{plottedRounds.length} rounds ago</span>
@@ -416,36 +427,6 @@ export default function HistoryPage({
               </section>
             ) : null}
 
-            {historySnapshot.recentSampleSize >= 3 ? (
-              <section className="historyTrendStrip" aria-label="Recent performance trend">
-                <p className="historyTrendLabel">
-                  Last {historySnapshot.recentSampleSize} rounds
-                </p>
-                <div className="historyTrendStats">
-                  <span className="historyTrendStat">
-                    <span className="historyTrendStatLabel">Avg Score</span>
-                    <strong className="historyTrendStatValue">
-                      {formatNumber(historySnapshot.recentAverageScore)}
-                    </strong>
-                  </span>
-                  <span className="historyTrendStat">
-                    <span className="historyTrendStatLabel">Avg Accuracy</span>
-                    <strong className="historyTrendStatValue">
-                      {formatPercent(historySnapshot.recentAccuracyPercent)}
-                    </strong>
-                  </span>
-                  {historySnapshot.recentRankedSampleSize > 0 ? (
-                    <span className="historyTrendStat">
-                      <span className="historyTrendStatLabel">Net RR</span>
-                      <strong className={`historyTrendStatValue ${historySnapshot.recentRankDelta > 0 ? "isTrendPositive" : historySnapshot.recentRankDelta < 0 ? "isTrendNegative" : ""}`}>
-                        {historySnapshot.recentRankDelta > 0 ? "+" : ""}{historySnapshot.recentRankDelta} RR
-                      </strong>
-                    </span>
-                  ) : null}
-                </div>
-              </section>
-            ) : null}
-
             <section className="historyLogSection" aria-label="Full match log">
               <div className="historySectionHeader">
                 <h2 className="historySectionTitle">Full Log</h2>
@@ -537,6 +518,36 @@ export default function HistoryPage({
                 </div>
               ) : null}
             </section>
+
+            {historySnapshot.recentSampleSize >= 3 ? (
+              <section className="historyTrendStrip" aria-label="Recent performance trend">
+                <p className="historyTrendLabel">
+                  Last {historySnapshot.recentSampleSize} rounds
+                </p>
+                <div className="historyTrendStats">
+                  <span className="historyTrendStat">
+                    <span className="historyTrendStatLabel">Avg Score</span>
+                    <strong className="historyTrendStatValue">
+                      {formatNumber(historySnapshot.recentAverageScore)}
+                    </strong>
+                  </span>
+                  <span className="historyTrendStat">
+                    <span className="historyTrendStatLabel">Avg Accuracy</span>
+                    <strong className="historyTrendStatValue">
+                      {formatPercent(historySnapshot.recentAccuracyPercent)}
+                    </strong>
+                  </span>
+                  {historySnapshot.recentRankedSampleSize > 0 ? (
+                    <span className="historyTrendStat">
+                      <span className="historyTrendStatLabel">Net RR</span>
+                      <strong className={`historyTrendStatValue ${historySnapshot.recentRankDelta > 0 ? "isTrendPositive" : historySnapshot.recentRankDelta < 0 ? "isTrendNegative" : ""}`}>
+                        {historySnapshot.recentRankDelta > 0 ? "+" : ""}{historySnapshot.recentRankDelta} RR
+                      </strong>
+                    </span>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
           </main>
         )}
       </section>

@@ -30,7 +30,7 @@ function getExactMetric(label, rules = {}) {
   }
   if (label === "Miss Cost") {
     const value = Number(rules.missPenalty) || 0
-    return { value, text: `${value} points`, digits: 0, suffix: " pts" }
+    return { value, text: `${value} ${value === 1 ? "point" : "points"}`, digits: 0, suffix: " pts" }
   }
 
   const value = Number(rules.powerupAwardMultiplier) || 1

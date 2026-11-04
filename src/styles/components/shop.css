@@ -1689,3 +1689,15 @@
         flex-direction: row;
     }
 }
+
+/* Round 3: segmented category control, quieter counts, tighter hero so items lead. */
+.shopTabRail { margin-top: 16px; padding: 4px; gap: 4px; border-radius: 12px; }
+.shopTab { min-height: 48px; padding: 8px 14px; border-radius: 9px; border-color: transparent; background: transparent; }
+.shopTab.active { border-color: rgba(146, 216, 255, 0.32); background: rgba(113, 202, 255, 0.12); box-shadow: none; }
+.shopTabSignal { display: none; }
+.shopTabOwned { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 12px; color: var(--ca-color-ink-faint); }
+.shopCommandSurface { padding: 14px; gap: 20px; }
+.shopCommandSurface .shopCommandLoadoutStage { min-height: 150px; }
+.shopCommandDetails { gap: 12px; }
+.shopCommandSurface .shopCommandLoadoutMeta { padding: 10px 0; }
+.shopCommandProgress { max-width: none; }
