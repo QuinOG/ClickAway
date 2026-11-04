@@ -12,7 +12,7 @@ function getRating(value, low, high, invert = false) {
 
 function formatPayout(multiplier) {
   const percent = Math.round((Number(multiplier) - 1) * 100)
-  return percent === 0 ? "±0%" : `${percent > 0 ? "+" : ""}${percent}%`
+  return percent === 0 ? "Â±0%" : `${percent > 0 ? "+" : ""}${percent}%`
 }
 
 function getProfileStats(roundRules) {
@@ -54,7 +54,7 @@ function ArmorySpecSheetFieldRecord({ loadoutStats }) {
     return (
       <section className="armorySpecSheetPanel">
         <span className="armorySpecSheetPanelTitle">Field record</span>
-        <p className="armorySpecSheetEmptyRecord">No field data yet — take it to the arena.</p>
+        <p className="armorySpecSheetEmptyRecord">No field data yet â€” take it to the arena.</p>
       </section>
     )
   }

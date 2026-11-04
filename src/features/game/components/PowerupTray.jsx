@@ -81,7 +81,7 @@ export default function PowerupTray({
           >
             {canUse ? (
               <span className="powerupReadyFlag" aria-hidden="true">
-                Ready · press <kbd>{powerup.slotKey}</kbd>
+                Ready Â· press <kbd>{powerup.slotKey}</kbd>
               </span>
             ) : null}
             <div className="powerupTop">

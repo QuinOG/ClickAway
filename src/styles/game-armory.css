@@ -716,3 +716,60 @@
 .armoryBayWall .armoryBay:not(.isActive) .armoryBayServicePlate { grid-column: auto; grid-row: auto; }
 .armoryBayWall .armoryBay .armoryBayMiniModules { position: static; inset: auto; }
 .armoryBayWall .armoryBay .armoryBayMiniModule:nth-child(2) { display: grid; }
+
+/* r18: the mode manifest reads as three mode cards — a mode-coloured header
+   band with pressure pips, and every readout gets a bar scaled against the
+   other modes so differences are visible without reading numbers. */
+.armoryModeManifestColumn { --mode: 120, 184, 255; position: relative; overflow: hidden; padding-top: 0; }
+.armoryModeManifestColumn.mode-easy { --mode: 98, 222, 172; }
+.armoryModeManifestColumn.mode-hard { --mode: 255, 196, 92; }
+.armoryModeManifestColumn {
+    background: linear-gradient(180deg, rgba(var(--mode), 0.1), rgba(255, 255, 255, 0.02) 40%);
+    box-shadow: inset 0 0 0 1px rgba(var(--mode), 0.28), 0 3px 0 #0a1220;
+}
+.armoryModeManifestColumn .armoryModeManifestColumnHeader {
+    position: relative;
+    margin: 0 -17px 4px;
+    padding: 12px 17px;
+    background: linear-gradient(90deg, rgba(var(--mode), 0.32), rgba(var(--mode), 0.08));
+    border-bottom: 2px solid rgba(var(--mode), 0.7);
+    align-items: center;
+}
+.armoryModeManifestColumn .armoryModeManifestMode {
+    display: block;
+    color: rgb(var(--mode));
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.03em;
+    line-height: 1.05;
+}
+.armoryModeManifestColumn .armoryModeManifestColumnGlyph { color: rgb(var(--mode)); }
+.armoryModeManifestPressure { display: flex; gap: 4px; margin-left: auto; }
+.armoryModeManifestPressure i {
+    width: 8px;
+    height: 16px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    transform: skewX(-14deg);
+}
+.armoryModeManifestPressure i.isOn { background: rgb(var(--mode)); box-shadow: 0 0 8px rgba(var(--mode), 0.7); }
+.armoryModeManifestStat { position: relative; padding-bottom: 7px; }
+.armoryModeManifestStatValue { color: #f1f6ff; font-weight: 750; }
+.armoryModeManifestBar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+.armoryModeManifestBar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(var(--mode), 0.55), rgb(var(--mode)));
+    box-shadow: 0 0 6px rgba(var(--mode), 0.6);
+}

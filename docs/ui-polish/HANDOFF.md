@@ -45,3 +45,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r15: a ready powerup charge pops — slot lifts with a shine sweep, lit key cap, pulsing emblem and a 'Ready · press N' flag above it.
 - r16: spec sheet is a stat card — 7 rated 10-segment bars (exact value beside each) replace the hidden exact-values toggle; field record becomes number tiles with best score as hero.
 - r17: bay wall is three equal lockers filling the column — each shows its mini machine with the actual fitted parts, an etched bay number and an identity-coloured stripe.
+- r18: compare-modes manifest is three mode-coloured cards with pressure pips; each readout has a bar scaled against the other modes. (Also repaired two cp1252 bytes from r15/r16 edits.)
