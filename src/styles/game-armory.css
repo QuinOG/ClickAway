@@ -396,3 +396,43 @@
     .armoryMachineRigTicks { animation: armoryRigSpin 40s linear infinite; }
 }
 @keyframes armoryRigSpin { to { transform: rotate(360deg); } }
+
+/* ---- Polish r5: core on its own stage, slot cards in a clean row beneath (no overlap) ---- */
+.armoryMachineAssembly { height: auto; width: min(560px, 100%); display: flex; flex-direction: column; align-items: stretch; gap: 14px; padding-top: 6px; }
+.armoryMachineCoreStage { position: relative; height: 252px; display: grid; place-items: center; }
+.armoryMachineCoreStage::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 300px; height: 300px; transform: translate(-50%, -50%);
+    border-radius: 50%; background: radial-gradient(circle, rgba(63, 208, 255, 0.12), transparent 62%); pointer-events: none;
+}
+.armoryMachineRig { width: 244px; height: 244px; }
+.armoryMachineRigArc { background: conic-gradient(from var(--from), rgba(var(--arc), 0.95) 0 112deg, transparent 0); }
+.armoryMachineRigArc.isStock { background: conic-gradient(from var(--from), rgba(var(--arc), 0.28) 0 112deg, transparent 0); }
+.armoryMachineRigArc.isFitted { filter: drop-shadow(0 0 10px rgba(var(--arc), 0.6)); }
+.armoryMachineRigArc.arc-streakLens { --arc: var(--armory-tone-streak); }
+.armoryMachineRigArc.arc-powerRig { --arc: var(--armory-tone-power); }
+.armoryMachineRigArc.arc-tempoCore { --arc: var(--armory-tone-tempo); }
+.armoryMachineHousingRow { position: relative; inset: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; pointer-events: auto; }
+.armoryMachineHousing,
+.armoryMachineHousing.housing-tempoCore,
+.armoryMachineHousing.housing-streakLens,
+.armoryMachineHousing.housing-powerRig {
+    position: relative; left: auto; right: auto; top: auto; transform: none; width: auto;
+    flex-direction: column; justify-content: flex-start; text-align: center; gap: 6px;
+    min-height: 0; padding: 12px 8px 10px;
+    border: 0; border-radius: 14px;
+    background: linear-gradient(180deg, var(--skin-face-high, #1d2b45), var(--skin-face-low, #121c30));
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), inset 0 3px 0 rgba(var(--tone), 0.9), 0 6px 0 rgba(0, 0, 0, 0.35);
+}
+.armoryMachineHousing.housing-tempoCore { --tone: var(--armory-tone-tempo); order: 1; }
+.armoryMachineHousing.housing-streakLens { --tone: var(--armory-tone-streak); order: 2; }
+.armoryMachineHousing.housing-powerRig { --tone: var(--armory-tone-power); order: 3; }
+.armoryMachineHousing::after {
+    content: ""; position: absolute; left: 50%; top: -14px; width: 2px; height: 12px; transform: translateX(-50%);
+    background: rgba(var(--tone), 0.55);
+}
+.armoryMachineHousing:hover { transform: translateY(-2px); }
+.armoryMachineHousing.isSelected { box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), 0 0 0 4px rgba(var(--tone), 0.95), inset 0 3px 0 rgba(var(--tone), 0.9), 0 0 22px rgba(var(--tone), 0.4); }
+.armoryMachineHousing.isNeutral { filter: saturate(0.6); }
+.armoryMachineHousingBody { display: grid; gap: 2px; min-width: 0; justify-items: center; }
+.armoryMachineHousingSlot { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(var(--tone), 1); }
+.armoryMachineHousingLabel { font: 400 14px/1.15 var(--ca-font-display); color: #ffffff; white-space: normal; overflow-wrap: anywhere; }
