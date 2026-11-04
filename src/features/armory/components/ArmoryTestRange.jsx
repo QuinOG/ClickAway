@@ -36,21 +36,24 @@ function getAccuracyValue(results) {
 }
 
 const RESULT_ROWS = [
+  { key: "score", label: "Score", read: (r) => r.score ?? 0, format: (v) => v },
   { key: "hits", label: "Hits", read: (r) => r.hits, format: (v) => v },
   { key: "bestStreak", label: "Best streak", read: (r) => r.bestStreak, format: (v) => v },
   { key: "accuracy", label: "Accuracy", read: getAccuracyValue, format: (v) => `${v}%` },
   { key: "chargesEarned", label: "Charges", read: (r) => r.chargesEarned, format: (v) => v },
 ]
 
-function RangeResults({ results, previous, onRunAgain, onExit }) {
+function RangeResults({ results, previous, runNumber, loadoutName, modeLabel, onRunAgain, onExit }) {
   return (
     <div className="armoryRangeResults" role="dialog" aria-label="Range results">
-      <p className="armoryRangeResultsEyebrow">Range sample</p>
+      <p className="armoryRangeResultsEyebrow">Range sample · Run {runNumber}</p>
+      <p className="armoryRangeResultsBuild"><strong>{loadoutName}</strong> on {modeLabel} rules{previous ? " — same parts both runs" : ""}</p>
+      <p className="armoryRangeResultsBuild"><strong>{loadoutName}</strong> on {modeLabel} rules{previous ? " — same parts both runs" : ""}</p>
       <div className="armoryRangeResultsTable" role="table" aria-label="Latest run versus previous run">
         <div className="armoryRangeResultsRow isHead" role="row">
           <span role="columnheader">Stat</span>
-          <span role="columnheader">Previous</span>
-          <span role="columnheader">Latest</span>
+          <span role="columnheader">{previous ? `Run ${runNumber - 1}` : "Previous"}</span>
+          <span role="columnheader">{`Run ${runNumber}`}</span>
           <span role="columnheader">Change</span>
         </div>
         {RESULT_ROWS.map((row) => {
@@ -113,7 +116,7 @@ export default function ArmoryTestRange({
     if (!isRunDone) return
     const entry = rangeHistory.get(historyKey)
     if (entry?.token === runToken) return
-    rangeHistory.set(historyKey, { token: runToken, results: range.results, previous: entry?.results ?? null })
+    rangeHistory.set(historyKey, { token: runToken, results: range.results, previous: entry?.results ?? null, count: (entry?.count ?? 0) + 1 })
   }, [historyKey, isRunDone, range.results, runToken])
 
   if (!isOpen) return null
@@ -122,6 +125,7 @@ export default function ArmoryTestRange({
   const previousResults = historyEntry?.token === runToken
     ? historyEntry.previous
     : historyEntry?.results ?? null
+  const runNumber = historyEntry?.token === runToken ? historyEntry.count : (historyEntry?.count ?? 0) + 1
   const isDone = range.phase === RANGE_PHASE.DONE
   const isCountingDown = range.phase === RANGE_PHASE.COUNTDOWN
 
@@ -155,7 +159,7 @@ export default function ArmoryTestRange({
           />
 
           {isDone ? (
-            <RangeResults results={range.results} previous={previousResults} onRunAgain={onRunAgain} onExit={onExit} />
+            <RangeResults results={range.results} previous={previousResults} runNumber={runNumber} loadoutName={loadoutName} modeLabel={modeLabel} onRunAgain={onRunAgain} onExit={onExit} />
           ) : null}
         </div>
 

@@ -245,3 +245,75 @@
 }
 .armoryPartTradeRow.is-gain .armoryPartTradeLabel { color: #6ff0b8; }
 .armoryPartTradeRow.is-cost .armoryPartTradeLabel { color: #ff8f8f; }
+
+/* ---- Phase 3 r3: balanced columns, full slot names, powerup rows ---- */
+.armoryScene { grid-template-columns: 210px minmax(420px, 0.95fr) minmax(560px, 1.05fr); }
+.armoryMachineHousing { width: min(210px, 36%); }
+.armoryMachineHousingLabel {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: normal;
+    font-size: 13px;
+    line-height: 1.15;
+}
+.armoryMachineRack { grid-template-columns: 1fr; gap: 6px; width: 100%; }
+.armoryMachineRackSlot {
+    display: grid;
+    grid-template-columns: 30px 34px 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    min-height: 0;
+}
+.armoryMachineRackBody { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; min-width: 0; }
+.armoryMachineRackLabel,
+.armoryMachineRackMeta { white-space: normal; overflow: visible; text-overflow: clip; }
+.armoryMachineRackLabel { font: 400 15px/1.1 var(--ca-font-display); color: #fff; }
+.armoryMachineRackMeta { font-size: 12px; color: rgb(232 242 255 / 72%); text-align: right; }
+
+/* Installed part = compact baseline header row */
+.armoryPartCard.isInstalled { order: -1; grid-column: 1 / -1; min-height: 0; padding-block: 8px; }
+.armoryPartCard.isInstalled .armoryPartFeel { display: none; }
+
+/* ---- Phase 3 r3: overlays sit below the nav, pinned header, inner scroll ---- */
+@keyframes armoryOverlayDrop {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+.armoryCompareBench,
+.armoryUnlockWall {
+    top: 84px;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    transform: none;
+    max-height: calc(100vh - 100px);
+    padding-top: 0;
+    animation: armoryOverlayDrop 160ms ease-out;
+}
+.armoryCompareHeader,
+.armoryUnlockWallHeader {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    margin-inline: calc(var(--armory-space-xl) * -1);
+    padding: var(--armory-space-lg) var(--armory-space-xl) var(--armory-space-md);
+    background: linear-gradient(180deg, rgb(12 19 33) 80%, rgb(12 19 33 / 0));
+}
+.armoryUnlockWallTabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.armoryUnlockWallTab {
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--skin-face-low, #16243a);
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322);
+    color: rgb(232 242 255 / 72%);
+    font: 400 13px/1 var(--ca-font-display);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+}
+.armoryUnlockWallTab.isActive { background: var(--skin-cyan, #3fd0ff); color: var(--skin-ink, #0a1322); }
+.armoryUnlockWallGrid:not(.tab-all) { grid-template-columns: 1fr; }
+.armoryRangeResultsBuild { margin: 0 0 6px; font-size: 14px; color: rgb(232 242 255 / 78%); }
+.armoryRangeResultsBuild strong { font-family: var(--ca-font-display); font-weight: 400; color: #fff; }

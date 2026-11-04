@@ -114,8 +114,9 @@ export function GameOverFlow({
     playerLevel,
     playerXpIntoLevel,
     playerXpToNextLevel,
-    secondaryActionLabel: showPromotion ? "Rematch" : showRewards ? "View Rewards" : null,
-    onSecondaryAction: showPromotion ? (onRematch ?? onPlayAgain) : showRewards ? advanceTo("rewards") : null,
+    playerCoins: allowsCoinRewards ? playerCoins : null,
+    secondaryActionLabel: showPromotion ? "Rematch" : onChooseMode ? "Change Mode" : null,
+    onSecondaryAction: showPromotion ? (onRematch ?? onPlayAgain) : onChooseMode ?? null,
     primaryActionLabel: showPromotion ? "Reveal Rank" : "Play Again",
     onPrimaryAction: showPromotion ? advanceTo("promotion") : (onRematch ?? onPlayAgain),
   }

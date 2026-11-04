@@ -451,7 +451,7 @@ export function useGameScreenController({
     [getElapsedMs, randomizeButtonPosition]
   )
 
-  const addClickFeedback = useCallback((clientX, clientY, value, type) => {
+  const addClickFeedback = useCallback((clientX, clientY, value, type, detail = null) => {
     const arenaElement = arenaRef.current
     if (!arenaElement) return
 
@@ -462,7 +462,7 @@ export function useGameScreenController({
 
     setClickFeedbackItems((currentItems) => [
       ...currentItems.slice(-(MAX_TRANSIENT_FEEDBACK_ITEMS - 1)),
-      { id: feedbackId, x: feedbackX, y: feedbackY, value, type },
+      { id: feedbackId, x: feedbackX, y: feedbackY, value, type, detail },
     ])
 
     const timeoutId = setTimeout(() => {
@@ -991,7 +991,8 @@ export function useGameScreenController({
         event.clientX,
         event.clientY,
         `-${result.penaltyApplied}`,
-        streak > 0 ? "streakBreak" : "miss"
+        streak > 0 ? "streakBreak" : "miss",
+        streak > 0 ? `${streak} streak lost` : null
       )
       return
     }
@@ -1000,7 +1001,8 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       "Miss",
-      streak > 0 ? "streakBreak" : "miss"
+      streak > 0 ? "streakBreak" : "miss",
+      streak > 0 ? `${streak} streak lost` : null
     )
   }, [
     addClickFeedback,

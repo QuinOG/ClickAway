@@ -68,11 +68,11 @@ describe("B3 outcome and reward continuity", () => {
     expect(screen.getByLabelText("Level 4 progress")).not.toBeNull()
     expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
 
-    await user.click(screen.getByRole("button", { name: "View Rewards" }))
-
-    expect(screen.getByRole("heading", { name: "Rewards Settled" })).not.toBeNull()
-    expect(screen.getByLabelText("Updated persistent balances").textContent).toContain("738")
-    expect(screen.getByLabelText("Updated persistent balances").textContent).toContain("Level4")
+    // Rewards settle on the same screen: balance total and next unlock.
+    expect(screen.getByLabelText("Round rewards").textContent).toContain("738 total")
+    expect(screen.queryByRole("button", { name: "View Rewards" })).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Change Mode" }))
+    expect(props.onChooseMode).toHaveBeenCalledOnce()
     await user.click(screen.getByRole("button", { name: "Play Again" }))
     expect(props.onRematch).toHaveBeenCalledOnce()
   })

@@ -72,11 +72,6 @@ test("council capture: gameplay loop + armory", async ({ browser }) => {
   await play.keyboard.press("g")
   await play.waitForTimeout(2600)
   await shot(play, "loop-results-summary")
-  await step("rewards", async () => {
-    await play.getByRole("button", { name: "View Rewards" }).click()
-    await play.waitForTimeout(2600)
-    await shot(play, "loop-rewards-settled")
-  })
   await play.context().close()
 
   // ---- Ranked round that promotes (seeded at 99/100 RR) ----

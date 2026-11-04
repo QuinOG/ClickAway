@@ -375,16 +375,60 @@ export function VaultIcon(props) {
   )
 }
 
+
+export function RapidfireIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M6 12 18 24 6 36" fill="none" strokeWidth="7" />
+      <path d="M6 12 18 24 6 36" fill="none" stroke="#c9a2ff" strokeWidth="3.4" />
+      <path d="M18 12 30 24 18 36" fill="none" strokeWidth="7" />
+      <path d="M18 12 30 24 18 36" fill="none" stroke="#e3ccff" strokeWidth="3.4" />
+      <path d="M30 12 42 24 30 36" fill="none" strokeWidth="7" />
+      <path d="M30 12 42 24 30 36" fill="none" stroke="#ffffff" strokeWidth="3.4" />
+    </Svg>
+  )
+}
+
+export function IronNerveIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M24 4 40 10v12c0 11-7 18-16 22C15 40 8 33 8 22V10Z" fill="#8fa3bd" />
+      <path d="M24 9 35 13v9c0 8-5 13-11 16-6-3-11-8-11-16v-9Z" fill="#2a3850" strokeWidth="2" />
+      <circle cx="24" cy="23" r="5" fill="#c9a2ff" strokeWidth="2" />
+      <path d="M24 14v4M24 28v4M15 23h4M29 23h4" fill="none" stroke="#e3ccff" strokeWidth="2" />
+    </Svg>
+  )
+}
+
+export function SurgeIcon(props) {
+  return (
+    <Svg {...props}>
+      <circle cx="24" cy="24" r="19" fill="#ffb03a" />
+      <path d="M7 26c4-9 8-9 11 0s7 9 11 0 7-9 12 0" fill="none" strokeWidth="6" />
+      <path d="M7 26c4-9 8-9 11 0s7 9 11 0 7-9 12 0" fill="none" stroke="#fff6d6" strokeWidth="2.8" />
+    </Svg>
+  )
+}
+
+export function FlashpointIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M24 3 29 17 44 15 32 25 40 39 24 31 8 39 16 25 4 15 19 17Z" fill="#ff6a4a" />
+      <path d="M24 12 27 20 35 19 29 25 33 32 24 27 15 32 19 25 13 19 21 20Z" fill="#ffe27a" strokeWidth="2" />
+    </Svg>
+  )
+}
+
 const PART_ICONS = {
   tempo_anchor: AnchorIcon,
   tempo_overdrive: FlameIcon,
   tempo_bastion: ShieldIcon,
-  tempo_flashpoint: BoltIcon,
+  tempo_flashpoint: FlashpointIcon,
   streak_momentum: GrowIcon,
   streak_stabilizer: TargetIcon,
-  streak_rapidfire: BoltIcon,
-  streak_ironnerve: ShieldIcon,
-  power_surge: BoltIcon,
+  streak_rapidfire: RapidfireIcon,
+  streak_ironnerve: IronNerveIcon,
+  power_surge: SurgeIcon,
   power_reserve: HeartIcon,
   power_overcharge: OverclockIcon,
   power_vault: VaultIcon,

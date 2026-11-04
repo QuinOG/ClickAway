@@ -1,4 +1,4 @@
-import { CoinIcon, CrestIcon, GemIcon } from "../../../../components/art/GameIcons.jsx"
+import { CoinIcon, CrestIcon, GemIcon, PartEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
 import {
   Crosshair,
   Fire,
@@ -195,12 +195,16 @@ function NextUnlock({ level, xpIntoLevel, xpToNextLevel, earned }) {
       to="/armory"
       aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
     >
-      <span className="gameOverNextUnlockBadge" aria-hidden="true">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</span>
-      <span className="gameOverNextUnlockCopy">
-        <small>{justUnlocked ? "Unlocked" : "Next unlock"} · {nextPart.kind === "power" ? "Powerup" : "Armory part"}</small>
-        <strong>{nextPart.label}</strong>
+      <span className="gameOverNextUnlockIcon" aria-hidden="true">
+        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={44} /> : <PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={44} />}
+        <i className="gameOverNextUnlockBadge">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</i>
       </span>
-      <span className="gameOverNextUnlockCta" aria-hidden="true">Armory {"›"}</span>
+      <span className="gameOverNextUnlockCopy">
+        <small>{justUnlocked ? "Unlocked" : `Unlocks at Lv ${nextPart.unlockLevel}`} · {nextPart.kind === "power" ? "Powerup" : "Armory part"}</small>
+        <strong>{nextPart.label}</strong>
+        {nextPart.description ? <span className="gameOverNextUnlockBenefit">{nextPart.description}</span> : null}
+      </span>
+      <span className="gameOverNextUnlockCta" aria-hidden="true">{justUnlocked ? "Equip" : "Preview"} {"›"}</span>
     </Link>
   )
 }
@@ -259,6 +263,7 @@ export function GameOverOverlay({
   playerLevel = 1,
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
+  playerCoins = null,
   secondaryActionLabel = null,
   onSecondaryAction = null,
 }) {
@@ -384,7 +389,7 @@ export function GameOverOverlay({
           transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 340, damping: 22, delay: 0.42 }}
         >
           {allowsCoinRewards ? (
-            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>coins</small></span>
+            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
           ) : null}
           {allowsLevelProgression ? (
             <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP</small></span>
