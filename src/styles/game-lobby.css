@@ -471,3 +471,40 @@
     .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageBeam,
     .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStagePedestal { opacity: 0.18; transition: opacity 200ms ease; }
 }
+
+/* ---- Polish r13: the chosen mode opens into a briefing card ---- */
+@media (min-width: 900px) {
+    .lobbyModeChoice.isSelected { padding: 18px 18px 16px 136px; gap: 4px; }
+    .lobbyModeChoice.isSelected .lobbyModeEmblem {
+        left: 18px;
+        top: 18px;
+        width: 100px;
+        height: 100px;
+        transform: rotate(-4deg);
+        border-radius: 22px;
+        background: radial-gradient(circle, rgba(var(--mode-accent), 0.45), rgba(var(--mode-accent), 0.06) 72%);
+        box-shadow: inset 0 0 0 2px rgba(var(--mode-accent), 0.6);
+    }
+    .lobbyModeChoice.isSelected .lobbyModeEmblem svg { width: 84px; height: 84px; }
+    .lobbyModeChoice.isSelected .lobbyModeName { font-size: 30px; line-height: 1.05; }
+}
+.lobbyModeBrief {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+.lobbyModeBriefStat {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgb(5 10 20 / 45%);
+    box-shadow: inset 0 0 0 2px rgba(var(--mode-accent), 0.35);
+}
+.lobbyModeBriefStat small { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--mode-accent), 1); }
+.lobbyModeBriefStat b { font: 400 22px/1 var(--ca-font-display); color: #fff; }
+.lobbyModeBriefPips { display: flex; gap: 4px; height: 22px; align-items: center; }
+.lobbyModeBriefPips i { width: 14px; height: 14px; border-radius: 4px; background: rgb(255 255 255 / 14%); transform: skewX(-12deg); }
+.lobbyModeBriefPips i.isOn { background: rgb(var(--mode-accent)); box-shadow: 0 0 8px rgba(var(--mode-accent), 0.7); }

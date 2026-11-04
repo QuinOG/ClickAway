@@ -234,6 +234,18 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
         </span>
         <span className="lobbyModeSummary">{mode.roundLabel} · {mode.goalLabel}</span>
         <span className="lobbyModeReward">{mode.rewardLabel}</span>
+        {isSelected ? (
+          <span className="lobbyModeBrief" aria-hidden="true">
+            <span className="lobbyModeBriefStat"><small>Time</small><b>{mode.roundLabel}</b></span>
+            <span className="lobbyModeBriefStat"><small>Miss</small><b>{mode.missPenalty > 0 ? `-${mode.missPenalty}` : "Free"}</b></span>
+            <span className="lobbyModeBriefStat">
+              <small>Pressure</small>
+              <span className="lobbyModeBriefPips">
+                {[1, 2, 3].map((level) => <i key={level} className={level <= mode.pressureLevel ? "isOn" : ""} />)}
+              </span>
+            </span>
+          </span>
+        ) : null}
         <span id={`lobby-mode-summary-${mode.id}`} className="uiVisuallyHidden">{modeRules}</span>
       </button>
     </Tooltip>

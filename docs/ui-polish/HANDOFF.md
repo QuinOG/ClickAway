@@ -39,4 +39,5 @@ Each round = one major visible change, before/after in docs/ui-polish/rN/. Captu
 - r10: Armory parts: featured candidate card (112px emblem, name, You gain / You give up columns, Install) above a compact tile picker; hover/focus features a part
 - r11: test-run results as a duel: previous vs latest score plates (64px, VS), winner glows green/red, verdict pill; score row removed from table
 - r12: streak break = arena moment: desaturated stage, red edge vignette, slammed red STREAK BROKEN watermark, 54px loss value + red lost-streak plate
-Next candidates: lobby.
+- r13: lobby: selected mode opens into a briefing card (100px emblem, 30px name, Time / Miss / Pressure-pip stats)
+Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Armory bay wall; spec sheet.
