@@ -1228,3 +1228,48 @@
 .armoryHotbarMeta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .armoryHotbarMeta { font-size: 10.5px; letter-spacing: 0; }
 .armoryHotbarMeta { font-size: 10px; }
+
+/* ---- r33: bay service tiles -----------------------------------------------
+ * The truncated "24 rounds · 93% acc · best …" line becomes an accuracy ring
+ * plus rounds and best-streak tiles.
+ * ------------------------------------------------------------------------ */
+.armoryBayServicePlate.isTiles {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    align-items: center;
+    gap: 6px;
+    white-space: normal;
+    overflow: visible;
+}
+.armoryBayServiceRing {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #0b1322 58%, transparent 60%),
+        conic-gradient(#4fe3a6 var(--acc), rgb(255 255 255 / 9%) 0);
+}
+.armoryBayServiceRing b { color: #eafff6; font-size: 12px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.armoryBayServiceRing small,
+.armoryBayServiceTile small {
+    color: rgb(185 208 236 / 58%);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+.armoryBayServiceTile {
+    display: grid;
+    justify-items: center;
+    padding: 4px 2px;
+    border-radius: 8px;
+    background: rgb(255 255 255 / 4%);
+}
+.armoryBayServiceTile b { color: #f3f8ff; font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.armoryBayServiceTile.isStreak b { color: #ffc46b; }
+.armoryBayServiceRing { width: 36px; height: 36px; } .armoryBayServiceTile { padding: 3px 2px; } .armoryBayServiceTile b { font-size: 16px; }

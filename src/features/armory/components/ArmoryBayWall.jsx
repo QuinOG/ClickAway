@@ -16,12 +16,18 @@ function ArmoryBayServicePlate({ stats }) {
   const attempts = stats.totalHits + stats.totalMisses
   const accuracyPercent = attempts > 0 ? Math.round((stats.totalHits / attempts) * 100) : null
 
+  const summary = `${stats.totalRounds} round${stats.totalRounds === 1 ? "" : "s"}`
+    + `${accuracyPercent !== null ? `, ${accuracyPercent}% accuracy` : ""}, best streak ${stats.bestStreak}`
+
   return (
-    <p className="armoryBayServicePlate">
-      {stats.totalRounds} round{stats.totalRounds === 1 ? "" : "s"}
-      {accuracyPercent !== null ? ` · ${accuracyPercent}% acc` : ""}
-      {` · best streak ${stats.bestStreak}`}
-    </p>
+    <div className="armoryBayServicePlate isTiles" role="img" aria-label={summary}>
+      <span className="armoryBayServiceRing" style={{ "--acc": `${accuracyPercent ?? 0}%` }}>
+        <b>{accuracyPercent ?? "—"}</b>
+        <small>acc</small>
+      </span>
+      <span className="armoryBayServiceTile"><b>{stats.totalRounds}</b><small>rounds</small></span>
+      <span className="armoryBayServiceTile isStreak"><b>{stats.bestStreak}</b><small>streak</small></span>
+    </div>
   )
 }
 
