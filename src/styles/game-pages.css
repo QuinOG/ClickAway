@@ -200,15 +200,33 @@
 }
 
 /* Ladder podium: tier crests on stepped plinths. */
-.leaderboardPodiumCrest,
-.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest {
+.leaderboardPodiumIdentity {
     position: relative;
-    width: auto;
-    border: 0;
-    background: none;
-    box-shadow: none;
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
     filter: drop-shadow(0 4px 0 rgb(0 0 0 / 45%));
 }
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumIdentity { width: 72px; height: 72px; }
+.leaderboardPodiumIdentity > .playerPortrait { width: 100%; height: 100%; border-radius: 50%; }
+.leaderboardPodiumCrest,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest {
+    position: absolute;
+    right: -9px;
+    bottom: -6px;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 2px 0 var(--skin-ink));
+}
+.leaderboardPodiumCrest svg.gameIcon,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 30px; height: 30px; }
 .leaderboardPodiumCrown { position: absolute; left: 50%; top: -24px; transform: translateX(-50%) rotate(-8deg); }
 .leaderboardPodiumPlayer {
     border: 0;
@@ -319,3 +337,30 @@
 .leaderboardPodiumPlayer.isRank1 { height: 200px; padding-top: 34px; }
 .leaderboardPodiumPlayer.isRank3 { height: 156px; }
 .leaderboardPodiumCrown { top: -32px; }
+
+/* Round 5: player identity sits beside the rank ornament on the podium. */
+.leaderboardPodiumIdentity {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 3px;
+}
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumIdentity { width: 72px; height: 72px; }
+.leaderboardPodiumIdentity > .playerPortrait { width: 100%; height: 100%; border-radius: 50%; }
+.leaderboardPodiumPlayer .leaderboardPodiumCrest,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest {
+    position: absolute;
+    right: -8px;
+    bottom: -5px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+}
+.leaderboardPodiumPlayer .leaderboardPodiumCrest svg.gameIcon,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 30px; height: 30px; }
+.leaderboardPodiumPlayer .leaderboardPodiumCrown { top: -20px; }

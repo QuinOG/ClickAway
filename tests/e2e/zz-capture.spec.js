@@ -10,7 +10,7 @@ async function prepareLivePage(page) {
   })
 }
 
-const OUT = process.env.SHOT_DIR || "../ui-shots/d4"
+const OUT = process.env.SHOT_DIR || "../ui-shots/d5"
 const MAIN = ["armory", "shop", "profile", "ladder", "history", "duels"]
 
 test("capture", async ({ page: firstPage }) => {

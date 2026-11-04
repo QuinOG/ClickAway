@@ -465,8 +465,11 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               className={`leaderboardPodiumPlayer isRank${player.rank} ${isCurrentUser ? "isCurrentUser" : ""}`}
             >
               <span className="leaderboardPodiumRank">#{player.rank}</span>
-              <span className="leaderboardPodiumCrest" aria-hidden="true">
-                <CrestIcon tone={getCrestTone(player.rankLabel)} size={player.rank === 1 ? 64 : 52} />
+              <span className="leaderboardPodiumIdentity">
+                <PlayerPortrait name={player.username} size={player.rank === 1 ? 58 : 50} />
+                <span className="leaderboardPodiumCrest" aria-label={`${player.rankLabel} rank`}>
+                  <CrestIcon tone={getCrestTone(player.rankLabel)} size={30} />
+                </span>
                 {player.rank === 1 ? <span className="leaderboardPodiumCrown"><CrownIcon size={30} /></span> : null}
               </span>
               <strong>{player.username}</strong>

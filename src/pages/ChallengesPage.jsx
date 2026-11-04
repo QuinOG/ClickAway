@@ -59,6 +59,7 @@ function ChallengeStatusBadge({ status = "pending" }) {
 function ChallengeCard({
   challenge,
   currentUserId,
+  currentUsername,
   onRespond,
   onRaceGhost,
   isResponding = false,
@@ -71,7 +72,7 @@ function ChallengeCard({
   return (
     <article className="challengeCard" data-status={challenge.status}>
       <div className="challengeVersus" aria-hidden="true">
-        <span className="challengeVersusSide isYou"><PlayerPortrait name="You" size={52} /></span>
+        <span className="challengeVersusSide isYou"><PlayerPortrait name={currentUsername} size={52} /></span>
         <span className="challengeVersusBadge">VS</span>
         <span className="challengeVersusSide isRival"><PlayerPortrait name={opponentLabel || "Rival"} size={52} /></span>
       </div>
@@ -149,7 +150,7 @@ function ChallengeCard({
   )
 }
 
-export default function ChallengesPage({ currentUserId = "" }) {
+export default function ChallengesPage({ currentUserId = "", currentUsername = "Player" }) {
   const navigate = useNavigate()
   const { signalAction } = useActionFeedback()
   const [challenges, setChallenges] = useState([])
@@ -346,6 +347,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
                 key={challenge.id}
                 challenge={challenge}
                 currentUserId={currentUserId}
+                currentUsername={currentUsername}
                 onRespond={handleRespond}
                 onRaceGhost={handleRaceGhost}
                 isResponding={respondingChallengeId === challenge.id}
@@ -357,7 +359,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
         <section className="duelComposer" aria-labelledby="duel-composer-title">
           <div className="duelVersusStage" aria-hidden="true">
             <div className="duelCombatant is-player">
-              <span className="duelCombatantCrest"><UserFocus weight="duotone" /></span>
+              <span className="duelCombatantCrest"><PlayerPortrait name={currentUsername} size={56} /></span>
               <small>You</small>
             </div>
             <div className="duelSignalLine">
