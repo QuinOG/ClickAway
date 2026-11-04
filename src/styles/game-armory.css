@@ -436,3 +436,93 @@
 .armoryMachineHousingBody { display: grid; gap: 2px; min-width: 0; justify-items: center; }
 .armoryMachineHousingSlot { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(var(--tone), 1); }
 .armoryMachineHousingLabel { font: 400 14px/1.15 var(--ca-font-display); color: #ffffff; white-space: normal; overflow-wrap: anywhere; }
+
+/* ---- Polish r10: one featured candidate with its trade-off, parts as a compact picker ---- */
+.armoryPartFeature {
+    --tone: var(--armory-tone-streak, 84, 177, 149);
+    position: relative;
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr) auto;
+    grid-template-areas:
+        "glyph head install"
+        "trade trade trade";
+    gap: 14px 18px;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 74px 66px, rgba(var(--tone), 0.28), transparent 130px),
+        linear-gradient(160deg, #182a45, #0e182b 75%);
+    box-shadow: 0 0 0 2px #050a14, inset 0 0 0 2px rgba(var(--tone), 0.5), 0 5px 0 #0a1220;
+}
+.armoryPartFeature.tone-tempoCore { --tone: var(--armory-tone-tempo, 79, 184, 255); }
+.armoryPartFeature.tone-streakLens { --tone: var(--armory-tone-streak, 84, 177, 149); }
+.armoryPartFeature.tone-powerRig { --tone: var(--armory-tone-power, 255, 176, 72); }
+.armoryPartFeatureGlyph {
+    grid-area: glyph;
+    display: grid;
+    place-items: center;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 38%, rgba(var(--tone), 0.35), #0b1322 72%);
+    box-shadow: 0 0 0 3px #050a14, inset 0 0 0 3px rgba(var(--tone), 0.7), 0 0 26px rgba(var(--tone), 0.35);
+}
+.armoryPartFeatureGlyph svg { width: 68px; height: 68px; }
+.armoryPartFeatureHead { grid-area: head; display: grid; gap: 4px; min-width: 0; }
+.armoryPartFeatureEyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--tone)); }
+.armoryPartFeatureName { font: 400 30px/1 "Russo One", var(--ca-font-display, sans-serif); color: #fff; text-shadow: 0 3px 0 #050a14; }
+.armoryPartFeatureFeel { font-size: 14px; line-height: 1.35; color: rgb(232 242 255 / 78%); }
+.armoryPartFeatureInstall { grid-area: install; align-self: start; min-width: 120px; }
+.armoryPartFeatureTrade { grid-area: trade; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.armoryPartFeatureSide {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgb(83 215 179 / 10%);
+    box-shadow: inset 0 0 0 2px rgb(83 215 179 / 45%);
+}
+.armoryPartFeatureSide.is-cost { background: rgb(255 107 107 / 10%); box-shadow: inset 0 0 0 2px rgb(255 107 107 / 45%); }
+.armoryPartFeatureSideLabel { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #53d7b3; }
+.armoryPartFeatureSide.is-cost .armoryPartFeatureSideLabel { color: #ff8a8a; }
+.armoryPartFeatureChip { font-size: 16px; color: #fff; }
+.armoryPartFeatureChip b { font-weight: 800; color: #53d7b3; }
+.armoryPartFeatureSide.is-cost .armoryPartFeatureChip b { color: #ff8a8a; }
+.armoryPartFeatureChip.is-none { color: rgb(232 242 255 / 55%); }
+
+.armoryPartsGallery .armoryPartsShelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 8px;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-content: start;
+    gap: 6px;
+    min-height: 0;
+    height: auto;
+    padding: 12px 8px 10px;
+    text-align: center;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartFeel,
+.armoryPartsGallery .armoryPartsShelf .armoryPartDeltas { display: none; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartBody { display: block; min-width: 0; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartLabel { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isFeatured {
+    box-shadow: 0 0 0 2px #050a14, 0 0 0 4px rgb(255 255 255 / 85%), 0 0 18px rgb(255 255 255 / 25%);
+    transform: translateY(-2px);
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled {
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    justify-items: start;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    text-align: left;
+}

@@ -40,6 +40,17 @@ export default function ArmoryPartsGallery({
   const tabStopPartId = rovingPartId ?? installedPartId
 
   const unlockedParts = parts.filter((part) => playerLevel >= part.unlockLevel)
+  // One candidate is always featured large with its trade-off: whatever the
+  // player points at, else the first unlocked part they could swap in.
+  const [hoveredPartId, setHoveredPartId] = useState(null)
+  const candidateParts = unlockedParts.filter((part) => part.id !== installedPartId)
+  const featuredPart = candidateParts.find((part) => part.id === hoveredPartId)
+    ?? candidateParts.find((part) => part.id === rovingPartId)
+    ?? candidateParts[0]
+    ?? null
+  const featuredChips = featuredPart?.effects ? getModuleDeltaChips(featuredPart, installedPart) : []
+  const featuredGains = featuredChips.filter((chip) => chip.tone === "gain")
+  const featuredCosts = featuredChips.filter((chip) => chip.tone === "cost")
 
   const moveFocus = (offset) => {
     if (!unlockedParts.length) return
@@ -72,6 +83,45 @@ export default function ArmoryPartsGallery({
       aria-label={galleryLabel}
       onKeyDown={handleGalleryKeyDown}
     >
+      {featuredPart ? (
+        <div className={`armoryPartFeature tone-${tone}`} aria-label={`Featured: ${featuredPart.label}`}>
+          <span className={`armoryPartFeatureGlyph tone-${tone}`} aria-hidden="true">
+            {renderPartGlyph?.(featuredPart)}
+          </span>
+          <div className="armoryPartFeatureHead">
+            <span className="armoryPartFeatureEyebrow">
+              {installedPart ? `Swap in for ${installedPart.label}` : "Candidate"}
+            </span>
+            <strong className="armoryPartFeatureName">{featuredPart.label}</strong>
+            <span className="armoryPartFeatureFeel">{featuredPart.description}</span>
+          </div>
+          {featuredPart.effects ? (
+            <div className="armoryPartFeatureTrade">
+              <div className="armoryPartFeatureSide is-gain">
+                <span className="armoryPartFeatureSideLabel">You gain</span>
+                {featuredGains.length ? featuredGains.map((chip) => (
+                  <span key={chip.key} className="armoryPartFeatureChip"><b>{chip.label}</b> {chip.value}</span>
+                )) : <span className="armoryPartFeatureChip is-none">Nothing</span>}
+              </div>
+              <div className="armoryPartFeatureSide is-cost">
+                <span className="armoryPartFeatureSideLabel">You give up</span>
+                {featuredCosts.length ? featuredCosts.map((chip) => (
+                  <span key={chip.key} className="armoryPartFeatureChip"><b>{chip.label}</b> {chip.value}</span>
+                )) : <span className="armoryPartFeatureChip is-none">Nothing</span>}
+              </div>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="primaryButton armoryPartFeatureInstall"
+            tabIndex={-1}
+            onClick={() => onInstallPart?.(featuredPart.id)}
+          >
+            Install
+          </button>
+        </div>
+      ) : null}
+
       <div className={`armoryPartsShelf tone-${tone}`}>
         {parts.map((part) => {
           const isLocked = playerLevel < part.unlockLevel
@@ -86,12 +136,13 @@ export default function ArmoryPartsGallery({
               ref={(element) => { cardRefs.current[part.id] = element }}
               data-part-id={part.id}
               data-armory-state={visualState}
-              className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isLocked ? "isLocked" : ""}`}
+              className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isLocked ? "isLocked" : ""} ${part.id === featuredPart?.id ? "isFeatured" : ""}`}
               disabled={isLocked}
               tabIndex={isLocked ? undefined : (part.id === tabStopPartId ? 0 : -1)}
               aria-pressed={isInstalled}
               onMouseEnter={() => {
                 if (isLocked) onInspectLockedPart?.(part.id)
+                else setHoveredPartId(part.id)
               }}
               onFocus={() => {
                 setRovingPartId(part.id)
