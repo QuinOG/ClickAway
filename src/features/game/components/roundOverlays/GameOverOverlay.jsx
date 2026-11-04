@@ -154,23 +154,52 @@ function PersonalBestComparison({ score, bestScore }) {
   )
 }
 
-function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionMs }) {
-  const instruments = [
-    { label: "Accuracy", value: accuracy, icon: <Gauge weight="bold" aria-hidden="true" /> },
-    { label: "Best streak", value: bestStreak, icon: <Fire weight="bold" aria-hidden="true" /> },
-    { label: "Avg", value: formatReactionTime(avgReactionMs), icon: <Timer weight="bold" aria-hidden="true" /> },
-    { label: "Best", value: formatReactionTime(bestReactionMs), icon: <Crosshair weight="bold" aria-hidden="true" /> },
+const clampRating = (value) => Math.max(0, Math.min(10, Math.round(value)))
+
+function getRoundGrade(average) {
+  if (average >= 9) return "S"
+  if (average >= 7.5) return "A"
+  if (average >= 6) return "B"
+  if (average >= 4) return "C"
+  return "D"
+}
+
+// Round performance as a rated stat card: each readout becomes a 10-segment
+// bar and the average becomes a letter grade.
+function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore }) {
+  const accuracyValue = Number.parseFloat(String(accuracy).replace("%", "")) || 0
+  const avgMs = Number(avgReactionMs)
+  const bestMs = Number(bestReactionMs)
+  const normalizedBest = Math.max(0, Number(bestScore) || 0)
+  const stats = [
+    { label: "Accuracy", value: accuracy, rating: clampRating(accuracyValue / 10), icon: <Gauge weight="bold" aria-hidden="true" /> },
+    { label: "Streak", value: bestStreak, rating: clampRating(bestStreak / 2), icon: <Fire weight="bold" aria-hidden="true" /> },
+    { label: "Avg speed", value: formatReactionTime(avgReactionMs), rating: avgMs > 0 ? clampRating((650 - avgMs) / 45) : 0, icon: <Timer weight="bold" aria-hidden="true" /> },
+    { label: "Fastest", value: formatReactionTime(bestReactionMs), rating: bestMs > 0 ? clampRating((520 - bestMs) / 35) : 0, icon: <Crosshair weight="bold" aria-hidden="true" /> },
+    { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 10, icon: <TrendUp weight="bold" aria-hidden="true" /> },
   ]
+  const average = stats.reduce((sum, stat) => sum + stat.rating, 0) / stats.length
+  const grade = getRoundGrade(average)
 
   return (
-    <div className="outcomeInstruments" aria-label="Round performance details">
-      {instruments.map(({ label, value, icon }) => (
-        <div className="outcomeInstrument" key={label}>
-          {icon}
-          <span>{label}</span>
-          <strong>{value}</strong>
-        </div>
-      ))}
+    <div className={`outcomeInstruments outcomeRating grade-${grade}`} aria-label="Round performance details">
+      <div className="outcomeRatingGrade" aria-label={`Round grade ${grade}`}>
+        <span>Grade</span>
+        <strong>{grade}</strong>
+        <small>{average.toFixed(1)} / 10</small>
+      </div>
+      <div className="outcomeRatingBars">
+        {stats.map(({ label, value, rating, icon }) => (
+          <div className={`outcomeInstrument outcomeRatingRow ${rating >= 8 ? "isHigh" : rating <= 3 ? "isLow" : ""}`} key={label}>
+            {icon}
+            <span>{label}</span>
+            <i className="outcomeRatingSegments" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, index) => <b key={index} className={index < rating ? "isOn" : ""} />)}
+            </i>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -423,6 +452,8 @@ export function GameOverOverlay({
             bestStreak={bestStreak}
             avgReactionMs={avgReactionMs}
             bestReactionMs={bestReactionMs}
+            score={score}
+            bestScore={bestScore}
           />
         </MotionDiv>
 

@@ -1341,3 +1341,74 @@
     background: rgb(3 8 17 / 92%);
     box-shadow: inset 0 0 0 1px rgba(var(--entrance-rgb), 0.35);
 }
+
+/* ---- r25: round rating card ----------------------------------------------
+ * Accuracy / streak / speed / vs-best become rated 10-segment bars beside a
+ * letter grade, replacing the four truncated instrument chips.
+ * ------------------------------------------------------------------------ */
+.outcomeInstruments.outcomeRating {
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgb(0 0 0 / 18%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+}
+.outcomeRatingGrade {
+    --grade: #7fc8ff;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--grade) 28%, transparent), transparent 70%),
+        rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grade) 45%, transparent);
+}
+.grade-S .outcomeRatingGrade { --grade: #ffd166; }
+.grade-A .outcomeRatingGrade { --grade: #5ef2b8; }
+.grade-B .outcomeRatingGrade { --grade: #7fc8ff; }
+.grade-C .outcomeRatingGrade { --grade: #c9a7ff; }
+.grade-D .outcomeRatingGrade { --grade: #ff8a8a; }
+.outcomeRatingGrade span,
+.outcomeRatingGrade small {
+    color: rgb(185 208 236 / 60%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.outcomeRatingGrade small { letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.outcomeRatingGrade strong {
+    color: var(--grade);
+    font-family: var(--ca-font-display);
+    font-size: 50px;
+    line-height: 1;
+    text-shadow: 0 0 22px color-mix(in srgb, var(--grade) 55%, transparent);
+}
+.outcomeRatingBars { display: grid; gap: 4px; min-width: 0; }
+.outcomeRating .outcomeInstrument.outcomeRatingRow {
+    grid-template-columns: 16px 76px minmax(0, 1fr) 58px;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+.outcomeRating .outcomeRatingRow svg { grid-row: auto; font-size: 14px; }
+.outcomeRating .outcomeRatingRow span { font-size: 10px; font-weight: 800; }
+.outcomeRating .outcomeRatingRow strong { font-size: 12px; text-align: right; }
+.outcomeRatingSegments { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.outcomeRatingSegments b {
+    height: 9px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 7%);
+}
+.outcomeRatingSegments b.isOn {
+    background: linear-gradient(180deg, #8fd8ff, #3f9fe6);
+    box-shadow: 0 0 6px rgb(95 180 255 / 40%);
+}
+.outcomeRatingRow.isHigh .outcomeRatingSegments b.isOn { background: linear-gradient(180deg, #7ff5c4, #2fc48a); box-shadow: 0 0 6px rgb(80 230 160 / 40%); }
+.outcomeRatingRow.isLow .outcomeRatingSegments b.isOn { background: linear-gradient(180deg, #ffb09a, #e8644a); box-shadow: none; }
+.outcomeRatingRow.isHigh svg { color: #6ff0bd; }
