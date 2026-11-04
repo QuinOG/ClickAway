@@ -1,5 +1,5 @@
 // Single-scene before/after capture for one-change-per-round UI polish.
-// Run: SCENE=armory|live|rankup|results|miss|mods|range|lobby|countdown|ready SHOT=<file.png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
+// Run: SCENE=armory|live|rankup|results|miss|mods|range|lobby|countdown|ready|spec|compare|wall SHOT=<file.png> npx playwright test tests/e2e/zz-one.spec.js --workers=1
 import { test } from "@playwright/test"
 import { AUTHENTICATED_ROUTES, gotoRoute, installApiMocks } from "./fixtures.js"
 
@@ -95,6 +95,14 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await page.waitForTimeout(3800)
     await hitTargets(page, 6, 110)
     await page.waitForTimeout(500)
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "spec" || SCENE === "compare" || SCENE === "wall") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(1000)
+    if (SCENE === "spec") await page.getByRole("button", { name: "Spec Sheet" }).click()
+    if (SCENE === "compare") await page.getByRole("button", { name: "Compare Modes" }).click()
+    await page.waitForTimeout(700)
     await page.screenshot({ path: SHOT })
   } else if (SCENE === "countdown") {
     const page = await newPage(browser)

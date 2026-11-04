@@ -1,17 +1,60 @@
 import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
-import { formatSignedPercent } from "../armoryUtils.js"
 
 /**
  * The build's service manual, slid out from the machine. It carries the plain-
  * language read the old Review step used to show â€” strengths, tradeoffs, hotbar
  * cadence â€” with the exact round values kept one calm toggle away.
  */
+function getRating(value, low, high, invert = false) {
+  const ratio = Math.min(1, Math.max(0, (Number(value) - low) / (high - low)))
+  return Math.max(1, Math.round((invert ? 1 - ratio : ratio) * 10))
+}
+
+function formatPayout(multiplier) {
+  const percent = Math.round((Number(multiplier) - 1) * 100)
+  return percent === 0 ? "±0%" : `${percent > 0 ? "+" : ""}${percent}%`
+}
+
+function getProfileStats(roundRules) {
+  return [
+    { key: "size", label: "Target size", rating: getRating(roundRules.initialButtonSize, 60, 140), value: `${roundRules.initialButtonSize}px` },
+    { key: "floor", label: "Floor size", rating: getRating(roundRules.minButtonSize, 4, 34), value: `${roundRules.minButtonSize}px` },
+    { key: "shrink", label: "Shrink control", rating: getRating(roundRules.shrinkFactor, 0.9, 1), value: `x${Number(roundRules.shrinkFactor).toFixed(2)}` },
+    { key: "combo", label: "Combo speed", rating: getRating(roundRules.comboStep, 2, 9, true), value: `every ${roundRules.comboStep}` },
+    { key: "miss", label: "Miss forgiveness", rating: getRating(roundRules.missPenalty, 0, 5, true), value: `-${roundRules.missPenalty}` },
+    { key: "charge", label: "Charge rate", rating: getRating(roundRules.powerupAwardMultiplier, 0.5, 1.6), value: `x${Number(roundRules.powerupAwardMultiplier).toFixed(2)}` },
+    { key: "payout", label: "Score payout", rating: getRating(roundRules.scoreMultiplier, 0.7, 1.3), value: formatPayout(roundRules.scoreMultiplier) },
+  ]
+}
+
+function ArmorySpecSheetProfile({ roundRules }) {
+  return (
+    <section className="armorySpecSheetPanel armorySpecProfile" aria-label="Performance profile">
+      <span className="armorySpecSheetPanelTitle">Performance profile</span>
+      {getProfileStats(roundRules).map((stat) => (
+        <div
+          key={stat.key}
+          className={`armorySpecStat ${stat.rating >= 7 ? "isHigh" : stat.rating <= 3 ? "isLow" : ""}`}
+        >
+          <span className="armorySpecStatLabel">{stat.label}</span>
+          <span className="armorySpecStatBar" aria-hidden="true">
+            {Array.from({ length: 10 }, (_, index) => (
+              <i key={index} className={index < stat.rating ? "isOn" : ""} />
+            ))}
+          </span>
+          <span className="armorySpecStatValue">{stat.value}</span>
+        </div>
+      ))}
+    </section>
+  )
+}
+
 function ArmorySpecSheetFieldRecord({ loadoutStats }) {
   if (!loadoutStats || loadoutStats.totalRounds <= 0) {
     return (
       <section className="armorySpecSheetPanel">
         <span className="armorySpecSheetPanelTitle">Field record</span>
-        <p className="armorySpecSheetEmptyRecord">No field data yet â€” take it to the arena.</p>
+        <p className="armorySpecSheetEmptyRecord">No field data yet — take it to the arena.</p>
       </section>
     )
   }
@@ -21,38 +64,29 @@ function ArmorySpecSheetFieldRecord({ loadoutStats }) {
   const rankedWinRate = loadoutStats.rankedRounds > 0
     ? Math.round((loadoutStats.rankedWins / loadoutStats.rankedRounds) * 100)
     : null
+  const tiles = [
+    { key: "best", label: "Best score", value: loadoutStats.bestScore.toLocaleString(), isHero: true },
+    { key: "streak", label: "Best streak", value: loadoutStats.bestStreak },
+    { key: "rounds", label: "Rounds", value: loadoutStats.totalRounds },
+    accuracyPercent !== null ? { key: "acc", label: "Accuracy", value: `${accuracyPercent}%` } : null,
+  ].filter(Boolean)
 
   return (
     <section className="armorySpecSheetPanel">
       <span className="armorySpecSheetPanelTitle">Field record</span>
-      <div className="armoryDetailRows">
-        <div className="armoryDetailRow">
-          <span className="armoryDetailLabel">Rounds played</span>
-          <span className="armoryDetailValue">{loadoutStats.totalRounds}</span>
-        </div>
-        <div className="armoryDetailRow">
-          <span className="armoryDetailLabel">Best score</span>
-          <span className="armoryDetailValue">{loadoutStats.bestScore.toLocaleString()}</span>
-        </div>
-        <div className="armoryDetailRow">
-          <span className="armoryDetailLabel">Best streak</span>
-          <span className="armoryDetailValue">{loadoutStats.bestStreak}</span>
-        </div>
-        {accuracyPercent !== null ? (
-          <div className="armoryDetailRow">
-            <span className="armoryDetailLabel">Accuracy</span>
-            <span className="armoryDetailValue">{accuracyPercent}%</span>
+      <div className="armorySpecRecordTiles">
+        {tiles.map((tile) => (
+          <div key={tile.key} className={`armorySpecRecordTile ${tile.isHero ? "isHero" : ""}`}>
+            <strong>{tile.value}</strong>
+            <span>{tile.label}</span>
           </div>
-        ) : null}
-        {rankedWinRate !== null ? (
-          <div className="armoryDetailRow">
-            <span className="armoryDetailLabel">Ranked record</span>
-            <span className="armoryDetailValue">
-              {loadoutStats.rankedWins}/{loadoutStats.rankedRounds} ({rankedWinRate}%)
-            </span>
-          </div>
-        ) : null}
+        ))}
       </div>
+      {rankedWinRate !== null ? (
+        <p className="armorySpecRecordNote">
+          Ranked record {loadoutStats.rankedWins}/{loadoutStats.rankedRounds} ({rankedWinRate}%)
+        </p>
+      ) : null}
     </section>
   )
 }
@@ -63,8 +97,6 @@ export default function ArmorySpecSheet({
   loadoutName,
   modeLabel,
   presentation,
-  showDetails,
-  onToggleDetails,
   loadoutStats = null,
 }) {
   if (!isOpen) return null
@@ -88,18 +120,14 @@ export default function ArmorySpecSheet({
         <p className="armorySpecSheetLead">{presentation.glanceText}</p>
         <p className="armorySpecSheetNote">{presentation.bestFor}</p>
 
+        <ArmorySpecSheetProfile roundRules={roundRules} />
+
         <section className="armorySpecSheetPanel">
-          <span className="armorySpecSheetPanelTitle">Strengths</span>
+          <span className="armorySpecSheetPanelTitle">Strengths &amp; tradeoffs</span>
           <div className="armoryChipRow">
             {presentation.strengths.map((item) => (
               <span key={item} className="armorySnapshotChip tone-good">{item}</span>
             ))}
-          </div>
-        </section>
-
-        <section className="armorySpecSheetPanel">
-          <span className="armorySpecSheetPanelTitle">Tradeoffs</span>
-          <div className="armoryChipRow">
             {presentation.tradeoffs.map((item) => (
               <span key={item} className="armorySnapshotChip tone-risk">{item}</span>
             ))}
@@ -126,53 +154,6 @@ export default function ArmorySpecSheet({
 
         <ArmorySpecSheetFieldRecord loadoutStats={loadoutStats} />
 
-        <button
-          type="button"
-          className="secondaryButton armoryReviewToggle"
-          onClick={() => onToggleDetails((current) => !current)}
-          aria-expanded={showDetails}
-        >
-          {showDetails ? "Hide Exact Values" : "Show Exact Values"}
-        </button>
-
-        {showDetails ? (
-          <section className="armoryReviewDetails">
-            <div className="armoryDetailRows">
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Start size</span>
-                <span className="armoryDetailValue">{roundRules.initialButtonSize}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Min size</span>
-                <span className="armoryDetailValue">{roundRules.minButtonSize}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Shrink factor</span>
-                <span className="armoryDetailValue">{Number(roundRules.shrinkFactor).toFixed(2)}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Combo step</span>
-                <span className="armoryDetailValue">{roundRules.comboStep}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Miss penalty</span>
-                <span className="armoryDetailValue">{roundRules.missPenalty}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Score multiplier</span>
-                <span className="armoryDetailValue">{formatSignedPercent(roundRules.scoreMultiplier)}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Charge rate</span>
-                <span className="armoryDetailValue">x{Number(roundRules.powerupAwardMultiplier).toFixed(2)}</span>
-              </div>
-              <div className="armoryDetailRow">
-                <span className="armoryDetailLabel">Starting charges</span>
-                <span className="armoryDetailValue">{roundRules.startingPowerupCharges}</span>
-              </div>
-            </div>
-          </section>
-        ) : null}
       </aside>
     </>
   )

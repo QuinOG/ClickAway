@@ -567,7 +567,7 @@ describe("Armory test range (Phase 7)", () => {
     expect(screen.queryByLabelText("Test range")).toBeNull()
   })
 
-  test("the spec sheet carries the old review readout with exact values behind a toggle", async () => {
+  test("the spec sheet carries the review readout with a rated performance profile", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
 
@@ -575,13 +575,12 @@ describe("Armory test range (Phase 7)", () => {
     await user.click(within(machine).getByRole("button", { name: "Spec Sheet" }))
 
     const specSheet = screen.getByLabelText("Build spec sheet")
-    expect(within(specSheet).getByText("Strengths")).not.toBeNull()
-    expect(within(specSheet).getByText("Tradeoffs")).not.toBeNull()
+    expect(within(specSheet).getByText("Strengths & tradeoffs")).not.toBeNull()
 
-    // Exact values stay one calm toggle away.
-    expect(within(specSheet).queryByText("Start size")).toBeNull()
-    await user.click(within(specSheet).getByRole("button", { name: "Show Exact Values" }))
-    expect(within(specSheet).getByText("Start size")).not.toBeNull()
+    // Every rule reads as a rated bar with its exact value beside it.
+    const profile = within(specSheet).getByLabelText("Performance profile")
+    expect(within(profile).getByText("Target size")).not.toBeNull()
+    expect(within(profile).getByText("Miss forgiveness")).not.toBeNull()
 
     // Purely presentational: no persistence.
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()

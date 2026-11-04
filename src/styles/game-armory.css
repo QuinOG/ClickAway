@@ -571,3 +571,71 @@
 .armoryRangeResults .armoryRangeResultsVerdict.is-cost { background: rgb(255 107 107 / 16%); box-shadow: inset 0 0 0 2px rgb(255 107 107 / 70%); color: #ffb0b0; }
 /* Score now lives in the duel plates; the table keeps the supporting stats. */
 .armoryRangeResultsTable .armoryRangeResultsRow:nth-child(2) { display: none; }
+
+/* r16: the spec sheet reads like a stat card — rated 10-segment bars for each
+   rule with the exact value beside it, and the field record as number tiles. */
+.armorySpecProfile { display: grid; gap: 7px; }
+.armorySpecStat {
+    --stat: 120, 184, 255;
+    display: grid;
+    grid-template-columns: 118px 1fr 58px;
+    align-items: center;
+    gap: 10px;
+}
+.armorySpecStat.isHigh { --stat: 98, 230, 186; }
+.armorySpecStat.isLow { --stat: 255, 120, 120; }
+.armorySpecStatLabel { color: rgba(222, 234, 248, 0.82); font-size: 12px; font-weight: 700; }
+.armorySpecStatBar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.armorySpecStatBar i {
+    height: 10px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+.armorySpecStatBar i.isOn {
+    background: linear-gradient(180deg, rgba(var(--stat), 1), rgba(var(--stat), 0.7));
+    box-shadow: 0 0 8px rgba(var(--stat), 0.45);
+}
+.armorySpecStatValue {
+    color: rgb(var(--stat));
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 13px;
+    font-weight: 750;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.armorySpecRecordTiles {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 8px;
+}
+.armorySpecRecordTile {
+    display: grid;
+    gap: 2px;
+    padding: 10px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    text-align: center;
+}
+.armorySpecRecordTile strong {
+    color: #f2f7ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: 22px;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+}
+.armorySpecRecordTile span {
+    color: rgba(200, 216, 236, 0.66);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.armorySpecRecordTile.isHero {
+    background: linear-gradient(180deg, rgba(255, 205, 102, 0.18), rgba(255, 205, 102, 0.05));
+    box-shadow: inset 0 0 0 1px rgba(255, 205, 102, 0.45);
+}
+.armorySpecRecordTile.isHero strong { color: #ffd98a; font-size: 26px; }
+.armorySpecRecordNote { margin: 8px 0 0; color: rgba(200, 216, 236, 0.7); font-size: 12px; }
+.armorySpecRecordTile span { letter-spacing: 0.04em; white-space: nowrap; }
