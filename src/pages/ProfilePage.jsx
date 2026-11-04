@@ -263,14 +263,14 @@ export default function ProfilePage({
                 : playerInitials}
             </div>
             <div className="profileIdentityText">
-              <span className="profileIdentityKicker">Player identity / online</span>
+              <span className="profileIdentityKicker">Player profile</span>
               <h1 className="profilePlayerName" id="profile-player-name">
                 {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
               </h1>
               <p className="profilePlayerTitle">{playerTitle}</p>
+              <p className="profileLead">{getProfileTagline(profileStats)}</p>
             </div>
           </div>
-          <p className="profileLead">{getProfileTagline(profileStats)}</p>
           <div className="profileHeaderResources" aria-label="Player resources and actions">
             <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
             <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
@@ -296,12 +296,12 @@ export default function ProfilePage({
               <h2 className="profileRankTitle">{rankLabel}</h2>
               <p className="profileRankMeta">{getRankMetaText(rankProgress)}</p>
               <div className="profileRankGoal">
-                <span>Next vector</span>
+                <span>Next rank</span>
                 <strong>{rankGoal}</strong>
               </div>
             </div>
             <div className="profileXpReadout">
-              <span><strong>{levelProgressPercent}%</strong> level orbit</span>
+              <span><strong>{levelProgressPercent}%</strong> to next level</span>
               <span>{formatNumber(xpToNextLevel)} XP to LV {nextLevelValue}</span>
             </div>
           </section>
@@ -309,8 +309,8 @@ export default function ProfilePage({
           <section className="profilePerformancePanel" aria-labelledby="performance-title">
             <div className="profilePanelHeading">
               <div>
-                <span className="profileSectionKicker">Performance instruments</span>
-                <h2 id="performance-title">Combat telemetry</h2>
+                <span className="profileSectionKicker">Performance</span>
+                <h2 id="performance-title">Core stats</h2>
               </div>
               <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
             </div>
@@ -367,7 +367,7 @@ export default function ProfilePage({
                 />
               )) : <span className="profileEmptySignal">Play a round to establish form</span>}
             </div>
-            <p className="profileFormAverage"><span>Average signal</span>{formatNumber(recentForm.averageScore)}</p>
+            <p className="profileFormAverage"><span>Avg score</span>{formatNumber(recentForm.averageScore)}</p>
           </section>
 
           <section className="profileBuildSignature" aria-labelledby="build-signature-title">
@@ -376,7 +376,6 @@ export default function ProfilePage({
                 <span className="profileSectionKicker">Build signature</span>
                 <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
               </div>
-              <span className="profileBuildGlyph" aria-hidden="true">+</span>
             </div>
             {signatureBuild ? (
               <div className="profileBuildMetrics">
@@ -421,7 +420,7 @@ export default function ProfilePage({
         >
           <div className="achievementHeaderRow">
             <div className="achievementHeaderText">
-              <span className="profileSectionKicker">Collection signal</span>
+              <span className="profileSectionKicker">Collection</span>
               <h2 className="profileStatsSectionTitle">Achievement constellation</h2>
             </div>
             <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">

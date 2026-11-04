@@ -329,3 +329,6 @@
     background: rgb(155 170 189 / 10%);
     color: rgb(200 212 226 / 62%);
 }
+.duelLaunchHint { margin: -4px 0 0; color: var(--ca-color-ink-faint); font-size: 13px; text-align: right; }
+.duelReplayLock small { font-size: 12px; }
+.duelReplayLock span { font-size: 12px; letter-spacing: 0.06em; }

@@ -161,3 +161,10 @@
     .leaderboardSeasonBanner { grid-template-columns: 1fr; gap: 10px; }
     .leaderboardSeasonMeta { text-align: left; }
 }
+
+/* Round 2: full podium blocks with a floor, quieter halo. */
+.leaderboardPodium { padding-bottom: 20px; }
+.leaderboardPodiumPlayer { border-bottom: 1px solid rgb(var(--scene-accent-rgb) / 18%); border-radius: 10px 10px 0 0; }
+.leaderboardPodiumSignal span:first-child { display: none; }
+.leaderboardPodiumDeck { max-width: 720px; }
+.leaderboardPodiumTier { color: var(--ca-color-ink-muted); }

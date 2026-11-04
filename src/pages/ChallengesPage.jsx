@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom"
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
+import { getModeLabel } from "../utils/gameModeLabelsAndRankedFilters.js"
 import {
   fetchChallenges,
   fetchUserReplays,
@@ -275,7 +276,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
               <small>{sendForm.opponentUsername.trim() || "Rival"}</small>
             </div>
             <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
-              <small>{selectedReplay?.modeId ?? "Replay signal"}</small>
+              <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Target score"}</small>
               <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "—"}</strong>
               <span>{selectedReplay ? "score to defend" : "select a run"}</span>
             </div>
@@ -286,7 +287,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
 
             <label className="duelStep duelRivalStep">
               <span className="duelStepNumber">01</span>
-              <span className="duelStepCopy"><strong>Lock rival</strong><small>Player signal</small></span>
+              <span className="duelStepCopy"><strong>Pick a rival</strong><small>Their username</small></span>
               <span className="duelInputWrap">
                 <UserFocus weight="duotone" aria-hidden="true" />
                 <input
@@ -306,7 +307,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
             <fieldset className="duelStep duelReplayStep">
               <legend>
                 <span className="duelStepNumber">02</span>
-                <span className="duelStepCopy"><strong>Arm replay</strong><small>Score they must beat</small></span>
+                <span className="duelStepCopy"><strong>Choose a run</strong><small>The score they must beat</small></span>
               </legend>
               {replays.length > 0 ? (
                 <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
@@ -328,7 +329,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
                           })
                         }}
                       >
-                        <span className="duelReplayMode">{replay.modeId}</span>
+                        <span className="duelReplayMode">{getModeLabel({ modeId: replay.modeId, fallback: replay.modeId })}</span>
                         <strong>{Number(replay.score || 0).toLocaleString()}</strong>
                         <span className="duelReplayMeta"><Crosshair weight="bold" /> Score</span>
                         {isSelected ? <Check className="duelReplayCheck" weight="bold" /> : null}
@@ -348,7 +349,7 @@ export default function ChallengesPage({ currentUserId = "" }) {
             <div className="duelStep duelLaunchStep">
               <span className="duelStepNumber">03</span>
               <label className="duelMessageField">
-                <span className="duelStepCopy"><strong>Launch</strong><small>Optional transmission</small></span>
+                <span className="duelStepCopy"><strong>Add a message</strong><small>Optional</small></span>
                 <input
                   type="text"
                   maxLength={280}
@@ -364,6 +365,11 @@ export default function ChallengesPage({ currentUserId = "" }) {
               </button>
             </div>
 
+            {!launchReady && !sendSuccess ? (
+              <p className="duelLaunchHint">
+                {sendForm.opponentUsername.trim() ? "Choose a run to send the duel." : "Pick a rival and a run to send the duel."}
+              </p>
+            ) : null}
             {sendError ? <p className="formError duelFormSignal" role="alert">{sendError}</p> : null}
             {sendSuccess ? (
               <p className="duelFormSignal isSuccess" role="status">

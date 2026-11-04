@@ -138,7 +138,7 @@ function HistoryTrajectory({ rounds = [] }) {
       aria-label={`Score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
     >
       <div className="historyTrajectoryCopy">
-        <p className="commandHeaderEyebrow">Performance vector</p>
+        <p className="commandHeaderEyebrow">Score trend</p>
         <h2>Recent trajectory</h2>
         <span className={`historyTrajectoryDelta ${scoreChange >= 0 ? "isPositive" : "isNegative"}`}>
           <span aria-hidden="true">{trendIcon}</span>
@@ -163,17 +163,18 @@ function HistoryTrajectory({ rounds = [] }) {
             <polygon points={`24,122 ${pointString} 576,122`} fill="url(#history-fill)" />
           ) : null}
           <polyline points={pointString} fill="none" stroke="url(#history-line)" strokeWidth="4" vectorEffect="non-scaling-stroke" />
-          {points.map((point) => (
-            <circle
-              key={point.round.id}
-              cx={point.x}
-              cy={point.y}
-              r="6"
-              className={`historyTrajectoryPoint ${getModeToneClassName(point.round)}`}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
         </svg>
+        {points.map((point) => (
+          <span
+            key={point.round.id}
+            className={`historyTrajectoryMarker ${getModeToneClassName(point.round)}`}
+            style={{ left: `${(point.x / 600) * 100}%`, top: `${(point.y / 150) * 100}%` }}
+          />
+        ))}
+        <span className="historyTrajectoryAxis isTop">{formatNumber(highestScore)}</span>
+        <span className="historyTrajectoryAxis isBottom">{formatNumber(lowestScore)}</span>
+        <span className="historyTrajectoryAxis isStart">{plottedRounds.length} rounds ago</span>
+        <span className="historyTrajectoryAxis isEnd">Latest</span>
       </div>
 
       <div className="historyTrajectoryLegend" aria-hidden="true">
@@ -294,7 +295,17 @@ export default function HistoryPage({
       })
     }
 
-    if (historySnapshot.bestScoreRound) {
+    const isLatestAlsoPeak = Boolean(
+      historySnapshot.latestRound
+      && historySnapshot.bestScoreRound
+      && historySnapshot.latestRound.id === historySnapshot.bestScoreRound.id
+    )
+
+    if (isLatestAlsoPeak && cards[0]) {
+      cards[0].eyebrow = "Latest run · Personal best"
+    }
+
+    if (historySnapshot.bestScoreRound && !isLatestAlsoPeak) {
       cards.push({
         eyebrow: "Peak Score",
         title: historySnapshot.bestScoreRound.loadoutSnapshot?.loadoutName || "Saved loadout",

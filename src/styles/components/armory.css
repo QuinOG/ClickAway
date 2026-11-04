@@ -3680,7 +3680,7 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
 /* ---- UI/UX polish: calmer workshop hierarchy ---------------------------- */
 .armoryScene {
-    grid-template-columns: 252px minmax(420px, 0.9fr) minmax(540px, 1.1fr);
+    grid-template-columns: 272px minmax(410px, 0.88fr) minmax(540px, 1.12fr);
 }
 
 .armoryPartsShelf {
@@ -3704,4 +3704,43 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     .armoryInstruments { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .armoryInstrument { padding: 10px 12px; gap: 5px; }
     .armoryInstrumentLabel { font-size: 11px; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* Round 2: every buildcraft glyph is a stroked pictogram, never a filled blob. */
+.armoryPartGlyph svg,
+.armoryMachineHousingGlyph svg,
+.armoryMachineRackGlyph svg,
+.armoryMachineIdentityGlyph svg,
+.armoryCommandIdentityGlyph svg,
+.armoryBayCard svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.armoryPartGlyph { color: rgba(226, 238, 252, 0.92); }
+.armoryPartGlyph svg { width: 18px; height: 18px; }
+
+/* Diagram housings: one-line name, readable eyebrow. */
+.armoryMachineHousing { width: min(208px, 38%); min-height: 56px; }
+
+/* Power rack: give the trigger text room instead of an extra glyph. */
+.armoryMachineRackGlyph { display: none; }
+.armoryMachineRackSlot { padding: 8px 10px; gap: 8px; }
+.armoryMachineRackMeta { font-size: 11px; color: rgba(197, 216, 240, 0.74); white-space: nowrap; }
+.armoryMachineHousingSlot,
+.armoryMachineHousingLabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.armoryMachineHousingLabel { font-size: 13px; overflow-wrap: normal; }
+
+/* Round 2: flatten the inspector — the lane panel is a section, not another card. */
+.armoryLanePanel,
+.armoryLanePanel.tone-tempoCore,
+.armoryLanePanel.tone-streakLens,
+.armoryLanePanel.tone-powerRig {
+    padding: 4px 0 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
 }

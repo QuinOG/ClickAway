@@ -131,9 +131,14 @@ export default function ShopItemCard({
       <div className="shopItemHeader">
         <span className={`shopItemStateTag is-${visualState}`}>
           <StateIcon state={visualState} />
-          {stateLabel}
+          {visualState === "affordable" ? (
+            <>
+              <span className="uiVisuallyHidden">{stateLabel}: </span>
+              {formatCoins(item.cost)} coins
+            </>
+          ) : stateLabel}
         </span>
-        {isEquipped ? null : (
+        {isEquipped || visualState === "affordable" ? null : (
           <span className={`shopItemPriceTag ${item.cost === 0 ? "isCore" : ""}`}>
             {priceLabel}
           </span>

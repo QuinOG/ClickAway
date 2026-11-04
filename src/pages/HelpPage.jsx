@@ -71,7 +71,7 @@ function HelpMissionMap() {
           <p className="commandHeaderEyebrow">Choose a system</p>
           <h2 id="help-mission-map-title">Field guide</h2>
         </div>
-        <span><i /> Training signal online</span>
+        <span><i /> Updated for this season</span>
       </div>
       <nav className="helpMissionGrid" aria-label="Field guide sections">
         {GUIDE_DESTINATIONS.map((item, index) => (
