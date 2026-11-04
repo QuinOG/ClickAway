@@ -154,7 +154,6 @@ export default function ArmoryMachine({
               <path className="conduit-tempoCore" d="M300 205 L92 205" />
               <path className="conduit-streakLens" d="M300 205 L300 62" />
               <path className="conduit-powerRig" d="M300 205 L508 205" />
-              <circle cx="300" cy="205" r="116" />
             </svg>
 
             <div className="armoryMachineHousingRow" aria-label="Passive stack">
@@ -167,6 +166,27 @@ export default function ArmoryMachine({
                 />
               ))}
             </div>
+
+            <span className="armoryMachineRig" aria-hidden="true">
+              <span className="armoryMachineRigRing">
+                {presentation.moduleStack.map((module) => (
+                  <i
+                    key={module.slotId}
+                    className={`armoryMachineRigArc arc-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
+                  />
+                ))}
+              </span>
+              <span className="armoryMachineRigTicks" />
+              {presentation.moduleStack.map((module) => (
+                <span
+                  key={module.slotId}
+                  className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
+                >
+                  <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
+                </span>
+              ))}
+              <span className="armoryMachineRigBed" />
+            </span>
 
             <span
               className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}

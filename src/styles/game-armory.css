@@ -317,3 +317,82 @@
 .armoryUnlockWallGrid:not(.tab-all) { grid-template-columns: 1fr; }
 .armoryRangeResultsBuild { margin: 0 0 6px; font-size: 14px; color: rgb(232 242 255 / 78%); }
 .armoryRangeResultsBuild strong { font-family: var(--ca-font-display); font-weight: 400; color: #fff; }
+
+/* ---- Phase 3 round 4: readable unlock wall, next-unlock feature, test verdict ---- */
+.armoryUnlockWallGrid.tab-all { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.armoryUnlockWallItemMeta { white-space: normal; overflow: visible; text-overflow: clip; font-size: 12px; line-height: 1.35; color: rgba(var(--armory-line), 0.74); }
+.armoryUnlockWallItem.isLocked { opacity: 0.86; filter: saturate(0.45); }
+.armoryUnlockWallItem.isLocked .armoryPartGlyph { color: inherit; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.armoryUnlockWallItemLock { justify-self: start; margin-top: 3px; padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #ffd27a; background: rgba(255, 196, 80, 0.12); box-shadow: inset 0 0 0 1px rgba(255, 196, 80, 0.35); }
+.armoryUnlockWallNext {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px;
+    padding: 14px 18px; border-radius: 14px;
+    background: radial-gradient(ellipse at 0% 50%, rgba(255, 196, 80, 0.16), transparent 60%), linear-gradient(180deg, #1c2b44, #121d31);
+    box-shadow: var(--skin-frame-soft, 0 0 0 2px #0a1322), inset 0 0 0 1px rgba(255, 196, 80, 0.28);
+}
+.armoryUnlockWallNextIcon { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 16px; background: rgba(255, 196, 80, 0.1); box-shadow: inset 0 0 0 2px rgba(255, 196, 80, 0.4); color: #ffd27a; }
+.armoryUnlockWallNextIcon svg { width: 48px; height: 48px; }
+.armoryUnlockWallNextCopy { display: grid; gap: 3px; min-width: 0; }
+.armoryUnlockWallNextCopy strong { font: 400 22px/1.1 var(--ca-font-display); color: #ffffff; }
+.armoryUnlockWallNextCopy > span:last-child { font-size: 13px; color: rgba(255, 255, 255, 0.78); }
+.armoryUnlockWallNextGap { display: grid; justify-items: center; padding: 8px 14px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
+.armoryUnlockWallNextGap b { font: 400 30px/1 var(--ca-font-display); color: #ffd27a; }
+.armoryUnlockWallNextGap small { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.armoryCollectionSummaryCopy > span:last-child { display: none; }
+
+.armoryRangeResultsVerdict { margin: 2px 0 6px; font: 400 30px/1.05 var(--ca-font-display); color: #ffffff; text-shadow: 0 3px 0 var(--skin-ink, #0a1322); }
+.armoryRangeResultsVerdict.is-gain { color: #8ff0bf; }
+.armoryRangeResultsVerdict.is-cost { color: #ff9a8a; }
+.armoryRangeResultsBuild { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.armoryRangeResultsMode { padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.75); }
+.armoryRangeResultsMode.isAB { background: rgba(63, 208, 255, 0.16); color: #8fe4ff; }
+
+/* ---- Phase 3 round 4: the rig core — fitted parts mount on a toned ring around the target ---- */
+.armoryMachineRig {
+    position: absolute; left: 50%; top: 50%; z-index: 0;
+    width: 230px; height: 230px; transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+.armoryMachineRigRing, .armoryMachineRigTicks, .armoryMachineRigBed { position: absolute; border-radius: 50%; }
+.armoryMachineRigRing { inset: 0; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.35)); }
+.armoryMachineRigArc {
+    position: absolute; inset: 0; border-radius: 50%;
+    -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 16px), #000 calc(50% - 15px) 50%, transparent calc(50% + 1px));
+            mask: radial-gradient(circle, transparent 0 calc(50% - 16px), #000 calc(50% - 15px) 50%, transparent calc(50% + 1px));
+    --arc: 255 255 255;
+    background: conic-gradient(from var(--from), rgb(var(--arc) / 0.95) 0 112deg, transparent 0);
+}
+.armoryMachineRigArc.arc-streakLens { --from: -56deg; --arc: var(--armory-tone-streak); }
+.armoryMachineRigArc.arc-powerRig { --from: 64deg; --arc: var(--armory-tone-power); }
+.armoryMachineRigArc.arc-tempoCore { --from: 184deg; --arc: var(--armory-tone-tempo); }
+.armoryMachineRigArc.isStock { background: conic-gradient(from var(--from), rgb(var(--arc) / 0.22) 0 112deg, transparent 0); }
+.armoryMachineRigArc.isFitted { filter: drop-shadow(0 0 10px rgb(var(--arc) / 0.6)); }
+.armoryMachineRigTicks {
+    inset: 22px;
+    background: repeating-conic-gradient(rgba(255, 255, 255, 0.18) 0 1.5deg, transparent 1.5deg 15deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 7px), #000 calc(50% - 6px) 50%, transparent calc(50% + 1px));
+            mask: radial-gradient(circle, transparent 0 calc(50% - 7px), #000 calc(50% - 6px) 50%, transparent calc(50% + 1px));
+}
+.armoryMachineRigBed {
+    inset: 34px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.07), rgba(6, 12, 24, 0.9) 70%);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08), inset 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+.armoryMachineRigMount {
+    position: absolute; z-index: 2; display: grid; place-items: center;
+    width: 52px; height: 52px; border-radius: 14px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: linear-gradient(160deg, #23344f, #111b2d);
+    box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 4px 0 3px rgba(0, 0, 0, 0.4);
+}
+.armoryMachineRigMount > * { transform: rotate(-45deg); }
+.armoryMachineRigMount.mount-streakLens { left: 50%; top: 8px; color: rgb(var(--armory-tone-streak)); }
+.armoryMachineRigMount.mount-tempoCore { left: 8px; top: 50%; color: rgb(var(--armory-tone-tempo)); }
+.armoryMachineRigMount.mount-powerRig { left: calc(100% - 8px); top: 50%; color: rgb(var(--armory-tone-power)); }
+.armoryMachineRigMount.isFitted { box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px currentColor, 0 0 18px currentColor; }
+.armoryMachineRigMount.isStock { opacity: 0.55; filter: saturate(0.3); }
+.armoryMachineTarget { z-index: 3; }
+@media (prefers-reduced-motion: no-preference) {
+    .armoryMachineRigTicks { animation: armoryRigSpin 40s linear infinite; }
+}
+@keyframes armoryRigSpin { to { transform: rotate(360deg); } }

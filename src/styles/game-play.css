@@ -651,3 +651,92 @@
     box-shadow: 0 0 0 2px var(--skin-ink), 0 3px 0 #0a1220;
 }
 .gameOverNextUnlock.isUnlocked .gameOverNextUnlockCta { background: var(--skin-gold); }
+
+/* ---- Phase 3 round 4: results in two columns so nothing hides behind the footer ---- */
+@media (min-width: 1000px) {
+    .gameOverCardWithDifficulty {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+        grid-template-rows: auto auto 1fr auto;
+        grid-template-areas:
+            "header header"
+            "score body"
+            "rewards body"
+            "actions actions";
+        column-gap: 18px;
+        row-gap: 12px;
+        min-width: min(960px, 94vw);
+        max-width: min(980px, 94vw);
+        text-align: left;
+    }
+    .gameOverCardWithDifficulty > .gameOverHeader { grid-area: header; text-align: center; }
+    .gameOverCardWithDifficulty > .gameOverScorePanel { grid-area: score; text-align: center; }
+    .gameOverCardWithDifficulty > .gameOverRewards { grid-area: rewards; align-content: start; margin: 0; }
+    .gameOverCardWithDifficulty > .gameOverBody { grid-area: body; overflow: visible; min-height: 0; }
+    .gameOverCardWithDifficulty > .gameOverActions { grid-area: actions; }
+    .gameOverCardWithDifficulty > .gameOverRewards > * { flex: 1 1 calc(50% - 10px); }
+    .gameOverCardWithDifficulty > .gameOverRewards > .gameOverNextUnlock,
+    .gameOverCardWithDifficulty > .gameOverRewards > .gameOverXpTally { flex-basis: 100%; }
+}
+/* The score badge only earns space for a real event (PB / clean run). */
+.gameOverScorePanel:not(:has(.gameOverMedal)) .gameOverScoreBadge { display: none; }
+.gameOverLoadoutBadge { font-size: 12px; opacity: 0.78; margin-top: 2px; }
+
+/* ---- Phase 3 round 4: a physical target and localized hit bursts ---- */
+/* Material: specular cap + shaded lower lip over any skin, so the target reads as a pressable object. */
+.arena .bigCircleButton::before {
+    display: block;
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 46% 30% at 38% 24%, rgb(255 255 255 / 55%), transparent 70%),
+        radial-gradient(circle at 50% 50%, transparent 0 56%, rgb(0 0 0 / 0%) 57%, rgb(0 0 0 / 34%) 100%);
+    box-shadow: inset 0 -7px 0 rgb(0 0 0 / 28%), inset 0 4px 0 rgb(255 255 255 / 22%);
+}
+.arena .bigCircleButton {
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 9px 0 rgb(0 0 0 / 38%), 0 14px 24px rgb(0 0 0 / 40%), 0 0 30px rgb(79 216 255 / 34%);
+}
+/* Bullseye pip: a precise aim point at the centre. */
+.arena .bigCircleButton::after {
+    background: radial-gradient(circle, #ffffff 0 5%, var(--skin-ink) 5.5% 8%, transparent 8.5%);
+}
+
+/* Hit: a short white shockwave + sparks at the click point; the number stays small and quick. */
+.clickFeedback.hit::before,
+.clickFeedback.comboHit::before,
+.clickFeedback.hit::after,
+.clickFeedback.comboHit::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.clickFeedback.hit::before,
+.clickFeedback.comboHit::before {
+    width: 84px; height: 84px; margin: -42px 0 0 -42px;
+    border: 4px solid #ffffff;
+    box-shadow: 0 0 18px rgb(140 230 255 / 80%);
+    animation: hitShockwave 320ms cubic-bezier(.2,.8,.3,1) forwards;
+}
+.clickFeedback.hit::after,
+.clickFeedback.comboHit::after {
+    width: 8px; height: 8px; margin: -4px 0 0 -4px;
+    background: #fff4b8;
+    box-shadow: 0 -34px 0 -1px #fff4b8, 30px -17px 0 -1px #fff4b8, 30px 17px 0 -1px #fff4b8, 0 34px 0 -1px #fff4b8, -30px 17px 0 -1px #fff4b8, -30px -17px 0 -1px #fff4b8;
+    animation: hitSparks 360ms ease-out forwards;
+}
+.clickFeedback.comboHit::before { border-color: #ffe27a; box-shadow: 0 0 22px rgb(255 210 90 / 85%); }
+@keyframes hitShockwave { from { transform: scale(0.35); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
+@keyframes hitSparks { from { transform: scale(0.4); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+.clickFeedback.hit .clickFeedbackValue { font-size: 28px; }
+.clickFeedback.hit { animation-duration: 0.42s; }
+@media (prefers-reduced-motion: reduce) {
+    .clickFeedback.hit::before, .clickFeedback.comboHit::before, .clickFeedback.hit::after, .clickFeedback.comboHit::after { animation: none; display: none; }
+}

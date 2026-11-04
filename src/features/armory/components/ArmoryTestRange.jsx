@@ -43,17 +43,33 @@ const RESULT_ROWS = [
   { key: "chargesEarned", label: "Charges", read: (r) => r.chargesEarned, format: (v) => v },
 ]
 
-function RangeResults({ results, previous, runNumber, loadoutName, modeLabel, onRunAgain, onExit }) {
+function getVerdict(results, previous) {
+  if (!previous) return { tone: "is-same", text: "Baseline recorded" }
+  const delta = (results.score ?? 0) - (previous.score ?? 0)
+  if (delta > 0) return { tone: "is-gain", text: `+${delta} score vs last run` }
+  if (delta < 0) return { tone: "is-cost", text: `−${Math.abs(delta)} score vs last run` }
+  return { tone: "is-same", text: "Even with last run" }
+}
+
+function RangeResults({ results, previous, partsChanged, runNumber, loadoutName, modeLabel, onRunAgain, onExit }) {
+  const verdict = getVerdict(results, previous)
+  const prevLabel = previous ? (partsChanged ? "Old parts" : `Run ${runNumber - 1}`) : "Previous"
+  const latestLabel = previous && partsChanged ? "New parts" : `Run ${runNumber}`
   return (
     <div className="armoryRangeResults" role="dialog" aria-label="Range results">
-      <p className="armoryRangeResultsEyebrow">Range sample · Run {runNumber}</p>
-      <p className="armoryRangeResultsBuild"><strong>{loadoutName}</strong> on {modeLabel} rules{previous ? " — same parts both runs" : ""}</p>
-      <p className="armoryRangeResultsBuild"><strong>{loadoutName}</strong> on {modeLabel} rules{previous ? " — same parts both runs" : ""}</p>
+      <p className="armoryRangeResultsEyebrow">Test complete · Run {runNumber}</p>
+      <p className={`armoryRangeResultsVerdict ${verdict.tone}`}>{verdict.text}</p>
+      <p className="armoryRangeResultsBuild">
+        <strong>{loadoutName}</strong> · {modeLabel} rules
+        <span className={`armoryRangeResultsMode ${partsChanged ? "isAB" : ""}`}>
+          {!previous ? "First sample" : partsChanged ? "A/B: parts changed" : "Repeat: same parts"}
+        </span>
+      </p>
       <div className="armoryRangeResultsTable" role="table" aria-label="Latest run versus previous run">
         <div className="armoryRangeResultsRow isHead" role="row">
           <span role="columnheader">Stat</span>
-          <span role="columnheader">{previous ? `Run ${runNumber - 1}` : "Previous"}</span>
-          <span role="columnheader">{`Run ${runNumber}`}</span>
+          <span role="columnheader">{prevLabel}</span>
+          <span role="columnheader">{latestLabel}</span>
           <span role="columnheader">Change</span>
         </div>
         {RESULT_ROWS.map((row) => {
@@ -74,7 +90,7 @@ function RangeResults({ results, previous, runNumber, loadoutName, modeLabel, on
         })}
       </div>
       <p className="armoryRangeResultsNote">
-        {previous ? "Compared with your last run on these exact rules." : "First sample on these rules — run again to get a baseline."}
+        {!previous ? "Run again for a baseline, or swap a part and test to compare builds." : partsChanged ? "Compared with this build's last run before the part swap." : "Swap a part and test again to compare builds."}
         {" "}No XP, coins, or rank.
       </p>
       <div className="armoryRangeResultsActions">
@@ -82,7 +98,7 @@ function RangeResults({ results, previous, runNumber, loadoutName, modeLabel, on
           Run it again
         </button>
         <button type="button" className="secondaryButton" onClick={onExit}>
-          Keep build
+          Adjust build
         </button>
       </div>
     </div>
@@ -109,15 +125,16 @@ export default function ArmoryTestRange({
 }) {
   const range = useArmoryRangeRound({ roundRules, isActive: isOpen, runToken, onExit })
 
-  const historyKey = `${loadoutName}|${modeLabel}|${JSON.stringify(roundRules ?? {})}`
+  const historyKey = `${loadoutName}|${modeLabel}`
+  const rulesKey = JSON.stringify(roundRules ?? {})
   const isRunDone = range.phase === RANGE_PHASE.DONE && Boolean(range.results)
 
   useEffect(() => {
     if (!isRunDone) return
     const entry = rangeHistory.get(historyKey)
     if (entry?.token === runToken) return
-    rangeHistory.set(historyKey, { token: runToken, results: range.results, previous: entry?.results ?? null, count: (entry?.count ?? 0) + 1 })
-  }, [historyKey, isRunDone, range.results, runToken])
+    rangeHistory.set(historyKey, { token: runToken, results: range.results, rulesKey, previous: entry?.results ?? null, previousRulesKey: entry?.rulesKey ?? null, count: (entry?.count ?? 0) + 1 })
+  }, [historyKey, rulesKey, isRunDone, range.results, runToken])
 
   if (!isOpen) return null
 
@@ -125,6 +142,8 @@ export default function ArmoryTestRange({
   const previousResults = historyEntry?.token === runToken
     ? historyEntry.previous
     : historyEntry?.results ?? null
+  const previousRulesKey = historyEntry?.token === runToken ? historyEntry.previousRulesKey : historyEntry?.rulesKey ?? null
+  const partsChanged = Boolean(previousResults) && previousRulesKey !== null && previousRulesKey !== rulesKey
   const runNumber = historyEntry?.token === runToken ? historyEntry.count : (historyEntry?.count ?? 0) + 1
   const isDone = range.phase === RANGE_PHASE.DONE
   const isCountingDown = range.phase === RANGE_PHASE.COUNTDOWN
@@ -159,7 +178,7 @@ export default function ArmoryTestRange({
           />
 
           {isDone ? (
-            <RangeResults results={range.results} previous={previousResults} runNumber={runNumber} loadoutName={loadoutName} modeLabel={modeLabel} onRunAgain={onRunAgain} onExit={onExit} />
+            <RangeResults results={range.results} previous={previousResults} partsChanged={partsChanged} runNumber={runNumber} loadoutName={loadoutName} modeLabel={modeLabel} onRunAgain={onRunAgain} onExit={onExit} />
           ) : null}
         </div>
 

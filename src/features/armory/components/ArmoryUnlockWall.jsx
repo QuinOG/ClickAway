@@ -44,15 +44,10 @@ function ArmoryUnlockWallPanel({
               <span className={`armoryPartGlyph tone-${tone}`} aria-hidden="true">{renderPartGlyph(part)}</span>
               <span className="armoryUnlockWallItemBody">
                 <strong className="armoryUnlockWallItemLabel">{part.label}</strong>
-                <span className="armoryUnlockWallItemMeta">
-                  {isOwned ? part.description : getUnlockText(part.unlockLevel)}
-                </span>
+                <span className="armoryUnlockWallItemMeta">{part.description}</span>
+                {isOwned ? null : <span className="armoryUnlockWallItemLock">{getUnlockText(part.unlockLevel)}</span>}
               </span>
-              <ArmoryStateEmblem
-                state={visualState}
-                label={isOwned ? (isInstalled ? "Installed" : "Collected") : `Lv ${part.unlockLevel}`}
-                compact
-              />
+              {isInstalled ? <ArmoryStateEmblem state="installed" label="Installed" compact /> : null}
             </li>
           )
         })}
@@ -125,6 +120,23 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
             <ArmoryStateEmblem state="locked" compact />
           </div>
         </section>
+
+        {nextUnlock ? (
+          <section className="armoryUnlockWallNext" aria-label="Next unlock">
+            <span className="armoryUnlockWallNextIcon" aria-hidden="true">
+              {LOADOUT_POWERUPS.includes(nextUnlock) ? <PowerupGlyph powerupId={nextUnlock.id} /> : <PartEmblem partId={nextUnlock.id} slotId={nextUnlock.slotId} size={48} />}
+            </span>
+            <span className="armoryUnlockWallNextCopy">
+              <span className="armoryUnlockWallEyebrow">Next unlock · Level {nextUnlock.unlockLevel}</span>
+              <strong>{nextUnlock.label}</strong>
+              <span>{nextUnlock.description}</span>
+            </span>
+            <span className="armoryUnlockWallNextGap">
+              <b>{Math.max(1, nextUnlock.unlockLevel - playerLevel)}</b>
+              <small>{nextUnlock.unlockLevel - playerLevel === 1 ? "level away" : "levels away"}</small>
+            </span>
+          </section>
+        ) : null}
 
         <div className="armoryUnlockWallTabs" role="tablist" aria-label="Part categories">
           {WALL_TABS.map((tab) => (
