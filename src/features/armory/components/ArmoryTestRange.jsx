@@ -83,8 +83,8 @@ function RangeResults({ results, previous, partsChanged, runNumber, loadoutName,
       </p>
       <div className="armoryRangeResultsTable" role="table" aria-label="Latest run versus previous run">
         <div className="armoryRangeResultsRow isHead" role="row">
-          <span role="columnheader">Stat</span>
           <span role="columnheader">{prevLabel}</span>
+          <span role="columnheader">Stat</span>
           <span role="columnheader">{latestLabel}</span>
           <span role="columnheader">Change</span>
         </div>
@@ -93,11 +93,22 @@ function RangeResults({ results, previous, partsChanged, runNumber, loadoutName,
           const before = previous ? row.read(previous) : null
           const delta = before === null ? null : latest - before
           const tone = delta === null || delta === 0 ? "is-same" : delta > 0 ? "is-gain" : "is-cost"
+          const scale = row.key === "accuracy" ? 100 : Math.max(1, latest, before ?? 0)
           return (
-            <div key={row.key} className="armoryRangeResultsRow" role="row">
+            <div key={row.key} className={`armoryRangeResultsRow ${tone}`} role="row">
+              <span role="cell" className="armoryRangeResultPrev">
+                <b>{before === null ? "—" : row.format(before)}</b>
+                <i className="armoryRangeResultBar isPrev" aria-hidden="true">
+                  <em style={{ width: `${before === null ? 0 : Math.max(3, (before / scale) * 100)}%` }} />
+                </i>
+              </span>
               <span role="cell" className="armoryRangeResultLabel">{row.label}</span>
-              <span role="cell" className="armoryRangeResultPrev">{before === null ? "—" : row.format(before)}</span>
-              <strong role="cell" className="armoryRangeResultValue">{row.format(latest)}</strong>
+              <strong role="cell" className="armoryRangeResultValue">
+                <i className="armoryRangeResultBar isLatest" aria-hidden="true">
+                  <em style={{ width: `${Math.max(3, (latest / scale) * 100)}%` }} />
+                </i>
+                <b>{row.format(latest)}</b>
+              </strong>
               <span role="cell" className={`armoryRangeResultDelta ${tone}`}>
                 {delta === null ? "—" : `${delta > 0 ? "+" : delta < 0 ? "−" : "±"}${row.format(Math.abs(delta))}`}
               </span>

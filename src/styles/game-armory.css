@@ -1133,3 +1133,45 @@
     letter-spacing: 0.04em;
 }
 .armoryInstrumentGauge { width: 88px; height: 52px; margin-block: 2px 0; }
+
+/* ---- r30: range results as a head-to-head bar chart ----------------------
+ * Previous run's bar grows left from the centre stat label, latest run's
+ * grows right; the winning side of each row lights up.
+ * ------------------------------------------------------------------------ */
+.armoryRangeResultsTable { width: min(620px, 100%); }
+.armoryRangeResultsRow {
+    grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr) 54px;
+    gap: 12px;
+    padding: 9px 14px;
+}
+.armoryRangeResultsRow > :first-child { text-align: right; }
+.armoryRangeResultsRow.isHead > :nth-child(2) { text-align: center; }
+.armoryRangeResultsRow.isHead > :nth-child(3) { text-align: left; }
+.armoryRangeResultLabel { text-align: center; font: 800 10.5px/1.1 var(--ca-font-body, inherit); letter-spacing: 0.12em; text-transform: uppercase; color: rgb(232 242 255 / 62%); }
+.armoryRangeResultPrev,
+.armoryRangeResultsRow .armoryRangeResultValue {
+    display: grid;
+    align-items: center;
+    gap: 10px;
+}
+.armoryRangeResultPrev { grid-template-columns: 44px minmax(0, 1fr); }
+.armoryRangeResultsRow .armoryRangeResultValue { grid-template-columns: minmax(0, 1fr) 52px; }
+.armoryRangeResultPrev b { font-weight: 400; text-align: left; }
+.armoryRangeResultValue b { font-weight: 400; text-align: right; }
+.armoryRangeResultBar {
+    display: flex;
+    height: 12px;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 5%);
+    overflow: hidden;
+}
+.armoryRangeResultBar.isPrev { justify-content: flex-end; }
+.armoryRangeResultBar em { display: block; height: 100%; border-radius: 3px; transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.armoryRangeResultBar.isPrev em { background: linear-gradient(270deg, #8f9fd6, #5a6aa8); }
+.armoryRangeResultBar.isLatest em { background: linear-gradient(90deg, #4aa8f0, #8fd8ff); }
+.armoryRangeResultsRow.is-gain .armoryRangeResultBar.isLatest em { background: linear-gradient(90deg, #2fc48a, #8bffcf); box-shadow: 0 0 10px rgb(80 230 160 / 55%); }
+.armoryRangeResultsRow.is-cost .armoryRangeResultBar.isPrev em { background: linear-gradient(270deg, #c7b2ff, #8a6ee0); box-shadow: 0 0 10px rgb(170 140 255 / 45%); }
+.armoryRangeResultsRow.is-cost .armoryRangeResultBar.isLatest em { background: linear-gradient(90deg, #a8524a, #ff9b8f); }
+.armoryRangeResultsRow .armoryRangeResultLabel { font-family: inherit; font-size: 10.5px; font-weight: 800; line-height: 1.1; letter-spacing: 0.12em; white-space: nowrap; }
+.armoryRangeResultPrev { grid-template-columns: 56px minmax(0, 1fr); }
+.armoryRangeResultsRow .armoryRangeResultValue { grid-template-columns: minmax(0, 1fr) 64px; }

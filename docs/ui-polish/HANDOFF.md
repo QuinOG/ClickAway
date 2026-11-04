@@ -57,3 +57,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r27: lobby build strip becomes a mini spec card — four rated 10-segment specs (target, shrink, combo, charge; shared armorySpecRatings.js with the spec sheet) beside the powerup keys.
 - r28: featured mod's You gain / You give up chips become a Swap impact meter — per changed stat a rated 10-segment bar (kept blue, gained green pulsing, lost red-striped) with old → new values, computed from the real candidate round rules.
 - r29: Armory instrument strip becomes five dial gauges — 180° arc + needle at the shared 1-10 rating (green high / blue mid / red low; dashed violet ghost needle in compare), exact value beneath, plain read as a tinted chip.
+- r30: test-run stat table becomes a head-to-head bar chart — previous run's bar grows left from a centred stat label, latest run's grows right; gains glow green, losses hand the glow to the previous run.
