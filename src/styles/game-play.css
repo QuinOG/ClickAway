@@ -1236,3 +1236,98 @@
 @media (prefers-reduced-motion: reduce) {
     .arenaFinalCount, .arena.isFinalSeconds::after, .gameHud .hudTimerAnchor .timerText { animation: none; }
 }
+
+/* r21: streak gets equal billing with score — a 52px streak number, the combo
+   multiplier on a gold plate, and a full-width bar counting down to the next
+   multiplier. */
+.gameHud .gameStatusRow {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: end;
+    column-gap: 14px;
+    row-gap: 6px;
+    width: 100%;
+}
+.gameHud .hudStreakReadout {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    gap: 0;
+    justify-items: start;
+}
+.gameHud .hudStreakLabel { order: -1; }
+.gameHud .hudStreakValue {
+    font-family: var(--ca-font-display);
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 0.95;
+    color: #fff;
+    -webkit-text-stroke: 2px var(--skin-ink);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--skin-ink), 0 0 18px rgb(var(--heat, 120 200 255) / 45%);
+}
+.gameHud .hudComboReadout {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 4px 12px 3px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffd45e, #f0a52a);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 3px 0 #8a4f0b, 0 0 16px rgb(255 200 80 / 35%);
+    transform: skewX(-8deg);
+}
+.gameHud .hudComboValue {
+    color: #2a1600;
+    font-family: var(--ca-font-display);
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+}
+.gameHud .hudComboLabel { color: rgb(42 22 0 / 75%); font-size: 10px; font-weight: 800; letter-spacing: 0.12em; }
+.gameHud .hudBestReadout {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    margin-top: 4px;
+}
+.gameHud .hudComboNext {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.gameHud .hudComboNextPips { flex: 1; display: flex; gap: 4px; }
+.gameHud .hudComboNextPips > span {
+    flex: 1;
+    width: auto;
+    height: 8px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 10%);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 35%);
+}
+.gameHud .hudComboNextPips > span.isLit {
+    background: linear-gradient(180deg, #ffe08a, #f5b13a);
+    box-shadow: 0 0 8px rgb(255 200 80 / 60%);
+}
+.gameHud .hudComboNextLabel { color: #ffd98a; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.gameHud .gameStatusRow { grid-template-rows: auto; min-width: 300px; row-gap: 0; }
+.gameHud .hudComboNext {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+.gameHud .hudComboNextPips { flex: none; }
+.gameHud .hudComboNextLabel { text-align: right; }
+.gameHud .hudBestReadout { margin-top: 2px; }
+.gameHud .hudStreakValue { font-size: 48px; line-height: 0.88; }

@@ -48,3 +48,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r18: compare-modes manifest is three mode-coloured cards with pressure pips; each readout has a bar scaled against the other modes. (Also repaired two cp1252 bytes from r15/r16 edits.)
 - r19: unlock wall is a one-screen trophy cabinet — collection + next unlock side by side, four lane columns of part tiles (lit owned, striped glass + level pill locked, cyan installed); no more 1700px scroll.
 - r20: final five seconds take over the arena — a giant ghost numeral slams in each second (gold at 5-4, red at 3-1), arena edges pulse, HUD timer thumps.
+- r21: HUD streak gets equal billing with score — 48px streak number, combo multiplier on a gold skewed plate, next-multiplier pip bar beside it; HUD height unchanged.
