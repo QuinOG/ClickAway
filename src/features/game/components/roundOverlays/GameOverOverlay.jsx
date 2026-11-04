@@ -196,7 +196,7 @@ function NextUnlock({ level, xpIntoLevel, xpToNextLevel, earned }) {
       aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
     >
       <span className="gameOverNextUnlockIcon" aria-hidden="true">
-        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={44} /> : <PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={44} />}
+        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={96} /> : <PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={96} />}
         <i className="gameOverNextUnlockBadge">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</i>
       </span>
       <span className="gameOverNextUnlockCopy">
@@ -403,14 +403,6 @@ export function GameOverOverlay({
               prefersReducedMotion={prefersReducedMotion}
             />
           ) : null}
-          {allowsLevelProgression ? (
-            <NextUnlock
-              level={playerLevel}
-              xpIntoLevel={playerXpIntoLevel}
-              xpToNextLevel={playerXpToNextLevel}
-              earned={roundXpEarned}
-            />
-          ) : null}
           {allowsRankProgression ? (
             <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
           ) : null}
@@ -471,6 +463,22 @@ export function GameOverOverlay({
           </div>
         ) : null}
       </div>
+
+      {allowsLevelProgression ? (
+        <MotionDiv
+          className="gameOverSpotlight"
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 22, delay: 0.56 }}
+        >
+          <NextUnlock
+            level={playerLevel}
+            xpIntoLevel={playerXpIntoLevel}
+            xpToNextLevel={playerXpToNextLevel}
+            earned={roundXpEarned}
+          />
+        </MotionDiv>
+      ) : null}
 
       <MotionDiv
         className="overlayActions gameOverActions"

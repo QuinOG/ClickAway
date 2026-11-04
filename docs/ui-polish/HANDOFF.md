@@ -34,4 +34,5 @@ Each round = one major visible change, before/after in docs/ui-polish/rN/. Captu
 - r5: Armory core on its own stage, slot cards in a toned row beneath (fixes ring/name overlap)
 - r6: centred HUD cluster, 132px timer medallion between score and streak
 - r7: promotion ceremony: 220px tier-tinted crest hero, tier ribbon, 360px primary CTA, rematch as text link
-Next candidates: streak milestones transform the arena; Armory featured part candidate + trade-off; results emblem hero.
+- r8: results spotlight: unlocked/next part as a 156px emblem hero card in the empty right column; 112px final score
+Next candidates: streak milestones transform the arena; Armory featured part candidate + trade-off; miss feedback; test-run results; lobby.
