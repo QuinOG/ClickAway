@@ -14,6 +14,14 @@ Styles live in `src/styles/game-*.css`; art in `src/components/art/`.
 
 ## Round log
 - g1 (round-6 build): Terra 7.0, Astra 7.3, Sol 7.3 → **avg 7.2**. Fixes chosen: layout obstructions, armory stat deltas/exact values/compact rig, merged results + promotion emblem, live feel cues.
-- g2 (round 1 implemented, changes in `docs/ui-polish/g2/CHANGES.md`): judges launched — post ratings to PR, then pick next fixes.
+- g2 (round 1, `c14fb89`): Terra 7.0, Astra 7.5, Sol 7.6 → **avg 7.4** (posted to PR).
+- **NEXT = round 2 → capture as g3.** Implement these consensus fixes:
+  1. Practice lobby: 2nd drill row still clipped at Start — when Practice is selected, show all 4 drills in the left stage area (or a compact mode switch), Start in its own footer.
+  2. Armory: shrink rig + build-bay sidebar, widen parts workspace, no truncated descriptions, consistent benefit/cost rows per part.
+  3. Compare bench + mod cards: aligned installed → candidate numeric rows (shrink rate, min target, score %) with deltas; no adjectives as values.
+  4. Live: one unmistakable hit boundary (drop extra concentric rings), strong miss X + "streak lost / -N" cue, next-multiplier indicator near HUD.
+  5. Test-run results: show previous run under same rules beside latest + "Keep build" / "Back to slot" actions.
+  6. Results: show newly unlocked part / level gain + Armory link; carry arena framing into results.
+  Then write `C:/Users/Quinlan/ui-shots/g3-changes.md`, capture g3, commit, launch judges with PREVIOUS_DIR=g2.
 
 Note: armory slot tabs are hidden; capture clicks `.armoryMachineHousing`. Results flow is now Play Again primary / View Rewards secondary (tests updated).
