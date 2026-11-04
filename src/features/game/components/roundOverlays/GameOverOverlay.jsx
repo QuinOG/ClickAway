@@ -174,6 +174,33 @@ function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionM
   )
 }
 
+function XpTally({ level, xpIntoLevel, xpToNextLevel, earned, prefersReducedMotion }) {
+  const span = Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
+  const startPercent = Math.min(100, (Number(xpIntoLevel) / span) * 100)
+  const endXp = Number(xpIntoLevel) + Number(earned)
+  const levelsUp = endXp >= span
+  const endPercent = levelsUp ? 100 : Math.min(100, (endXp / span) * 100)
+
+  return (
+    <span className={`gameOverXpTally ${levelsUp ? "isLevelUp" : ""}`} aria-label={`Level ${level} progress`}>
+      <span className="gameOverXpTallyHeader">
+        <b>Lv {level}</b>
+        <small>{levelsUp ? `Level up to ${level + 1}!` : `${Math.max(0, span - endXp).toLocaleString()} XP to Lv ${level + 1}`}</small>
+      </span>
+      <span className="gameOverXpTallyTrack">
+        <i className="gameOverXpTallyBase" style={{ width: `${startPercent}%` }} />
+        <MotionDiv
+          className="gameOverXpTallyGain"
+          style={{ left: `${startPercent}%` }}
+          initial={prefersReducedMotion ? false : { width: 0 }}
+          animate={{ width: `${Math.max(0, endPercent - startPercent)}%` }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.7, duration: 0.9, ease: "easeOut" }}
+        />
+      </span>
+    </span>
+  )
+}
+
 export function GameOverOverlay({
   score,
   hits,
@@ -198,9 +225,11 @@ export function GameOverOverlay({
   roundCoinsEarned = 0,
   roundXpEarned = 0,
   roundRankDelta = 0,
-  showSecondaryRematch = false,
-  onRematch,
-  onPlayAgain,
+  playerLevel = 1,
+  playerXpIntoLevel = 0,
+  playerXpToNextLevel = 0,
+  secondaryActionLabel = null,
+  onSecondaryAction = null,
 }) {
   const { effectivePreferences } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -329,6 +358,15 @@ export function GameOverOverlay({
           {allowsLevelProgression ? (
             <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP</small></span>
           ) : null}
+          {allowsLevelProgression ? (
+            <XpTally
+              level={playerLevel}
+              xpIntoLevel={playerXpIntoLevel}
+              xpToNextLevel={playerXpToNextLevel}
+              earned={roundXpEarned}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+          ) : null}
           {allowsRankProgression ? (
             <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
           ) : null}
@@ -404,9 +442,9 @@ export function GameOverOverlay({
         >
           {primaryActionLabel}
         </button>
-        {showSecondaryRematch && (onRematch || onPlayAgain) ? (
-          <button className="secondaryButton gameOverRematch" type="button" onClick={onRematch ?? onPlayAgain}>
-            Rematch
+        {secondaryActionLabel && onSecondaryAction ? (
+          <button className="secondaryButton gameOverRematch" type="button" onClick={onSecondaryAction}>
+            {secondaryActionLabel}
           </button>
         ) : null}
       </MotionDiv>

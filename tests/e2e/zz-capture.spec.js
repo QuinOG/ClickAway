@@ -86,7 +86,7 @@ test("council capture: gameplay loop + armory", async ({ browser }) => {
   await play.waitForTimeout(2600)
   await shot(play, "loop-results-summary")
   await step("rewards", async () => {
-    await play.getByRole("button", { name: "Collect Rewards" }).click()
+    await play.getByRole("button", { name: "View Rewards" }).click()
     await play.waitForTimeout(400)
     await shot(play, "loop-rewards-xp-filling")
     await play.waitForTimeout(2200)
@@ -121,7 +121,7 @@ test("council capture: gameplay loop + armory", async ({ browser }) => {
   await shot(armory, "armory-main-fullpage", { fullPage: true })
   for (const slot of ["Streak Lens", "Power Rig"]) {
     await step(`slot ${slot}`, async () => {
-      await armory.locator(".armoryLaneTab", { hasText: slot }).first().click()
+      await armory.locator(".armoryMachineHousing", { hasText: slot }).first().click({ timeout: 5000 })
       await armory.waitForTimeout(400)
       await shot(armory, `armory-mods-${slot.toLowerCase().replace(" ", "-")}`)
     })

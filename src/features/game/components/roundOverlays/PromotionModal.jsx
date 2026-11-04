@@ -1,3 +1,4 @@
+import { CrestIcon } from "../../../../components/art/GameIcons.jsx"
 import {
   cancelCelebrationEffects,
   fireConfetti,
@@ -115,12 +116,19 @@ function getNewBadgeVariants(prefersReducedMotion) {
   }
 }
 
+function getCrestToneFromLabel(label = "") {
+  const tier = String(label).split(" ")[0].toLowerCase()
+  return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
+}
+
 export default function PromotionModal({
   isPlacementReveal,
   currentRankLabel,
   projectedRankLabel,
   buttonLabel = "Continue",
   onContinue,
+  secondaryLabel = null,
+  onSecondary = null,
 }) {
   const { effectivePreferences, emitFeedback } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -198,6 +206,12 @@ export default function PromotionModal({
         </h2>
       </MotionDiv>
 
+      <MotionDiv className="gameOverPromotionEmblem" aria-hidden="true" variants={newBadgeVariants}>
+        <span className="gameOverPromotionRays" />
+        <CrestIcon tone={getCrestToneFromLabel(projectedRankLabel)} size={150} />
+        <strong className="gameOverPromotionEmblemLabel">{projectedRankLabel}</strong>
+      </MotionDiv>
+
       <MotionDiv className="gameOverPromotionTierRow" aria-hidden="true" variants={badgeRowVariants}>
         <MotionDiv variants={prevBadgeVariants}>
           <TierBadge tierLabel={currentRankLabel} className="gameOverPromotionTier isPrevious" />
@@ -227,6 +241,11 @@ export default function PromotionModal({
         >
           {buttonLabel}
         </button>
+        {secondaryLabel && onSecondary ? (
+          <button type="button" className="secondaryButton gameOverRematch" onClick={onSecondary}>
+            {secondaryLabel}
+          </button>
+        ) : null}
       </MotionDiv>
     </MotionSection>
   )

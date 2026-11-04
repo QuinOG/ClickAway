@@ -136,3 +136,51 @@
 .armoryBay.isActive { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px var(--skin-cyan), 0 0 20px rgb(79 216 255 / 25%), 0 3px 0 #0a1220; }
 .armoryBayName { font-family: var(--ca-font-display); font-weight: 400; }
 .armoryRailHeading span { display: none; }
+
+/* ---- Phase 3 r1: overlays respect the shell ---- */
+.armorySpecSheet { top: 78px; z-index: 60; border-radius: 16px 0 0 0; box-shadow: var(--skin-frame), -24px 0 60px rgb(0 0 0 / 40%); }
+
+/* The test range has its own sized arena; the live-round arena sizing must not leak in. */
+.armoryRange .arena {
+    width: min(980px, 100%);
+    height: min(calc(100dvh - 300px), 560px);
+    border-radius: 16px;
+}
+.armoryRangeStage { justify-content: flex-start; }
+.armoryRangeReadout {
+    position: relative;
+    z-index: 3;
+    border: 0;
+    border-radius: 14px;
+    padding: 8px 22px;
+    background: linear-gradient(180deg, var(--skin-face-high), var(--skin-face-low));
+    box-shadow: var(--skin-frame-soft), 0 4px 0 #0a1220;
+}
+.armoryRangeReadoutValue { font-family: var(--ca-font-display); }
+
+/* ---- Phase 3 r1: the rig is the slot selector; the workspace gets the room ---- */
+.armoryLaneTabs { display: none; }
+.armoryMachineCore { min-height: clamp(280px, 36vh, 380px); }
+.armoryMachineAssembly { height: clamp(280px, 34vh, 340px); }
+
+/* Exact values lead, qualitative words follow. */
+.armoryInstrumentValue { font-family: var(--ca-font-display); font-size: 15px; color: #ffffff; }
+.armoryInstrumentExact { color: var(--ca-color-ink-faint); font-size: 11px; }
+.armoryModeManifestStatValue { display: grid; gap: 1px; font-family: var(--ca-font-display); font-size: 16px; color: #ffffff; }
+.armoryModeManifestStatValue small { font-family: var(--ca-font-ui); font-size: 11px; color: var(--ca-color-ink-faint); }
+
+/* Candidate part deltas vs the installed part. */
+.armoryPartDeltas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.armoryPartDelta {
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: inset 0 0 0 1px currentColor;
+}
+.armoryPartDelta b { font-weight: 600; opacity: 0.8; }
+.armoryPartDelta.is-gain { color: #6ff0b8; background: rgb(78 221 184 / 10%); }
+.armoryPartDelta.is-cost { color: #ff8f8f; background: rgb(255 102 93 / 10%); }
+.armoryPartDelta.is-same { color: var(--ca-color-ink-faint); }
+.armoryPartFeel { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

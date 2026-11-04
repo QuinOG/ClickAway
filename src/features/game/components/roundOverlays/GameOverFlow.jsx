@@ -111,17 +111,13 @@ export function GameOverFlow({
     roundCoinsEarned,
     roundXpEarned,
     roundRankDelta,
-    showSecondaryRematch: showRewards || showPromotion,
-    primaryActionLabel: showPromotion
-      ? "Reveal Rank"
-      : showRewards
-        ? "Collect Rewards"
-        : "Play Again",
-    onPrimaryAction: showPromotion
-      ? advanceTo("promotion")
-      : showRewards
-        ? advanceTo("rewards")
-        : (onRematch ?? onPlayAgain),
+    playerLevel,
+    playerXpIntoLevel,
+    playerXpToNextLevel,
+    secondaryActionLabel: showPromotion ? "Rematch" : showRewards ? "View Rewards" : null,
+    onSecondaryAction: showPromotion ? (onRematch ?? onPlayAgain) : showRewards ? advanceTo("rewards") : null,
+    primaryActionLabel: showPromotion ? "Reveal Rank" : "Play Again",
+    onPrimaryAction: showPromotion ? advanceTo("promotion") : (onRematch ?? onPlayAgain),
   }
 
   return (
@@ -149,10 +145,10 @@ export function GameOverFlow({
             isPlacementReveal={isPlacementReveal}
             currentRankLabel={currentRankLabel}
             projectedRankLabel={projectedRankLabel}
-            buttonLabel={showRewards ? "Collect Rewards" : "Play Again"}
-            onContinue={showRewards
-              ? advanceTo("rewards")
-              : (onRematch ?? onPlayAgain)}
+            buttonLabel="Play Again"
+            onContinue={onRematch ?? onPlayAgain}
+            secondaryLabel={showRewards ? "View Rewards" : null}
+            onSecondary={showRewards ? advanceTo("rewards") : null}
           />
         )}
 

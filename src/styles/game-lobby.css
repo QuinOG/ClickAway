@@ -426,3 +426,26 @@
     letter-spacing: 0.06em;
     box-shadow: 0 0 0 2px var(--skin-ink);
 }
+
+/* ---- Phase 3 r1: lobby extras get their own row; nothing overlaps Start ---- */
+.readyCard.arenaLobby {
+    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-areas:
+        ". header"
+        ". modes"
+        ". extras"
+        ". spacer"
+        ". footer";
+}
+
+.readyCard.arenaLobby .rankedPreflight,
+.readyCard.arenaLobby .practiceDrawer { grid-area: extras; grid-column: 2; }
+
+.practiceDrawer.isOpen .practiceDrawerContent { max-height: min(34dvh, 300px); overflow-y: auto; }
+.readyCard.arenaLobby .practiceDrillGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.readyCard.arenaLobby .practiceDrillChoice { min-height: 0; padding: 9px 10px; }
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby .rankedPreflight,
+    .readyCard.arenaLobby .practiceDrawer { grid-column: 1; grid-area: auto; }
+}

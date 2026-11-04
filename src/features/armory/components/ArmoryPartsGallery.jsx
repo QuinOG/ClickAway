@@ -1,6 +1,6 @@
 import { useRef, useState } from "react"
 
-import { getUnlockText } from "../armoryUtils.js"
+import { getModuleDeltaChips, getUnlockText } from "../armoryUtils.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
@@ -34,6 +34,7 @@ export default function ArmoryPartsGallery({
   footer = null,
 }) {
   const cardRefs = useRef({})
+  const installedPart = parts.find((part) => part.id === installedPartId) ?? null
   // Roving tabindex: one gallery tab stop; arrows walk the unlocked parts.
   const [rovingPartId, setRovingPartId] = useState(null)
   const tabStopPartId = rovingPartId ?? installedPartId
@@ -105,6 +106,18 @@ export default function ArmoryPartsGallery({
               <span className="armoryPartBody">
                 <strong className="armoryPartLabel">{part.label}</strong>
                 <span className="armoryPartFeel">{part.description}</span>
+                {part.effects && !isInstalled ? (
+                  <span className="armoryPartDeltas" aria-label={`Compared with installed part`}>
+                    {(() => {
+                      const chips = getModuleDeltaChips(part, installedPart)
+                      return chips.length ? chips.map((chip) => (
+                        <span key={chip.key} className={`armoryPartDelta is-${chip.tone}`}>
+                          <b>{chip.label}</b> {chip.value}
+                        </span>
+                      )) : <span className="armoryPartDelta is-same">Same stats as installed</span>
+                    })()}
+                  </span>
+                ) : null}
               </span>
               <ArmoryStateEmblem state={visualState} label={stateLabel} compact />
               {isLocked ? <span className="armoryPartGlass" aria-hidden="true" /> : null}

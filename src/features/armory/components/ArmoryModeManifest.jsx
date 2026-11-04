@@ -1,4 +1,5 @@
 import { BuildIdentityGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { getExactMetric } from "../armoryExactMetrics.js"
 
 /**
  * Mode matrix, reborn (Phase 8): one manifest plate showing the active build's
@@ -44,7 +45,10 @@ export default function ArmoryModeManifest({ loadoutName, modePresentations = []
                 return (
                   <div key={label} className="armoryModeManifestStat">
                     <dt className="armoryModeManifestStatLabel">{label}</dt>
-                    <dd className="armoryModeManifestStatValue">{stat?.value ?? "—"}</dd>
+                    <dd className="armoryModeManifestStatValue">
+                      {getExactMetric(label, presentation.roundRules).text}
+                      <small>{stat?.value ?? "—"}</small>
+                    </dd>
                   </div>
                 )
               })}

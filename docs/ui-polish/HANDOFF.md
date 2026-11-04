@@ -13,4 +13,7 @@ PR #7 (`ui-ux-polish`). Phase 3 focus: **gameplay loop + Armory only** (leave ot
 Styles live in `src/styles/game-*.css`; art in `src/components/art/`.
 
 ## Round log
-- g1: capture of `feda8a8` (round 6 build) — awaiting first review.
+- g1 (round-6 build): Terra 7.0, Astra 7.3, Sol 7.3 → **avg 7.2**. Fixes chosen: layout obstructions, armory stat deltas/exact values/compact rig, merged results + promotion emblem, live feel cues.
+- g2 (round 1 implemented, changes in `docs/ui-polish/g2/CHANGES.md`): judges launched — post ratings to PR, then pick next fixes.
+
+Note: armory slot tabs are hidden; capture clicks `.armoryMachineHousing`. Results flow is now Play Again primary / View Rewards secondary (tests updated).
