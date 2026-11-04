@@ -106,18 +106,36 @@ export default function ArmoryPartsGallery({
               <span className="armoryPartBody">
                 <strong className="armoryPartLabel">{part.label}</strong>
                 <span className="armoryPartFeel">{part.description}</span>
-                {part.effects && !isInstalled ? (
-                  <span className="armoryPartDeltas" aria-label={`Compared with installed part`}>
-                    {(() => {
-                      const chips = getModuleDeltaChips(part, installedPart)
-                      return chips.length ? chips.map((chip) => (
+                {part.effects ? (() => {
+                  const chips = isInstalled ? [] : getModuleDeltaChips(part, installedPart)
+                  const gains = chips.filter((chip) => chip.tone === "gain")
+                  const costs = chips.filter((chip) => chip.tone === "cost")
+                  const renderRow = (label, tone, items, emptyText) => (
+                    <span className={`armoryPartTradeRow is-${tone}`}>
+                      <span className="armoryPartTradeLabel">{label}</span>
+                      {items.length ? items.map((chip) => (
                         <span key={chip.key} className={`armoryPartDelta is-${chip.tone}`}>
                           <b>{chip.label}</b> {chip.value}
                         </span>
-                      )) : <span className="armoryPartDelta is-same">Same stats as installed</span>
-                    })()}
-                  </span>
-                ) : null}
+                      )) : <span className="armoryPartDelta is-same">{emptyText}</span>}
+                    </span>
+                  )
+                  return (
+                    <span className="armoryPartDeltas" aria-label="Compared with installed part">
+                      {isInstalled ? (
+                        <span className="armoryPartTradeRow is-base">
+                          <span className="armoryPartTradeLabel">Installed</span>
+                          <span className="armoryPartDelta is-same">Baseline for comparisons</span>
+                        </span>
+                      ) : (
+                        <>
+                          {renderRow("Gain", "gain", gains, "None")}
+                          {renderRow("Cost", "cost", costs, "None")}
+                        </>
+                      )}
+                    </span>
+                  )
+                })() : null}
               </span>
               <ArmoryStateEmblem state={visualState} label={stateLabel} compact />
               {isLocked ? <span className="armoryPartGlass" aria-hidden="true" /> : null}

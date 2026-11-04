@@ -2,7 +2,7 @@ import {
   BuildIdentityGlyph,
   ModuleSlotGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
-import ArmoryInstruments from "./ArmoryInstruments.jsx"
+import { getExactMetric } from "../armoryExactMetrics.js"
 import ArmoryModeManifest from "./ArmoryModeManifest.jsx"
 
 // Ghost machines read at bay-wall scale so both silhouettes fit side by side
@@ -38,6 +38,60 @@ function GhostMachine({ label, loadout, presentation, isGhost = false }) {
   )
 }
 
+// Exact rule rows for the bench; `better` says which direction wins.
+const COMPARE_ROWS = [
+  { label: "Aim Window", better: "higher" },
+  { label: "Shrink Pace", better: "lower" },
+  { label: "Combo Ramp", better: "lower" },
+  { label: "Miss Cost", better: "lower" },
+  { label: "Power Tempo", better: "lower" },
+  {
+    label: "Min Target",
+    better: "higher",
+    metric: (rules) => ({ value: Number(rules.minButtonSize) || 0, text: `${Number(rules.minButtonSize) || 0}px`, digits: 0, suffix: "px" }),
+  },
+  {
+    label: "Score Mult",
+    better: "higher",
+    metric: (rules) => {
+      const value = Number(rules.scoreMultiplier) || 1
+      return { value, text: `x${value.toFixed(2)}`, digits: 2, suffix: "x" }
+    },
+  },
+]
+
+function CompareNumbers({ activeName, ghostName, activeRules, ghostRules }) {
+  return (
+    <div className="armoryCompareNumbers" role="table" aria-label="Exact rules, active versus ghost">
+      <div className="armoryCompareNumbersRow isHead" role="row">
+        <span role="columnheader">Rule</span>
+        <span role="columnheader">{activeName}</span>
+        <span role="columnheader">{ghostName}</span>
+        <span role="columnheader">Ghost vs active</span>
+      </div>
+      {COMPARE_ROWS.map((row) => {
+        const read = row.metric ?? ((rules) => getExactMetric(row.label, rules))
+        const active = read(activeRules ?? {})
+        const ghost = read(ghostRules ?? {})
+        const diff = Number((ghost.value - active.value).toFixed(active.digits))
+        const isBetter = row.better === "higher" ? diff > 0 : diff < 0
+        const tone = diff === 0 ? "is-same" : isBetter ? "is-gain" : "is-cost"
+        const sign = diff > 0 ? "+" : diff < 0 ? "−" : "±"
+        return (
+          <div key={row.label} className="armoryCompareNumbersRow" role="row">
+            <span role="cell" className="armoryCompareNumbersLabel">{row.label}</span>
+            <span role="cell">{active.text}</span>
+            <span role="cell">{ghost.text}</span>
+            <span role="cell" className={`armoryCompareNumbersDelta ${tone}`}>
+              {diff === 0 ? "Same" : `${sign}${Math.abs(diff).toFixed(active.digits)}${active.suffix}`}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function BayCompareView({ activeLoadout, activePresentation, ghostLoadout, ghostPresentation }) {
   if (!ghostLoadout || !ghostPresentation) {
     return (
@@ -54,11 +108,11 @@ function BayCompareView({ activeLoadout, activePresentation, ghostLoadout, ghost
         <GhostMachine label="Ghost" loadout={ghostLoadout} presentation={ghostPresentation} isGhost />
       </div>
 
-      <ArmoryInstruments
-        presentation={activePresentation}
-        comparePresentation={ghostPresentation}
-        primaryLabel={activeLoadout.name}
-        compareLabel={ghostLoadout.name}
+      <CompareNumbers
+        activeName={activeLoadout.name}
+        ghostName={ghostLoadout.name}
+        activeRules={activePresentation.roundRules}
+        ghostRules={ghostPresentation.roundRules}
       />
 
       <div className="armoryCompareSpecColumns">

@@ -449,3 +449,25 @@
     .readyCard.arenaLobby .rankedPreflight,
     .readyCard.arenaLobby .practiceDrawer { grid-column: 1; grid-area: auto; }
 }
+
+/* ---- Phase 3 r2: opened Practice lab takes over the open left stage; Start stays alone in its footer ---- */
+@media (min-width: 901px) {
+    .readyCard.arenaLobby .practiceDrawer.isOpen {
+        grid-column: 1;
+        grid-row: 1 / -1;
+        align-self: center;
+        justify-self: center;
+        width: min(640px, 100%);
+        margin: 24px;
+        padding: 18px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgb(14 26 44 / 96%), rgb(8 15 28 / 97%));
+        box-shadow: var(--skin-frame), 0 24px 60px rgb(0 0 0 / 45%);
+    }
+    .readyCard.arenaLobby .practiceDrawer.isOpen .practiceDrawerContent { max-height: none; overflow: visible; }
+    .readyCard.arenaLobby .practiceDrawer.isOpen .practiceDrillChoice { padding: 14px; min-height: 104px; }
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageTarget,
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageOrbit,
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageBeam,
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStagePedestal { opacity: 0.18; transition: opacity 200ms ease; }
+}

@@ -19,6 +19,7 @@ export default function GameHud({
   loadoutName = "Loadout",
   streak,
   comboMultiplier,
+  comboStep = 5,
   comboActive = false,
   bestStreak,
   isPlaying = false,
@@ -71,6 +72,7 @@ export default function GameHud({
           <GameStatusRow
             streak={streak}
             comboMultiplier={comboMultiplier}
+            comboStep={comboStep}
             bestStreak={bestStreak}
           />
           <div className="hudIdentity" aria-label={`${modeLabel || "Unknown mode"}, ${rankLabel || "Unranked"}, ${loadoutName || "Loadout"}`}>

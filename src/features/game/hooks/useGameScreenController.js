@@ -990,7 +990,7 @@ export function useGameScreenController({
       addClickFeedback(
         event.clientX,
         event.clientY,
-        streak > 0 ? `Streak broken  -${result.penaltyApplied}` : `-${result.penaltyApplied}`,
+        `-${result.penaltyApplied}`,
         streak > 0 ? "streakBreak" : "miss"
       )
       return
@@ -999,7 +999,7 @@ export function useGameScreenController({
     addClickFeedback(
       event.clientX,
       event.clientY,
-      streak > 0 ? "Streak broken" : "Miss",
+      "Miss",
       streak > 0 ? "streakBreak" : "miss"
     )
   }, [
@@ -1410,6 +1410,7 @@ export function useGameScreenController({
       rankLabel: playerRankLabel,
       streak,
       comboMultiplier,
+      comboStep: roundMode.comboStep,
       comboActive: comboMultiplier > 1,
       bestStreak,
       isPlaying,

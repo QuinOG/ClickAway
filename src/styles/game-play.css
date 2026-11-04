@@ -462,7 +462,8 @@
     filter: drop-shadow(0 0 6px #ff5a5a);
 }
 
-.arena:has(.clickFeedback.miss) { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #5a1f24, 0 0 0 7px var(--skin-ink), inset 0 0 70px rgb(255 60 60 / 28%), 0 0 40px rgb(255 80 80 / 30%); }
+.arena:has(.clickFeedback.miss),
+.arena:has(.clickFeedback.streakBreak) { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #5a1f24, 0 0 0 7px var(--skin-ink), inset 0 0 70px rgb(255 60 60 / 28%), 0 0 40px rgb(255 80 80 / 30%); }
 
 /* Combo milestone: a large banner-style callout. */
 .clickFeedback.milestone,
@@ -497,3 +498,82 @@
 @media (prefers-reduced-motion: reduce) {
     .gameOverPromotionRays { animation: none; }
 }
+
+/* ---- Phase 3 r2: one hit boundary, loud miss, next-multiplier meter ---- */
+/* The target's own rim IS the hit boundary: no pad, no extra concentric rings. */
+.arena .bigCircleButton {
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 10px 0 rgb(0 0 0 / 30%), 0 0 30px rgb(79 216 255 / 38%);
+}
+.arena .bigCircleButton::before { display: none; }
+.arena .bigCircleButton::after { inset: 0; box-shadow: inset 0 0 0 3px rgb(255 255 255 / 92%), 0 0 0 2px rgb(255 255 255 / 30%); }
+
+/* Miss: bigger X, a "STREAK LOST" stamp under the penalty, longer hold. */
+.clickFeedback.streakBreak .clickFeedbackLocus {
+    border: 0; border-radius: 0;
+    background:
+        linear-gradient(45deg, transparent 42%, #ff5a5a 42% 58%, transparent 58%),
+        linear-gradient(-45deg, transparent 42%, #ff5a5a 42% 58%, transparent 58%);
+    filter: drop-shadow(0 0 6px #ff5a5a);
+}
+.clickFeedback.miss .clickFeedbackLocus,
+.clickFeedback.streakBreak .clickFeedbackLocus,
+.clickFeedback.negative .clickFeedbackLocus { width: 46px; height: 46px; }
+.clickFeedback.miss,
+.clickFeedback.streakBreak,
+.clickFeedback.negative { font-size: 30px; color: #ff6b6b; animation-duration: 0.9s; text-shadow: 0 3px 0 var(--skin-ink), 0 0 18px rgb(255 70 70 / 70%); }
+.clickFeedback.streakBreak .clickFeedbackValue::after {
+    content: "STREAK LOST";
+    display: block;
+    margin-top: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #ff4d4d;
+    color: var(--skin-ink);
+    font: 400 12px/1.2 var(--ca-font-display);
+    letter-spacing: 0.08em;
+    text-shadow: none;
+    white-space: nowrap;
+}
+.gameScreen:has(.clickFeedback.streakBreak) .hudStreakValue { color: #ff6b6b; }
+
+/* Next multiplier meter beside the combo readout. */
+.hudComboNext { display: grid; gap: 4px; justify-items: center; min-width: 72px; }
+.hudComboNextPips { display: flex; gap: 3px; }
+.hudComboNextPips > span { width: 10px; height: 6px; border-radius: 2px; background: rgb(255 255 255 / 16%); box-shadow: 0 0 0 1px var(--skin-ink); }
+.hudComboNextPips > span.isLit { background: var(--skin-gold); box-shadow: 0 0 0 1px var(--skin-ink), 0 0 8px rgb(255 201 74 / 60%); }
+.hudComboNextLabel { font: 400 11px/1 var(--ca-font-display); letter-spacing: 0.06em; color: rgb(232 242 255 / 72%); white-space: nowrap; }
+.gameStatusRow { grid-template-columns: auto auto auto; grid-template-areas: "streak combo next" "best best best"; }
+.hudComboNext { grid-area: next; align-self: end; }
+
+/* ---- Phase 3 r2: results always point at the next Armory reward ---- */
+.gameOverNextUnlock {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--skin-face-high), var(--skin-face-low));
+    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
+    color: #fff;
+    text-decoration: none;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.gameOverNextUnlock:hover,
+.gameOverNextUnlock:focus-visible { transform: translateY(-2px); box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px var(--skin-cyan), 0 3px 0 #0a1220; }
+.gameOverNextUnlockBadge {
+    display: grid;
+    place-items: center;
+    min-width: 52px;
+    height: 40px;
+    border-radius: 10px;
+    background: #1b2f4d;
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 40%);
+    font: 400 13px/1 var(--ca-font-display);
+    color: var(--skin-cyan);
+}
+.gameOverNextUnlock.isUnlocked .gameOverNextUnlockBadge { background: var(--skin-gold); color: var(--skin-ink); box-shadow: 0 0 0 2px var(--skin-ink), 0 0 18px rgb(255 201 74 / 60%); }
+.gameOverNextUnlockCopy { display: grid; gap: 2px; flex: 1; text-align: left; }
+.gameOverNextUnlockCopy small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(232 242 255 / 60%); }
+.gameOverNextUnlockCopy strong { font: 400 17px/1.1 var(--ca-font-display); }
+.gameOverNextUnlockCta { font: 400 13px/1 var(--ca-font-display); color: var(--skin-cyan); letter-spacing: 0.06em; }

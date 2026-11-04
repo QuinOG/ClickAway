@@ -20,6 +20,7 @@ import {
   cancelCelebrationEffects,
   fireConfetti,
 } from "../../../../services/celebrationEffects.js"
+import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -171,6 +172,36 @@ function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionM
         </div>
       ))}
     </div>
+  )
+}
+
+// The next Armory part the level track pays out, so every round points at a
+// concrete reward. If this round crossed that level, it reads as unlocked.
+function NextUnlock({ level, xpIntoLevel, xpToNextLevel, earned }) {
+  const levelsUp = Number(xpIntoLevel) + Number(earned) >= Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
+  const reachedLevel = levelsUp ? level + 1 : level
+  const justUnlocked = levelsUp
+    ? UNLOCK_WALL_PARTS.find((part) => part.unlockLevel === level + 1)
+    : null
+  const nextPart = justUnlocked ?? [...UNLOCK_WALL_PARTS]
+    .filter((part) => part.unlockLevel > reachedLevel)
+    .sort((a, b) => a.unlockLevel - b.unlockLevel)[0]
+
+  if (!nextPart) return null
+
+  return (
+    <Link
+      className={`gameOverNextUnlock ${justUnlocked ? "isUnlocked" : ""}`}
+      to="/armory"
+      aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
+    >
+      <span className="gameOverNextUnlockBadge" aria-hidden="true">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</span>
+      <span className="gameOverNextUnlockCopy">
+        <small>{justUnlocked ? "Unlocked" : "Next unlock"} · {nextPart.kind === "power" ? "Powerup" : "Armory part"}</small>
+        <strong>{nextPart.label}</strong>
+      </span>
+      <span className="gameOverNextUnlockCta" aria-hidden="true">Armory {"›"}</span>
+    </Link>
   )
 }
 
@@ -365,6 +396,14 @@ export function GameOverOverlay({
               xpToNextLevel={playerXpToNextLevel}
               earned={roundXpEarned}
               prefersReducedMotion={prefersReducedMotion}
+            />
+          ) : null}
+          {allowsLevelProgression ? (
+            <NextUnlock
+              level={playerLevel}
+              xpIntoLevel={playerXpIntoLevel}
+              xpToNextLevel={playerXpToNextLevel}
+              earned={roundXpEarned}
             />
           ) : null}
           {allowsRankProgression ? (
