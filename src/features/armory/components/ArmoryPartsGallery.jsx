@@ -62,6 +62,39 @@ function SwapImpact({ rows }) {
   )
 }
 
+const RHYTHM_STREAKS = 20
+
+// Powerup swap as two streak rulers (1-20): where the installed tool charges
+// versus where the candidate would, so cadence is compared at a glance.
+function ChargeRhythm({ candidate, installed, multiplier }) {
+  const every = (part) => Math.max(1, Math.round(Number(part.awardEvery) * multiplier))
+  const rows = [
+    installed ? { key: "installed", label: installed.label, every: every(installed), isCandidate: false } : null,
+    { key: "candidate", label: candidate.label, every: every(candidate), isCandidate: true },
+  ].filter(Boolean)
+  const counts = rows.map((row) => Math.floor(RHYTHM_STREAKS / row.every))
+  const tone = rows.length < 2 ? "isEven" : counts[1] > counts[0] ? "isGain" : counts[1] < counts[0] ? "isLoss" : "isEven"
+
+  return (
+    <div className={`armoryChargeRhythm ${tone}`} aria-label="Charge rhythm">
+      <span className="armoryChargeRhythmTitle">Charge rhythm · streak 1–{RHYTHM_STREAKS}</span>
+      {rows.map((row, rowIndex) => (
+        <div key={row.key} className={`armoryChargeRhythmRow ${row.isCandidate ? "isCandidate" : "isInstalled"}`}>
+          <span className="armoryChargeRhythmLabel">{row.label}</span>
+          <span className="armoryChargeRhythmTrack" aria-hidden="true">
+            {Array.from({ length: RHYTHM_STREAKS }, (_, index) => (
+              <i key={index} className={(index + 1) % row.every === 0 ? "isCharge" : ""} />
+            ))}
+          </span>
+          <span className="armoryChargeRhythmCount">
+            <b>{counts[rowIndex]}</b> charge{counts[rowIndex] === 1 ? "" : "s"}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function ArmoryPartsGallery({
   tone = "",
   galleryLabel = "Parts",
@@ -74,6 +107,7 @@ export default function ArmoryPartsGallery({
   footer = null,
   currentRules = null,
   getCandidateRules = null,
+  chargeMultiplier = null,
 }) {
   const cardRefs = useRef({})
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
@@ -140,6 +174,9 @@ export default function ArmoryPartsGallery({
             <strong className="armoryPartFeatureName">{featuredPart.label}</strong>
             <span className="armoryPartFeatureFeel">{featuredPart.description}</span>
           </div>
+          {chargeMultiplier !== null && featuredPart.awardEvery ? (
+            <ChargeRhythm candidate={featuredPart} installed={installedPart} multiplier={chargeMultiplier} />
+          ) : null}
           {swapImpact.length ? <SwapImpact rows={swapImpact} /> : featuredPart.effects ? (
             <div className="armoryPartFeatureTrade">
               <div className="armoryPartFeatureSide is-gain">

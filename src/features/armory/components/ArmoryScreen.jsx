@@ -299,6 +299,7 @@ export default function ArmoryScreen({
                 installedPartId={hotbarApi.selectedPowerupId}
                 renderPartGlyph={(part) => <PowerupGlyph powerupId={part.id} />}
                 onInstallPart={hotbarApi.installPower}
+                chargeMultiplier={activePresentation.roundRules?.powerupAwardMultiplier ?? 1}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <>
