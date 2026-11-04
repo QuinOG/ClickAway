@@ -17,7 +17,7 @@
 
 .leaderboardFieldCount svg { grid-row: 1 / -1; align-self: center; }
 .leaderboardFieldCount strong { color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 18px; line-height: 1; }
-.leaderboardFieldCount small { color: var(--ca-color-ink-faint); font-size: 8px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
+.leaderboardFieldCount small { color: var(--ca-color-ink-faint); font-size: 11px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
 
 .leaderboardPodium {
     position: relative;
@@ -82,9 +82,9 @@
 .leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest { width: 76px; box-shadow: 0 0 32px rgb(var(--scene-accent-rgb) / 19%); }
 .leaderboardPodiumCrest svg { width: 32px; height: 32px; }
 .leaderboardPodiumPlayer > strong { max-width: 100%; overflow: hidden; color: var(--ca-color-ink-strong); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.leaderboardPodiumTier { color: var(--ca-color-ink-faint); font-size: 8px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.leaderboardPodiumTier { color: var(--ca-color-ink-faint); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .leaderboardPodiumRating { margin-top: 6px; color: var(--scene-accent); font-family: var(--ca-font-display); font-size: 19px; font-weight: 800; }
-.leaderboardPodiumRating small { font-family: var(--ca-font-ui); font-size: 8px; }
+.leaderboardPodiumRating small { font-family: var(--ca-font-ui); font-size: 11px; }
 .leaderboardPodiumPlayer > i { position: absolute; inset: auto 0 0; height: 3px; background: rgb(var(--scene-accent-rgb) / 42%); }
 .leaderboardPodiumPlayer.isCurrentUser { box-shadow: inset 0 0 0 2px var(--ca-color-accent), 0 -14px 40px rgb(0 5 15 / 30%); }
 
@@ -100,4 +100,64 @@
     .leaderboardPodiumCrest svg { width: 24px; height: 24px; }
     .leaderboardPodiumPlayer > strong { font-size: 11px; }
     .leaderboardPodiumRating { font-size: 15px; }
+}
+
+/* ---- UI/UX polish: compact season strip, calmer podium, matched controls ---- */
+.leaderboardSeasonBanner {
+    margin-top: 0;
+    padding: 14px 20px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 32px;
+}
+
+.leaderboardSeasonIdentity .leaderboardSectionEyebrow { margin: 0 0 2px; }
+
+.leaderboardSeasonName {
+    margin: 0;
+    color: var(--ca-color-ink-strong);
+    font-family: var(--ca-font-display);
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.leaderboardSeasonMeta {
+    margin: 0;
+    color: var(--ca-color-ink-muted);
+    font-size: 13px;
+    text-align: right;
+}
+
+.leaderboardSeasonMeta strong { color: var(--ca-color-ink-strong); font-weight: 700; }
+.leaderboardSeasonMeter .leaderboardSeasonProgress { margin-top: 8px; }
+
+.leaderboardPodium { min-height: 0; padding-bottom: 0; }
+.leaderboardPodiumHeader > svg { display: none; }
+.leaderboardPodiumDeck { min-height: 0; margin-top: 4px; max-width: 660px; }
+.leaderboardPodiumPlayer { height: 150px; }
+.leaderboardPodiumPlayer.isRank1 { height: 178px; }
+.leaderboardPodiumPlayer.isRank3 { height: 136px; }
+.leaderboardPodiumCrest { width: 52px; font-size: 18px; }
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest { width: 62px; }
+.leaderboardPodiumPlayer > strong { font-size: 14px; }
+.leaderboardPodiumRank { font-size: 12px; }
+
+.leaderboardViewToggle .secondaryButton {
+    min-height: 38px;
+    padding: 0 16px;
+    border: 1px solid rgba(165, 205, 246, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(220, 235, 250, 0.88);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.leaderboardBoardTab { min-height: 36px; font-size: 13px; }
+.leaderboardSearchInput { min-height: 40px; }
+
+@media (max-width: 620px) {
+    .leaderboardSeasonBanner { grid-template-columns: 1fr; gap: 10px; }
+    .leaderboardSeasonMeta { text-align: left; }
 }

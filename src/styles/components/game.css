@@ -129,7 +129,7 @@
 }
 
 .hudEyebrow {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1.6px;
@@ -139,7 +139,7 @@
 .hudQuietMeta,
 .hudPace {
     min-height: 13px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.3px;
     white-space: nowrap;
@@ -203,7 +203,7 @@
 .hudStreakLabel,
 .hudComboLabel {
     color: rgba(207, 226, 244, 0.64);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -238,7 +238,7 @@
     grid-area: best;
     justify-self: center;
     color: rgba(205, 223, 241, 0.55);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.8px;
     text-transform: uppercase;
@@ -252,7 +252,7 @@
     gap: 5px;
     overflow: hidden;
     color: rgba(194, 214, 235, 0.52);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.7px;
     text-transform: uppercase;
@@ -296,7 +296,7 @@
 .hudTimerAnchor .hudEyebrow {
     position: absolute;
     top: 12px;
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1px;
 }
 
@@ -319,7 +319,7 @@
     position: absolute;
     bottom: 10px;
     color: rgba(207, 225, 242, 0.58);
-    font-size: 7px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.8px;
     text-transform: uppercase;
@@ -334,7 +334,7 @@
     padding: 3px 10px;
     border-bottom: 1px solid rgba(150, 204, 239, 0.13);
     color: rgba(222, 235, 248, 0.76);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
 }
 
@@ -370,7 +370,7 @@
 .hudActionButton {
     min-height: 28px;
     padding: 4px 10px;
-    font-size: 10px;
+    font-size: 11px;
     flex: 0 0 auto;
 }
 
@@ -665,7 +665,7 @@
 }
 
 .powerupStateLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.24px;
     text-transform: uppercase;
@@ -730,7 +730,7 @@
     min-height: 14px;
     margin: 0;
     color: rgba(211, 228, 244, 0.76);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.3;
     text-align: center;
 }
@@ -928,7 +928,7 @@
     border: 1px solid rgba(179, 224, 255, 0.2);
     border-radius: 999px;
     padding: 4px 10px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.58px;
     text-transform: uppercase;
@@ -967,7 +967,7 @@
     background: rgba(93, 176, 255, 0.08);
     border: 1px solid rgba(128, 201, 255, 0.14);
     color: rgba(227, 241, 255, 0.82);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.48px;
     text-transform: uppercase;
@@ -1340,7 +1340,7 @@
     border: 1px solid rgba(185, 212, 241, 0.34);
     border-radius: 999px;
     padding: 3px 9px;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1;
     letter-spacing: 0.26px;
     text-transform: uppercase;
@@ -1420,7 +1420,7 @@
 }
 
 .modeCardStatLabel {
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.32px;
     color: rgba(208, 223, 244, 0.7);
@@ -1545,7 +1545,7 @@
 }
 
 .readySessionLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.1px;
     text-transform: uppercase;
@@ -1632,7 +1632,7 @@
 }
 
 .readyBuildStripLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: uppercase;
@@ -1717,7 +1717,7 @@
 
 .readyQuickBuildLabel {
     color: rgba(174, 208, 245, 0.64);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.28px;
     text-transform: uppercase;
@@ -1778,7 +1778,7 @@
     border: 1px solid rgba(255, 214, 113, 0.3);
     background: rgba(243, 196, 90, 0.16);
     color: rgba(255, 236, 191, 0.98);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.22px;
     text-transform: uppercase;
@@ -1985,7 +1985,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .arenaLobbyKicker,
 .practiceDrawerEyebrow {
     color: var(--lobby-accent-strong);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -1995,7 +1995,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     display: flex;
     gap: 12px;
     color: rgba(194, 213, 235, 0.56);
-    font-size: 10px;
+    font-size: 11px;
     white-space: nowrap;
 }
 
@@ -2120,20 +2120,20 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .lobbyModeSummary,
 .lobbyModeReward {
     display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .lobbyModeSummary {
-    color: rgba(220, 233, 248, 0.76);
-    font-size: 11px;
+    color: rgba(220, 233, 248, 0.8);
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .lobbyModeReward {
     color: var(--mode-strong);
-    font-size: 9px;
-    font-weight: 750;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
 .lobbyModeChoice:focus-visible,
@@ -2184,7 +2184,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     display: grid;
     place-items: center;
     color: transparent;
-    font-size: 10px;
+    font-size: 11px;
     transition: color 0.16s ease, background-color 0.16s ease;
 }
 
@@ -2234,7 +2234,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .lobbyRewardCue > small,
 .lobbyPressureCue > small {
     color: rgba(196, 218, 241, 0.52);
-    font-size: 7px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -2415,8 +2415,8 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .lobbyModeStageIdentity small,
 .lobbyModeStageRecords small,
 .lobbyBuildReadiness small {
-    color: rgba(181, 205, 232, 0.6);
-    font-size: 8px;
+    color: rgba(181, 205, 232, 0.72);
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -2432,7 +2432,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .lobbyModeStageIdentity em {
     overflow: hidden;
     color: rgba(210, 226, 245, 0.67);
-    font-size: 10px;
+    font-size: 11px;
     font-style: normal;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -2446,7 +2446,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     background: transparent;
     color: rgba(206, 225, 246, 0.64);
     font: inherit;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 750;
     cursor: help;
     display: inline-flex;
@@ -2462,7 +2462,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     display: grid;
     place-items: center;
     color: var(--lobby-accent-strong);
-    font-size: 9px;
+    font-size: 11px;
 }
 
 .lobbyRulesButton:focus-visible,
@@ -2610,7 +2610,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .practiceDrillChoice span,
 .practiceDrillChoice small {
     color: rgba(206, 229, 220, 0.67);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.35;
 }
 
@@ -2633,7 +2633,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .lobbyWarmupStrip > span:first-child {
     color: #ffd184;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -2681,8 +2681,8 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .lobbyTextLink {
-    color: rgba(202, 224, 247, 0.78);
-    font-size: 11px;
+    color: rgba(202, 224, 247, 0.86);
+    font-size: 13px;
     font-weight: 750;
     text-decoration-color: rgba(202, 224, 247, 0.32);
     text-underline-offset: 3px;
@@ -2695,7 +2695,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     border-radius: 999px;
     background: rgba(255, 199, 92, 0.15);
     color: #ffd17a;
-    font-size: 8px;
+    font-size: 11px;
     text-transform: uppercase;
 }
 
@@ -2736,9 +2736,9 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .arenaLobbyStart small {
-    color: rgba(5, 15, 24, 0.68);
-    font-size: 9px;
-    font-weight: 750;
+    color: rgba(5, 15, 24, 0.74);
+    font-size: 12px;
+    font-weight: 650;
 }
 
 @media (max-width: 760px) {
@@ -2755,7 +2755,8 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         padding: 18px 14px calc(14px + env(safe-area-inset-bottom));
         border-width: 0;
         border-radius: 0;
-        gap: 14px;
+        gap: 18px;
+        align-content: start;
         scrollbar-gutter: auto;
     }
 
@@ -2772,8 +2773,8 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     }
 
     .lobbyModeRail {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 6px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
     }
 
     .lobbyModeSelector {
@@ -2785,30 +2786,15 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     }
 
     .lobbyModeChoice {
-        min-height: 146px;
-        padding: 9px 7px 8px;
-        border-radius: 11px;
-        gap: 7px;
+        min-height: 0;
+        padding: 12px 14px;
+        border-radius: 14px;
+        gap: 4px;
     }
 
-    .lobbyModeChoiceTopline {
-        grid-template-columns: 23px minmax(0, 1fr);
-        gap: 5px;
-    }
-
-    .lobbyModeGlyph {
-        width: 23px;
-        height: 23px;
-        border-radius: 7px;
-        font-size: 10px;
-    }
-
-    .lobbyModeName {
-        font-size: clamp(10px, 3.2vw, 13px);
-    }
-
-    .lobbyModeSelectedMark {
-        display: none;
+    .lobbyModeChoice .lobbyModeSummary,
+    .lobbyModeChoice .lobbyModeReward {
+        padding-left: 39px;
     }
 
     .lobbyModeVisuals {
@@ -3026,7 +3012,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .rewardsCardEyebrow {
     margin: 0 0 5px;
     color: rgba(126, 207, 255, 0.66);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -3126,7 +3112,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .outcomeBestHeader > span {
     color: rgba(185, 208, 236, 0.58);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
@@ -3171,7 +3157,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     z-index: 1;
     padding: 0 7px;
     color: rgba(226, 239, 253, 0.76);
-    font-size: 9px;
+    font-size: 11px;
     line-height: 15px;
 }
 
@@ -3203,7 +3189,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .outcomeInstrument span {
     overflow: hidden;
     color: rgba(185, 208, 236, 0.52);
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 0.45px;
     text-overflow: ellipsis;
     text-transform: uppercase;
@@ -3250,7 +3236,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .rewardBalanceChip small {
     color: rgba(202, 220, 241, 0.54);
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.8px;
     text-transform: uppercase;
@@ -3309,7 +3295,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .rewardRankPathHeader span {
     color: rgba(205, 221, 242, 0.56);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -3368,7 +3354,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .rewardRankPath > p {
     margin: 0;
     color: rgba(211, 227, 247, 0.68);
-    font-size: 10px;
+    font-size: 11px;
     text-align: right;
 }
 
@@ -3505,7 +3491,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .rankedPreflightIdentity > span {
     color: color-mix(in srgb, var(--ranked-accent) 86%, white);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -3591,7 +3577,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 .rankedPreflightReadouts span,
 .rankedPreflightReadouts small {
     color: rgba(197, 214, 236, 0.62);
-    font-size: 10px;
+    font-size: 11px;
 }
 
 .rankedPreflightReadouts strong {
@@ -3783,7 +3769,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     background: rgba(98, 173, 255, 0.14);
     border: 1px solid rgba(147, 208, 255, 0.2);
     color: rgba(231, 242, 255, 0.9);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.14px;
 }
@@ -3938,7 +3924,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .loadoutSlotLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.32px;
     text-transform: uppercase;
@@ -3969,7 +3955,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(176, 206, 240, 0.12);
     color: rgba(224, 238, 255, 0.88);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.16px;
 }
@@ -3991,7 +3977,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .buildSummaryLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: uppercase;
@@ -4260,7 +4246,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .buildEditorStatusLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.28px;
     text-transform: uppercase;
@@ -4351,7 +4337,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .buildEditorSidebarCardLabel {
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: uppercase;
@@ -4464,7 +4450,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     border-radius: 999px;
     border: 1px solid rgba(176, 206, 240, 0.14);
     color: rgba(232, 243, 255, 0.9);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     display: grid;
     place-items: center;
@@ -4693,7 +4679,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .buildEditorSystemLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: uppercase;
@@ -4765,7 +4751,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     background: rgba(7, 12, 23, 0.28);
     display: grid;
     place-items: center;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
 }
 
@@ -5053,7 +5039,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .buildEditorChoiceMeta {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.16px;
     color: rgba(185, 214, 242, 0.72);
@@ -5079,7 +5065,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     border: 1px solid rgba(176, 206, 240, 0.14);
     background: rgba(255, 255, 255, 0.045);
     color: rgba(229, 241, 255, 0.88);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.16px;
 }
@@ -5157,7 +5143,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .buildEditorPowerSlotMeta {
     color: rgba(186, 213, 241, 0.7);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.3;
 }
 
@@ -5202,7 +5188,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .buildEditorPreviewPulseLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.28px;
     text-transform: uppercase;
@@ -5314,7 +5300,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     border: 1px solid rgba(176, 206, 240, 0.18);
     display: grid;
     place-items: center;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     color: #f4f9ff;
 }
@@ -5353,7 +5339,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .buildEditorPreviewPowerMeta {
     color: rgba(186, 213, 241, 0.7);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.3;
 }
 
@@ -5372,7 +5358,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .loadoutSummaryLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: uppercase;
@@ -5670,7 +5656,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
 .gameOverSectionTitle {
     margin: 0 0 8px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.4px;
@@ -5878,7 +5864,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .gameOverAchievementHintLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -5912,7 +5898,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 .gameOverWorkshopHintLabel {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -6366,7 +6352,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         max-width: 24vw;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-size: 8px;
+        font-size: 11px;
     }
 
     .hudStreakValue {
@@ -6381,7 +6367,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     .hudComboLabel,
     .hudBestReadout,
     .hudIdentity {
-        font-size: 7px;
+        font-size: 11px;
     }
 
     .hudIdentity {
@@ -6396,7 +6382,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
     .hudTimerAnchor .hudEyebrow {
         top: 8px;
-        font-size: 6px;
+        font-size: 11px;
     }
 
     .timerText {
@@ -6405,7 +6391,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 
     .hudTimerUnit {
         bottom: 6px;
-        font-size: 6px;
+        font-size: 11px;
     }
 
     .hudContextRail {
@@ -6414,7 +6400,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         gap: 6px;
         padding-inline: 4px;
         overflow-x: auto;
-        font-size: 8px;
+        font-size: 11px;
         scrollbar-width: none;
     }
 
@@ -6702,7 +6688,7 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
     display: grid;
     gap: 2px;
     color: rgba(226, 238, 251, 0.64);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -6761,7 +6747,7 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
 
 .roundTokenStatusKicker {
     color: var(--entrance-color);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.17em;
     text-transform: uppercase;

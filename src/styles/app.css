@@ -17,6 +17,9 @@
 @import "./components/duels.css";
 @import "./components/ladder.css";
 
+/* Cross-screen polish layer (consistent widths, rhythm, type) */
+@import "./polish.css";
+
 /* Shared animations */
 @import "./animations.css";
 

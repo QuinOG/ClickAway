@@ -249,7 +249,7 @@
     align-items: center;
     gap: 6px;
     color: #91b9e8;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -280,7 +280,7 @@
     gap: 7px;
     color: #dce9fb;
     background: rgba(255, 255, 255, 0.04);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 850;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -490,7 +490,7 @@
 }
 
 .shopCommandLoadoutMeta strong {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.28px;
     text-transform: uppercase;
@@ -979,7 +979,7 @@
     border-radius: 999px;
     min-height: 24px;
     padding: 0 9px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.34px;
     text-transform: uppercase;
@@ -1547,5 +1547,145 @@
 
     .shopCommandValueMain--pulseOnce {
         animation: none;
+    }
+}
+
+/* ---- UI/UX polish: compact shop hero ---- */
+.shopArmoryHeader {
+    gap: 0;
+}
+
+.shopArmoryHeader .commandHeader {
+    margin-bottom: 20px;
+}
+
+.shopBalanceChip {
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid rgba(243, 196, 90, 0.32);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(243, 196, 90, 0.07);
+    color: #f5e6bd;
+}
+
+.shopBalanceChip svg {
+    width: 20px;
+    height: 20px;
+    color: var(--ca-color-warning, #f3c45a);
+}
+
+.shopBalanceChip strong {
+    font-family: var(--ca-font-numeric);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.shopBalanceChip small {
+    color: rgba(245, 230, 189, 0.72);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.shopCommandSurface {
+    padding: 18px;
+    border: 1px solid rgba(154, 204, 255, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.022);
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.shopCommandSurface .shopCommandLoadoutStage {
+    min-height: 176px;
+    border-radius: 12px;
+}
+
+.shopCommandSurface .shopCommandLoadoutButton {
+    width: 88px;
+    height: 88px;
+}
+
+.shopCommandSurface .shopCommandLoadoutAvatarFrame {
+    top: 12px;
+    right: 12px;
+}
+
+.shopCommandSurface .shopCommandLoadoutAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    font-size: 15px;
+}
+
+.shopCommandDetails {
+    min-width: 0;
+    display: grid;
+    align-content: space-between;
+    gap: 16px;
+}
+
+.shopCommandLoadoutHeader {
+    align-items: flex-start;
+}
+
+.shopCommandPreviewDescription {
+    color: var(--ca-color-ink-muted);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.shopCommandSurface .shopCommandLoadoutMeta {
+    padding: 12px 0;
+    border-block: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 13px;
+}
+
+.shopCommandFooter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 20px;
+}
+
+.shopCommandProgress {
+    min-width: 0;
+    max-width: 420px;
+}
+
+.shopCommandProgressHeader .shopCommandProgressMeta {
+    margin-top: 0;
+    color: var(--ca-color-ink-muted);
+    font-size: 13px;
+}
+
+.shopCommandProgressHeader .shopCommandProgressMeta strong {
+    color: var(--ca-color-ink-strong);
+    font-weight: 700;
+}
+
+.shopCommandSurface .shopCommandProgressBar {
+    margin-top: 8px;
+    height: 6px;
+}
+
+@media (max-width: 760px) {
+    .shopCommandSurface {
+        grid-template-columns: 1fr;
+        padding: 14px;
+        gap: 16px;
+    }
+
+    .shopCommandFooter {
+        grid-template-columns: 1fr;
+    }
+
+    .shopCommandProgressHeader .shopCommandProgressMeta {
+        flex-direction: row;
     }
 }

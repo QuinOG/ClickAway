@@ -1,0 +1,58 @@
+/*
+ * Cross-screen polish layer.
+ * Loaded after feature styles so it can align page widths, rhythm and
+ * secondary components without rewriting each feature sheet.
+ */
+
+/* One content width for every routed page card. */
+:root { --ca-page-max: 1140px; }
+
+.leaderboardPageScene .leaderboardPageCard,
+.historyPageScene .historyPageCard,
+.helpPageScene .helpDoc,
+.shopCard,
+.duelPage {
+    width: min(var(--ca-page-max), 100%);
+}
+
+/* History: use the full card width and give highlight cards real surfaces. */
+.historyContent { width: 100%; gap: 24px; }
+.historyTrajectory { min-height: 0; margin-bottom: 0; }
+
+.historyHighlightsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.historyHighlightCard {
+    padding: 18px;
+    border: 1px solid rgba(124, 167, 214, 0.16);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.historyHighlightCard.tone-latest { border-color: rgba(150, 211, 255, 0.24); }
+
+.historyHighlightTitle { font-size: 16px; color: var(--ca-color-ink-muted); font-weight: 600; }
+
+.historyHighlightValue {
+    margin: 10px 0 4px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.historyHighlightMeta { font-size: 13px; }
+.historyHighlightStat { padding: 6px 10px; font-size: 12px; }
+
+/* Profile: explain the highlighted telemetry card. */
+.profileInstrumentLabel { display: flex; align-items: center; gap: 8px; }
+.profileInstrumentTag {
+    padding: 2px 7px;
+    border: 1px solid rgba(108, 230, 188, 0.4);
+    border-radius: 999px;
+    color: #9ff0d2;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}

@@ -125,9 +125,6 @@ export default function ArmoryScreen({
               </button>
             </div>
           </details>
-          <Link className="secondaryButton secondaryButton-lg" to="/game">
-            Back to Game
-          </Link>
         </div>
       </aside>
 

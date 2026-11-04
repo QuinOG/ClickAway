@@ -327,17 +327,19 @@ function SeasonBanner({ season = null }) {
 
   return (
     <section className="leaderboardSeasonBanner" aria-label="Current season">
-      <div>
-        <p className="leaderboardSectionEyebrow">Current Season</p>
-        <h2 className="cardH2">{season.name}</h2>
-        <p className="muted">
+      <div className="leaderboardSeasonIdentity">
+        <p className="leaderboardSectionEyebrow">Current season</p>
+        <h2 className="leaderboardSeasonName">{season.name}</h2>
+      </div>
+      <div className="leaderboardSeasonMeter">
+        <p className="leaderboardSeasonMeta">
           {season.daysRemaining > 0
-            ? `${season.daysRemaining} days remaining · ${season.progressPercent}% complete`
+            ? <><strong>{season.daysRemaining} days</strong> remaining · {season.progressPercent}% complete</>
             : "Season ending soon"}
         </p>
-      </div>
-      <div className="leaderboardSeasonProgress" aria-hidden="true">
-        <span style={{ width: `${season.progressPercent}%` }} />
+        <div className="leaderboardSeasonProgress" aria-hidden="true">
+          <span style={{ width: `${season.progressPercent}%` }} />
+        </div>
       </div>
     </section>
   )

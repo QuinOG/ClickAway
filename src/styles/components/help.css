@@ -165,7 +165,7 @@
 
 .helpSectionEyebrow {
     margin: 0;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.2px;
     text-transform: uppercase;
@@ -336,7 +336,7 @@
 .helpList li::before {
     content: ">";
     color: var(--brand);
-    font-size: 10px;
+    font-size: 11px;
     margin-top: 3px;
     flex-shrink: 0;
     opacity: 0.75;
@@ -461,7 +461,7 @@
 
 .rankTierLabel {
     margin: 0;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1.2px;
@@ -557,7 +557,7 @@
     border: 1px solid rgb(var(--scene-accent-rgb) / 28%);
     background: rgb(var(--scene-accent-rgb) / 7%);
     color: var(--scene-accent);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -579,7 +579,7 @@
 .helpMissionMapHeader { margin-bottom: 16px; display: flex; align-items: end; justify-content: space-between; gap: 18px; }
 .helpMissionMapHeader .commandHeaderEyebrow { margin: 0 0 4px; }
 .helpMissionMapHeader h2 { margin: 0; color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 27px; }
-.helpMissionMapHeader > span { display: inline-flex; align-items: center; gap: 6px; color: var(--ca-color-ink-faint); font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.helpMissionMapHeader > span { display: inline-flex; align-items: center; gap: 6px; color: var(--ca-color-ink-faint); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .helpMissionMapHeader > span i { width: 7px; aspect-ratio: 1; border-radius: 50%; background: var(--ca-color-success); box-shadow: 0 0 9px var(--ca-color-success); }
 
 .helpMissionGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; }
@@ -603,11 +603,11 @@
 .helpMissionCard::after { content: ""; position: absolute; inset: auto 0 0; height: 2px; background: var(--scene-accent); transform: scaleX(0); transform-origin: left; transition: transform 160ms ease; }
 .helpMissionCard:hover { transform: translateY(-3px); border-color: rgb(var(--scene-accent-rgb) / 42%); background: linear-gradient(150deg, rgb(var(--scene-accent-rgb) / 14%), rgb(7 14 27 / 94%)); }
 .helpMissionCard:hover::after { transform: scaleX(1); }
-.helpMissionIndex { justify-self: end; color: rgb(var(--scene-accent-rgb) / 44%); font-family: var(--ca-font-display); font-size: 10px; font-weight: 800; }
+.helpMissionIndex { justify-self: end; color: rgb(var(--scene-accent-rgb) / 44%); font-family: var(--ca-font-display); font-size: 11px; font-weight: 800; }
 .helpMissionGlyph { width: 44px; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgb(var(--scene-accent-rgb) / 32%); border-radius: 50%; color: var(--scene-accent); }
 .helpMissionGlyph svg { width: 22px; height: 22px; }
 .helpMissionCard strong { margin-top: 4px; color: var(--ca-color-ink-strong); font-size: 13px; line-height: 1.2; }
-.helpMissionCard small { color: var(--ca-color-ink-faint); font-size: 9px; line-height: 1.35; }
+.helpMissionCard small { color: var(--ca-color-ink-faint); font-size: 11px; line-height: 1.35; }
 .helpMissionCard > svg { width: 14px; height: 14px; margin-top: auto; color: var(--scene-accent); }
 
 @media (max-width: 980px) {

@@ -114,7 +114,10 @@ function PerformanceInstrument({ label, value, detail, tone, isStrongest }) {
   return (
     <article className={`profileInstrument tone-${tone} ${isStrongest ? "isStrongest" : ""}`}>
       <span className="profileInstrumentReticle" aria-hidden="true" />
-      <p className="profileInstrumentLabel">{label}</p>
+      <p className="profileInstrumentLabel">
+        {label}
+        {isStrongest ? <span className="profileInstrumentTag">Signature</span> : null}
+      </p>
       <strong className="profileInstrumentValue">{value}</strong>
       <span className="profileInstrumentDetail">{detail}</span>
     </article>
