@@ -740,3 +740,39 @@
 @media (prefers-reduced-motion: reduce) {
     .clickFeedback.hit::before, .clickFeedback.comboHit::before, .clickFeedback.hit::after, .clickFeedback.comboHit::after { animation: none; display: none; }
 }
+
+/* ---- Polish r6: one centred HUD cluster — score | big timer medallion | streak ---- */
+@media (min-width: 761px) {
+    .hudPrimaryRow {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 22px;
+        overflow: visible;
+        min-height: 92px;
+    }
+    .hudScoreAnchor { order: 1; justify-self: end; justify-items: end; text-align: right; min-width: 230px; padding: 8px 20px; }
+    .hudScoreAnchor::before { display: none; }
+    .hudScoreAnchor .scoreNumber { font-size: 52px; line-height: 1; }
+    .hudTimerAnchor { order: 2; }
+    .hudCenterChannel { order: 3; justify-self: start; min-width: 230px; place-items: center start; padding: 8px 20px; }
+    .hudCenterChannel .hudIdentity { justify-content: flex-start; }
+
+    .hudTimerAnchor,
+    .hudTimerAnchor.is-urgent,
+    .hudTimerAnchor.is-danger,
+    .hudTimerAnchor.is-untimed {
+        position: relative; z-index: 4; justify-self: center;
+        width: 132px; height: 132px; margin: -10px 0 -44px; padding: 0;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle, var(--skin-face-high, #1d2b45) 0 54%, var(--skin-ink, #0a1322) 54.5% 57%, transparent 57.5%),
+            conic-gradient(from 0deg, var(--hud-timer-color, #75c8ff) var(--hud-timer-progress), rgb(140 181 218 / 14%) 0),
+            var(--skin-face-low, #121c30);
+        box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 8px 0 rgb(0 0 0 / 45%), 0 0 30px rgb(from var(--hud-timer-color, #75c8ff) r g b / 25%);
+    }
+    .hudTimerAnchor .hudEyebrow { top: 26px; font-size: 11px; color: rgb(232 242 255 / 70%); }
+    .hudTimerAnchor .timerText { font-size: 50px; line-height: 1; margin-top: 4px; }
+    .hudTimerAnchor .hudTimerUnit { bottom: 24px; }
+    .hudTimerAnchor.is-danger { animation: hudTimerThrob 0.5s ease-in-out infinite alternate; }
+}
+@keyframes hudTimerThrob { to { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .hudTimerAnchor.is-danger { animation: none; } }
