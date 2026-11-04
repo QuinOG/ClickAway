@@ -79,6 +79,11 @@ export default function PowerupTray({
             aria-keyshortcuts={powerup.slotKey}
             disabled={!canUse}
           >
+            {canUse ? (
+              <span className="powerupReadyFlag" aria-hidden="true">
+                Ready · press <kbd>{powerup.slotKey}</kbd>
+              </span>
+            ) : null}
             <div className="powerupTop">
               <div className="powerupHeading">
                 <div className="powerupLead">
