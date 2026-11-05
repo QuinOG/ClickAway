@@ -1424,3 +1424,90 @@
 .armoryModeButtonRing { width: 40px; height: 40px; font-size: 14px; }
 .armoryRangeLauncher .armoryModeButtonMeta { font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; }
 .armoryRangeLauncher .armoryRangeLauncherHero { grid-template-columns: minmax(0, 1fr); justify-content: stretch; }
+
+/* ---- r38: the machine comes alive ----------------------------------------
+ * Council fix: rig ~20% larger; every mount lit in its part colour (stock
+ * softer, fitted brighter); arcs always readable with a light sweep; energy
+ * conduits flow from each mount into the core; the slot being edited pulses.
+ * ------------------------------------------------------------------------ */
+.armoryMachineCoreStage { height: 296px; }
+.armoryMachineCoreStage::before { width: 380px; height: 380px; background: radial-gradient(circle, rgba(63, 208, 255, 0.16), transparent 64%); }
+.armoryMachineRig { width: 292px; height: 292px; }
+.armoryMachineRigArc.isStock { background: conic-gradient(from var(--from), rgba(var(--arc), 0.62) 0 112deg, transparent 0); filter: drop-shadow(0 0 6px rgba(var(--arc), 0.35)); }
+.armoryMachineRigArc.isFitted { background: conic-gradient(from var(--from), rgba(var(--arc), 1) 0 112deg, transparent 0); filter: drop-shadow(0 0 12px rgba(var(--arc), 0.7)); }
+.armoryMachineRigRing::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0 300deg, rgb(255 255 255 / 55%) 340deg, transparent 360deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 16px), #000 calc(50% - 15px) 50%, transparent calc(50% + 1px));
+            mask: radial-gradient(circle, transparent 0 calc(50% - 16px), #000 calc(50% - 15px) 50%, transparent calc(50% + 1px));
+}
+.armoryMachineRigMount {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, currentColor 34%, #16233a), #0d1626 75%);
+    box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px color-mix(in srgb, currentColor 55%, transparent), 0 0 16px color-mix(in srgb, currentColor 40%, transparent);
+}
+.armoryMachineRigMount.isStock { opacity: 1; filter: none; }
+.armoryMachineRigMount.isFitted { box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px currentColor, 0 0 26px currentColor; }
+.armoryMachineRigMount.mount-streakLens { top: -30px; }
+.armoryMachineRigMount.mount-tempoCore { left: -40px; }
+.armoryMachineRigMount.mount-powerRig { left: calc(100% + 40px); }
+.armoryMachineRigMount.isSelected { animation: rigMountPulse 1.3s ease-in-out infinite; }
+.armoryMachineRigMount.isSelected::after {
+    content: "";
+    position: absolute;
+    inset: -9px;
+    border-radius: 20px;
+    border: 2px solid currentColor;
+    opacity: 0.7;
+}
+/* conduits: mount -> ring band, energy dashes flowing inward */
+.armoryMachineRigConduit {
+    position: absolute;
+    z-index: 1;
+    --flow: 255 255 255;
+    background: repeating-linear-gradient(var(--dir), rgba(var(--flow), 0.95) 0 6px, rgba(var(--flow), 0.12) 6px 14px);
+    background-size: var(--size);
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(var(--flow), 0.55);
+    opacity: 0.8;
+}
+.armoryMachineRigConduit.conduit-streakLens { --flow: var(--armory-tone-streak); --dir: 180deg; --size: 100% 28px; left: calc(50% - 3px); top: 2px; width: 6px; height: 16px; }
+.armoryMachineRigConduit.conduit-tempoCore { --flow: var(--armory-tone-tempo); --dir: 90deg; --size: 28px 100%; left: -8px; top: calc(50% - 3px); width: 22px; height: 6px; }
+.armoryMachineRigConduit.conduit-powerRig { --flow: var(--armory-tone-power); --dir: 270deg; --size: 28px 100%; right: -8px; top: calc(50% - 3px); width: 22px; height: 6px; }
+.armoryMachineRigConduit.isSelected { opacity: 1; box-shadow: 0 0 16px rgba(var(--flow), 0.9); }
+@media (prefers-reduced-motion: no-preference) {
+    .armoryMachineRigRing::after { animation: armoryRigSpin 6s linear infinite; }
+    .armoryMachineRigConduit.conduit-streakLens { animation: conduitFlowDown 0.9s linear infinite; }
+    .armoryMachineRigConduit.conduit-tempoCore { animation: conduitFlowRight 0.9s linear infinite; }
+    .armoryMachineRigConduit.conduit-powerRig { animation: conduitFlowLeft 0.9s linear infinite; }
+    .armoryMachineRigConduit.isSelected { animation-duration: 0.45s; }
+}
+@keyframes conduitFlowDown { to { background-position: 0 28px; } }
+@keyframes conduitFlowRight { to { background-position: 28px 0; } }
+@keyframes conduitFlowLeft { to { background-position: -28px 0; } }
+@keyframes rigMountPulse { 50% { filter: brightness(1.35); } }
+.armoryMachineRig { width: 270px; height: 270px; }
+.armoryMachineRigMount.mount-streakLens { top: 6px; }
+.armoryMachineRigMount.mount-tempoCore { left: -52px; }
+.armoryMachineRigMount.mount-powerRig { left: calc(100% + 52px); }
+.armoryMachineRigConduit.conduit-streakLens { display: none; }
+.armoryMachineRigConduit.conduit-tempoCore { left: -14px; width: 30px; }
+.armoryMachineRigConduit.conduit-powerRig { right: -14px; width: 30px; }
+/* the arc band mask must measure against the radius (closest-side), or it
+   lands under the target and the arcs never show */
+.armoryMachineRigArc,
+.armoryMachineRigRing::after {
+    -webkit-mask: radial-gradient(circle closest-side, transparent 0 calc(100% - 15px), #000 calc(100% - 14px) 100%, transparent 100%);
+            mask: radial-gradient(circle closest-side, transparent 0 calc(100% - 15px), #000 calc(100% - 14px) 100%, transparent 100%);
+}
+.armoryMachineRigArc.arc-tempoCore { --from: 214deg; }
+.armoryMachineRigArc.arc-powerRig { --from: 34deg; }
+.armoryMachineRigMount.mount-tempoCore { left: -66px; }
+.armoryMachineRigMount.mount-powerRig { left: calc(100% + 66px); }
+.armoryMachineRigConduit.conduit-tempoCore { left: -30px; width: 44px; }
+.armoryMachineRigConduit.conduit-powerRig { right: -30px; width: 44px; }

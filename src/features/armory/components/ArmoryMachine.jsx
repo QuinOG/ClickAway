@@ -8,7 +8,7 @@ import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
-export const MACHINE_TARGET_SCALE = 1.85
+export const MACHINE_TARGET_SCALE = 2.05
 
 const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
   MODULE_SLOTS.map((slot) => [slot.id, slot.defaultModuleId])
@@ -163,8 +163,14 @@ export default function ArmoryMachine({
                 <span className="armoryMachineRigTicks" />
                 {presentation.moduleStack.map((module) => (
                   <span
+                    key={`conduit-${module.slotId}`}
+                    className={`armoryMachineRigConduit conduit-${module.slotId} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
+                  />
+                ))}
+                {presentation.moduleStack.map((module) => (
+                  <span
                     key={module.slotId}
-                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
+                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
                   >
                     <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
                   </span>
