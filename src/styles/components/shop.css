@@ -1831,3 +1831,56 @@
 }
 
 .shopItemCard:hover .shopPreviewPortrait { transform: scale(1.04); }
+
+/* s02: compact, uniform item cards. One state tag per card, a borderless
+   preview stage, and a fixed name/description/action rhythm so every row
+   lines up and more of the catalog fits on screen. */
+.shopGrid { gap: 14px; }
+
+.shopItemCard {
+    padding: 12px;
+    gap: 8px;
+    border-radius: 20px;
+}
+
+.shopItemPreviewFrame {
+    min-height: 118px;
+    padding: 10px;
+    border: 0;
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at 50% 30%, rgba(128, 199, 255, 0.08), rgba(128, 199, 255, 0) 60%),
+        rgba(4, 9, 19, 0.5);
+}
+
+.shopPreviewButtonStage { width: 92px; height: 92px; }
+.shopPreview { width: 92px; height: 92px; }
+.shopPreview.is-profile-image { width: 92px; height: 92px; }
+.shopPreviewPortrait svg { width: 92px; height: 92px; }
+
+.shopItemCard .shopArenaScene { max-width: 168px; }
+
+.shopItemInfo { gap: 4px; padding: 0 2px; }
+.shopItemInfo h3 { font-size: 16.5px; }
+
+.shopItemInfo p {
+    min-height: calc(12.5px * 1.46 * 2);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.shopItemFooter {
+    min-height: 0;
+    padding-top: 2px;
+}
+
+.shopItemFooter .shopActionButton {
+    min-width: 118px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 11px;
+}
+
+.shopItemCard-locked .shopItemStateTag svg { opacity: 0.8; }

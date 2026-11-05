@@ -41,11 +41,6 @@ function StateIcon({ state }) {
   return <LockKey weight="fill" aria-hidden="true" />
 }
 
-function getPriceLabel({ item }) {
-  if (item.builtIn || item.cost === 0) return "Core"
-  return `${formatCoins(item.cost)}C`
-}
-
 function getTypeClass(type) {
   return String(type ?? "cosmetic").replace(/_/g, "-")
 }
@@ -134,7 +129,6 @@ export default function ShopItemCard({
       : actionLabel,
   })
   const stateLabel = getStateLabel({ isOwned, isEquipped, canAfford })
-  const priceLabel = getPriceLabel({ item })
 
   return (
     <article
@@ -146,18 +140,13 @@ export default function ShopItemCard({
       <div className="shopItemHeader">
         <span className={`shopItemStateTag is-${visualState}`}>
           <StateIcon state={visualState} />
-          {visualState === "affordable" ? (
+          {visualState === "affordable" || visualState === "locked" ? (
             <>
               <span className="uiVisuallyHidden">{stateLabel}: </span>
               {formatCoins(item.cost)} coins
             </>
           ) : stateLabel}
         </span>
-        {isEquipped || visualState === "affordable" ? null : (
-          <span className={`shopItemPriceTag ${item.cost === 0 ? "isCore" : ""}`}>
-            {priceLabel}
-          </span>
-        )}
       </div>
 
       <div className="shopItemShowcase">
