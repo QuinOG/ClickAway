@@ -1935,3 +1935,33 @@
     .armoryCommandBar .armoryCommandAction .primaryButton { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 30px; border-radius: 999px; font-size: 17px; text-decoration: none; }
     .armoryCommandBar .armoryCommandAction .primaryButton::after { content: "▶"; font-size: 12px; }
 }
+
+/* ---- r62 (council c2): the picker reads in three wide columns -------------
+ * Five ~108px columns forced names onto two lines and cut every description
+ * off mid-sentence. Tiles are now horizontal (emblem left, name and the full
+ * short description right) in three columns.
+ * ------------------------------------------------------------------------ */
+.armoryPartsGallery .armoryPartsShelf { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled),
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled {
+    grid-template-columns: 30px minmax(0, 1fr);
+    justify-items: start;
+    align-items: center;
+    align-content: start;
+    column-gap: 8px;
+    row-gap: 4px;
+    padding: 9px 12px 10px 10px;
+    text-align: left;
+}
+/* Name sits beside the emblem; the description spans the tile beneath. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartBody { display: contents; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) .armoryPartGlyph,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartGlyph { grid-column: 1; grid-row: 1; width: 30px; height: 30px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph svg { width: 22px; height: 22px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartLabel { grid-column: 2; grid-row: 1; padding-right: 20px; font-size: 14.5px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartFeel { grid-column: 1 / -1; grid-row: 2; margin-top: 0; -webkit-line-clamp: 4; font-size: 11.5px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem { grid-column: 1 / -1; grid-row: 3; justify-self: start; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem br { display: none; }
