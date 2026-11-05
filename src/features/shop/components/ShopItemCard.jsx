@@ -1,5 +1,6 @@
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
+import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
 function getActionState({ isOwned, isEquipped, canAfford }) {
@@ -49,6 +50,19 @@ function getTypeClass(type) {
   return String(type ?? "cosmetic").replace(/_/g, "-")
 }
 
+function ArenaThemeScene({ effectClass }) {
+  return (
+    <div className={`shopArenaScene ${effectClass}`} aria-hidden="true">
+      <span className="shopArenaSceneFloor" />
+      <span className="shopArenaSceneCorner isTL" />
+      <span className="shopArenaSceneCorner isTR" />
+      <span className="shopArenaSceneCorner isBL" />
+      <span className="shopArenaSceneCorner isBR" />
+      <span className="shopArenaSceneTarget" />
+    </div>
+  )
+}
+
 function getPreviewStyle(item) {
   if (!item.imageSrc) return undefined
 
@@ -70,6 +84,7 @@ export default function ShopItemCard({
   equippedButtonSkinId,
   equippedArenaThemeId,
   equippedProfileImageId,
+  playerName = "Player",
   actionSourceAware = false,
 }) {
   const { isOwned, canAfford, isEquipped, state: visualState } = getShopItemStatus({
@@ -166,6 +181,12 @@ export default function ShopItemCard({
                 style={getPreviewStyle(item)}
                 aria-hidden="true"
               />
+            ) : item.type === "arena_theme" ? (
+              <ArenaThemeScene effectClass={item.effectClass} />
+            ) : item.type === "profile_image" && !hasImage ? (
+              <span className="shopPreviewPortrait" aria-hidden="true">
+                <PlayerPortrait name={playerName} size={104} />
+              </span>
             ) : (
               <div
                 className={previewClassName}

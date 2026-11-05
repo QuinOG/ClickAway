@@ -254,11 +254,11 @@ export const SHOP_CATEGORIES = [
     items: [
       createProfileImageItem({
         id: "profile_default",
-        name: "Identity Gradient",
+        name: "Pilot Portrait",
         cost: 0,
         builtIn: true,
         effectClass: "profile-image-default",
-        description: "Dynamic initials tile keyed to your username.",
+        description: "Illustrated arena pilot, styled from your username.",
       }),
       createProfileImageItem({
         id: "profile_racoon",
