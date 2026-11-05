@@ -1702,3 +1702,40 @@
     padding-inline: 18px;
     white-space: nowrap;
 }
+
+/* ---- r52: long combos stay readable --------------------------------------
+ * Review R2 fix (both judges): at 30-50 hit streaks the heat wash, impact
+ * rings, milestone callouts and charge notices competed with the tiny target.
+ * The wash is roughly halved per tier, popups are capped (controller: 6),
+ * impact rings are shorter, milestones share the single banner slot under
+ * the timer, and charge notices drop into the reserved bottom strip where
+ * targets never spawn.
+ * ------------------------------------------------------------------------ */
+.gameScreen.streakTier1 .arena { --heat-strength: 0.18; }
+.gameScreen.streakTier2 .arena { --heat-strength: 0.3; }
+.gameScreen.streakTier3 .arena { --heat-strength: 0.4; }
+.gameScreen.streakTier4 .arena { --heat-strength: 0.5; }
+.arenaHeatGlow {
+    height: 45%;
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(var(--heat), 0.3), transparent 72%),
+        linear-gradient(to top, rgba(var(--heat), 0.14), transparent 60%);
+}
+.clickFeedback .clickFeedbackLocus { animation-duration: 160ms; }
+.clickFeedback.milestone,
+.clickFeedback.milestone.personalBest { top: 44px !important; z-index: 4; }
+.arena:has(.clickFeedback.milestone) .arenaStreakMark { opacity: 0 !important; }
+.clickFeedback.chargeGain { bottom: 16px; left: 28px !important; transform: none; }
+.clickFeedback.chargeGain .clickFeedbackValue { font-size: 13px; opacity: 0.9; }
+.arenaStreakMark,
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark,
+.clickFeedback.milestone,
+.clickFeedback.milestone.personalBest { top: 58px !important; }
+.clickFeedback.milestone .clickFeedbackValue { font-size: 26px; }
+.arenaStage {
+    background:
+        radial-gradient(ellipse 18% 46% at 12.5% 16%, rgba(var(--heat), calc(0.12 + var(--heat-strength) * 0.12)), transparent 70%),
+        radial-gradient(ellipse 18% 46% at 43% 10%, rgba(var(--heat), calc(0.1 + var(--heat-strength) * 0.12)), transparent 70%),
+        radial-gradient(ellipse 18% 46% at 73% 12%, rgba(var(--heat), calc(0.1 + var(--heat-strength) * 0.12)), transparent 70%),
+        radial-gradient(ellipse 18% 46% at 90% 18%, rgba(var(--heat), calc(0.12 + var(--heat-strength) * 0.12)), transparent 70%);
+}

@@ -56,6 +56,14 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await page.keyboard.press("Escape")
     await page.waitForTimeout(600)
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "longcombo") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(900)
+    await page.getByRole("button", { name: /Start Casual/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 30, 70)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "armory") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))

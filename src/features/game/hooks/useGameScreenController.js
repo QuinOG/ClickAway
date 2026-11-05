@@ -105,7 +105,8 @@ function buildClickFeedbackId() {
   return `${Date.now()}-${Math.random()}`
 }
 
-const MAX_TRANSIENT_FEEDBACK_ITEMS = 14
+// Capped so long combos cannot stack a cloud of popups around the target.
+const MAX_TRANSIENT_FEEDBACK_ITEMS = 6
 
 function isStreakMilestone(streak) {
   return streak === 5 || (streak >= 10 && streak % 10 === 0)
