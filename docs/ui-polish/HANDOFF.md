@@ -61,3 +61,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r31: featured powerup gets a Charge rhythm — installed vs candidate on two 1-20 streak rulers (muted vs gold charge marks) with charge counts (green/red by gain); card reflows glyph-left so the step still fits; hotbar cadence text no longer wraps.
 - r32: HUD score plate gets a PB race — big signed PB-pace delta in the empty left zone and a full-width track along the plate's bottom (score fill green ahead / amber behind, white ghost marker at PB pace, chequered finish flag = PB).
 - r33: active bay's truncated service line becomes an accuracy ring (conic, % inside) plus Rounds and gold Best-streak tiles; full summary kept as the aria-label.
+- r34: promotion's old→new tier chips become a seven-node division ladder — tier-coloured diamonds, rail lit up to the new division (fill animation), new division crowned and pulsing with its label enlarged.

@@ -5,7 +5,7 @@ import {
 } from "../../../../services/celebrationEffects.js"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef } from "react"
-import TierBadge from "../../../../components/TierBadge.jsx"
+import { RANK_DIVISIONS } from "../../../../utils/rankUtils.js"
 import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
 import { FEEDBACK_EVENTS } from "../../../../constants/feedbackEvents.js"
 import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
@@ -76,30 +76,6 @@ function getBadgeRowVariants(prefersReducedMotion) {
 }
 
 // Previous badge: fades in quietly, stays subdued.
-function getPrevBadgeVariants(prefersReducedMotion) {
-  if (prefersReducedMotion) {
-    return { hidden: { opacity: 1, scale: 1 }, visible: { opacity: 1, scale: 1 } }
-  }
-
-  return {
-    hidden: { opacity: 0, scale: 0.92 },
-    visible: { opacity: 0.7, scale: 1, transition: { duration: 0.28, ease: OVERLAY_EASE } },
-  }
-}
-
-// Arrow: slides in after the prev badge.
-function getArrowVariants(prefersReducedMotion) {
-  if (prefersReducedMotion) {
-    return { hidden: { opacity: 1, x: 0 }, visible: { opacity: 1, x: 0 } }
-  }
-
-  return {
-    hidden: { opacity: 0, x: -6 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.22, ease: OVERLAY_EASE } },
-  }
-}
-
-// New rank badge: springs in with weight — the payoff moment.
 function getNewBadgeVariants(prefersReducedMotion) {
   if (prefersReducedMotion) {
     return { hidden: { opacity: 1, scale: 1, y: 0 }, visible: { opacity: 1, scale: 1, y: 0 } }
@@ -121,6 +97,43 @@ function getCrestToneFromLabel(label = "") {
   return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
 }
 
+const LADDER_WINDOW = 7
+
+// The climb on the division ladder: a seven-node window around the new rank,
+// the divisions just gained lit along the rail, the new one crowned.
+function DivisionLadder({ fromLabel, toLabel }) {
+  const toIndex = RANK_DIVISIONS.findIndex((division) => division.label === toLabel)
+  if (toIndex === -1) return null
+  const foundFrom = RANK_DIVISIONS.findIndex((division) => division.label === fromLabel)
+  const fromIndex = foundFrom === -1 ? toIndex : foundFrom
+  const start = Math.max(0, Math.min(RANK_DIVISIONS.length - LADDER_WINDOW, toIndex - 4))
+  const nodes = RANK_DIVISIONS.slice(start, start + LADDER_WINDOW)
+
+  return (
+    <div className="promotionLadder" style={{ "--ladder-count": nodes.length }}>
+      {nodes.map((division) => {
+        const state = division.order === toIndex
+          ? "isCurrent"
+          : division.order === fromIndex
+            ? "isFrom"
+            : division.order > fromIndex && division.order < toIndex
+              ? "isClimbed"
+              : division.order < fromIndex
+                ? "isPassed"
+                : "isFuture"
+        const railLit = division.order <= toIndex && division.order > Math.min(fromIndex, toIndex)
+        return (
+          <span key={division.id} className={`promotionLadderNode tier-${division.majorTierId} ${state} ${railLit ? "isRailLit" : ""}`}>
+            <i />
+            <b>{division.majorTierLabel}</b>
+            <small>{division.divisionLabel}</small>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function PromotionModal({
   isPlacementReveal,
   currentRankLabel,
@@ -137,8 +150,6 @@ export default function PromotionModal({
   const cardVariants = useMemo(() => getCardVariants(prefersReducedMotion), [prefersReducedMotion])
   const itemVariants = useMemo(() => getItemVariants(prefersReducedMotion), [prefersReducedMotion])
   const badgeRowVariants = useMemo(() => getBadgeRowVariants(prefersReducedMotion), [prefersReducedMotion])
-  const prevBadgeVariants = useMemo(() => getPrevBadgeVariants(prefersReducedMotion), [prefersReducedMotion])
-  const arrowVariants = useMemo(() => getArrowVariants(prefersReducedMotion), [prefersReducedMotion])
   const newBadgeVariants = useMemo(() => getNewBadgeVariants(prefersReducedMotion), [prefersReducedMotion])
 
   useEffect(() => {
@@ -214,16 +225,8 @@ export default function PromotionModal({
         <strong className="gameOverPromotionEmblemLabel">{projectedRankLabel}</strong>
       </MotionDiv>
 
-      <MotionDiv className="gameOverPromotionTierRow" aria-hidden="true" variants={badgeRowVariants}>
-        <MotionDiv variants={prevBadgeVariants}>
-          <TierBadge tierLabel={currentRankLabel} className="gameOverPromotionTier isPrevious" />
-        </MotionDiv>
-        <MotionDiv variants={arrowVariants}>
-          <span className="gameOverPromotionArrow">&#8594;</span>
-        </MotionDiv>
-        <MotionDiv variants={newBadgeVariants}>
-          <TierBadge tierLabel={projectedRankLabel} className="gameOverPromotionTier isCurrent" />
-        </MotionDiv>
+      <MotionDiv className="gameOverPromotionTierRow isLadder" aria-hidden="true" variants={badgeRowVariants}>
+        <DivisionLadder fromLabel={isPlacementReveal ? projectedRankLabel : currentRankLabel} toLabel={projectedRankLabel} />
       </MotionDiv>
 
       <MotionDiv variants={itemVariants}>

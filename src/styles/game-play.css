@@ -1498,3 +1498,88 @@
     overflow: hidden;
     clip-path: inset(50%);
 }
+
+/* ---- r34: promotion division ladder --------------------------------------
+ * The old→new chips become a seven-node division ladder: the divisions just
+ * gained lit along the rail, the new division crowned and pulsing.
+ * ------------------------------------------------------------------------ */
+.gameOverPromotionTierRow.isLadder { display: block; width: min(520px, 100%); margin-inline: auto; }
+.promotionLadder {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--ladder-count), 1fr);
+    padding-top: 4px;
+}
+.promotionLadderNode {
+    --node: #ffd166;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    row-gap: 3px;
+}
+.promotionLadderNode.tier-bronze { --node: #d99a62; }
+.promotionLadderNode.tier-silver { --node: #c9d4e4; }
+.promotionLadderNode.tier-gold { --node: #ffd166; }
+.promotionLadderNode.tier-platinum { --node: #6fe3d8; }
+.promotionLadderNode.tier-diamond { --node: #8fb8ff; }
+/* rail segment to the left of each node */
+.promotionLadderNode::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    right: 50%;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 8%);
+}
+.promotionLadderNode:first-child::before { display: none; }
+.promotionLadderNode.isPassed::before,
+.promotionLadderNode.isFrom::before { background: color-mix(in srgb, var(--node) 35%, transparent); }
+.promotionLadderNode.isRailLit::before {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--node) 50%, transparent), var(--node));
+    box-shadow: 0 0 10px color-mix(in srgb, var(--node) 70%, transparent);
+    animation: ladderRailFill 0.7s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: left center;
+}
+.promotionLadderNode i {
+    position: relative;
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    margin-top: 4px;
+    transform: rotate(45deg);
+    border-radius: 4px;
+    background: #141c2c;
+    box-shadow: 0 0 0 2px rgb(255 255 255 / 14%);
+}
+.promotionLadderNode.isPassed i,
+.promotionLadderNode.isFrom i { background: color-mix(in srgb, var(--node) 45%, #141c2c); box-shadow: 0 0 0 2px color-mix(in srgb, var(--node) 55%, transparent); }
+.promotionLadderNode.isClimbed i { background: var(--node); box-shadow: 0 0 10px var(--node); }
+.promotionLadderNode.isCurrent i {
+    width: 26px;
+    height: 26px;
+    margin-top: 0;
+    background: var(--node);
+    box-shadow: 0 0 0 3px #0b1322, 0 0 0 5px var(--node), 0 0 22px var(--node);
+    animation: ladderNodePulse 1.6s 1.1s ease-in-out infinite;
+}
+.promotionLadderNode b,
+.promotionLadderNode small { line-height: 1; white-space: nowrap; }
+.promotionLadderNode b { color: rgb(220 232 248 / 45%); font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.promotionLadderNode small { color: rgb(220 232 248 / 55%); font-family: var(--ca-font-display); font-size: 15px; }
+.promotionLadderNode.isFrom b,
+.promotionLadderNode.isFrom small,
+.promotionLadderNode.isClimbed small { color: color-mix(in srgb, var(--node) 75%, #fff); }
+.promotionLadderNode.isCurrent b { color: var(--node); }
+.promotionLadderNode.isCurrent small { color: #fff; font-size: 20px; text-shadow: 0 0 12px var(--node); }
+@keyframes ladderRailFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ladderNodePulse { 50% { box-shadow: 0 0 0 3px #0b1322, 0 0 0 5px var(--node), 0 0 34px var(--node); } }
+@media (prefers-reduced-motion: reduce) {
+    .promotionLadderNode.isRailLit::before,
+    .promotionLadderNode.isCurrent i { animation: none; }
+}
+.promotionLadderNode i { margin: 10px 0; }
+.promotionLadderNode.isCurrent i { margin: 6px 0; }
+.promotionLadderNode::before { top: 21px; }
+.promotionLadderNode { row-gap: 4px; }
