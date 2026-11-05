@@ -163,6 +163,11 @@ export default function ArmoryMachine({
 
         <div className="armoryMachineCore">
           <div className="armoryMachineAssembly">
+            {/* The workbench cradle the instrument is bolted to. */}
+            <span className="armoryMachineBench" aria-hidden="true">
+              <i /><i /><i /><i />
+              <em>CA-01 · Targeting rig</em>
+            </span>
             <div className="armoryMachineCoreStage">
               <span className="armoryMachineRig" aria-hidden="true">
                 <span className="armoryMachineRigRing">
