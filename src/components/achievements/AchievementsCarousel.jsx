@@ -47,6 +47,7 @@ export default function AchievementsCarousel({ achievements = [] }) {
     ]
   }, [itemsPerPage, pageAchievements])
 
+  const isPaged = totalPages > 1
   const canGoPrevious = safePageIndex > 0
   const canGoNext = safePageIndex < totalPages - 1
 
@@ -73,17 +74,19 @@ export default function AchievementsCarousel({ achievements = [] }) {
   }
 
   return (
-    <div className="achievementsCarousel">
+    <div className={`achievementsCarousel${isPaged ? " isPaged" : " isSinglePage"}`}>
       <div className="achievementsCarouselRowWrap">
-        <button
-          type="button"
-          className="achievementsArrow"
-          onClick={goPreviousPage}
-          disabled={!canGoPrevious}
-          aria-label="View previous achievement page"
-        >
-          &lt;
-        </button>
+        {isPaged ? (
+          <button
+            type="button"
+            className="achievementsArrow"
+            onClick={goPreviousPage}
+            disabled={!canGoPrevious}
+            aria-label="View previous achievement page"
+          >
+            &lt;
+          </button>
+        ) : null}
 
         <div className="achievementsViewport">
           <div
@@ -95,35 +98,41 @@ export default function AchievementsCarousel({ achievements = [] }) {
               <AchievementTile
                 key={achievement?.id ?? `placeholder-${safePageIndex}-${index}`}
                 achievement={achievement}
+                tierIndex={startIndex + index}
+                tierCount={achievements.length}
               />
             ))}
           </div>
         </div>
 
-        <button
-          type="button"
-          className="achievementsArrow"
-          onClick={goNextPage}
-          disabled={!canGoNext}
-          aria-label="View next achievement page"
-        >
-          &gt;
-        </button>
+        {isPaged ? (
+          <button
+            type="button"
+            className="achievementsArrow"
+            onClick={goNextPage}
+            disabled={!canGoNext}
+            aria-label="View next achievement page"
+          >
+            &gt;
+          </button>
+        ) : null}
       </div>
 
-      <div className="achievementsFooter">
-        <p className="achievementsPageLabel">
-          Page {safePageIndex + 1} / {totalPages}
-        </p>
-        <div className="achievementsDots" aria-hidden="true">
-          {Array.from({ length: totalPages }, (_, dotIndex) => (
-            <span
-              key={`achievements-dot-${dotIndex}`}
-              className={`achievementsDot ${dotIndex === safePageIndex ? "isActive" : ""}`}
-            />
-          ))}
+      {isPaged ? (
+        <div className="achievementsFooter">
+          <p className="achievementsPageLabel">
+            Page {safePageIndex + 1} / {totalPages}
+          </p>
+          <div className="achievementsDots" aria-hidden="true">
+            {Array.from({ length: totalPages }, (_, dotIndex) => (
+              <span
+                key={`achievements-dot-${dotIndex}`}
+                className={`achievementsDot ${dotIndex === safePageIndex ? "isActive" : ""}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   )
 }
