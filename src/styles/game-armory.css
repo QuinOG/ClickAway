@@ -1652,3 +1652,4 @@
         0 0 22px rgb(255 205 102 / 45%);
 }
 .armoryMachine .armoryMachineRackSlot:focus-visible { outline: 3px solid #8eeeff; outline-offset: 4px; }
+.armoryPartFeature:has(.armoryChargeRhythm) .armoryPartFeatureFeel { -webkit-line-clamp: 3; display: block; overflow: visible; }
