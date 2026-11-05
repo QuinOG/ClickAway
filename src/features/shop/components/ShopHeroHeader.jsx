@@ -176,7 +176,7 @@ export default function ShopHeroHeader({
           <div className="shopCommandLoadoutMeta" aria-label="Preview item summary">
             <span className={selectedItem?.type === "button_skin" ? "isPreviewSlot" : ""}><strong>Button</strong><span>{previewButtonSkin?.name ?? "Default"}</span></span>
             <span className={selectedItem?.type === "arena_theme" ? "isPreviewSlot" : ""}><strong>Arena</strong><span>{previewArenaTheme?.name ?? "Default"}</span></span>
-            <span className={selectedItem?.type === "profile_image" ? "isPreviewSlot" : ""}><strong>Profile</strong><span>{previewProfileImage?.imageSrc ? previewProfileImage.name : "Pilot portrait"}</span></span>
+            <span className={selectedItem?.type === "profile_image" ? "isPreviewSlot" : ""}><strong>Profile</strong><span>{previewProfileImage?.name ?? "Pilot Portrait"}</span></span>
           </div>
 
           <div className="shopCommandFooter">

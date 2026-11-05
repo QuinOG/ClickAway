@@ -235,6 +235,7 @@ export default function ShopPage({
                     equippedButtonSkinId={equippedButtonSkinId}
                     equippedArenaThemeId={equippedArenaThemeId}
                     equippedProfileImageId={equippedProfileImageId}
+                    playerName={playerName}
                     actionSourceAware
                   />
                 ))}

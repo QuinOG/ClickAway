@@ -1,5 +1,6 @@
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
+import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
 function getActionState({ isOwned, isEquipped, canAfford }) {
@@ -40,13 +41,30 @@ function StateIcon({ state }) {
   return <LockKey weight="fill" aria-hidden="true" />
 }
 
-function getPriceLabel({ item }) {
-  if (item.builtIn || item.cost === 0) return "Core"
-  return `${formatCoins(item.cost)}C`
+/* Rarity follows price so the catalog reads as a progression. */
+function getRarity(item) {
+  if (item.builtIn || !item.cost) return { id: "core", label: "Core" }
+  if (item.cost <= 300) return { id: "common", label: "Common" }
+  if (item.cost <= 800) return { id: "rare", label: "Rare" }
+  if (item.cost <= 1200) return { id: "epic", label: "Epic" }
+  return { id: "legendary", label: "Legendary" }
 }
 
 function getTypeClass(type) {
   return String(type ?? "cosmetic").replace(/_/g, "-")
+}
+
+function ArenaThemeScene({ effectClass }) {
+  return (
+    <div className={`shopArenaScene ${effectClass}`} aria-hidden="true">
+      <span className="shopArenaSceneFloor" />
+      <span className="shopArenaSceneCorner isTL" />
+      <span className="shopArenaSceneCorner isTR" />
+      <span className="shopArenaSceneCorner isBL" />
+      <span className="shopArenaSceneCorner isBR" />
+      <span className="shopArenaSceneTarget" />
+    </div>
+  )
 }
 
 function getPreviewStyle(item) {
@@ -70,6 +88,7 @@ export default function ShopItemCard({
   equippedButtonSkinId,
   equippedArenaThemeId,
   equippedProfileImageId,
+  playerName = "Player",
   actionSourceAware = false,
 }) {
   const { isOwned, canAfford, isEquipped, state: visualState } = getShopItemStatus({
@@ -104,7 +123,8 @@ export default function ShopItemCard({
     hasImage ? "hasImage" : item.effectClass
   }`
   const previewFrameClassName = `shopItemPreviewFrame is-${itemTypeClass}`
-  const cardClassName = `shopItemCard shopItemCard-${visualState}${isSelected ? " shopItemCard-selected" : ""}`
+  const rarity = getRarity(item)
+  const cardClassName = `shopItemCard shopItemCard-${visualState} rarity-${rarity.id}${isSelected ? " shopItemCard-selected" : ""}`
   const actionButtonClassName = `primaryButton shopActionButton ${
     isEquipped ? "isEquipped" : isOwned ? "isEquip" : canAfford ? "isBuy" : "isLocked"
   }`
@@ -119,7 +139,6 @@ export default function ShopItemCard({
       : actionLabel,
   })
   const stateLabel = getStateLabel({ isOwned, isEquipped, canAfford })
-  const priceLabel = getPriceLabel({ item })
 
   return (
     <article
@@ -127,22 +146,19 @@ export default function ShopItemCard({
       data-shop-state={visualState}
       data-selected={isSelected ? "true" : "false"}
       data-shop-item-id={item.id}
+      data-rarity={rarity.id}
     >
       <div className="shopItemHeader">
         <span className={`shopItemStateTag is-${visualState}`}>
           <StateIcon state={visualState} />
-          {visualState === "affordable" ? (
+          {visualState === "locked" ? (
             <>
               <span className="uiVisuallyHidden">{stateLabel}: </span>
               {formatCoins(item.cost)} coins
             </>
           ) : stateLabel}
         </span>
-        {isEquipped || visualState === "affordable" ? null : (
-          <span className={`shopItemPriceTag ${item.cost === 0 ? "isCore" : ""}`}>
-            {priceLabel}
-          </span>
-        )}
+        <span className="shopItemRarity">{rarity.label}</span>
       </div>
 
       <div className="shopItemShowcase">
@@ -166,6 +182,12 @@ export default function ShopItemCard({
                 style={getPreviewStyle(item)}
                 aria-hidden="true"
               />
+            ) : item.type === "arena_theme" ? (
+              <ArenaThemeScene effectClass={item.effectClass} />
+            ) : item.type === "profile_image" && !hasImage ? (
+              <span className="shopPreviewPortrait" aria-hidden="true">
+                <PlayerPortrait name={playerName} size={104} />
+              </span>
             ) : (
               <div
                 className={previewClassName}
@@ -190,6 +212,12 @@ export default function ShopItemCard({
           disabled={isActionDisabled || isSubmitting}
         >
           {actionLabelDisplay}
+          {!isOwned && canAfford && !isActionBusy ? (
+            <span className="shopActionPrice">
+              <Coins weight="fill" aria-hidden="true" />
+              {formatCoins(item.cost)}
+            </span>
+          ) : null}
         </button>
       </div>
     </article>

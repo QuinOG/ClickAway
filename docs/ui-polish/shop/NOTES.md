@@ -1,0 +1,17 @@
+# Shop polish log
+
+Round notes for the Shop screen. They're kept here, not in `HANDOFF.md`, so this branch never edits the file other polish work appends to.
+
+- **Council 1** (`council-1/`, brief in `council-brief.md`): baseline screenshots, top to bottom.
+- **s01:** Arena Theme cards preview a miniature arena: the theme's sky, a receding floor grid, a horizon line, corner brackets and a target, plus a sun for Sunset Grid. They no longer show flat gradient swatches. The core profile image shows the illustrated pilot players actually wear and is renamed "Pilot Portrait". The loadout summary now names it the same way, where it used to say "Pilot portrait" while the card said "Identity Gradient".
+- **s02:** Item cards are compact and uniform. Each card has one state tag (Equipped, Owned, or the price with a coin or lock icon), where some used to carry two pills. The preview frame loses its nested border, and previews are smaller. Descriptions reserve two lines and buttons share one height, so every row lines up. The page is about 300px shorter.
+- **s03:** The category rail stays pinned under the nav while the catalog scrolls. It compacts to a single row once pinned. Picking a category while the rail is pinned returns to the top of the catalog. `.shopCard` now uses `overflow: clip` in place of `hidden`, so sticky positioning resolves to the page scroller.
+- **Council 2** (`council-2/`): screenshots after s01–s03.
+- **s04:** The pinned rail sits flush under the nav (`top: -26px` cancels `.mainContent`'s top padding), so content no longer peeks through a gap above it. Once pinned it gets an open top edge, rounded bottom corners, a solid bottom rule and a drop shadow, so it reads as a docked header.
+- **s05:** Card proportions. Previews grow from 92px to 108px in a taller stage, and descriptions no longer reserve a second line, which removes the dead band above the action. Rows still align because cards stretch and the action is pinned to the bottom. Night Beam's wide flashlight art is scaled up (`shopImageScale` 94 → 132) and tilted so it matches its siblings' visual weight.
+- **s06:** Rarity tiers by price: Core (built-in), Common (≤300), Rare (≤800), Epic (≤1,200) and Legendary. Each tier tints the card's top accent and glow, and Epic and Legendary also tint the preview stage. The tier is named in the card header. Unlock buttons carry the price, and affordable cards' tags say "Affordable" so the price isn't repeated. Locked cards keep the price in the tag, because their button reads "Need N more".
+- **Council 3** (`council-3/`): screenshots after s04–s06.
+- **s07:** Rarity frames. Each tier owns its card edge: Core and Common stay neutral, Rare takes a blue rim, Epic a violet rim with an underglow and a warm-to-violet surface, and Legendary an amber rim, warm surface, wider accent cap and a diagonal foil sheen.
+- **s08:** One label per card. Affordable cards no longer show the "Affordable" pill, since the Unlock button already carries the price. The tag stays in the markup, visually hidden, so screen readers and the state tests still see it. The rarity label leads the header, and Owned, Equipped and Locked keep their tags.
+- **s09:** One display stage for every preview. Orbs, pixel sprites, arena scenes and the pilot portrait all sit under the same top spotlight on the same pedestal with a contact shadow, so the mixed art styles read as one set. The stage takes a faint wash of the rarity colour at every tier, not just Epic and Legendary.
+- **Council 4** (`council-4/`): screenshots after s07–s09.
