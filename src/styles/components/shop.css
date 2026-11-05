@@ -1898,16 +1898,20 @@
 
 .shopCard > .shopTabRail {
     position: sticky;
-    /* .mainContent has 26px top padding; this pins the rail 6px under the nav. */
-    top: -20px;
+    /* .mainContent has 26px top padding; -26px pins the rail flush under the nav. */
+    top: -26px;
     z-index: 5;
 }
 
 .shopCard > .shopTabRail.isStuck {
-    padding: 6px;
+    padding: 8px 6px 6px;
     background: #080d19;
     border-color: rgba(158, 203, 255, 0.22);
-    box-shadow: 0 14px 30px rgba(1, 5, 12, 0.55);
+    border-top-color: transparent;
+    border-radius: 0 0 18px 18px;
+    box-shadow:
+        inset 0 -1px 0 rgba(158, 203, 255, 0.18),
+        0 16px 28px -6px rgba(1, 5, 12, 0.85);
 }
 
 .shopTabRail.isStuck .shopTab {
