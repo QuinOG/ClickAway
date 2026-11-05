@@ -63,3 +63,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r33: active bay's truncated service line becomes an accuracy ring (conic, % inside) plus Rounds and gold Best-streak tiles; full summary kept as the aria-label.
 - r34: promotion's old→new tier chips become a seven-node division ladder — tier-coloured diamonds, rail lit up to the new division (fill animation), new division crowned and pulsing with its label enlarged.
 - r35 (council): swap-impact rows become centre-anchored diverging bars — solid red cells grow left for a loss, solid green right for a gain (5 steps each side), signed step count; replaces the red hatch that read as a missing texture.
+- r36 (council): hovering/focusing a mod candidate previews it on the instrument gauges — affected gauges glow green/red, show a dashed ghost needle at the new rating with the swept arc, and a signed step badge on the frame. Also: zero miss penalty reads 0, not -0.

@@ -67,6 +67,15 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
       await page.waitForTimeout(2600)
     }
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "preview") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(1000)
+    await page.locator(".armoryMachineHousing", { hasText: "Streak Lens" }).first().click({ timeout: 5000 })
+    await page.waitForTimeout(400)
+    await page.locator(".armoryPartCard", { hasText: "Stabilizer" }).first().hover()
+    await page.waitForTimeout(700)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "mods" || SCENE === "range") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))

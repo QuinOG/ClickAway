@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { getModuleDeltaChips, getUnlockText } from "../armoryUtils.js"
 import { getProfileStats } from "../armorySpecRatings.js"
@@ -116,6 +116,7 @@ export default function ArmoryPartsGallery({
   currentRules = null,
   getCandidateRules = null,
   chargeMultiplier = null,
+  onPreviewPart = null,
 }) {
   const cardRefs = useRef({})
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
@@ -135,6 +136,15 @@ export default function ArmoryPartsGallery({
   const featuredChips = featuredPart?.effects ? getModuleDeltaChips(featuredPart, installedPart) : []
   const featuredGains = featuredChips.filter((chip) => chip.tone === "gain")
   const featuredCosts = featuredChips.filter((chip) => chip.tone === "cost")
+  // While the pointer or focus is inside the gallery, the featured candidate
+  // is "previewed" so the instrument gauges can show where it would move them.
+  const [isPreviewing, setIsPreviewing] = useState(false)
+  const previewPartId = isPreviewing ? featuredPart?.id ?? null : null
+  useEffect(() => {
+    onPreviewPart?.(previewPartId)
+  }, [onPreviewPart, previewPartId])
+  useEffect(() => () => onPreviewPart?.(null), [onPreviewPart])
+
   const swapImpact = featuredPart && getCandidateRules
     ? getSwapImpact(currentRules, getCandidateRules(featuredPart.id))
     : []
@@ -169,6 +179,12 @@ export default function ArmoryPartsGallery({
       role="group"
       aria-label={galleryLabel}
       onKeyDown={handleGalleryKeyDown}
+      onMouseEnter={() => setIsPreviewing(true)}
+      onMouseLeave={() => setIsPreviewing(false)}
+      onFocus={() => setIsPreviewing(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsPreviewing(false)
+      }}
     >
       {featuredPart ? (
         <div className={`armoryPartFeature tone-${tone}`} aria-label={`Featured: ${featuredPart.label}`}>

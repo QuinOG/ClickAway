@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { PartEmblem } from "../../../components/art/GameIcons.jsx"
@@ -78,6 +78,14 @@ export default function ArmoryScreen({
 
   // Which rack key is mid-drag, so its tab reads as lifted off the rack.
   const [draggedKeyIndex, setDraggedKeyIndex] = useState(null)
+  const [previewModuleId, setPreviewModuleId] = useState(null)
+  const handlePreviewModule = useCallback((moduleId) => setPreviewModuleId(moduleId), [])
+  const previewRules = previewModuleId && activeStepId === "passives"
+    ? buildRoundRules(selectedMode, {
+        ...activeLoadout,
+        moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: previewModuleId },
+      })
+    : null
 
   const installedModuleId = activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] ?? ""
   const inspectedModule = getPassiveModuleById(installedModuleId)
@@ -181,6 +189,7 @@ export default function ArmoryScreen({
       <div className="armoryWorkspace" ref={workspaceRef}>
         <ArmoryInstruments
           presentation={activePresentation}
+          previewRules={previewRules}
         />
 
         <div className="armoryStepStack">
@@ -234,6 +243,7 @@ export default function ArmoryScreen({
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 currentRules={activePresentation.roundRules}
+                onPreviewPart={handlePreviewModule}
                 getCandidateRules={(moduleId) => buildRoundRules(selectedMode, {
                   ...activeLoadout,
                   moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: moduleId },
