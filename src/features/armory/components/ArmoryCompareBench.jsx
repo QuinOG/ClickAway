@@ -4,6 +4,7 @@ import {
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { getExactMetric } from "../armoryExactMetrics.js"
 import ArmoryModeManifest from "./ArmoryModeManifest.jsx"
+import { useOverlayDismiss } from "../useOverlayDismiss.js"
 
 // Ghost machines read at bay-wall scale so both silhouettes fit side by side
 // without the bench dwarfing the actual center-stage hero object.
@@ -165,6 +166,7 @@ export default function ArmoryCompareBench({
   ghostPresentation,
   modePresentations,
 }) {
+  useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   return (
