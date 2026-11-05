@@ -16,6 +16,7 @@ import {
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
+import { ArmoryIcon, BoltIcon, FlameIcon, StopwatchIcon, TargetIcon, TrophyIcon } from "../components/art/GameIcons.jsx"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankImageSrc,
@@ -111,10 +112,13 @@ function getStrongestTrait(profileStats, reactionStats) {
   return traits.sort((firstTrait, secondTrait) => secondTrait.score - firstTrait.score)[0]
 }
 
+const INSTRUMENT_ICONS = { precision: TargetIcon, chain: FlameIcon, tempo: StopwatchIcon }
+
 function PerformanceInstrument({ label, value, detail, tone, isStrongest }) {
+  const Icon = INSTRUMENT_ICONS[tone] ?? TargetIcon
   return (
     <article className={`profileInstrument tone-${tone} ${isStrongest ? "isStrongest" : ""}`}>
-      <span className="profileInstrumentReticle" aria-hidden="true" />
+      <span className="profileInstrumentEmblem" aria-hidden="true"><Icon size={34} /></span>
       <p className="profileInstrumentLabel">
         {label}
         {isStrongest ? <span className="profileInstrumentTag">Signature</span> : null}
@@ -352,6 +356,7 @@ export default function ProfilePage({
         <div className="profileSignalBand">
           <section className="profileFormPanel" aria-labelledby="recent-form-title">
             <div className="profileMiniHeading">
+              <span className="profilePanelEmblem" aria-hidden="true"><BoltIcon size={28} /></span>
               <div>
                 <span className="profileSectionKicker">Recent form</span>
                 <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
@@ -375,6 +380,7 @@ export default function ProfilePage({
 
           <section className="profileBuildSignature" aria-labelledby="build-signature-title">
             <div className="profileMiniHeading">
+              <span className="profilePanelEmblem" aria-hidden="true"><ArmoryIcon size={28} /></span>
               <div>
                 <span className="profileSectionKicker">Top build · this loadout only</span>
                 <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
@@ -402,6 +408,7 @@ export default function ProfilePage({
               ))}
             </div>
             <div className="profileMiniHeading">
+              <span className="profilePanelEmblem" aria-hidden="true"><TrophyIcon size={28} /></span>
               <div>
                 <span className="profileSectionKicker">Nearest achievement</span>
                 <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>

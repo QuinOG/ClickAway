@@ -571,3 +571,297 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
     .profileFormBar { animation: none; }
     .profileTextAction { scroll-behavior: auto; }
 }
+
+/* p02: readable type floor for Profile. Kickers and labels sit at 12px and
+   detail copy at 13px, all at >= ~80% ink. Scoped to .profilePageCenter so it
+   outranks the later shared sheets without editing them. */
+.profilePageCenter .profileIdentityKicker,
+.profilePageCenter .profileSectionKicker,
+.profilePageCenter .profileRankLabel {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: rgb(244 202 101 / 95%);
+}
+
+.profilePageCenter .profilePlayerTitle,
+.profilePageCenter .profileRankMeta {
+    font-size: 12.5px;
+    color: rgb(219 235 252 / 85%);
+}
+
+.profilePageCenter .profileRankGoal span,
+.profilePageCenter .profileRankGoal strong,
+.profilePageCenter .profileXpReadout span {
+    font-size: 13px;
+    color: rgb(214 229 246 / 88%);
+}
+
+.profilePageCenter .profileRankGoal strong { color: #f3f8ff; }
+
+.profilePageCenter .profileInstrumentLabel {
+    font-size: 13px;
+    color: rgb(206 224 244 / 86%);
+}
+
+.profilePageCenter .profileInstrumentDetail {
+    font-size: 12.5px;
+    color: rgb(206 224 244 / 76%);
+}
+
+.profilePageCenter .profileInstrumentTag { font-size: 11px; }
+
+.profilePageCenter .profilePeakStrip span,
+.profilePageCenter .profileFormAverage span,
+.profilePageCenter .profileBuildMetrics span {
+    font-size: 13px;
+    color: rgb(196 214 236 / 82%);
+}
+
+.profilePageCenter .profilePeakStrip strong,
+.profilePageCenter .profileFormAverage { font-size: 14px; }
+
+.profilePageCenter .profileNearestGoal > p { font-size: 14px; color: rgb(214 229 246 / 88%); }
+.profilePageCenter .profileGoalProgress { font-size: 13px; color: rgb(222 212 252 / 90%); }
+
+.profilePageCenter .achievementCategoryTab { font-size: 12.5px; }
+
+.profilePageCenter .achievementDescription {
+    font-size: 13px;
+    line-height: 1.4;
+    color: rgb(214 229 246 / 90%);
+}
+
+.profilePageCenter .achievementProgressText,
+.profilePageCenter .achievementPercentText { font-size: 12.5px; }
+
+.profilePageCenter .achievementState { font-size: 11.5px; }
+
+.profilePageCenter .profileCoinReadout,
+.profilePageCenter .profileTextAction { font-size: 14px; color: #eef6ff; }
+
+/* p03: one panel material across Profile. The stat cards and the three
+   lower panels share the instrument surface (tinted glass, soft frame,
+   accent cap), and each carries an illustrated emblem from the game icon
+   set in place of the faint crosshair. */
+.profilePageCenter .profileInstrumentEmblem {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 30%));
+}
+
+.profilePageCenter .profileInstrumentEmblem svg.gameIcon { width: 44px; height: 44px; }
+
+.profilePageCenter .profileSignalBand {
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 0;
+}
+
+.profilePageCenter .profileSignalBand > section,
+.profilePageCenter .profileSignalBand > section:first-child,
+.profilePageCenter .profileSignalBand > section:last-child {
+    --panel-accent: #7ccfff;
+    min-height: 0;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
+    overflow: hidden;
+}
+
+.profilePageCenter .profileSignalBand > section.profileBuildSignature { --panel-accent: #f5b968; }
+.profilePageCenter .profileSignalBand > section.profileNearestGoal {
+    --panel-accent: #b89cff;
+    background:
+        radial-gradient(circle at 95% 0%, rgba(181, 151, 255, 0.1), transparent 45%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+@media (min-width: 981px) {
+    .profilePageCenter .profileSignalBand { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Accent cap matching the stat instruments. */
+.profilePageCenter .profileSignalBand > section::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 38%;
+    height: 2px;
+    background: var(--panel-accent);
+    box-shadow: 0 0 12px var(--panel-accent);
+}
+
+.profilePageCenter .profileMiniHeading { align-items: center; }
+.profilePageCenter .profileMiniHeading > div { flex: 1 1 auto; min-width: 0; }
+.profilePageCenter .profileSignalBand .profileSectionKicker { white-space: nowrap; letter-spacing: 0.05em; }
+
+.profilePageCenter .profilePanelEmblem {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgb(4 9 19 / 55%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+
+.profilePageCenter .profilePanelEmblem svg.gameIcon { width: 36px; height: 36px; }
+
+@media (max-width: 760px) {
+    .profilePageCenter .profileSignalBand { gap: 8px; }
+    .profilePageCenter .profileSignalBand > section { padding: 10px; }
+    .profilePageCenter .profilePanelEmblem { display: none; }
+}
+
+/* p06: tactile panel material. Stat instruments and the three lower panels
+   get a bevelled edge (lit top, shaded base), a faint brushed texture, and a
+   surface wash in their own accent colour so each card reads as its own
+   piece of hardware rather than the same glass tile. */
+.profilePageCenter .profileInstrument { --panel-accent: var(--instrument-accent, #7ccfff); }
+.profilePageCenter .profileInstrument.isStrongest { --panel-accent: #6fe0b7; }
+
+.profilePageCenter .profileInstrument,
+.profilePageCenter .profileSignalBand > section,
+.profilePageCenter .profileSignalBand > section:first-child,
+.profilePageCenter .profileSignalBand > section:last-child,
+.profilePageCenter .profileSignalBand > section.profileNearestGoal {
+    background:
+        radial-gradient(130% 100% at 0% 0%, color-mix(in srgb, var(--panel-accent) 24%, transparent), transparent 65%),
+        repeating-linear-gradient(135deg, rgb(255 255 255 / 1.1%) 0 1px, transparent 1px 6px),
+        linear-gradient(180deg, #16223a, #0d1526);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 11%),
+        inset 0 -2px 0 rgb(0 0 0 / 35%),
+        inset 0 0 0 1px color-mix(in srgb, var(--panel-accent) 34%, rgb(255 255 255 / 6%)),
+        0 4px 0 #070d19,
+        0 10px 22px rgb(0 0 0 / 30%);
+}
+
+.profilePageCenter .profilePanelEmblem {
+    background: color-mix(in srgb, var(--panel-accent) 14%, rgb(4 9 19 / 70%));
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 10%),
+        inset 0 0 0 1px color-mix(in srgb, var(--panel-accent) 30%, transparent);
+}
+
+/* p07: lower panels fill their frames. Each panel stacks heading, content
+   and footer, with the footer pinned to the base so all three end on the
+   same line. The build stats become large instrument readouts and the
+   achievement track thickens into a meter. The p06 brushed texture is
+   quieter so it no longer competes with small text. */
+@media (min-width: 981px) {
+    .profilePageCenter .profileSignalBand > section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .profilePageCenter .profileFormChart { flex: 1 1 auto; height: auto; min-height: 64px; margin-top: 4px; }
+    .profilePageCenter .profileFormAverage { margin-top: 0; }
+
+    .profilePageCenter .profileBuildMetrics {
+        flex: 1 1 auto;
+        margin-top: 4px;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .profilePageCenter .profileBuildMetrics span {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 2px;
+        padding: 10px 10px 8px;
+        border: 0;
+        border-radius: 8px;
+        background: rgb(4 9 19 / 45%);
+        box-shadow: inset 0 0 0 1px rgb(245 185 104 / 16%), inset 0 -2px 0 rgb(245 185 104 / 35%);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgb(222 208 186 / 86%);
+    }
+
+    .profilePageCenter .profileBuildMetrics strong {
+        font-family: var(--ca-font-display);
+        font-weight: 400;
+        font-size: 26px;
+        line-height: 1;
+        letter-spacing: 0;
+        color: #fff4e3;
+    }
+
+    .profilePageCenter .profileNearestGoal > p { margin: 0; }
+    .profilePageCenter .profileNearestGoal .profileGoalTrack {
+        margin-top: auto;
+        height: 10px;
+        border-radius: 6px;
+        background: rgb(4 9 19 / 55%);
+    }
+    .profilePageCenter .profileNearestGoal .profileGoalTrack span { border-radius: 6px; }
+    .profilePageCenter .profileGoalProgress { font-size: 14px; font-weight: 700; }
+}
+
+.profilePageCenter .profileFormAverage { color: rgb(226 238 252 / 92%); }
+.profilePageCenter .profileFormAverage span { color: rgb(206 224 244 / 86%); }
+.profilePageCenter .profileInstrumentDetail { color: rgb(214 230 248 / 84%); }
+
+/* p08: a player identity hero. The header becomes a spotlit nameplate: a
+   larger portrait in a rank-metal frame with a halo, a bigger name, the
+   title as a rank-coloured plate, and a quieter stripe so the band reads as
+   lit metal rather than pattern. Desktop and tablet only; mobile keeps its
+   compact header. */
+@media (min-width: 761px) {
+    .profilePageCenter .profileCommandHeader {
+        padding-block: 26px;
+        background:
+            radial-gradient(ellipse 34% 150% at 8% 50%, rgba(var(--rank-accent-rgb), 0.42), transparent 72%),
+            radial-gradient(ellipse 60% 120% at 100% 0%, rgb(120 170 255 / 10%), transparent 70%),
+            repeating-linear-gradient(135deg, rgb(255 255 255 / 1.4%) 0 12px, transparent 12px 24px),
+            linear-gradient(90deg, #1d2f4c, #111c30);
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 8%),
+            inset 0 -2px 0 var(--skin-ink),
+            inset 0 -4px 0 rgba(var(--rank-accent-rgb), 0.55);
+    }
+
+    .profilePageCenter .profileIdentityRow { gap: 22px; }
+
+    .profilePageCenter .profileAvatar {
+        width: 108px;
+        height: 108px;
+        border-radius: 24px;
+        box-shadow:
+            0 0 0 3px var(--skin-ink),
+            0 0 0 7px rgba(var(--rank-accent-rgb), 0.95),
+            0 0 0 9px var(--skin-ink),
+            0 0 34px 8px rgba(var(--rank-accent-rgb), 0.35),
+            0 8px 0 6px #0a1220;
+    }
+
+    .profilePageCenter .profileAvatar .playerPortrait { border-radius: 20px; }
+
+    .profilePageCenter .profilePlayerName {
+        font-size: clamp(38px, 3.6vw, 50px);
+        line-height: 1.02;
+    }
+
+    .profilePageCenter .profilePlayerTitle {
+        justify-self: start;
+        margin: 4px 0 2px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: linear-gradient(180deg, rgba(var(--rank-accent-rgb), 0.3), rgba(var(--rank-accent-rgb), 0.14));
+        box-shadow: inset 0 0 0 1px rgba(var(--rank-accent-rgb), 0.55), 0 2px 0 var(--skin-ink);
+        color: #fff3d6;
+        font-size: 12.5px;
+        letter-spacing: 0.1em;
+    }
+
+    .profilePageCenter .profileLead { font-size: 14px; color: rgb(222 234 248 / 88%); }
+}
