@@ -23,8 +23,8 @@ function getPartVisualState({ part, isLocked, isInstalled }) {
   return "available"
 }
 
-// What a swap does to the build's rated profile: one 10-segment bar per stat
-// that changes, with gained segments lit green and lost segments struck red.
+// What a swap does to the build's measured rules: each stat that changes,
+// with its current and proposed values.
 function getSwapImpact(currentRules, nextRules) {
   if (!currentRules || !nextRules) return []
   const nextByKey = Object.fromEntries(getProfileStats(nextRules).map((stat) => [stat.key, stat]))
@@ -35,34 +35,27 @@ function getSwapImpact(currentRules, nextRules) {
   })
 }
 
-function SwapImpact({ rows, title = "Swap impact" }) {
+// A swap report: the actual measurements before and after, one aligned row
+// per changed stat, edged mint when the change helps and coral when it costs.
+function SwapImpact({ rows, title = "Swap report", fromLabel = "Current", toLabel = "Proposed" }) {
   return (
-    <div className="armorySwapImpact" aria-label={title}>
-      <span className="armorySwapImpactTitle">{title}</span>
+    <div className="armorySwapReport" role="table" aria-label={title}>
+      <div className="armorySwapReportHead" role="row">
+        <span role="columnheader">{title}</span>
+        <span role="columnheader">{fromLabel}</span>
+        <span aria-hidden="true" />
+        <span role="columnheader">{toLabel}</span>
+      </div>
       {rows.map(({ key, label, from, to }) => {
         const delta = to.rating - from.rating
-        const steps = Math.min(5, Math.abs(delta))
         const tone = delta > 0 ? "isGain" : delta < 0 ? "isLoss" : "isEven"
+        const verdict = delta > 0 ? "better" : delta < 0 ? "worse" : "no change"
         return (
-          <div key={key} className={`armorySwapImpactRow ${tone}`}>
-            <span className="armorySwapImpactLabel">{label}</span>
-            <span className="armorySwapImpactDiverge" aria-hidden="true">
-              <span className="armorySwapImpactSide isLossSide">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <i key={index} className={delta < 0 && index < steps ? "isLost" : ""} />
-                ))}
-              </span>
-              <em className="armorySwapImpactAxis" />
-              <span className="armorySwapImpactSide isGainSide">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <i key={index} className={delta > 0 && index < steps ? "isGained" : ""} />
-                ))}
-              </span>
-              <b className="armorySwapImpactDelta">{delta > 0 ? `+${delta}` : delta < 0 ? `−${Math.abs(delta)}` : "±0"}</b>
-            </span>
-            <span className="armorySwapImpactValue">
-              <s>{from.value}</s> {"→"} <b>{to.value}</b>
-            </span>
+          <div key={key} className={`armorySwapReportRow ${tone}`} role="row" aria-label={`${label}: ${from.value} to ${to.value}, ${verdict}`}>
+            <span className="armorySwapReportLabel" role="rowheader">{label}</span>
+            <span className="armorySwapReportFrom" role="cell">{from.value}</span>
+            <span className="armorySwapReportArrow" aria-hidden="true">→</span>
+            <b className="armorySwapReportTo" role="cell">{to.value}</b>
           </div>
         )
       })}
@@ -220,7 +213,7 @@ export default function ArmoryPartsGallery({
             <strong className="armoryPartFeatureName">{confirmedPart.label}</strong>
             <span className="armoryPartFeatureFeel">{confirmedPart.description}</span>
           </div>
-          {confirmed.rows.length ? <SwapImpact rows={confirmed.rows} title="Applied changes" /> : null}
+          {confirmed.rows.length ? <SwapImpact rows={confirmed.rows} title="Applied changes" fromLabel="Before" toLabel="Now" /> : null}
           <span className="armoryPartFeatureInstalled" role="status">Installed {"✓"}</span>
         </div>
       ) : featuredPart ? (
@@ -238,7 +231,7 @@ export default function ArmoryPartsGallery({
           {chargeMultiplier !== null && featuredPart.awardEvery ? (
             <ChargeRhythm candidate={featuredPart} installed={installedPart} multiplier={chargeMultiplier} />
           ) : null}
-          {swapImpact.length ? <SwapImpact rows={swapImpact} /> : featuredPart.effects ? (
+          {swapImpact.length ? <SwapImpact rows={swapImpact} toLabel={`With ${featuredPart.label}`} /> : featuredPart.effects ? (
             <div className="armoryPartFeatureTrade">
               <div className="armoryPartFeatureSide is-gain">
                 <span className="armoryPartFeatureSideLabel">You gain</span>

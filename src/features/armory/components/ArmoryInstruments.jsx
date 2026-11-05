@@ -116,6 +116,35 @@ export default function ArmoryInstruments({
         const previewClass = previewRating === null ? "" : previewRating > rating ? "isPreviewUp" : "isPreviewDown"
         const toneClass = rating === null ? "" : rating >= 7 ? "isHigh" : rating <= 3 ? "isLow" : "isMid"
 
+        // Out of compare mode the strip is a measurement panel: the exact
+        // value, the candidate's value while previewing a swap, and a tag
+        // only when this stat departs from stock.
+        if (!isComparing) {
+          const standardIndex = scale.indexOf("Standard")
+          const departure = standardIndex === -1 || currentIndex === standardIndex
+            ? "isStock"
+            : currentIndex > standardIndex ? "isAbove" : "isBelow"
+          const previewExact = previewRules ? getExactMetric(stat.label, previewRules) : null
+          const showPreview = Boolean(previewExact && previewExact.text !== currentExact.text)
+          return (
+            <article
+              key={stat.label}
+              className={`armoryInstrument isMeasure ${departure} ${showPreview ? previewClass || "isPreviewChange" : ""}`}
+            >
+              <span className="armoryInstrumentLabel">{stat.label}</span>
+              <span className="armoryInstrumentReadout">
+                <span className="armoryInstrumentValue">{currentExact.text}</span>
+                {showPreview ? (
+                  <span className="armoryInstrumentNext"><i aria-hidden="true">→</i> {previewExact.text}</span>
+                ) : null}
+              </span>
+              {departure === "isStock" ? null : (
+                <span className="armoryInstrumentTag">{stat.value}</span>
+              )}
+            </article>
+          )
+        }
+
         return (
           <article
             key={stat.label}
