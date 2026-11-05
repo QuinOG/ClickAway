@@ -209,9 +209,6 @@ export default function ShopPage({
               <div className="shopSectionHeader">
                 <div className="shopSectionTitleRow">
                   <h2>{category.title}</h2>
-                  <span className="shopSectionMeta">
-                    {categoryOwnedCounts[category.id] ?? 0}/{category.items.length} owned
-                  </span>
                 </div>
                 <p>{category.description}</p>
               </div>

@@ -14,7 +14,8 @@ import {
   buildProfileStatsFromLifetime,
 } from "../utils/lifetimeStatsUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
-import { getProfileAvatarStyle, getProfileInitials } from "../utils/profileAvatarStyling.js"
+import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
+import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankImageSrc,
@@ -114,7 +115,10 @@ function PerformanceInstrument({ label, value, detail, tone, isStrongest }) {
   return (
     <article className={`profileInstrument tone-${tone} ${isStrongest ? "isStrongest" : ""}`}>
       <span className="profileInstrumentReticle" aria-hidden="true" />
-      <p className="profileInstrumentLabel">{label}</p>
+      <p className="profileInstrumentLabel">
+        {label}
+        {isStrongest ? <span className="profileInstrumentTag">Signature</span> : null}
+      </p>
       <strong className="profileInstrumentValue">{value}</strong>
       <span className="profileInstrumentDetail">{detail}</span>
     </article>
@@ -235,7 +239,6 @@ export default function ProfilePage({
     bestStreak: profileStats.bestStreak,
     rankLabel,
   })
-  const playerInitials = getProfileInitials(playerName)
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
   const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
@@ -257,17 +260,17 @@ export default function ProfilePage({
             <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
               {hasProfileImage
                 ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
-                : playerInitials}
+                : <PlayerPortrait name={playerName} size={76} />}
             </div>
             <div className="profileIdentityText">
-              <span className="profileIdentityKicker">Player identity / online</span>
+              <span className="profileIdentityKicker">Player profile</span>
               <h1 className="profilePlayerName" id="profile-player-name">
                 {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
               </h1>
               <p className="profilePlayerTitle">{playerTitle}</p>
+              <p className="profileLead">{getProfileTagline(profileStats)}</p>
             </div>
           </div>
-          <p className="profileLead">{getProfileTagline(profileStats)}</p>
           <div className="profileHeaderResources" aria-label="Player resources and actions">
             <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
             <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
@@ -293,21 +296,24 @@ export default function ProfilePage({
               <h2 className="profileRankTitle">{rankLabel}</h2>
               <p className="profileRankMeta">{getRankMetaText(rankProgress)}</p>
               <div className="profileRankGoal">
-                <span>Next vector</span>
+                <span>Next rank</span>
                 <strong>{rankGoal}</strong>
               </div>
             </div>
             <div className="profileXpReadout">
-              <span><strong>{levelProgressPercent}%</strong> level orbit</span>
+              <span><strong>{levelProgressPercent}%</strong> to next level</span>
               <span>{formatNumber(xpToNextLevel)} XP to LV {nextLevelValue}</span>
+              <span className="profileXpTrack" aria-hidden="true">
+                <i style={{ width: `${Math.max(0, Math.min(100, levelProgressPercent))}%` }} />
+              </span>
             </div>
           </section>
 
           <section className="profilePerformancePanel" aria-labelledby="performance-title">
             <div className="profilePanelHeading">
               <div>
-                <span className="profileSectionKicker">Performance instruments</span>
-                <h2 id="performance-title">Combat telemetry</h2>
+                <span className="profileSectionKicker">Performance</span>
+                <h2 id="performance-title">Core stats</h2>
               </div>
               <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
             </div>
@@ -364,16 +370,15 @@ export default function ProfilePage({
                 />
               )) : <span className="profileEmptySignal">Play a round to establish form</span>}
             </div>
-            <p className="profileFormAverage"><span>Average signal</span>{formatNumber(recentForm.averageScore)}</p>
+            <p className="profileFormAverage"><span>Avg score</span>{formatNumber(recentForm.averageScore)}</p>
           </section>
 
           <section className="profileBuildSignature" aria-labelledby="build-signature-title">
             <div className="profileMiniHeading">
               <div>
-                <span className="profileSectionKicker">Build signature</span>
+                <span className="profileSectionKicker">Top build · this loadout only</span>
                 <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
               </div>
-              <span className="profileBuildGlyph" aria-hidden="true">+</span>
             </div>
             {signatureBuild ? (
               <div className="profileBuildMetrics">
@@ -418,7 +423,7 @@ export default function ProfilePage({
         >
           <div className="achievementHeaderRow">
             <div className="achievementHeaderText">
-              <span className="profileSectionKicker">Collection signal</span>
+              <span className="profileSectionKicker">Collection</span>
               <h2 className="profileStatsSectionTitle">Achievement constellation</h2>
             </div>
             <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">

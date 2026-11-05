@@ -9,6 +9,10 @@ import {
   UserCircle,
 } from "@phosphor-icons/react"
 
+import { RouteEmblem } from "./art/GameIcons.jsx"
+
+const ROUTE_EMBLEM_KEYS = { play: "play", armory: "armory", shop: "shop", profile: "profile", ladder: "ladder", duels: "duels", history: "history", help: "help" }
+
 function RouteGlyph({ routeId, weight = "duotone" }) {
   switch (routeId) {
     case "play": return <GameController weight={weight} />
@@ -86,7 +90,7 @@ export function CommandHeader({
   return (
     <header className={`commandHeader ${className}`.trim()}>
       <div className="commandHeaderGlyph" aria-hidden="true">
-        <span><RouteGlyph routeId={routeId} /></span>
+        <RouteEmblem routeKey={ROUTE_EMBLEM_KEYS[routeId] ?? routeId} size={44} />
       </div>
       <div className="commandHeaderCopy">
         {eyebrow ? <p className="commandHeaderEyebrow">{eyebrow}</p> : null}

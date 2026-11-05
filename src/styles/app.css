@@ -17,6 +17,16 @@
 @import "./components/duels.css";
 @import "./components/ladder.css";
 
+/* Cross-screen polish layer (consistent widths, rhythm, type) */
+@import "./polish.css";
+
+/* Phase 2 game skin: world backdrop, framed panels, tactile controls, HUD */
+@import "./game-skin.css";
+@import "./game-lobby.css";
+@import "./game-play.css";
+@import "./game-pages.css";
+@import "./game-armory.css";
+
 /* Shared animations */
 @import "./animations.css";
 

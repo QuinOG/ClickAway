@@ -385,7 +385,7 @@ export default function App() {
           path={APP_ROUTE.DUELS}
           element={
             <ProtectedRoute isAuthed={isAuthed}>
-              <ChallengesPage currentUserId={playerUserId} />
+              <ChallengesPage currentUserId={playerUserId} currentUsername={playerUsername} />
             </ProtectedRoute>
           }
         />

@@ -64,12 +64,15 @@ describe("B3 outcome and reward continuity", () => {
     expect(screen.getByRole("img", { name: "Hit signature: 24 hits and 3 misses" })).not.toBeNull()
     expect(screen.getByLabelText("Personal best comparison").textContent).toContain("New best by 18")
     expect(screen.queryByRole("heading", { name: "Rewards Settled" })).toBeNull()
+    expect(screen.getByLabelText("Round rewards").textContent).toContain("+18")
+    expect(screen.getByLabelText("Level 4 progress")).not.toBeNull()
+    expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
 
-    await user.click(screen.getByRole("button", { name: "Collect Rewards" }))
-
-    expect(screen.getByRole("heading", { name: "Rewards Settled" })).not.toBeNull()
-    expect(screen.getByLabelText("Updated persistent balances").textContent).toContain("738")
-    expect(screen.getByLabelText("Updated persistent balances").textContent).toContain("Level4")
+    // Rewards settle on the same screen: balance total and next unlock.
+    expect(screen.getByLabelText("Round rewards").textContent).toContain("738 total")
+    expect(screen.queryByRole("button", { name: "View Rewards" })).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Change Mode" }))
+    expect(props.onChooseMode).toHaveBeenCalledOnce()
     await user.click(screen.getByRole("button", { name: "Play Again" }))
     expect(props.onRematch).toHaveBeenCalledOnce()
   })
@@ -100,7 +103,8 @@ describe("B3 outcome and reward continuity", () => {
     await user.click(screen.getByRole("button", { name: "Reveal Rank" }))
     expect(screen.getByRole("heading", { name: "Promotion Secured" })).not.toBeNull()
 
-    await user.click(screen.getByRole("button", { name: "Collect Rewards" }))
+    expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
+    await user.click(screen.getByRole("button", { name: "View Rewards" }))
     expect(screen.getByLabelText(/Rank movement: Bronze III to Silver I/)).not.toBeNull()
     expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
   })

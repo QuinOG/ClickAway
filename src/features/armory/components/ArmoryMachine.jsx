@@ -4,6 +4,7 @@ import {
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
@@ -34,7 +35,7 @@ function MachineHousing({ module, isSelected = false, onOpenLane }) {
       title={`Open ${module.slotLabel} parts`}
     >
       <span className={`armoryMachineHousingGlyph tone-${module.slotId}`} aria-hidden="true">
-        <ModuleSlotGlyph slotId={module.slotId} />
+        <PartEmblem partId={module.moduleId} slotId={module.slotId} size={40} />
       </span>
       {/* Keyed by installed module so a fresh part visibly seats into place. */}
       <span
@@ -149,12 +150,39 @@ export default function ArmoryMachine({
       <div className="armoryMachine" key={loadout.id} ref={machineRef}>
         <div className="armoryMachineCore">
           <div className="armoryMachineAssembly">
-            <svg className="armoryMachineConduits" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
-              <path className="conduit-tempoCore" d="M300 205 L92 205" />
-              <path className="conduit-streakLens" d="M300 205 L300 62" />
-              <path className="conduit-powerRig" d="M300 205 L508 205" />
-              <circle cx="300" cy="205" r="116" />
-            </svg>
+            <div className="armoryMachineCoreStage">
+              <span className="armoryMachineRig" aria-hidden="true">
+                <span className="armoryMachineRigRing">
+                  {presentation.moduleStack.map((module) => (
+                    <i
+                      key={module.slotId}
+                      className={`armoryMachineRigArc arc-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
+                    />
+                  ))}
+                </span>
+                <span className="armoryMachineRigTicks" />
+                {presentation.moduleStack.map((module) => (
+                  <span
+                    key={module.slotId}
+                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
+                  >
+                    <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
+                  </span>
+                ))}
+                <span className="armoryMachineRigBed" />
+              </span>
+
+              <span
+                className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}
+                style={getTargetSkinStyle({
+                  targetSize,
+                  imageSrc: buttonSkinImageSrc,
+                  imageScale: buttonSkinImageScale,
+                })}
+                aria-hidden="true"
+              >
+              </span>
+            </div>
 
             <div className="armoryMachineHousingRow" aria-label="Passive stack">
               {presentation.moduleStack.map((module) => (
@@ -166,17 +194,6 @@ export default function ArmoryMachine({
                 />
               ))}
             </div>
-
-            <span
-              className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}
-              style={getTargetSkinStyle({
-                targetSize,
-                imageSrc: buttonSkinImageSrc,
-                imageScale: buttonSkinImageScale,
-              })}
-              aria-hidden="true"
-            >
-            </span>
           </div>
         </div>
 
@@ -185,7 +202,7 @@ export default function ArmoryMachine({
             <div key={`${powerSlot.id}-${index + 1}`} className="armoryMachineRackSlot">
               <span className="armoryMachineRackKey" aria-hidden="true">{index + 1}</span>
               <span className="armoryMachineRackGlyph" aria-hidden="true">
-                <PowerupGlyph powerupId={powerSlot.id} />
+                <PowerEmblem powerupId={powerSlot.id} size={28} />
               </span>
               <span className="armoryMachineRackBody">
                 <strong className="armoryMachineRackLabel">{powerSlot.label}</strong>

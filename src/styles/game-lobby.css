@@ -1,0 +1,641 @@
+/*
+ * Lobby scene (phase 2): the equipped target on a pedestal at center stage,
+ * mode portals and the launch control beside it — a game menu, not a form.
+ */
+.readyCard.arenaLobby {
+    width: min(1180px, calc(100vw - 48px));
+    max-width: 1180px;
+    padding: 28px;
+    border: 0;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 160px),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame), 0 0 80px rgba(var(--lobby-accent), 0.12);
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(360px, 1fr);
+    grid-template-areas:
+        "header header"
+        "stage modes"
+        "stage footer";
+    column-gap: 28px;
+    row-gap: 18px;
+    align-items: start;
+}
+
+.arenaLobbyHeader { grid-area: header; }
+.arenaLobbyHeader h2 { font-family: var(--ca-font-display); font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); letter-spacing: 0.01em; }
+.lobbyStage { grid-area: stage; }
+.lobbyModeSelector { grid-area: modes; }
+.arenaLobbyFooter { grid-area: footer; }
+.rankedPreflight,
+.practiceDrawer { grid-column: 2; }
+
+.lobbyStage {
+    position: relative;
+    min-height: 420px;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 60px rgb(0 0 0 / 60%);
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 42%, rgba(var(--lobby-accent), 0.24), transparent 70%),
+        linear-gradient(180deg, #0b1830 0%, #08111f 100%);
+}
+
+.lobbyStage > .arenaWorldArt {
+    opacity: 0.28;
+    mask-image: linear-gradient(to bottom, #000 0 48%, transparent 100%);
+}
+
+.lobbyStage.theme-sunset { background: radial-gradient(ellipse 60% 50% at 50% 42%, rgb(255 150 110 / 30%), transparent 70%), linear-gradient(160deg, #2a1236, #57261f); }
+.lobbyStage.theme-forest { background: radial-gradient(ellipse 60% 50% at 50% 42%, rgb(120 240 170 / 22%), transparent 70%), linear-gradient(165deg, #0f2a24, #1c3d27); }
+.lobbyStage.theme-arcade { background: radial-gradient(ellipse 60% 50% at 50% 42%, rgb(150 120 255 / 30%), transparent 70%), linear-gradient(160deg, #121838, #2c1650); }
+
+.lobbyStageFloor {
+    position: absolute;
+    left: -40%;
+    right: -40%;
+    bottom: -10%;
+    height: 62%;
+    transform: perspective(480px) rotateX(64deg);
+    transform-origin: 50% 100%;
+    background:
+        linear-gradient(rgba(var(--lobby-accent), 0.3) 1.5px, transparent 1.5px) 0 0 / 56px 56px,
+        linear-gradient(90deg, rgba(var(--lobby-accent), 0.3) 1.5px, transparent 1.5px) 0 0 / 56px 56px;
+    mask-image: linear-gradient(0deg, #000 15%, transparent 95%);
+}
+
+.lobbyStageBeam {
+    position: absolute;
+    left: 50%;
+    top: -10%;
+    width: 220px;
+    height: 80%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(var(--lobby-accent), 0.32), transparent 85%);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    filter: blur(6px);
+    opacity: 0.7;
+}
+
+.lobbyStageOrbit {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    border-radius: 50%;
+    border: 2px dashed rgba(var(--lobby-accent), 0.4);
+    transform: translate(-50%, -50%);
+    animation: lobbyOrbitSpin 22s linear infinite;
+}
+
+.lobbyStageOrbit.isOuter { width: 300px; height: 300px; }
+.lobbyStageOrbit.isInner { width: 210px; height: 210px; border-style: solid; border-color: rgba(var(--lobby-accent), 0.22); animation-direction: reverse; animation-duration: 30s; }
+
+.lobbyStagePedestal {
+    position: absolute;
+    left: 50%;
+    top: 66%;
+    width: 220px;
+    height: 56px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 40%, #2b4364 0%, #142338 60%, #0a1322 100%);
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 0 0 6px rgba(var(--lobby-accent), 0.5), 0 0 40px rgba(var(--lobby-accent), 0.5);
+}
+
+.lobbyStage .lobbyStageTarget {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: 150px;
+    height: 150px;
+    transform: translate(-50%, -50%);
+    cursor: default;
+    animation: lobbyTargetIdle 3.2s ease-in-out infinite;
+}
+
+.lobbyStageLoadout {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    border-radius: 12px;
+    background: rgb(6 12 24 / 86%);
+    box-shadow: var(--skin-frame-soft);
+}
+
+.lobbyStageLoadout small { color: var(--ca-color-ink-faint); font-size: 12px; font-weight: 600; }
+.lobbyStageLoadout strong { font-family: var(--ca-font-display); font-weight: 400; font-size: 16px; color: #ffffff; }
+.lobbyStagePowers { display: flex; gap: 8px; }
+
+.lobbyStagePower {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #22344f, #152338);
+    box-shadow: var(--skin-frame-soft);
+}
+
+.lobbyStagePower kbd {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 5px;
+    background: #e9f1fb;
+    color: var(--skin-ink);
+    font: 400 11px/17px var(--ca-font-display);
+    text-align: center;
+    box-shadow: 0 0 0 2px var(--skin-ink);
+}
+
+@keyframes lobbyOrbitSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes lobbyTargetIdle { 0%, 100% { transform: translate(-50%, -52%); } 50% { transform: translate(-50%, -46%); } }
+
+/* Mode portals: illustrated, stacked, tactile. */
+.lobbyModeRail { grid-template-columns: 1fr; gap: 10px; }
+
+.lobbyModeChoice {
+    min-height: 0;
+    padding: 12px 16px 12px 88px;
+    position: relative;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #1c2c45 0%, #131f33 100%);
+    box-shadow: var(--skin-frame-soft), 0 4px 0 #0a1220;
+    gap: 3px;
+}
+
+.lobbyModeChoice:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: linear-gradient(180deg, #23365a 0%, #172640 100%);
+}
+
+.lobbyModeChoice.isSelected {
+    background:
+        linear-gradient(90deg, rgba(var(--mode-accent), 0.28), rgba(var(--mode-accent), 0.06) 70%),
+        linear-gradient(180deg, #1c2c45 0%, #131f33 100%);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px rgba(var(--mode-accent), 0.85), inset 0 1px 0 rgb(255 255 255 / 14%), 0 0 26px rgba(var(--mode-accent), 0.3), 0 4px 0 #0a1220;
+}
+
+.lobbyModeEmblem {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    transform: translateY(-50%);
+    border-radius: 14px;
+    background: radial-gradient(circle, rgba(var(--mode-accent), 0.3), rgba(var(--mode-accent), 0.05) 70%);
+    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 35%));
+    transition: transform 160ms var(--ca-motion-ease-impact);
+}
+
+.lobbyModeChoice.isSelected .lobbyModeEmblem { transform: translateY(-50%) scale(1.08) rotate(-4deg); }
+.lobbyModeChoice .lobbyModeGlyph { display: none; }
+.lobbyModeChoiceTopline { grid-template-columns: minmax(0, 1fr) 22px; }
+.lobbyModeName { font-family: var(--ca-font-display); font-weight: 400; font-size: 20px; letter-spacing: 0.01em; }
+.lobbyModeSelectedMark { width: 22px; height: 22px; box-shadow: 0 0 0 2px var(--skin-ink); }
+
+/* Launch: the dominant control. */
+.arenaLobbyFooter { grid-template-columns: 1fr; gap: 12px; }
+.lobbyBuildReadiness { display: none; }
+.arenaLobbyActions { grid-column: 1; grid-row: auto; justify-content: stretch; }
+
+.arenaLobby .arenaLobbyStart {
+    width: 100%;
+    min-height: 72px;
+    border: 2px solid var(--skin-ink);
+    border-radius: 14px;
+    color: #1d1102;
+    background: linear-gradient(180deg, #ffe68a 0%, var(--skin-gold) 45%, #f0a51d 100%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 60%), inset 0 -4px 0 rgb(0 0 0 / 16%), 0 6px 0 var(--skin-gold-deep), 0 6px 0 2px var(--skin-ink), 0 16px 30px rgb(0 0 0 / 40%);
+}
+
+.arenaLobby .arenaLobbyStart:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 50%), 0 2px 0 var(--skin-gold-deep), 0 2px 0 2px var(--skin-ink);
+}
+
+.arenaLobbyStart span { font-family: var(--ca-font-display); font-weight: 400; font-size: 24px; letter-spacing: 0.04em; }
+.arenaLobbyStart small { color: rgb(40 22 0 / 72%); font-size: 13px; font-weight: 700; }
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby {
+        grid-template-columns: 1fr;
+        grid-template-areas: "header" "stage" "modes" "footer";
+        padding: 18px 14px;
+    }
+
+    .rankedPreflight,
+    .practiceDrawer { grid-column: 1; }
+    .lobbyStage { min-height: 230px; }
+    .lobbyStage .lobbyStageTarget { width: 96px; height: 96px; top: 40%; }
+    .lobbyStageOrbit.isOuter { width: 190px; height: 190px; top: 40%; }
+    .lobbyStageOrbit.isInner { width: 130px; height: 130px; top: 40%; }
+    .lobbyStagePedestal { width: 150px; height: 40px; top: 56%; }
+    .lobbyStageLoadout { padding: 8px 10px; }
+    .lobbyModeChoice { padding-left: 76px; }
+    .lobbyModeEmblem { width: 50px; height: 50px; }
+    .lobbyModeEmblem svg { width: 44px; height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lobbyStageOrbit,
+    .lobbyStage .lobbyStageTarget { animation: none; }
+}
+
+.lobbyStageLoadout { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+.lobbyStageEdit { justify-self: start; font-size: 12px; }
+@media (max-width: 900px) {
+    .lobbyStageLoadout { grid-template-columns: minmax(0, 1fr) auto; }
+    .lobbyStageEdit { display: none; }
+}
+
+/* ---- Round 2: full-bleed lobby ------------------------------------------
+ * The pedestal scene is the screen. Header, modes and launch sit in a framed
+ * console on the right; the build strip anchors the bottom-left.
+ * ------------------------------------------------------------------------ */
+.gameOverlayStage > .gameOverlay.arenaLobbyBackdrop { padding: 0; }
+
+.readyCard.arenaLobby {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    min-height: 100%;
+    padding: clamp(20px, 3vw, 40px);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+        ". header"
+        ". modes"
+        ". spacer"
+        ". footer";
+    column-gap: clamp(24px, 4vw, 64px);
+    row-gap: 16px;
+    align-content: stretch;
+}
+
+.readyCard.arenaLobby::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    top: clamp(12px, 2vw, 24px);
+    bottom: clamp(12px, 2vw, 24px);
+    right: clamp(12px, 2vw, 24px);
+    width: calc(min(440px, 38vw) + 2 * clamp(12px, 1.6vw, 22px));
+    min-width: 404px;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 160px),
+        linear-gradient(180deg, rgb(18 31 51 / 94%) 0%, rgb(10 18 32 / 96%) 100%);
+    box-shadow: var(--skin-frame);
+}
+
+.readyCard.arenaLobby > :not(.lobbyStage) { position: relative; z-index: 2; }
+
+.readyCard.arenaLobby .lobbyStage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    min-height: 0;
+    height: auto;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Hero target sits in the open left area, large and lit. */
+.readyCard.arenaLobby .lobbyStage .lobbyStageTarget,
+.readyCard.arenaLobby .lobbyStageOrbit,
+.readyCard.arenaLobby .lobbyStageBeam,
+.readyCard.arenaLobby .lobbyStagePedestal { left: calc((100% - 480px) / 2); }
+
+.readyCard.arenaLobby .lobbyStage .lobbyStageTarget { width: clamp(150px, 16vw, 230px); height: clamp(150px, 16vw, 230px); top: 44%; }
+.readyCard.arenaLobby .lobbyStageOrbit.isOuter { width: clamp(300px, 32vw, 460px); height: clamp(300px, 32vw, 460px); top: 44%; }
+.readyCard.arenaLobby .lobbyStageOrbit.isInner { width: clamp(210px, 23vw, 330px); height: clamp(210px, 23vw, 330px); top: 44%; }
+.readyCard.arenaLobby .lobbyStagePedestal { width: clamp(220px, 22vw, 320px); height: clamp(56px, 5vw, 76px); top: 64%; }
+.readyCard.arenaLobby .lobbyStageBeam { width: clamp(220px, 22vw, 320px); }
+
+.readyCard.arenaLobby .lobbyStageLoadout {
+    left: clamp(20px, 3vw, 40px);
+    right: auto;
+    bottom: clamp(20px, 3vw, 40px);
+    width: min(560px, calc(100% - 560px));
+    z-index: 2;
+}
+
+.arenaLobbyHeader { padding: 8px 6px 0; }
+.arenaLobbyFooter { grid-area: footer; }
+
+@keyframes lobbyTargetIdle { 0%, 100% { transform: translate(-50%, -52%); } 50% { transform: translate(-50%, -46%); } }
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-template-areas: "header" "stage" "modes" "footer";
+        padding: 16px 14px 0;
+        overflow-y: auto;
+    }
+
+    .readyCard.arenaLobby::before { display: none; }
+
+    .readyCard.arenaLobby .lobbyStage {
+        position: relative;
+        inset: auto;
+        grid-area: stage;
+        min-height: 230px;
+        border-radius: 14px;
+        box-shadow: 0 0 0 2px var(--skin-ink);
+    }
+
+    .readyCard.arenaLobby .lobbyStage .lobbyStageTarget,
+    .readyCard.arenaLobby .lobbyStageOrbit,
+    .readyCard.arenaLobby .lobbyStageBeam,
+    .readyCard.arenaLobby .lobbyStagePedestal { left: 50%; }
+
+    .readyCard.arenaLobby .lobbyStage .lobbyStageTarget { width: 96px; height: 96px; top: 40%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isOuter { width: 190px; height: 190px; top: 40%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isInner { width: 130px; height: 130px; top: 40%; }
+    .readyCard.arenaLobby .lobbyStagePedestal { width: 150px; height: 40px; top: 56%; }
+    .readyCard.arenaLobby .lobbyStageLoadout { left: 10px; right: 10px; bottom: 10px; width: auto; }
+
+    /* Start stays reachable above the bottom dock. */
+    .arenaLobbyFooter {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, transparent, var(--skin-face-low) 30%);
+    }
+}
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby { padding: 12px 12px 10px; row-gap: 10px; }
+    .arenaLobbyHeader p { display: none; }
+    .arenaLobbyHeader h2 { font-size: 28px; }
+    .readyCard.arenaLobby .lobbyStage { min-height: 168px; }
+    .readyCard.arenaLobby .lobbyStage .lobbyStageTarget { width: 78px; height: 78px; top: 36%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isOuter { width: 150px; height: 150px; top: 36%; }
+    .readyCard.arenaLobby .lobbyStageOrbit.isInner { width: 104px; height: 104px; top: 36%; }
+    .readyCard.arenaLobby .lobbyStagePedestal { width: 120px; height: 30px; top: 50%; }
+    .readyCard.arenaLobby .lobbyStageLoadout { padding: 6px 8px; }
+    .lobbyStagePower { width: 32px; height: 32px; }
+    .lobbyModeRail { gap: 8px; }
+    .lobbyModeChoice { padding: 8px 12px 8px 68px; }
+    .lobbyModeEmblem { left: 10px; width: 46px; height: 46px; }
+    .lobbyModeEmblem svg { width: 40px; height: 40px; }
+    .lobbyModeName { font-size: 17px; }
+    .arenaLobbyFooter { position: static; padding: 0; background: none; }
+    .arenaLobby .arenaLobbyStart { min-height: 58px; }
+    .arenaLobbyStart span { font-size: 20px; }
+}
+
+/* Mode tiles are selected by their glow, not a radio circle. */
+.lobbyModeSelectedMark { display: none; }
+.lobbyModeChoiceTopline { grid-template-columns: minmax(0, 1fr); }
+.lobbyModeChoice.isSelected::after {
+    content: "SELECTED";
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgb(var(--mode-accent));
+    color: var(--skin-ink);
+    font: 400 11px/16px var(--ca-font-display);
+    letter-spacing: 0.06em;
+    box-shadow: 0 0 0 2px var(--skin-ink);
+}
+
+/* ---- Phase 3 r1: lobby extras get their own row; nothing overlaps Start ---- */
+.readyCard.arenaLobby {
+    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-areas:
+        ". header"
+        ". modes"
+        ". extras"
+        ". spacer"
+        ". footer";
+}
+
+.readyCard.arenaLobby .rankedPreflight,
+.readyCard.arenaLobby .practiceDrawer { grid-area: extras; grid-column: 2; }
+
+.practiceDrawer.isOpen .practiceDrawerContent { max-height: min(34dvh, 300px); overflow-y: auto; }
+.readyCard.arenaLobby .practiceDrillGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.readyCard.arenaLobby .practiceDrillChoice { min-height: 0; padding: 9px 10px; }
+
+@media (max-width: 900px) {
+    .readyCard.arenaLobby .rankedPreflight,
+    .readyCard.arenaLobby .practiceDrawer { grid-column: 1; grid-area: auto; }
+}
+
+/* ---- Phase 3 r2: opened Practice lab takes over the open left stage; Start stays alone in its footer ---- */
+@media (min-width: 901px) {
+    .readyCard.arenaLobby .practiceDrawer.isOpen {
+        grid-column: 1;
+        grid-row: 1 / -1;
+        align-self: center;
+        justify-self: center;
+        width: min(640px, 100%);
+        margin: 24px;
+        padding: 18px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgb(14 26 44 / 96%), rgb(8 15 28 / 97%));
+        box-shadow: var(--skin-frame), 0 24px 60px rgb(0 0 0 / 45%);
+    }
+    .readyCard.arenaLobby .practiceDrawer.isOpen .practiceDrawerContent { max-height: none; overflow: visible; }
+    .readyCard.arenaLobby .practiceDrawer.isOpen .practiceDrillChoice { padding: 14px; min-height: 104px; }
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageTarget,
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageOrbit,
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStageBeam,
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyStagePedestal { opacity: 0.18; transition: opacity 200ms ease; }
+}
+
+/* ---- Polish r13: the chosen mode opens into a briefing card ---- */
+@media (min-width: 900px) {
+    .lobbyModeChoice.isSelected { padding: 18px 18px 16px 136px; gap: 4px; }
+    .lobbyModeChoice.isSelected .lobbyModeEmblem {
+        left: 18px;
+        top: 18px;
+        width: 100px;
+        height: 100px;
+        transform: rotate(-4deg);
+        border-radius: 22px;
+        background: radial-gradient(circle, rgba(var(--mode-accent), 0.45), rgba(var(--mode-accent), 0.06) 72%);
+        box-shadow: inset 0 0 0 2px rgba(var(--mode-accent), 0.6);
+    }
+    .lobbyModeChoice.isSelected .lobbyModeEmblem svg { width: 84px; height: 84px; }
+    .lobbyModeChoice.isSelected .lobbyModeName { font-size: 30px; line-height: 1.05; }
+}
+.lobbyModeBrief {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+.lobbyModeBriefStat {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgb(5 10 20 / 45%);
+    box-shadow: inset 0 0 0 2px rgba(var(--mode-accent), 0.35);
+}
+.lobbyModeBriefStat small { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--mode-accent), 1); }
+.lobbyModeBriefStat b { font: 400 22px/1 var(--ca-font-display); color: #fff; }
+.lobbyModeBriefPips { display: flex; gap: 4px; height: 22px; align-items: center; }
+.lobbyModeBriefPips i { width: 14px; height: 14px; border-radius: 4px; background: rgb(255 255 255 / 14%); transform: skewX(-12deg); }
+.lobbyModeBriefPips i.isOn { background: rgb(var(--mode-accent)); box-shadow: 0 0 8px rgba(var(--mode-accent), 0.7); }
+
+/* ---- r26: mode record scoreboard ----------------------------------------
+ * The selected mode's best / average / rounds as tiles over a ten-round bar
+ * chart (best bar gold, latest bar lit, dashed average line).
+ * ------------------------------------------------------------------------ */
+.lobbyModeRecord {
+    grid-column: 2;
+    display: grid;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-radius: 14px;
+    background: rgb(0 0 0 / 22%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+.lobbyModeRecordHeader { display: flex; justify-content: space-between; align-items: baseline; }
+.lobbyModeRecordHeader span {
+    color: #7fc8ff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.lobbyModeRecordHeader small { font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lobbyModeRecordHeader small.isUp { color: #6ff0bd; }
+.lobbyModeRecordHeader small.isDown { color: #ff9a8a; }
+.lobbyModeRecordTiles { display: grid; grid-template-columns: 1.3fr 1fr 0.8fr; gap: 6px; }
+.lobbyModeRecordTiles > span {
+    display: grid;
+    padding: 6px 9px;
+    border-radius: 9px;
+    background: rgb(255 255 255 / 4%);
+}
+.lobbyModeRecordTiles small {
+    color: rgb(185 208 236 / 58%);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.lobbyModeRecordTiles b {
+    color: #f3f8ff;
+    font-family: var(--ca-font-display);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+.lobbyModeRecordTiles .isBest { background: linear-gradient(135deg, rgb(255 209 102 / 16%), rgb(255 209 102 / 4%)); box-shadow: inset 0 0 0 1px rgb(255 209 102 / 30%); }
+.lobbyModeRecordTiles .isBest b { color: #ffd166; }
+.lobbyModeRecordChart {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+    gap: 5px;
+    height: 46px;
+    padding-top: 2px;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+.lobbyModeRecordChart b {
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, rgb(127 200 255 / 55%), rgb(63 159 230 / 25%));
+}
+.lobbyModeRecordChart b.isLatest { background: linear-gradient(180deg, #8fd8ff, #3f9fe6); box-shadow: 0 0 10px rgb(95 180 255 / 45%); }
+.lobbyModeRecordChart b.isBest { background: linear-gradient(180deg, #ffe08a, #e0a934); box-shadow: 0 0 10px rgb(255 200 90 / 40%); }
+.lobbyModeRecordAvg {
+    position: absolute;
+    inset-inline: 0;
+    border-top: 1px dashed rgb(255 255 255 / 30%);
+    pointer-events: none;
+}
+.lobbyModeRecord { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 12px; row-gap: 6px; padding: 9px 12px 10px; }
+.lobbyModeRecordHeader { grid-column: 1 / -1; }
+.lobbyModeRecordTiles > span { padding: 4px 8px; }
+.lobbyModeRecordTiles b { font-size: 18px; }
+.lobbyModeRecordChart { height: auto; min-height: 40px; gap: 3px; }
+.lobbyModeRecordChart b.isEmpty { height: 4px; background: rgb(255 255 255 / 7%); }
+
+/* ---- r27: build card with rated specs -----------------------------------
+ * The bottom-left build strip becomes a mini spec card: name row, powerup
+ * keys on the right, and four rated 10-segment specs (from the spec sheet).
+ * ------------------------------------------------------------------------ */
+.readyCard.arenaLobby .lobbyStageLoadout {
+    width: min(820px, calc(100% - 600px));
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    row-gap: 10px;
+    padding: 12px 16px 14px;
+}
+.lobbyStageLoadout .lobbyStagePowers { grid-column: 4; grid-row: 1 / 3; align-self: center; }
+.lobbyStageSpecs {
+    grid-column: 1 / 4;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+.lobbyStageSpec {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    row-gap: 4px;
+    min-width: 0;
+}
+.lobbyStageSpec small {
+    overflow: hidden;
+    color: rgb(185 208 236 / 60%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.lobbyStageSpec b { color: #e6f1ff; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lobbyStageSpec i { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+.lobbyStageSpec em { height: 7px; border-radius: 1.5px; background: rgb(255 255 255 / 8%); }
+.lobbyStageSpec em.isOn { background: linear-gradient(180deg, #8fd8ff, #3f9fe6); }
+.lobbyStageSpec.isHigh em.isOn { background: linear-gradient(180deg, #7ff5c4, #2fc48a); }
+.lobbyStageSpec.isLow em.isOn { background: linear-gradient(180deg, #ffb09a, #e8644a); }
+.lobbyStageSpec.isHigh b { color: #7ff5c4; }
+.lobbyStageSpec.isLow b { color: #ffb09a; }
+.lobbyStageLoadout .lobbyStagePower { width: 48px; height: 48px; }
+.lobbyStageSpecs { gap: 22px; }
+.lobbyStageSpec { row-gap: 6px; column-gap: 8px; }
+.lobbyStageSpec small { font-size: 10px; }
+.lobbyStageSpec b { font-size: 13px; }
+.lobbyStageSpec em { height: 10px; border-radius: 2px; }
+.lobbyStageSpec i { gap: 3px; }
+.readyCard.arenaLobby .lobbyStageLoadout { row-gap: 12px; padding: 14px 18px 16px; }
+.lobbyStageLoadout strong { font-size: 18px; }

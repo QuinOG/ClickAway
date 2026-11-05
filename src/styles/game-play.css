@@ -1,0 +1,1585 @@
+/*
+ * Live round + game over (phase 2): HUD and powerup dock as chunky game
+ * panels, a visible arena floor, and a reward-first results screen.
+ */
+.hudPrimaryRow {
+    border: 0;
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 60%),
+        linear-gradient(180deg, var(--skin-face-high) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame);
+    backdrop-filter: none;
+}
+
+.hudPrimaryRow::after { display: none; }
+
+.scoreNumber,
+.timerText {
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    -webkit-text-stroke: 2px var(--skin-ink);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--skin-ink);
+}
+
+.hudEyebrow { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.08em; }
+
+.powerupItem {
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #1f3049 0%, #131f33 100%);
+    box-shadow: var(--skin-frame-soft), 0 4px 0 #0a1220;
+}
+
+.powerupItem.ready {
+    background: linear-gradient(180deg, #1d4a52 0%, #123038 100%);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px rgb(78 221 184 / 70%), inset 0 1px 0 rgb(255 255 255 / 14%), 0 0 22px rgb(78 221 184 / 30%), 0 4px 0 #0a1220;
+}
+
+.powerupIconWrap {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: rgb(0 0 0 / 25%);
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 30%);
+}
+
+.powerupSlotBadge {
+    font-family: var(--ca-font-display);
+    background: #e9f1fb;
+    color: var(--skin-ink);
+    box-shadow: 0 0 0 2px var(--skin-ink);
+}
+
+.powerupLabel { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.02em; }
+
+.powerupSegment { border-radius: 3px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%); }
+
+/* Make the arena floor read as a surface. */
+.arenaFloor { opacity: 1; height: 80%; }
+
+/* ---- Game over: results card in the same framed material ---------------- */
+.gameOverCard,
+.gameOverCardWithDifficulty {
+    border: 0;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 180px),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame), 0 0 80px rgb(79 216 255 / 10%);
+}
+
+.gameOverTitle { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.01em; }
+
+.gameOverScorePanel {
+    position: relative;
+    border: 0;
+    box-shadow: var(--skin-frame-soft);
+    background: radial-gradient(ellipse at 50% 0%, rgb(79 216 255 / 16%), transparent 70%), #0d192b;
+}
+
+.gameOverScoreValue {
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    -webkit-text-stroke: 3px var(--skin-ink);
+    paint-order: stroke fill;
+    text-shadow: 0 4px 0 var(--skin-ink), 0 0 30px rgb(79 216 255 / 35%);
+}
+
+.gameOverMedal {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    display: grid;
+    place-items: center;
+    transform: rotate(10deg);
+    filter: drop-shadow(0 4px 0 rgb(0 0 0 / 40%));
+    animation: medalStamp 520ms var(--ca-motion-ease-impact) 0.6s both;
+}
+
+.gameOverMedal b {
+    position: absolute;
+    bottom: -6px;
+    padding: 1px 8px;
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--skin-ink);
+    font: 400 11px/16px var(--ca-font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 0 0 2px var(--skin-ink);
+}
+
+@keyframes medalStamp {
+    from { opacity: 0; transform: rotate(-20deg) scale(2.2); }
+    to { opacity: 1; transform: rotate(10deg) scale(1); }
+}
+
+.gameOverRewards {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 4px 0 2px;
+}
+
+.gameOverReward {
+    min-width: 128px;
+    padding: 8px 14px 8px 10px;
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 8px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #1f3049, #131f33);
+    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
+}
+
+.gameOverReward svg { grid-row: 1 / 3; }
+.gameOverReward strong { font: 400 22px/1 var(--ca-font-display); color: #ffffff; text-shadow: 0 2px 0 var(--skin-ink); }
+.gameOverReward small { font-size: 12px; font-weight: 700; color: var(--ca-color-ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.gameOverReward.isCoins strong { color: #ffe08a; }
+.gameOverReward.isXp strong { color: #8ee9ff; }
+.gameOverReward.isRank strong { color: #9ff0c9; }
+.gameOverReward.isRank.isLoss strong { color: #ff8a8a; }
+
+/* Hit split as one continuous bar, not countable-looking cells. */
+.outcomeSignatureTrack { gap: 0; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 2px var(--skin-ink); }
+.outcomeSignatureCell { border-radius: 0; }
+
+.gameOverActions { display: flex; justify-content: center; gap: 12px; }
+.gameOverActions .primaryButton { min-width: 220px; }
+.gameOverRematch { min-width: 140px; min-height: 48px; font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.03em; }
+
+/* Round 2 game-over polish: medal fully visible, compact PB, single result composition. */
+.gameOverScorePanel { overflow: visible; }
+.gameOverScoreLockRail { border-radius: 14px 14px 0 0; overflow: hidden; }
+.gameOverMedal { top: -18px; right: -22px; }
+.outcomeBestComparison:not(.isNewBest) .outcomeBestTracks { display: none; }
+.outcomeBestComparison:not(.isNewBest) { padding-block: 8px; }
+.outcomeContinuityBoard > section,
+.outcomeInstrument,
+.gameOverAchievementHint {
+    border: 0;
+    background: rgb(0 0 0 / 18%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+}
+.outcomeInstrument span { white-space: nowrap; }
+
+/* ---- Round 2: the arena is the screen ------------------------------------
+ * Wider and taller play field; HUD and powerup dock attach to the frame;
+ * a stadium environment surrounds it.
+ * ------------------------------------------------------------------------ */
+.gameScreen {
+    gap: 0;
+    background:
+        radial-gradient(ellipse 70% 40% at 50% 100%, rgb(40 140 200 / 20%), transparent 70%),
+        radial-gradient(ellipse 50% 35% at 50% 0%, rgb(90 70 200 / 16%), transparent 70%),
+        repeating-linear-gradient(90deg, rgb(79 216 255 / 4%) 0 2px, transparent 2px 120px),
+        linear-gradient(180deg, #070d1a 0%, #0b1426 60%, #08101e 100%);
+}
+
+.gameHud,
+.arena { width: min(1320px, 100%); }
+
+.arena {
+    height: min(calc(100dvh - 250px), 760px);
+    max-height: none;
+    border-radius: 0 0 18px 18px;
+}
+
+.hudPrimaryRow {
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 1px 0 var(--skin-bevel), 0 -10px 30px rgb(0 0 0 / 30%);
+}
+
+.gameHud { margin-bottom: 0; position: relative; z-index: 2; }
+
+/* Powerup dock hangs from the arena's lower frame. */
+.powerupHotbar {
+    width: min(620px, 94vw);
+    margin-top: -2px;
+    padding: 10px 14px 12px;
+    border-radius: 0 0 16px 16px;
+    background: linear-gradient(180deg, var(--skin-face-low), #0a1322);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 10px 24px rgb(0 0 0 / 35%);
+    position: relative;
+    z-index: 2;
+}
+
+/* Ambient motes drifting through the arena. */
+.arenaStage::before,
+.arenaStage::after {
+    content: "";
+    position: absolute;
+    inset: -20% 0 0;
+    background:
+        radial-gradient(2px 2px at 12% 30%, rgb(160 230 255 / 60%) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 34% 70%, rgb(160 230 255 / 50%) 50%, transparent 51%),
+        radial-gradient(2px 2px at 58% 22%, rgb(255 220 150 / 45%) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 76% 58%, rgb(160 230 255 / 55%) 50%, transparent 51%),
+        radial-gradient(2px 2px at 90% 36%, rgb(160 230 255 / 45%) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 46% 88%, rgb(255 255 255 / 40%) 50%, transparent 51%);
+    animation: arenaMotes 18s linear infinite;
+    opacity: 0.8;
+}
+
+.arenaStage::after { animation-duration: 27s; animation-delay: -9s; transform: scaleX(-1); opacity: 0.5; }
+
+@keyframes arenaMotes { from { translate: 0 0; } to { translate: 0 -20%; } }
+
+/* Stadium rim lights along the arena top edge. */
+.arenaStage {
+    background:
+        radial-gradient(ellipse 30% 14% at 20% 0%, rgb(79 216 255 / 22%), transparent 70%),
+        radial-gradient(ellipse 30% 14% at 50% 0%, rgb(79 216 255 / 18%), transparent 70%),
+        radial-gradient(ellipse 30% 14% at 80% 0%, rgb(79 216 255 / 22%), transparent 70%);
+}
+
+.arenaFloor {
+    background:
+        linear-gradient(rgb(79 216 255 / 34%) 2px, transparent 2px) 0 0 / 64px 64px,
+        linear-gradient(90deg, rgb(79 216 255 / 34%) 2px, transparent 2px) 0 0 / 64px 64px;
+}
+
+/* Hit confirmation: a starburst behind the score pop. */
+.clickFeedback.hit .clickFeedbackLocus,
+.clickFeedback.positive .clickFeedbackLocus {
+    width: 70px;
+    height: 70px;
+    border-width: 4px;
+    background: conic-gradient(from 0deg, transparent 0 8%, currentColor 8% 10%, transparent 10% 33%, currentColor 33% 35%, transparent 35% 58%, currentColor 58% 60%, transparent 60% 83%, currentColor 83% 85%, transparent 85%);
+    mask-image: radial-gradient(circle, transparent 30%, #000 32%);
+}
+
+.clickFeedback.hit,
+.clickFeedback.positive { font-size: 34px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .arenaStage::before,
+    .arenaStage::after { animation: none; }
+}
+.powerupIconWrap svg.gameIcon { width: 30px; height: 30px; }
+/* Overlays (lobby, results) sit above the docked HUD and powerup tray. */
+.gameOverlay.gameOverlayStage { z-index: 10; }
+.gameOverTitle { font-family: "Russo One", var(--ca-font-display); font-size: clamp(30px, 3vw, 40px); text-shadow: 0 3px 0 var(--skin-ink); }
+
+/* ---- Round 3: arena environment + streak heat ------------------------- */
+.arenaHorizon {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 34%;
+    width: 100%;
+    height: 24%;
+    opacity: 0.78;
+    mask-image: linear-gradient(to bottom, #000 0 48%, transparent 100%);
+}
+
+.arenaHorizonStands { fill: #0a1628; stroke: rgb(79 216 255 / 28%); stroke-width: 2; }
+.arenaHorizonArchitecture path { fill: none; stroke: #18304b; stroke-width: 5; opacity: 0.85; }
+.arenaHorizonCrowd path { fill: none; stroke: rgb(118 184 219 / 16%); stroke-width: 2; stroke-dasharray: 2 7; }
+.arenaHorizonPylons path { stroke: #1d3352; stroke-width: 6; fill: none; }
+.arenaHorizonLights circle { fill: #c8f4ff; filter: drop-shadow(0 0 10px #4fd8ff); }
+
+.arenaStage { background:
+        radial-gradient(ellipse 18% 40% at 12.5% 18%, rgb(79 216 255 / 16%), transparent 70%),
+        radial-gradient(ellipse 18% 40% at 43% 12%, rgb(79 216 255 / 14%), transparent 70%),
+        radial-gradient(ellipse 18% 40% at 73% 14%, rgb(79 216 255 / 14%), transparent 70%),
+        radial-gradient(ellipse 18% 40% at 90% 20%, rgb(79 216 255 / 16%), transparent 70%); }
+
+.arenaWorldArt {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    opacity: 0.34;
+    pointer-events: none;
+}
+.arenaWorldArt path { fill: none; stroke: rgb(82 157 200 / 34%); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.arenaWorldCanopy path:first-child { stroke: rgb(115 203 240 / 40%); stroke-width: 6; }
+.arenaWorldCanopy path:nth-child(2) { stroke: rgb(79 216 255 / 27%); stroke-width: 2; }
+.arenaWorldSideRig path:nth-child(2) { stroke: rgb(65 119 161 / 28%); stroke-width: 2; }
+.arenaWorldSideRig path:nth-child(3) { stroke: rgb(65 119 161 / 18%); stroke-width: 1.5; }
+.arenaWorldTargetRails { opacity: 0.7; }
+.arenaWorldTargetRails path { stroke: rgb(79 216 255 / 30%); stroke-width: 2; }
+.arenaWorldLamps path { stroke: rgb(65 119 161 / 50%); stroke-width: 4; }
+.arenaWorldLamps circle { fill: #b8f2ff; filter: drop-shadow(0 0 9px #4fd8ff); }
+
+.arenaFloor { top: 50%; bottom: 0; height: auto; }
+
+/* Spawn pad ring around every target. */
+.arena .bigCircleButton {
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 0 0 10px rgb(79 216 255 / 14%), 0 0 0 12px rgb(79 216 255 / 30%), 0 12px 0 rgb(0 0 0 / 30%), 0 0 36px rgb(79 216 255 / 40%);
+}
+
+/* Combo heat: the arena frame warms as the streak tier climbs. */
+.gameScreen.streakTier1 .arena { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #1f4a5a, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 50%), 0 0 40px rgb(78 221 184 / 30%); }
+.gameScreen.streakTier2 .arena { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #5a4a1f, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 45%), 0 0 50px rgb(255 201 74 / 35%); }
+.gameScreen.streakTier3 .arena,
+.gameScreen.streakTier4 .arena { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #6a2a1f, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 40%), 0 0 60px rgb(255 110 60 / 45%); }
+.gameScreen.streakTier2 .arenaCorner { border-color: #ffc94a; filter: drop-shadow(0 0 8px #ffc94a); }
+.gameScreen.streakTier3 .arenaCorner,
+.gameScreen.streakTier4 .arenaCorner { border-color: #ff7a4a; filter: drop-shadow(0 0 10px #ff7a4a); }
+
+/* Round 6: give the live target an emitter pad and hold hit confirmation long enough to read. */
+.arena .bigCircleButton {
+    overflow: visible;
+    isolation: isolate;
+}
+.arena .bigCircleButton::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -18%;
+    border: 2px solid rgb(123 226 255 / 30%);
+    border-top-color: rgb(212 248 255 / 76%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(79 216 255 / 8%) 0 54%, transparent 70%);
+    box-shadow: 0 0 0 5px rgb(7 20 35 / 72%), 0 0 0 7px rgb(79 216 255 / 22%), 0 0 28px rgb(79 216 255 / 24%);
+}
+.clickFeedback.hit .clickFeedbackValue,
+.clickFeedback.positive .clickFeedbackValue {
+    color: #fff5bf;
+    -webkit-text-stroke: 1px #35270a;
+    text-shadow: 0 2px 0 #35270a, 0 0 16px rgb(255 225 122 / 90%);
+}
+.clickFeedback.hit,
+.clickFeedback.positive { animation-duration: 0.9s; }
+
+/* HUD readouts as framed plates. */
+.hudScoreAnchor,
+.hudTimerAnchor,
+.hudCenterChannel {
+    padding: 6px 14px;
+    border-radius: 12px;
+    background: rgb(0 0 0 / 25%);
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+
+/* ---- Phase 3 r1: results tally + promotion centerpiece ------------------ */
+.gameOverRewards { flex-wrap: wrap; }
+
+.gameOverXpTally {
+    flex: 1 0 100%;
+    order: 9;
+    display: grid;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgb(0 0 0 / 22%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+
+.gameOverXpTallyHeader { display: flex; justify-content: space-between; align-items: baseline; }
+.gameOverXpTallyHeader b { font: 400 16px/1 var(--ca-font-display); color: #8ee9ff; }
+.gameOverXpTallyHeader small { font-size: 12px; font-weight: 600; color: var(--ca-color-ink-muted); }
+.gameOverXpTally.isLevelUp .gameOverXpTallyHeader small { color: #ffe27a; }
+
+.gameOverXpTallyTrack {
+    position: relative;
+    height: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgb(255 255 255 / 7%);
+    box-shadow: 0 0 0 2px var(--skin-ink);
+}
+
+.gameOverXpTallyBase,
+.gameOverXpTallyGain { position: absolute; top: 0; bottom: 0; display: block; }
+.gameOverXpTallyBase { left: 0; background: #2a7bb0; }
+.gameOverXpTallyGain { background: linear-gradient(90deg, #8ee9ff, #ffffff); box-shadow: 0 0 12px #8ee9ff; }
+
+.gameOverPromotionCard {
+    border: 0;
+    border-radius: 20px;
+    background:
+        radial-gradient(ellipse 70% 55% at 50% 30%, rgb(255 201 74 / 22%), transparent 70%),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame), 0 0 90px rgb(255 201 74 / 18%);
+    text-align: center;
+}
+
+.gameOverPromotionTitle { font-family: var(--ca-font-display); font-weight: 400; text-shadow: 0 3px 0 var(--skin-ink); }
+
+.gameOverPromotionEmblem {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    margin: 6px auto 4px;
+    filter: drop-shadow(0 6px 0 rgb(0 0 0 / 40%));
+}
+
+.gameOverPromotionEmblem svg.gameIcon { width: 150px; height: 150px; position: relative; z-index: 1; }
+
+.gameOverPromotionRays {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    translate: -50% -58%;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, rgb(255 214 110 / 26%) 0 8deg, transparent 8deg 22deg);
+    mask-image: radial-gradient(circle, #000 25%, transparent 70%);
+    animation: promotionRays 14s linear infinite;
+}
+
+@keyframes promotionRays { to { rotate: 360deg; } }
+
+.gameOverPromotionEmblemLabel {
+    position: relative;
+    z-index: 1;
+    font: 400 28px/1 var(--ca-font-display);
+    color: #ffe27a;
+    text-shadow: 0 3px 0 var(--skin-ink);
+}
+
+.gameOverPromotionTierRow { transform: scale(0.85); opacity: 0.85; }
+.gameOverPromotionButton + .gameOverRematch { margin-left: 10px; }
+
+/* ---- Phase 3 r1: live-round feel --------------------------------------- */
+/* Hit numbers pop and get out of the way fast. */
+.clickFeedback.hit,
+.clickFeedback.positive { font-size: 28px; animation-duration: 0.42s; }
+.clickFeedback .clickFeedbackLocus { animation-duration: 220ms; }
+
+/* Miss: a red X at the click point plus a quick red edge pulse. */
+.clickFeedback.miss .clickFeedbackLocus,
+.clickFeedback.negative .clickFeedbackLocus {
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 0;
+    background:
+        linear-gradient(45deg, transparent 42%, #ff5a5a 42% 58%, transparent 58%),
+        linear-gradient(-45deg, transparent 42%, #ff5a5a 42% 58%, transparent 58%);
+    filter: drop-shadow(0 0 6px #ff5a5a);
+}
+
+.arena:has(.clickFeedback.miss),
+.arena:has(.clickFeedback.streakBreak) { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #5a1f24, 0 0 0 7px var(--skin-ink), inset 0 0 70px rgb(255 60 60 / 28%), 0 0 40px rgb(255 80 80 / 30%); }
+
+/* Combo milestone: a large banner-style callout. */
+.clickFeedback.milestone,
+.clickFeedback.comboHit {
+    font-size: 38px;
+    color: #ffe27a;
+    text-shadow: 0 4px 0 var(--skin-ink), 0 0 24px rgb(255 210 90 / 80%);
+}
+
+/* Stronger target silhouette: bright rim + inner contrast ring. */
+.arena .bigCircleButton::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 3px rgb(255 255 255 / 85%), 0 0 18px rgb(255 255 255 / 45%);
+    pointer-events: none;
+}
+
+/* Power activation: the slot bursts and the arena flashes in the power's color. */
+.powerupItem.justActivated {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #ffffff, 0 0 40px rgb(255 255 255 / 55%);
+}
+
+.gameScreen:has(.powerupItem.justActivated) .arena::before {
+    opacity: 0.9;
+    background: radial-gradient(circle, rgb(140 230 255 / 45%), transparent 60%);
+    animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gameOverPromotionRays { animation: none; }
+}
+
+/* ---- Phase 3 r2: one hit boundary, loud miss, next-multiplier meter ---- */
+/* The target's own rim IS the hit boundary: no pad, no extra concentric rings. */
+.arena .bigCircleButton {
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 10px 0 rgb(0 0 0 / 30%), 0 0 30px rgb(79 216 255 / 38%);
+}
+.arena .bigCircleButton::before { display: none; }
+.arena .bigCircleButton::after { inset: 0; box-shadow: inset 0 0 0 3px rgb(255 255 255 / 92%), 0 0 0 2px rgb(255 255 255 / 30%); }
+
+/* Miss: bigger X, a "STREAK LOST" stamp under the penalty, longer hold. */
+.clickFeedback.streakBreak .clickFeedbackLocus {
+    border: 0; border-radius: 0;
+    background:
+        linear-gradient(45deg, transparent 42%, #ff5a5a 42% 58%, transparent 58%),
+        linear-gradient(-45deg, transparent 42%, #ff5a5a 42% 58%, transparent 58%);
+    filter: drop-shadow(0 0 6px #ff5a5a);
+}
+.clickFeedback.miss .clickFeedbackLocus,
+.clickFeedback.streakBreak .clickFeedbackLocus,
+.clickFeedback.negative .clickFeedbackLocus { width: 46px; height: 46px; }
+.clickFeedback.miss,
+.clickFeedback.streakBreak,
+.clickFeedback.negative { font-size: 30px; color: #ff6b6b; animation-duration: 0.9s; text-shadow: 0 3px 0 var(--skin-ink), 0 0 18px rgb(255 70 70 / 70%); }
+.clickFeedback.streakBreak .clickFeedbackValue::after {
+    content: "STREAK LOST";
+    display: block;
+    margin-top: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #ff4d4d;
+    color: var(--skin-ink);
+    font: 400 12px/1.2 var(--ca-font-display);
+    letter-spacing: 0.08em;
+    text-shadow: none;
+    white-space: nowrap;
+}
+.gameScreen:has(.clickFeedback.streakBreak) .hudStreakValue { color: #ff6b6b; }
+
+/* Next multiplier meter beside the combo readout. */
+.hudComboNext { display: grid; gap: 4px; justify-items: center; min-width: 72px; }
+.hudComboNextPips { display: flex; gap: 3px; }
+.hudComboNextPips > span { width: 10px; height: 6px; border-radius: 2px; background: rgb(255 255 255 / 16%); box-shadow: 0 0 0 1px var(--skin-ink); }
+.hudComboNextPips > span.isLit { background: var(--skin-gold); box-shadow: 0 0 0 1px var(--skin-ink), 0 0 8px rgb(255 201 74 / 60%); }
+.hudComboNextLabel { font: 400 11px/1 var(--ca-font-display); letter-spacing: 0.06em; color: rgb(232 242 255 / 72%); white-space: nowrap; }
+.gameStatusRow { grid-template-columns: auto auto auto; grid-template-areas: "streak combo next" "best best best"; }
+.hudComboNext { grid-area: next; align-self: end; }
+
+/* ---- Phase 3 r2: results always point at the next Armory reward ---- */
+.gameOverNextUnlock {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--skin-face-high), var(--skin-face-low));
+    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
+    color: #fff;
+    text-decoration: none;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.gameOverNextUnlock:hover,
+.gameOverNextUnlock:focus-visible { transform: translateY(-2px); box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px var(--skin-cyan), 0 3px 0 #0a1220; }
+.gameOverNextUnlockBadge {
+    display: grid;
+    place-items: center;
+    min-width: 52px;
+    height: 40px;
+    border-radius: 10px;
+    background: #1b2f4d;
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 40%);
+    font: 400 13px/1 var(--ca-font-display);
+    color: var(--skin-cyan);
+}
+.gameOverNextUnlock.isUnlocked .gameOverNextUnlockBadge { background: var(--skin-gold); color: var(--skin-ink); box-shadow: 0 0 0 2px var(--skin-ink), 0 0 18px rgb(255 201 74 / 60%); }
+.gameOverNextUnlockCopy { display: grid; gap: 2px; flex: 1; text-align: left; }
+.gameOverNextUnlockCopy small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(232 242 255 / 60%); }
+.gameOverNextUnlockCopy strong { font: 400 17px/1.1 var(--ca-font-display); }
+.gameOverNextUnlockCta { font: 400 13px/1 var(--ca-font-display); color: var(--skin-cyan); letter-spacing: 0.06em; }
+
+/* ---- Phase 3 r3: readable miss, distinct heat vs failure, bigger combo meter ---- */
+.clickFeedback.streakBreak .clickFeedbackValue::after { content: none; }
+.clickFeedbackDetail {
+    display: block;
+    margin-top: 4px;
+    font: 400 15px/1.1 var(--ca-font-display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    white-space: nowrap;
+    text-shadow: 0 2px 0 var(--skin-ink), 0 0 2px var(--skin-ink), 0 0 14px rgb(255 70 70 / 85%);
+}
+/* Failure: cold desaturated red flash, dashed hazard edge, no warm glow. */
+.arena:has(.clickFeedback.miss),
+.arena:has(.clickFeedback.streakBreak) {
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 6px #ff3b3b, 0 0 0 8px var(--skin-ink), inset 0 0 0 3px rgb(255 59 59 / 55%), inset 0 0 90px rgb(255 30 30 / 32%);
+}
+.arena:has(.clickFeedback.streakBreak) .arenaCorner { border-color: #ff3b3b; filter: none; }
+/* Heat: warm gradient glow outside the frame only, never an inner red. */
+.gameScreen.streakTier3 .arena:not(:has(.clickFeedback.miss, .clickFeedback.streakBreak)),
+.gameScreen.streakTier4 .arena:not(:has(.clickFeedback.miss, .clickFeedback.streakBreak)) {
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 5px #ffb03a, 0 0 0 7px var(--skin-ink), inset 0 0 80px rgb(0 0 0 / 40%), 0 0 70px rgb(255 176 58 / 50%);
+}
+.gameScreen.streakTier3 .arenaCorner,
+.gameScreen.streakTier4 .arenaCorner { border-color: #ffd36a; filter: drop-shadow(0 0 10px #ffb03a); }
+
+.hudComboNext {
+    min-width: 132px;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: rgb(10 19 34 / 70%);
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 1px rgb(255 201 74 / 35%);
+    align-self: center;
+}
+.hudComboNextPips { gap: 5px; }
+.hudComboNextPips > span { width: 18px; height: 10px; border-radius: 3px; }
+.hudComboNextLabel { font-size: 16px; color: #ffe08a; letter-spacing: 0.04em; }
+
+/* Next unlock: icon tile + benefit line + action */
+.gameOverNextUnlockIcon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    flex: none;
+    border-radius: 14px;
+    background: radial-gradient(circle, rgb(255 255 255 / 12%), rgb(0 0 0 / 30%) 75%), #16243a;
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 35%);
+}
+.gameOverNextUnlockIcon .gameOverNextUnlockBadge {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 0;
+    height: auto;
+    padding: 3px 7px;
+    font-style: normal;
+    font-size: 11px;
+    white-space: nowrap;
+}
+.gameOverNextUnlock.isUnlocked .gameOverNextUnlockIcon { box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px var(--skin-gold), 0 0 20px rgb(255 201 74 / 45%); }
+.gameOverNextUnlockBenefit { font-size: 13px; line-height: 1.3; color: rgb(232 242 255 / 80%); }
+.gameOverNextUnlockCta {
+    padding: 9px 14px;
+    border-radius: 10px;
+    background: var(--skin-cyan);
+    color: var(--skin-ink);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 3px 0 #0a1220;
+}
+.gameOverNextUnlock.isUnlocked .gameOverNextUnlockCta { background: var(--skin-gold); }
+
+/* ---- Phase 3 round 4: results in two columns so nothing hides behind the footer ---- */
+@media (min-width: 1000px) {
+    .gameOverCardWithDifficulty {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+        grid-template-rows: auto auto 1fr auto;
+        grid-template-areas:
+            "header header"
+            "score body"
+            "rewards body"
+            "actions actions";
+        column-gap: 18px;
+        row-gap: 12px;
+        min-width: min(960px, 94vw);
+        max-width: min(980px, 94vw);
+        text-align: left;
+    }
+    .gameOverCardWithDifficulty > .gameOverHeader { grid-area: header; text-align: center; }
+    .gameOverCardWithDifficulty > .gameOverScorePanel { grid-area: score; text-align: center; }
+    .gameOverCardWithDifficulty > .gameOverRewards { grid-area: rewards; align-content: start; margin: 0; }
+    .gameOverCardWithDifficulty > .gameOverBody { grid-area: body; overflow: visible; min-height: 0; }
+    .gameOverCardWithDifficulty > .gameOverActions { grid-area: actions; }
+    .gameOverCardWithDifficulty > .gameOverRewards > * { flex: 1 1 calc(50% - 10px); }
+    .gameOverCardWithDifficulty > .gameOverRewards > .gameOverNextUnlock,
+    .gameOverCardWithDifficulty > .gameOverRewards > .gameOverXpTally { flex-basis: 100%; }
+}
+/* The score badge only earns space for a real event (PB / clean run). */
+.gameOverScorePanel:not(:has(.gameOverMedal)) .gameOverScoreBadge { display: none; }
+.gameOverLoadoutBadge { font-size: 12px; opacity: 0.78; margin-top: 2px; }
+
+/* ---- Phase 3 round 4: a physical target and localized hit bursts ---- */
+/* Material: specular cap + shaded lower lip over any skin, so the target reads as a pressable object. */
+.arena .bigCircleButton::before {
+    display: block;
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 46% 30% at 38% 24%, rgb(255 255 255 / 55%), transparent 70%),
+        radial-gradient(circle at 50% 50%, transparent 0 56%, rgb(0 0 0 / 0%) 57%, rgb(0 0 0 / 34%) 100%);
+    box-shadow: inset 0 -7px 0 rgb(0 0 0 / 28%), inset 0 4px 0 rgb(255 255 255 / 22%);
+}
+.arena .bigCircleButton {
+    box-shadow: 0 0 0 3px var(--skin-ink), 0 9px 0 rgb(0 0 0 / 38%), 0 14px 24px rgb(0 0 0 / 40%), 0 0 30px rgb(79 216 255 / 34%);
+}
+/* Bullseye pip: a precise aim point at the centre. */
+.arena .bigCircleButton::after {
+    background: radial-gradient(circle, #ffffff 0 5%, var(--skin-ink) 5.5% 8%, transparent 8.5%);
+}
+
+/* Hit: a short white shockwave + sparks at the click point; the number stays small and quick. */
+.clickFeedback.hit::before,
+.clickFeedback.comboHit::before,
+.clickFeedback.hit::after,
+.clickFeedback.comboHit::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 50%;
+    pointer-events: none;
+}
+.clickFeedback.hit::before,
+.clickFeedback.comboHit::before {
+    width: 84px; height: 84px; margin: -42px 0 0 -42px;
+    border: 4px solid #ffffff;
+    box-shadow: 0 0 18px rgb(140 230 255 / 80%);
+    animation: hitShockwave 320ms cubic-bezier(.2,.8,.3,1) forwards;
+}
+.clickFeedback.hit::after,
+.clickFeedback.comboHit::after {
+    width: 8px; height: 8px; margin: -4px 0 0 -4px;
+    background: #fff4b8;
+    box-shadow: 0 -34px 0 -1px #fff4b8, 30px -17px 0 -1px #fff4b8, 30px 17px 0 -1px #fff4b8, 0 34px 0 -1px #fff4b8, -30px 17px 0 -1px #fff4b8, -30px -17px 0 -1px #fff4b8;
+    animation: hitSparks 360ms ease-out forwards;
+}
+.clickFeedback.comboHit::before { border-color: #ffe27a; box-shadow: 0 0 22px rgb(255 210 90 / 85%); }
+@keyframes hitShockwave { from { transform: scale(0.35); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
+@keyframes hitSparks { from { transform: scale(0.4); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+.clickFeedback.hit .clickFeedbackValue { font-size: 28px; }
+.clickFeedback.hit { animation-duration: 0.42s; }
+@media (prefers-reduced-motion: reduce) {
+    .clickFeedback.hit::before, .clickFeedback.comboHit::before, .clickFeedback.hit::after, .clickFeedback.comboHit::after { animation: none; display: none; }
+}
+
+/* ---- Polish r6: one centred HUD cluster — score | big timer medallion | streak ---- */
+@media (min-width: 761px) {
+    .hudPrimaryRow {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 22px;
+        overflow: visible;
+        min-height: 92px;
+    }
+    .hudScoreAnchor { order: 1; justify-self: end; justify-items: end; text-align: right; min-width: 230px; padding: 8px 20px; }
+    .hudScoreAnchor::before { display: none; }
+    .hudScoreAnchor .scoreNumber { font-size: 52px; line-height: 1; }
+    .hudTimerAnchor { order: 2; }
+    .hudCenterChannel { order: 3; justify-self: start; min-width: 230px; place-items: center start; padding: 8px 20px; }
+    .hudCenterChannel .hudIdentity { justify-content: flex-start; }
+
+    .hudTimerAnchor,
+    .hudTimerAnchor.is-urgent,
+    .hudTimerAnchor.is-danger,
+    .hudTimerAnchor.is-untimed {
+        position: relative; z-index: 4; justify-self: center;
+        width: 132px; height: 132px; margin: -10px 0 -44px; padding: 0;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle, var(--skin-face-high, #1d2b45) 0 54%, var(--skin-ink, #0a1322) 54.5% 57%, transparent 57.5%),
+            conic-gradient(from 0deg, var(--hud-timer-color, #75c8ff) var(--hud-timer-progress), rgb(140 181 218 / 14%) 0),
+            var(--skin-face-low, #121c30);
+        box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 8px 0 rgb(0 0 0 / 45%), 0 0 30px rgb(from var(--hud-timer-color, #75c8ff) r g b / 25%);
+    }
+    .hudTimerAnchor .hudEyebrow { top: 26px; font-size: 11px; color: rgb(232 242 255 / 70%); }
+    .hudTimerAnchor .timerText { font-size: 50px; line-height: 1; margin-top: 4px; }
+    .hudTimerAnchor .hudTimerUnit { bottom: 24px; }
+    .hudTimerAnchor.is-danger { animation: hudTimerThrob 0.5s ease-in-out infinite alternate; }
+}
+@keyframes hudTimerThrob { to { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .hudTimerAnchor.is-danger { animation: none; } }
+
+/* ---- Polish r7: promotion as a ceremony — the crest is the hero, one big next action ---- */
+.gameOverPromotionCard { --tier: 255 201 74; }
+.gameOverPromotionCard[data-tier="silver"] { --tier: 200 220 240; }
+.gameOverPromotionCard[data-tier="bronze"] { --tier: 226 150 92; }
+.gameOverPromotionCard[data-tier="platinum"] { --tier: 120 230 220; }
+.gameOverPromotionCard[data-tier="diamond"] { --tier: 140 190 255; }
+.gameOverPromotionCard {
+    width: min(620px, 92vw);
+    max-width: none;
+    padding: 26px 40px 30px;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 60% 48% at 50% 46%, rgb(var(--tier) / 30%), transparent 70%),
+        conic-gradient(from 180deg at 50% 46%, transparent 0 150deg, rgb(var(--tier) / 10%) 170deg 190deg, transparent 210deg),
+        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
+    box-shadow: var(--skin-frame), inset 0 4px 0 rgb(var(--tier) / 85%), 0 0 120px rgb(var(--tier) / 22%);
+}
+.gameOverPromotionEyebrow {
+    display: inline-block; margin: 0; padding: 5px 16px; border-radius: 999px;
+    font: 400 12px/1 var(--ca-font-display); letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--skin-ink, #0a1322); background: rgb(var(--tier));
+    box-shadow: 0 3px 0 rgb(0 0 0 / 40%);
+}
+.gameOverPromotionTitle { margin: 10px 0 0; font-size: clamp(34px, 4.4vw, 50px); line-height: 1; color: #ffffff; text-shadow: 0 4px 0 var(--skin-ink); }
+.gameOverPromotionEmblem { margin: 8px auto 0; gap: 0; }
+.gameOverPromotionEmblem svg.gameIcon { width: 220px; height: 220px; filter: drop-shadow(0 0 28px rgb(var(--tier) / 55%)); }
+.gameOverPromotionRays {
+    width: 460px; height: 460px; translate: -50% -54%;
+    background: repeating-conic-gradient(from 0deg, rgb(var(--tier) / 30%) 0 7deg, transparent 7deg 18deg);
+    mask-image: radial-gradient(circle, #000 20%, transparent 68%);
+}
+.gameOverPromotionPedestal {
+    position: absolute; left: 50%; bottom: 38px; width: 240px; height: 38px; translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgb(var(--tier) / 45%), transparent 70%);
+}
+.gameOverPromotionEmblemLabel { margin-top: -6px; font-size: 40px; color: rgb(var(--tier)); text-shadow: 0 4px 0 var(--skin-ink), 0 0 24px rgb(var(--tier) / 45%); }
+.gameOverPromotionTierRow { margin-top: 6px; transform: none; opacity: 0.8; }
+.gameOverPromotionLead { margin: 6px 0 0; font-size: 15px; color: rgb(232 242 255 / 78%); }
+.gameOverPromotionActions { display: grid; justify-items: center; gap: 8px; margin-top: 18px; }
+.gameOverPromotionActions .gameOverPromotionButton {
+    width: 360px; max-width: 100%; min-height: 60px; font-size: 20px;
+    box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 6px 0 rgb(0 0 0 / 45%), 0 0 34px rgb(var(--tier) / 35%);
+}
+.gameOverPromotionActions .gameOverRematch { margin-left: 0; min-height: 0; padding: 6px 14px; background: none; box-shadow: none; color: rgb(232 242 255 / 72%); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- Polish r8: the unlocked / next part is the hero of the results screen ---- */
+.gameOverSpotlight { display: grid; }
+.gameOverSpotlight:empty { display: none; }
+.gameOverSpotlight .gameOverNextUnlock {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 156px minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    column-gap: 22px;
+    row-gap: 12px;
+    align-items: center;
+    padding: 20px 24px 20px 20px;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 78px 50%, rgb(79 216 255 / 22%), transparent 150px),
+        linear-gradient(160deg, #1a2c4a, #0f1a2e 70%);
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 35%), 0 5px 0 #0a1220;
+}
+.gameOverSpotlight .gameOverNextUnlock.isUnlocked {
+    background:
+        repeating-conic-gradient(from 0deg at 78px 50%, rgb(255 201 74 / 12%) 0 8deg, transparent 8deg 22deg),
+        radial-gradient(circle at 78px 50%, rgb(255 201 74 / 30%), transparent 150px),
+        linear-gradient(160deg, #2d2615, #121a2c 72%);
+    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(255 201 74 / 55%), 0 5px 0 #0a1220, 0 0 36px rgb(255 201 74 / 22%);
+}
+.gameOverSpotlight .gameOverNextUnlockIcon {
+    grid-row: 1 / 3;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 156px;
+    height: 156px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 38%, #2a4266, #0d1626 72%);
+    box-shadow: 0 0 0 3px var(--skin-ink), inset 0 0 0 3px rgb(79 216 255 / 45%), 0 0 28px rgb(79 216 255 / 30%);
+}
+.gameOverSpotlight .gameOverNextUnlock.isUnlocked .gameOverNextUnlockIcon {
+    background: radial-gradient(circle at 50% 38%, #4a3a16, #151826 72%);
+    box-shadow: 0 0 0 3px var(--skin-ink), inset 0 0 0 3px var(--skin-gold), 0 0 34px rgb(255 201 74 / 50%);
+}
+.gameOverSpotlight .gameOverNextUnlockBadge {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 64px;
+    height: 30px;
+    font-size: 15px;
+}
+.gameOverSpotlight .gameOverNextUnlockCopy { align-self: end; gap: 6px; }
+.gameOverSpotlight .gameOverNextUnlockCopy small { font-size: 12px; letter-spacing: 0.14em; color: var(--skin-cyan); }
+.gameOverSpotlight .gameOverNextUnlock.isUnlocked .gameOverNextUnlockCopy small { color: var(--skin-gold); }
+.gameOverSpotlight .gameOverNextUnlockCopy strong { font-size: 34px; line-height: 1; text-shadow: 0 3px 0 #0a1220; }
+.gameOverSpotlight .gameOverNextUnlockBenefit { font-size: 15px; }
+.gameOverSpotlight .gameOverNextUnlockCta {
+    justify-self: start;
+    align-self: start;
+    padding: 12px 22px;
+    font-size: 16px;
+}
+@media (min-width: 1000px) {
+    .gameOverCardWithDifficulty {
+        grid-template-rows: auto auto auto 1fr auto;
+        grid-template-areas:
+            "header header"
+            "score body"
+            "rewards body"
+            "rewards spot"
+            "actions actions";
+    }
+    .gameOverCardWithDifficulty > .gameOverSpotlight { grid-area: spot; align-self: end; }
+}
+@media (min-width: 1000px) {
+    .gameOverCardWithDifficulty {
+        grid-template-rows: auto auto 1fr auto auto;
+        grid-template-areas:
+            "header header"
+            "score body"
+            "score spot"
+            "rewards spot"
+            "actions actions";
+    }
+    .gameOverCardWithDifficulty > .gameOverScorePanel { display: grid; align-content: center; }
+    .gameOverCardWithDifficulty .gameOverScoreValue { font-size: 112px; line-height: 1; }
+}
+
+/* ---- Polish r9: streak milestones relight the whole arena ---- */
+.arena { --heat: 79, 216, 255; --heat-strength: 0; }
+.gameScreen.streakTier1 .arena { --heat: 92, 236, 214; --heat-strength: 0.35; }
+.gameScreen.streakTier2 .arena { --heat: 255, 201, 74; --heat-strength: 0.6; }
+.gameScreen.streakTier3 .arena { --heat: 255, 128, 58; --heat-strength: 0.85; }
+.gameScreen.streakTier4 .arena { --heat: 255, 72, 120; --heat-strength: 1; }
+.arenaStage {
+    background:
+        radial-gradient(ellipse 18% 46% at 12.5% 16%, rgba(var(--heat), calc(0.16 + var(--heat-strength) * 0.2)), transparent 70%),
+        radial-gradient(ellipse 18% 46% at 43% 10%, rgba(var(--heat), calc(0.14 + var(--heat-strength) * 0.2)), transparent 70%),
+        radial-gradient(ellipse 18% 46% at 73% 12%, rgba(var(--heat), calc(0.14 + var(--heat-strength) * 0.2)), transparent 70%),
+        radial-gradient(ellipse 18% 46% at 90% 18%, rgba(var(--heat), calc(0.16 + var(--heat-strength) * 0.2)), transparent 70%);
+    transition: background 400ms ease;
+}
+.arenaFloor {
+    background:
+        linear-gradient(rgba(var(--heat), calc(0.34 + var(--heat-strength) * 0.3)) 2px, transparent 2px) 0 0 / 64px 64px,
+        linear-gradient(90deg, rgba(var(--heat), calc(0.34 + var(--heat-strength) * 0.3)) 2px, transparent 2px) 0 0 / 64px 64px;
+}
+.arenaHorizonLights circle,
+.arenaWorldLamps circle { fill: rgb(255 244 224); filter: drop-shadow(0 0 10px rgb(var(--heat))); }
+.arenaHorizonStands { stroke: rgba(var(--heat), 0.4); }
+.arenaHeatGlow {
+    position: absolute;
+    inset: auto 0 0;
+    height: 62%;
+    pointer-events: none;
+    opacity: var(--heat-strength);
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(var(--heat), 0.42), transparent 72%),
+        linear-gradient(to top, rgba(var(--heat), 0.22), transparent 60%);
+    transition: opacity 400ms ease;
+}
+.arenaStreakMark {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    transform: translate(-50%, -50%) skewX(-8deg);
+    pointer-events: none;
+    white-space: nowrap;
+    font: 400 clamp(72px, 11vw, 168px)/1 "Russo One", var(--ca-font-display);
+    letter-spacing: 0.04em;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(var(--heat), 0.38);
+    text-shadow: 0 0 40px rgba(var(--heat), 0.25);
+    opacity: 0;
+    transition: opacity 300ms ease;
+}
+.gameScreen.streakTier2 .arenaStreakMark { opacity: 1; }
+.gameScreen.streakTier2 .arenaStreakMark::before { content: "HOT"; }
+.gameScreen.streakTier3 .arenaStreakMark { opacity: 1; }
+.gameScreen.streakTier3 .arenaStreakMark::before { content: "ON FIRE"; }
+.gameScreen.streakTier4 .arenaStreakMark { opacity: 1; -webkit-text-stroke-width: 3px; }
+.gameScreen.streakTier4 .arenaStreakMark::before { content: "UNSTOPPABLE"; }
+.gameScreen.streakTier3 .arenaStreakMark,
+.gameScreen.streakTier4 .arenaStreakMark { animation: arenaStreakMarkIn 420ms cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes arenaStreakMarkIn { from { transform: translate(-50%, -50%) skewX(-8deg) scale(1.4); opacity: 0; } }
+.arena:has(.clickFeedback.miss, .clickFeedback.streakBreak) .arenaHeatGlow { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+    .arenaStreakMark { animation: none !important; transition: none; }
+}
+
+/* ---- Polish r12: a broken streak lands as a full-arena moment ---- */
+.arena:has(.clickFeedback.miss, .clickFeedback.streakBreak) .arenaHeatGlow {
+    inset: 0;
+    height: auto;
+    opacity: 1;
+    background: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 45%, rgb(255 40 60 / 32%) 100%);
+    transition: none;
+}
+.arena:has(.clickFeedback.miss, .clickFeedback.streakBreak) .arenaStage { filter: saturate(0.35) brightness(0.8); transition: none; }
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark {
+    opacity: 1;
+    color: rgb(255 59 72 / 16%);
+    -webkit-text-stroke: 3px rgb(255 90 100 / 85%);
+    text-shadow: 0 0 46px rgb(255 40 60 / 45%);
+    animation: arenaStreakBreakSlam 260ms cubic-bezier(.2,1.6,.4,1) both;
+    transition: none;
+}
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark::before { content: "STREAK BROKEN"; }
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark { font-size: clamp(56px, 7vw, 104px); }
+@keyframes arenaStreakBreakSlam {
+    from { transform: translate(-50%, -50%) skewX(-8deg) scale(1.25) rotate(-2deg); opacity: 0.4; }
+}
+.clickFeedback.streakBreak .clickFeedbackValue { font-size: 54px; color: #ff6b6b; text-shadow: 0 4px 0 #2a0710, 0 0 22px rgb(255 59 72 / 60%); }
+.clickFeedback.streakBreak .clickFeedbackDetail {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 20px;
+    background: #ff3b48;
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 4px 0 #2a0710;
+}
+@media (prefers-reduced-motion: reduce) {
+    .arena:has(.clickFeedback.streakBreak) .arenaStreakMark { animation: none; }
+}
+
+/* r14: countdown as a cinematic title card — letterbox bars, a centered
+   build banner, a sweeping ring around the number and three count pips. */
+.roundEntranceLetterbox {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 13%;
+    z-index: 1;
+    background: #02050b;
+    pointer-events: none;
+    animation: entranceLetterboxIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.roundEntranceLetterbox.isTop { top: 0; box-shadow: 0 1px 0 rgba(var(--entrance-rgb), 0.55), 0 10px 30px rgba(0, 0, 0, 0.5); }
+.roundEntranceLetterbox.isBottom { bottom: 0; box-shadow: 0 -1px 0 rgba(var(--entrance-rgb), 0.55), 0 -10px 30px rgba(0, 0, 0, 0.5); }
+.roundEntranceLetterbox.isBottom { animation-name: entranceLetterboxInBottom; }
+.roundEntranceOverlay.isGo .roundEntranceLetterbox { transform: scaleY(0); transition: transform 0.18s ease-in; }
+@keyframes entranceLetterboxIn { from { transform: translateY(-100%); } }
+@keyframes entranceLetterboxInBottom { from { transform: translateY(100%); } }
+
+.roundEntranceOverlay .roundEntranceBrief {
+    top: 0;
+    left: 50%;
+    height: 13%;
+    translate: -50% 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: entranceLetterboxIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    text-align: center;
+    white-space: nowrap;
+}
+.roundEntranceBriefKicker {
+    padding: 4px 14px;
+    border: 1px solid rgba(var(--entrance-rgb), 0.5);
+    border-radius: 999px;
+    background: rgba(var(--entrance-rgb), 0.12);
+    color: var(--entrance-color);
+    font-size: 12px;
+    letter-spacing: 0.24em;
+}
+.roundEntranceOverlay .roundEntranceBrief .roundEntranceBriefName {
+    color: #f4f8ff;
+    font-family: "Space Grotesk", "Verdana", sans-serif;
+    font-size: clamp(24px, 2.6vw, 34px);
+    font-weight: 760;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    text-shadow: 0 0 24px rgba(var(--entrance-rgb), 0.45);
+}
+.roundEntranceOverlay.isGo .roundEntranceBrief { opacity: 0; transition: opacity 0.12s; }
+
+.roundEntranceOverlay .entranceReticle {
+    width: clamp(220px, 34vmin, 320px);
+    filter: drop-shadow(0 0 18px rgba(var(--entrance-rgb), 0.5));
+}
+.roundEntranceOverlay .entranceReticleRingInner {
+    inset: 8%;
+    border: 0;
+    background: conic-gradient(var(--entrance-color) var(--sweep, 0deg), rgba(var(--entrance-rgb), 0.14) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    animation: entranceRingSweep 1s linear infinite;
+    opacity: 1;
+}
+.roundEntranceOverlay .entranceReticleCore { display: none; }
+@property --sweep { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes entranceRingSweep { from { --sweep: 0deg; } to { --sweep: 360deg; } }
+
+.roundCountdownPips {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+.roundCountdownPips i {
+    width: 34px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(var(--entrance-rgb), 0.18);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.roundCountdownPips i.isLit {
+    background: var(--entrance-color);
+    box-shadow: 0 0 12px rgba(var(--entrance-rgb), 0.8);
+}
+.roundEntranceOverlay .roundCountdownInstruction { font-size: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .roundEntranceLetterbox, .roundEntranceOverlay .entranceReticleRingInner { animation: none; }
+    .roundEntranceOverlay .entranceReticleRingInner { --sweep: 360deg; }
+}
+
+/* r15: a ready charge pops — the slot lifts, a shine sweeps across it, the
+   key badge becomes a lit key cap and a "Ready · press N" flag rises above. */
+.powerupItem { position: relative; overflow: visible; transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1); }
+.powerupItem.ready {
+    transform: translateY(-6px);
+    background: linear-gradient(180deg, #23606a 0%, #143a44 100%);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px rgb(98 238 200), inset 0 1px 0 rgb(255 255 255 / 22%), 0 0 34px rgb(78 221 184 / 55%), 0 10px 0 #0a1220;
+}
+.powerupItem.ready::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 22%) 48%, transparent 60%);
+    background-size: 260% 100%;
+    animation: powerupShine 1.8s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes powerupShine { from { background-position: 130% 0; } to { background-position: -130% 0; } }
+.powerupItem.ready .powerupSlotBadge {
+    min-width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: #7ff3d2;
+    color: #062a24;
+    font-size: 17px;
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 3px 0 #0d5a49, 0 0 16px rgb(127 243 210 / 70%);
+}
+.powerupItem.ready .powerupIconWrap {
+    background: rgb(127 243 210 / 18%);
+    box-shadow: inset 0 0 0 2px rgb(127 243 210 / 55%), 0 0 18px rgb(127 243 210 / 45%);
+    animation: powerupIconPulse 1.1s ease-in-out infinite;
+}
+@keyframes powerupIconPulse { 50% { transform: scale(1.1); } }
+.powerupItem.ready .powerupStateLabel-ready { color: #9cffe3; font-weight: 800; letter-spacing: 0.14em; }
+.powerupItem.ready .powerupSegment.filled { background: #7ff3d2; box-shadow: 0 0 8px rgb(127 243 210 / 80%); }
+.powerupReadyFlag {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    translate: -50% 0;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 12px;
+    border-radius: 999px;
+    background: #7ff3d2;
+    color: #062a24;
+    font-family: var(--ca-font-display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 22px rgb(127 243 210 / 60%);
+    animation: powerupFlagIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    pointer-events: none;
+}
+.powerupReadyFlag::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    translate: -50% -1px;
+    border: 6px solid transparent;
+    border-top-color: #7ff3d2;
+}
+.powerupReadyFlag kbd {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: var(--skin-ink, #071019);
+    color: #7ff3d2;
+    font: inherit;
+    font-size: 13px;
+}
+@keyframes powerupFlagIn { from { opacity: 0; transform: translateY(8px) scale(0.8); } }
+.powerupCoach { font-size: 12px; font-weight: 700; color: rgb(170 240 220 / 90%); }
+@media (prefers-reduced-motion: reduce) {
+    .powerupItem.ready::after, .powerupItem.ready .powerupIconWrap, .powerupReadyFlag { animation: none; }
+}
+
+/* r20: the final five seconds take over the arena — a giant ghost numeral
+   slams in behind the target each second, the edges pulse red and the
+   streak watermark steps aside. */
+.arenaFinalCount {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    translate: -50% -52%;
+    color: rgb(255 214 120 / 13%);
+    font-family: var(--ca-font-display, "Space Grotesk", sans-serif);
+    font-size: clamp(260px, 44vh, 420px);
+    line-height: 1;
+    -webkit-text-stroke: 4px rgb(255 196 92 / 55%);
+    text-shadow: 0 0 60px rgb(255 170 60 / 35%);
+    pointer-events: none;
+    animation: arenaFinalSlam 1s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.arena.isFinalDanger .arenaFinalCount {
+    color: rgb(255 90 90 / 15%);
+    -webkit-text-stroke-color: rgb(255 92 92 / 70%);
+    text-shadow: 0 0 70px rgb(255 60 60 / 45%);
+}
+@keyframes arenaFinalSlam {
+    0% { opacity: 0; transform: scale(1.6); }
+    18% { opacity: 1; transform: scale(0.96); }
+    30% { transform: scale(1); }
+    100% { opacity: 0.55; transform: scale(0.92); }
+}
+.arena.isFinalSeconds .arenaStreakMark { opacity: 0; }
+.arena.isFinalSeconds::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 3px rgb(255 190 90 / 70%), inset 0 0 70px rgb(255 160 60 / 30%);
+    animation: arenaFinalPulse 1s ease-out infinite;
+}
+.arena.isFinalDanger::after {
+    box-shadow: inset 0 0 0 4px rgb(255 80 80 / 85%), inset 0 0 110px rgb(255 50 50 / 42%);
+    animation-duration: 0.5s;
+}
+@keyframes arenaFinalPulse { 0% { opacity: 1; } 100% { opacity: 0.35; } }
+.gameHud .hudTimerAnchor.is-urgent .timerText,
+.gameHud .hudTimerAnchor.is-danger .timerText { animation: hudTimerThump 1s ease-out infinite; }
+.gameHud .hudTimerAnchor.is-danger .timerText { color: #ff6b6b; }
+@keyframes hudTimerThump { 0% { transform: scale(1.35); } 35% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+    .arenaFinalCount, .arena.isFinalSeconds::after, .gameHud .hudTimerAnchor .timerText { animation: none; }
+}
+
+/* r21: streak gets equal billing with score — a 52px streak number, the combo
+   multiplier on a gold plate, and a full-width bar counting down to the next
+   multiplier. */
+.gameHud .gameStatusRow {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: end;
+    column-gap: 14px;
+    row-gap: 6px;
+    width: 100%;
+}
+.gameHud .hudStreakReadout {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    gap: 0;
+    justify-items: start;
+}
+.gameHud .hudStreakLabel { order: -1; }
+.gameHud .hudStreakValue {
+    font-family: var(--ca-font-display);
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 0.95;
+    color: #fff;
+    -webkit-text-stroke: 2px var(--skin-ink);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--skin-ink), 0 0 18px rgb(var(--heat, 120 200 255) / 45%);
+}
+.gameHud .hudComboReadout {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 4px 12px 3px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffd45e, #f0a52a);
+    box-shadow: 0 0 0 2px var(--skin-ink), 0 3px 0 #8a4f0b, 0 0 16px rgb(255 200 80 / 35%);
+    transform: skewX(-8deg);
+}
+.gameHud .hudComboValue {
+    color: #2a1600;
+    font-family: var(--ca-font-display);
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+}
+.gameHud .hudComboLabel { color: rgb(42 22 0 / 75%); font-size: 10px; font-weight: 800; letter-spacing: 0.12em; }
+.gameHud .hudBestReadout {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    margin-top: 4px;
+}
+.gameHud .hudComboNext {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.gameHud .hudComboNextPips { flex: 1; display: flex; gap: 4px; }
+.gameHud .hudComboNextPips > span {
+    flex: 1;
+    width: auto;
+    height: 8px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 10%);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 35%);
+}
+.gameHud .hudComboNextPips > span.isLit {
+    background: linear-gradient(180deg, #ffe08a, #f5b13a);
+    box-shadow: 0 0 8px rgb(255 200 80 / 60%);
+}
+.gameHud .hudComboNextLabel { color: #ffd98a; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.gameHud .gameStatusRow { grid-template-rows: auto; min-width: 300px; row-gap: 0; }
+.gameHud .hudComboNext {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+.gameHud .hudComboNextPips { flex: none; }
+.gameHud .hudComboNextLabel { text-align: right; }
+.gameHud .hudBestReadout { margin-top: 2px; }
+.gameHud .hudStreakValue { font-size: 48px; line-height: 0.88; }
+
+/* r24 fix 10: the countdown instruction sat inside the sweeping ring; it now
+   drops below the ring on a dark pill that also masks the crosshair line. */
+.roundEntranceOverlay .roundCountdownInstruction {
+    transform: translateY(calc(clamp(220px, 34vmin, 320px) / 2 - 28px));
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: rgb(3 8 17 / 92%);
+    box-shadow: inset 0 0 0 1px rgba(var(--entrance-rgb), 0.35);
+}
+
+/* ---- r25: round rating card ----------------------------------------------
+ * Accuracy / streak / speed / vs-best become rated 10-segment bars beside a
+ * letter grade, replacing the four truncated instrument chips.
+ * ------------------------------------------------------------------------ */
+.outcomeInstruments.outcomeRating {
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgb(0 0 0 / 18%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+}
+.outcomeRatingGrade {
+    --grade: #7fc8ff;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--grade) 28%, transparent), transparent 70%),
+        rgb(255 255 255 / 3%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grade) 45%, transparent);
+}
+.grade-S .outcomeRatingGrade { --grade: #ffd166; }
+.grade-A .outcomeRatingGrade { --grade: #5ef2b8; }
+.grade-B .outcomeRatingGrade { --grade: #7fc8ff; }
+.grade-C .outcomeRatingGrade { --grade: #c9a7ff; }
+.grade-D .outcomeRatingGrade { --grade: #ff8a8a; }
+.outcomeRatingGrade span,
+.outcomeRatingGrade small {
+    color: rgb(185 208 236 / 60%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.outcomeRatingGrade small { letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.outcomeRatingGrade strong {
+    color: var(--grade);
+    font-family: var(--ca-font-display);
+    font-size: 50px;
+    line-height: 1;
+    text-shadow: 0 0 22px color-mix(in srgb, var(--grade) 55%, transparent);
+}
+.outcomeRatingBars { display: grid; gap: 4px; min-width: 0; }
+.outcomeRating .outcomeInstrument.outcomeRatingRow {
+    grid-template-columns: 16px 76px minmax(0, 1fr) 58px;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+.outcomeRating .outcomeRatingRow svg { grid-row: auto; font-size: 14px; }
+.outcomeRating .outcomeRatingRow span { font-size: 10px; font-weight: 800; }
+.outcomeRating .outcomeRatingRow strong { font-size: 12px; text-align: right; }
+.outcomeRatingSegments { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.outcomeRatingSegments b {
+    height: 9px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 7%);
+}
+.outcomeRatingSegments b.isOn {
+    background: linear-gradient(180deg, #8fd8ff, #3f9fe6);
+    box-shadow: 0 0 6px rgb(95 180 255 / 40%);
+}
+.outcomeRatingRow.isHigh .outcomeRatingSegments b.isOn { background: linear-gradient(180deg, #7ff5c4, #2fc48a); box-shadow: 0 0 6px rgb(80 230 160 / 40%); }
+.outcomeRatingRow.isLow .outcomeRatingSegments b.isOn { background: linear-gradient(180deg, #ffb09a, #e8644a); box-shadow: none; }
+.outcomeRatingRow.isHigh svg { color: #6ff0bd; }
+
+/* ---- r32: PB race strip ---------------------------------------------------
+ * Fills the empty left side of the score plate: a track whose finish flag is
+ * the personal best, your score as the fill, PB pace as a ghost marker.
+ * ------------------------------------------------------------------------ */
+.gameHud .hudScoreAnchor { position: relative; }
+.hudPaceRace {
+    position: absolute;
+    left: 16px;
+    top: 22px;
+    display: grid;
+    gap: 6px;
+    width: 92px;
+    text-align: left;
+    pointer-events: none;
+}
+.hudPaceRace small {
+    color: rgb(185 208 236 / 60%);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.hudPaceRaceTrack {
+    position: relative;
+    display: block;
+    height: 10px;
+    border-radius: 5px;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+.hudPaceRaceFill {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #3f9fe6, #8fd8ff);
+    transition: width 0.25s ease-out;
+}
+.hudPaceRace.is-ahead .hudPaceRaceFill { background: linear-gradient(90deg, #2fc48a, #8bffcf); box-shadow: 0 0 10px rgb(80 230 160 / 55%); }
+.hudPaceRace.is-behind .hudPaceRaceFill { background: linear-gradient(90deg, #b86a2e, #ffb36b); }
+.hudPaceRaceGhost {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: #f5f9ff;
+    box-shadow: 0 0 8px rgb(255 255 255 / 70%);
+    transition: left 0.25s linear;
+}
+.hudPaceRaceFlag {
+    position: absolute;
+    right: -2px;
+    top: -6px;
+    width: 4px;
+    height: 22px;
+    border-radius: 1px;
+    background: repeating-linear-gradient(180deg, #fff 0 3px, #111 3px 6px);
+}
+.hudPaceRace { left: 14px; right: 14px; top: auto; bottom: 5px; width: auto; }
+.hudPaceRace small { display: none; }
+.hudPaceRaceTrack { height: 6px; border-radius: 3px; }
+.hudPaceRaceFill { border-radius: 3px; min-width: 6px; }
+.hudPaceRaceGhost { top: -4px; bottom: -4px; }
+.hudPaceRaceFlag { top: -5px; height: 16px; }
+.hudPaceRace {
+    inset: 14px 14px 9px;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
+    gap: 0;
+}
+.hudPaceRace small { display: block; }
+.hudPaceRaceDelta { font-family: var(--ca-font-display); font-size: 24px; font-weight: 400; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.hudPaceRace.is-ahead .hudPaceRaceDelta { color: #7ff5c4; }
+.hudPaceRace.is-behind .hudPaceRaceDelta { color: #ffb36b; }
+.hudPaceRaceTrack { align-self: end; }
+.hudScoreAnchor:has(.hudPaceRace) .hudPace {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+/* ---- r34: promotion division ladder --------------------------------------
+ * The old→new chips become a seven-node division ladder: the divisions just
+ * gained lit along the rail, the new division crowned and pulsing.
+ * ------------------------------------------------------------------------ */
+.gameOverPromotionTierRow.isLadder { display: block; width: min(520px, 100%); margin-inline: auto; }
+.promotionLadder {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--ladder-count), 1fr);
+    padding-top: 4px;
+}
+.promotionLadderNode {
+    --node: #ffd166;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    row-gap: 3px;
+}
+.promotionLadderNode.tier-bronze { --node: #d99a62; }
+.promotionLadderNode.tier-silver { --node: #c9d4e4; }
+.promotionLadderNode.tier-gold { --node: #ffd166; }
+.promotionLadderNode.tier-platinum { --node: #6fe3d8; }
+.promotionLadderNode.tier-diamond { --node: #8fb8ff; }
+/* rail segment to the left of each node */
+.promotionLadderNode::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    right: 50%;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 8%);
+}
+.promotionLadderNode:first-child::before { display: none; }
+.promotionLadderNode.isPassed::before,
+.promotionLadderNode.isFrom::before { background: color-mix(in srgb, var(--node) 35%, transparent); }
+.promotionLadderNode.isRailLit::before {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--node) 50%, transparent), var(--node));
+    box-shadow: 0 0 10px color-mix(in srgb, var(--node) 70%, transparent);
+    animation: ladderRailFill 0.7s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: left center;
+}
+.promotionLadderNode i {
+    position: relative;
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    margin-top: 4px;
+    transform: rotate(45deg);
+    border-radius: 4px;
+    background: #141c2c;
+    box-shadow: 0 0 0 2px rgb(255 255 255 / 14%);
+}
+.promotionLadderNode.isPassed i,
+.promotionLadderNode.isFrom i { background: color-mix(in srgb, var(--node) 45%, #141c2c); box-shadow: 0 0 0 2px color-mix(in srgb, var(--node) 55%, transparent); }
+.promotionLadderNode.isClimbed i { background: var(--node); box-shadow: 0 0 10px var(--node); }
+.promotionLadderNode.isCurrent i {
+    width: 26px;
+    height: 26px;
+    margin-top: 0;
+    background: var(--node);
+    box-shadow: 0 0 0 3px #0b1322, 0 0 0 5px var(--node), 0 0 22px var(--node);
+    animation: ladderNodePulse 1.6s 1.1s ease-in-out infinite;
+}
+.promotionLadderNode b,
+.promotionLadderNode small { line-height: 1; white-space: nowrap; }
+.promotionLadderNode b { color: rgb(220 232 248 / 45%); font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.promotionLadderNode small { color: rgb(220 232 248 / 55%); font-family: var(--ca-font-display); font-size: 15px; }
+.promotionLadderNode.isFrom b,
+.promotionLadderNode.isFrom small,
+.promotionLadderNode.isClimbed small { color: color-mix(in srgb, var(--node) 75%, #fff); }
+.promotionLadderNode.isCurrent b { color: var(--node); }
+.promotionLadderNode.isCurrent small { color: #fff; font-size: 20px; text-shadow: 0 0 12px var(--node); }
+@keyframes ladderRailFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ladderNodePulse { 50% { box-shadow: 0 0 0 3px #0b1322, 0 0 0 5px var(--node), 0 0 34px var(--node); } }
+@media (prefers-reduced-motion: reduce) {
+    .promotionLadderNode.isRailLit::before,
+    .promotionLadderNode.isCurrent i { animation: none; }
+}
+.promotionLadderNode i { margin: 10px 0; }
+.promotionLadderNode.isCurrent i { margin: 6px 0; }
+.promotionLadderNode::before { top: 21px; }
+.promotionLadderNode { row-gap: 4px; }

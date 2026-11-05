@@ -1,3 +1,4 @@
+import { CoinIcon, CrestIcon, GemIcon, PartEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
 import {
   Crosshair,
   Fire,
@@ -19,6 +20,7 @@ import {
   cancelCelebrationEffects,
   fireConfetti,
 } from "../../../../services/celebrationEffects.js"
+import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -127,7 +129,7 @@ function PersonalBestComparison({ score, bestScore }) {
   let comparisonCopy = "First score on record"
   if (normalizedBest > 0 && isNewBest) comparisonCopy = `New best by ${formatNumber(delta)}`
   if (normalizedBest > 0 && !isNewBest && delta === 0) comparisonCopy = "Personal best matched"
-  if (normalizedBest > 0 && delta < 0) comparisonCopy = `${formatNumber(Math.abs(delta))} below your best`
+  if (normalizedBest > 0 && delta < 0) comparisonCopy = `Personal best ${formatNumber(normalizedBest)} — keep climbing`
 
   return (
     <section className={`outcomeBestComparison ${isNewBest ? "isNewBest" : ""}`} aria-label="Personal best comparison">
@@ -152,24 +154,114 @@ function PersonalBestComparison({ score, bestScore }) {
   )
 }
 
-function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionMs }) {
-  const instruments = [
-    { label: "Accuracy", value: accuracy, icon: <Gauge weight="bold" aria-hidden="true" /> },
-    { label: "Best streak", value: bestStreak, icon: <Fire weight="bold" aria-hidden="true" /> },
-    { label: "Avg reaction", value: formatReactionTime(avgReactionMs), icon: <Timer weight="bold" aria-hidden="true" /> },
-    { label: "Fastest", value: formatReactionTime(bestReactionMs), icon: <Crosshair weight="bold" aria-hidden="true" /> },
+const clampRating = (value) => Math.max(0, Math.min(10, Math.round(value)))
+
+function getRoundGrade(average) {
+  if (average >= 9) return "S"
+  if (average >= 7.5) return "A"
+  if (average >= 6) return "B"
+  if (average >= 4) return "C"
+  return "D"
+}
+
+// Round performance as a rated stat card: each readout becomes a 10-segment
+// bar and the average becomes a letter grade.
+function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore }) {
+  const accuracyValue = Number.parseFloat(String(accuracy).replace("%", "")) || 0
+  const avgMs = Number(avgReactionMs)
+  const bestMs = Number(bestReactionMs)
+  const normalizedBest = Math.max(0, Number(bestScore) || 0)
+  const stats = [
+    { label: "Accuracy", value: accuracy, rating: clampRating(accuracyValue / 10), icon: <Gauge weight="bold" aria-hidden="true" /> },
+    { label: "Streak", value: bestStreak, rating: clampRating(bestStreak / 2), icon: <Fire weight="bold" aria-hidden="true" /> },
+    { label: "Avg speed", value: formatReactionTime(avgReactionMs), rating: avgMs > 0 ? clampRating((650 - avgMs) / 45) : 0, icon: <Timer weight="bold" aria-hidden="true" /> },
+    { label: "Fastest", value: formatReactionTime(bestReactionMs), rating: bestMs > 0 ? clampRating((520 - bestMs) / 35) : 0, icon: <Crosshair weight="bold" aria-hidden="true" /> },
+    { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 10, icon: <TrendUp weight="bold" aria-hidden="true" /> },
   ]
+  const average = stats.reduce((sum, stat) => sum + stat.rating, 0) / stats.length
+  const grade = getRoundGrade(average)
 
   return (
-    <div className="outcomeInstruments" aria-label="Round performance details">
-      {instruments.map(({ label, value, icon }) => (
-        <div className="outcomeInstrument" key={label}>
-          {icon}
-          <span>{label}</span>
-          <strong>{value}</strong>
-        </div>
-      ))}
+    <div className={`outcomeInstruments outcomeRating grade-${grade}`} aria-label="Round performance details">
+      <div className="outcomeRatingGrade" aria-label={`Round grade ${grade}`}>
+        <span>Grade</span>
+        <strong>{grade}</strong>
+        <small>{average.toFixed(1)} / 10</small>
+      </div>
+      <div className="outcomeRatingBars">
+        {stats.map(({ label, value, rating, icon }) => (
+          <div className={`outcomeInstrument outcomeRatingRow ${rating >= 8 ? "isHigh" : rating <= 3 ? "isLow" : ""}`} key={label}>
+            {icon}
+            <span>{label}</span>
+            <i className="outcomeRatingSegments" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, index) => <b key={index} className={index < rating ? "isOn" : ""} />)}
+            </i>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </div>
     </div>
+  )
+}
+
+// The next Armory part the level track pays out, so every round points at a
+// concrete reward. If this round crossed that level, it reads as unlocked.
+function NextUnlock({ level, xpIntoLevel, xpToNextLevel, earned }) {
+  const levelsUp = Number(xpIntoLevel) + Number(earned) >= Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
+  const reachedLevel = levelsUp ? level + 1 : level
+  const justUnlocked = levelsUp
+    ? UNLOCK_WALL_PARTS.find((part) => part.unlockLevel === level + 1)
+    : null
+  const nextPart = justUnlocked ?? [...UNLOCK_WALL_PARTS]
+    .filter((part) => part.unlockLevel > reachedLevel)
+    .sort((a, b) => a.unlockLevel - b.unlockLevel)[0]
+
+  if (!nextPart) return null
+
+  return (
+    <Link
+      className={`gameOverNextUnlock ${justUnlocked ? "isUnlocked" : ""}`}
+      to="/armory"
+      aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
+    >
+      <span className="gameOverNextUnlockIcon" aria-hidden="true">
+        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={96} /> : <PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={96} />}
+        <i className="gameOverNextUnlockBadge">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</i>
+      </span>
+      <span className="gameOverNextUnlockCopy">
+        <small>{justUnlocked ? "Unlocked" : `Unlocks at Lv ${nextPart.unlockLevel}`} · {nextPart.kind === "power" ? "Powerup" : "Armory part"}</small>
+        <strong>{nextPart.label}</strong>
+        {nextPart.description ? <span className="gameOverNextUnlockBenefit">{nextPart.description}</span> : null}
+      </span>
+      <span className="gameOverNextUnlockCta" aria-hidden="true">{justUnlocked ? "Equip" : "Preview"} {"›"}</span>
+    </Link>
+  )
+}
+
+function XpTally({ level, xpIntoLevel, xpToNextLevel, earned, prefersReducedMotion }) {
+  const span = Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
+  const startPercent = Math.min(100, (Number(xpIntoLevel) / span) * 100)
+  const endXp = Number(xpIntoLevel) + Number(earned)
+  const levelsUp = endXp >= span
+  const endPercent = levelsUp ? 100 : Math.min(100, (endXp / span) * 100)
+
+  return (
+    <span className={`gameOverXpTally ${levelsUp ? "isLevelUp" : ""}`} aria-label={`Level ${level} progress`}>
+      <span className="gameOverXpTallyHeader">
+        <b>Lv {level}</b>
+        <small>{levelsUp ? `Level up to ${level + 1}!` : `${Math.max(0, span - endXp).toLocaleString()} XP to Lv ${level + 1}`}</small>
+      </span>
+      <span className="gameOverXpTallyTrack">
+        <i className="gameOverXpTallyBase" style={{ width: `${startPercent}%` }} />
+        <MotionDiv
+          className="gameOverXpTallyGain"
+          style={{ left: `${startPercent}%` }}
+          initial={prefersReducedMotion ? false : { width: 0 }}
+          animate={{ width: `${Math.max(0, endPercent - startPercent)}%` }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.7, duration: 0.9, ease: "easeOut" }}
+        />
+      </span>
+    </span>
   )
 }
 
@@ -194,6 +286,15 @@ export function GameOverOverlay({
   unlockedAchievementIds = [],
   primaryActionLabel = "Play Again",
   onPrimaryAction,
+  roundCoinsEarned = 0,
+  roundXpEarned = 0,
+  roundRankDelta = 0,
+  playerLevel = 1,
+  playerXpIntoLevel = 0,
+  playerXpToNextLevel = 0,
+  playerCoins = null,
+  secondaryActionLabel = null,
+  onSecondaryAction = null,
 }) {
   const { effectivePreferences } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -279,7 +380,7 @@ export function GameOverOverlay({
       exit="exit"
     >
       <header className="gameOverHeader">
-        <p className="gameOverEyebrow">Outcome locked / {modeLabel}</p>
+        <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? " · New personal best" : hasCleanRun && hits > 0 ? " · Flawless" : ""}</p>
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
       </header>
 
@@ -294,6 +395,12 @@ export function GameOverOverlay({
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
         <p className="gameOverScoreBadge">{scoreBadgeText}</p>
+        {(hasCleanRun && hits > 0) || isNewBestScore ? (
+          <span className={`gameOverMedal ${isNewBestScore ? "isBest" : "isClean"}`} aria-hidden="true">
+            <CrestIcon tone={isNewBestScore ? "gold" : "platinum"} size={64} />
+            <b>{isNewBestScore ? "PB" : "Clean"}</b>
+          </span>
+        ) : null}
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}
@@ -301,6 +408,35 @@ export function GameOverOverlay({
           </p>
         ) : null}
       </MotionDiv>
+
+      {allowsCoinRewards || allowsLevelProgression || allowsRankProgression ? (
+        <MotionDiv
+          className="gameOverRewards"
+          aria-label="Round rewards"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 340, damping: 22, delay: 0.42 }}
+        >
+          {allowsCoinRewards ? (
+            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
+          ) : null}
+          {allowsLevelProgression ? (
+            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP</small></span>
+          ) : null}
+          {allowsLevelProgression ? (
+            <XpTally
+              level={playerLevel}
+              xpIntoLevel={playerXpIntoLevel}
+              xpToNextLevel={playerXpToNextLevel}
+              earned={roundXpEarned}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+          ) : null}
+          {allowsRankProgression ? (
+            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
+          ) : null}
+        </MotionDiv>
+      ) : null}
 
       <div className="gameOverBody">
         <MotionDiv
@@ -316,6 +452,8 @@ export function GameOverOverlay({
             bestStreak={bestStreak}
             avgReactionMs={avgReactionMs}
             bestReactionMs={bestReactionMs}
+            score={score}
+            bestScore={bestScore}
           />
         </MotionDiv>
 
@@ -350,12 +488,28 @@ export function GameOverOverlay({
                 onClick={() => setIsWorkshopNoteDismissed(true)}
                 aria-label="Dismiss workshop note"
               >
-                \u00d7
+                {"\u00d7"}
               </button>
             </div>
           </div>
         ) : null}
       </div>
+
+      {allowsLevelProgression ? (
+        <MotionDiv
+          className="gameOverSpotlight"
+          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 22, delay: 0.56 }}
+        >
+          <NextUnlock
+            level={playerLevel}
+            xpIntoLevel={playerXpIntoLevel}
+            xpToNextLevel={playerXpToNextLevel}
+            earned={roundXpEarned}
+          />
+        </MotionDiv>
+      ) : null}
 
       <MotionDiv
         className="overlayActions gameOverActions"
@@ -371,6 +525,11 @@ export function GameOverOverlay({
         >
           {primaryActionLabel}
         </button>
+        {secondaryActionLabel && onSecondaryAction ? (
+          <button className="secondaryButton gameOverRematch" type="button" onClick={onSecondaryAction}>
+            {secondaryActionLabel}
+          </button>
+        ) : null}
       </MotionDiv>
     </MotionSection>
   )

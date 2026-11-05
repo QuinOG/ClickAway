@@ -26,6 +26,14 @@ body {
         linear-gradient(155deg, var(--ca-color-env-void) 0%, var(--ca-color-env-base) 100%);
 }
 
+/* Form controls do not inherit typography by default; keep every control on the app typeface. */
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
 ::selection {
     color: var(--ca-selection-color);
     background: var(--ca-selection-fill);

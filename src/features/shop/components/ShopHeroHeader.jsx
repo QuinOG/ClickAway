@@ -1,7 +1,9 @@
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
-import { getProfileAvatarStyle, getProfileInitials } from "../../../utils/profileAvatarStyling.js"
+import { getProfileAvatarStyle } from "../../../utils/profileAvatarStyling.js"
+import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { InterpolatedNumber } from "../../../components/ui/status/InterpolatedNumber.jsx"
+import { CommandHeader } from "../../../components/RouteScene.jsx"
 
 function formatCoins(value) {
   return Number.isFinite(value) ? value.toLocaleString() : "0"
@@ -39,10 +41,11 @@ function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPrev
           {hasProfileImage ? (
             <img className="shopCommandLoadoutAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
           ) : (
-            getProfileInitials(playerName)
+            <PlayerPortrait name={playerName} size={64} />
           )}
         </span>
       </div>
+
 
       <span
         className={`shopCommandLoadoutButton ${hasButtonImage ? "hasImage" : buttonSkin?.effectClass ?? ""}`}
@@ -122,35 +125,70 @@ export default function ShopHeroHeader({
 
   return (
     <section className="shopArmoryHeader" aria-label="Shop overview">
-      <header className="shopArmoryTop">
-        <div>
-          <h1 className="cardTitle shopScreenTitle">Cosmetic shop</h1>
-        </div>
-      </header>
+      <CommandHeader
+        routeId="shop"
+        eyebrow="Cosmetics"
+        title="Cosmetic shop"
+        subtitle="Preview skins, arenas and portraits on your live loadout before you spend."
+        status={(
+          <span className="shopBalanceChip" aria-label={`${formatCoins(coins)} coins available`}>
+            <Coins weight="fill" aria-hidden="true" />
+            <strong
+              key={balancePulseKey}
+              className={`shopCommandValueMain${balancePulseKey > 0 ? " shopCommandValueMain--pulseOnce" : ""}`}
+            >
+              <InterpolatedNumber value={coins} />
+            </strong>
+            <small>coins</small>
+          </span>
+        )}
+      />
 
-      <section className="shopCommandSurface" aria-label="Armory command bar">
-        <div className="shopCommandGrid">
-          <div className="shopCommandColumn shopCommandColumn-economy">
-            <section className="shopCommandSection shopCommandSection-balance">
-              <span className="shopCommandLabel">Available Coins</span>
-              <strong className="shopCommandValue shopCommandValue-balance">
-                <span
-                  key={balancePulseKey}
-                  className={`shopCommandValueMain${balancePulseKey > 0 ? " shopCommandValueMain--pulseOnce" : ""}`}
-                >
-                  <InterpolatedNumber value={coins} />
-                </span>
+      <section className="shopCommandSurface" aria-label="Loadout preview">
+        <LoadoutStage
+          playerName={playerName}
+          buttonSkin={previewButtonSkin}
+          arenaTheme={previewArenaTheme}
+          profileImage={previewProfileImage}
+          isPreviewing={isPreviewing}
+        />
+
+        <div className="shopCommandDetails">
+          <div className="shopCommandLoadoutHeader">
+            <div className="shopCommandPreviewIdentity">
+              <span className="shopCommandPreviewEyebrow">
+                <Eye weight="bold" aria-hidden="true" />
+                {isPreviewing ? "Previewing" : "Live loadout"}
+              </span>
+              <strong className="shopCommandPreviewTitle">
+                {selectedItem?.name ?? "Equipped cosmetics"}
               </strong>
-            </section>
+              <span className="shopCommandPreviewDescription">
+                {selectedItem?.description ?? "Your equipped cosmetic set."}
+              </span>
+            </div>
+            <span className={`shopCommandPreviewState is-${selectedState}`}>
+              <StateIcon state={selectedState} />
+              {selectedState}
+            </span>
+          </div>
 
-            <section className="shopCommandSection shopCommandSection-progress">
+          <div className="shopCommandLoadoutMeta" aria-label="Preview item summary">
+            <span className={selectedItem?.type === "button_skin" ? "isPreviewSlot" : ""}><strong>Button</strong><span>{previewButtonSkin?.name ?? "Default"}</span></span>
+            <span className={selectedItem?.type === "arena_theme" ? "isPreviewSlot" : ""}><strong>Arena</strong><span>{previewArenaTheme?.name ?? "Default"}</span></span>
+            <span className={selectedItem?.type === "profile_image" ? "isPreviewSlot" : ""}><strong>Profile</strong><span>{previewProfileImage?.imageSrc ? previewProfileImage.name : "Pilot portrait"}</span></span>
+          </div>
+
+          <div className="shopCommandFooter">
+            <div className="shopCommandProgress">
               <div className="shopCommandProgressHeader">
                 <span className="shopCommandLabel">Collection</span>
-                <strong className="shopCommandProgressValue">
-                  {totalOwnedCount}/{totalItems}
-                </strong>
+                <span className="shopCommandProgressMeta">
+                  <strong>{totalOwnedCount}/{totalItems}</strong>
+                  {" · "}
+                  {remainingCount === 0 ? "Complete" : `${remainingCount} to unlock`}
+                </span>
               </div>
-
               <div
                 className="shopCommandProgressBar"
                 role="progressbar"
@@ -164,50 +202,9 @@ export default function ShopHeroHeader({
                   style={{ width: `${collectionPercent}%` }}
                 />
               </div>
-
-              <div className="shopCommandProgressMeta">
-                <span>{collectionPercent}% owned</span>
-                <span>{remainingCount === 0 ? "Complete" : `${remainingCount} remaining`}</span>
-              </div>
-            </section>
-          </div>
-
-          <section className="shopCommandSection shopCommandSection-loadout">
-            <div className="shopCommandLoadoutHeader">
-              <div className="shopCommandPreviewIdentity">
-                <span className="shopCommandPreviewEyebrow">
-                  <Eye weight="bold" aria-hidden="true" />
-                  {isPreviewing ? "Previewing" : "Live loadout"}
-                </span>
-                <strong className="shopCommandPreviewTitle">
-                  {selectedItem?.name ?? "Equipped cosmetics"}
-                </strong>
-              </div>
-              <span className={`shopCommandPreviewState is-${selectedState}`}>
-                <StateIcon state={selectedState} />
-                {selectedState}
-              </span>
             </div>
 
-            <LoadoutStage
-              playerName={playerName}
-              buttonSkin={previewButtonSkin}
-              arenaTheme={previewArenaTheme}
-              profileImage={previewProfileImage}
-              isPreviewing={isPreviewing}
-            />
-
-            <div className="shopCommandLoadoutMeta" aria-label="Preview item summary">
-              <span className={selectedItem?.type === "button_skin" ? "isPreviewSlot" : ""}><strong>Button</strong><span>{previewButtonSkin?.name ?? "Default"}</span></span>
-              <span className={selectedItem?.type === "arena_theme" ? "isPreviewSlot" : ""}><strong>Arena</strong><span>{previewArenaTheme?.name ?? "Default"}</span></span>
-              <span className={selectedItem?.type === "profile_image" ? "isPreviewSlot" : ""}><strong>Profile</strong><span>{previewProfileImage?.name ?? "Default"}</span></span>
-            </div>
-
-            <div className="shopCommandPreviewAction">
-              <div className="shopCommandPreviewCopy">
-                <strong>{selectedItem?.name ?? "Current loadout"}</strong>
-                <span>{selectedItem?.description ?? "Your equipped cosmetic set."}</span>
-              </div>
+            {selectedItemStatus.isEquipped && !isSubmitting ? null : (
               <div className="shopCommandPreviewButtons">
                 {isPreviewing ? (
                   <button
@@ -228,23 +225,23 @@ export default function ShopHeroHeader({
                   {selectedActionLabel}
                 </button>
               </div>
-            </div>
-            {actionFeedback ? (
-              <p
-                className={`shopInlineSignal is-${actionFeedback.kind}`}
-                role={actionFeedback.kind === "error" ? "alert" : "status"}
-              >
-                <span aria-hidden="true">
-                  {actionFeedback.kind === "error"
-                    ? "!"
-                    : actionFeedback.kind === "pending"
-                      ? "…"
-                      : <Check size={13} weight="bold" />}
-                </span>
-                {actionFeedback.message}
-              </p>
-            ) : null}
-          </section>
+            )}
+          </div>
+          {actionFeedback ? (
+            <p
+              className={`shopInlineSignal is-${actionFeedback.kind}`}
+              role={actionFeedback.kind === "error" ? "alert" : "status"}
+            >
+              <span aria-hidden="true">
+                {actionFeedback.kind === "error"
+                  ? "!"
+                  : actionFeedback.kind === "pending"
+                    ? "…"
+                    : <Check size={13} weight="bold" />}
+              </span>
+              {actionFeedback.message}
+            </p>
+          ) : null}
         </div>
       </section>
     </section>

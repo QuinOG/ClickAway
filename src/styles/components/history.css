@@ -260,7 +260,7 @@
     padding: 4px 8px;
     background: rgba(85, 167, 243, 0.1);
     color: rgba(234, 242, 255, 0.92);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     line-height: 1;
     white-space: nowrap;
@@ -383,7 +383,7 @@
 
 .historyArchiveCount svg { grid-row: 1 / -1; width: 20px; height: 20px; align-self: center; }
 .historyArchiveCount strong { color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 18px; line-height: 1; }
-.historyArchiveCount small { color: var(--ca-color-ink-faint); font-size: 8px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
+.historyArchiveCount small { color: var(--ca-color-ink-faint); font-size: 11px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
 
 .historyTrajectory {
     min-height: 220px;
@@ -441,7 +441,7 @@
     justify-content: flex-end;
     gap: 16px;
     color: var(--ca-color-ink-faint);
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -475,14 +475,14 @@
 .historyRoundCardSignal svg { width: 20px; height: 20px; }
 .historyRoundCardMain { min-width: 0; }
 .historyRoundCardTopline { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
-.historyRoundCardTopline time { color: var(--ca-color-ink-faint); font-size: 10px; }
+.historyRoundCardTopline time { color: var(--ca-color-ink-faint); font-size: 11px; }
 .historyRoundCardScore { display: inline-block; margin-top: 9px; color: var(--ca-color-ink-strong); font-family: var(--ca-font-display); font-size: 32px; line-height: 1; }
-.historyRoundCardScoreLabel { margin-left: 6px; color: var(--ca-color-ink-faint); font-size: 9px; font-weight: 800; text-transform: uppercase; }
-.historyRoundCardMeters { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px 13px; color: var(--ca-color-ink-muted); font-size: 10px; font-weight: 700; }
+.historyRoundCardScoreLabel { margin-left: 6px; color: var(--ca-color-ink-faint); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.historyRoundCardMeters { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px 13px; color: var(--ca-color-ink-muted); font-size: 11px; font-weight: 700; }
 .historyRoundCardMeters span { display: inline-flex; align-items: center; gap: 4px; }
 .historyRoundCardMeters svg { width: 13px; height: 13px; color: var(--scene-accent); }
 .historyRoundCardOutcome { min-width: 68px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.historyRoundCardOutcome small { color: var(--ca-color-ink-faint); font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.historyRoundCardOutcome small { color: var(--ca-color-ink-faint); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .historyRoundCardOutcome > svg { margin-top: auto; color: var(--scene-accent); }
 
 @media (max-width: 760px) {
@@ -508,5 +508,5 @@
     .historyRoundCard { grid-template-columns: auto minmax(0, 1fr); }
     .historyRoundCardOutcome { grid-column: 1 / -1; flex-direction: row; align-items: center; }
     .historyRoundCardOutcome > svg { margin: 0 0 0 auto; }
-    .historyTrajectoryLegend { font-size: 8px; }
+    .historyTrajectoryLegend { font-size: 11px; }
 }

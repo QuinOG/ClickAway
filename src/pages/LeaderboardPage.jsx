@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom"
 import { Crown, Crosshair, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
+import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
+
+function getCrestTone(rankLabel = "") {
+  const tier = String(rankLabel).split(" ")[0].toLowerCase()
+  return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
+}
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
@@ -327,17 +334,19 @@ function SeasonBanner({ season = null }) {
 
   return (
     <section className="leaderboardSeasonBanner" aria-label="Current season">
-      <div>
-        <p className="leaderboardSectionEyebrow">Current Season</p>
-        <h2 className="cardH2">{season.name}</h2>
-        <p className="muted">
+      <div className="leaderboardSeasonIdentity">
+        <p className="leaderboardSectionEyebrow">Current season</p>
+        <h2 className="leaderboardSeasonName">{season.name}</h2>
+      </div>
+      <div className="leaderboardSeasonMeter">
+        <p className="leaderboardSeasonMeta">
           {season.daysRemaining > 0
-            ? `${season.daysRemaining} days remaining · ${season.progressPercent}% complete`
+            ? <><strong>{season.daysRemaining} days</strong> remaining · {season.progressPercent}% complete</>
             : "Season ending soon"}
         </p>
-      </div>
-      <div className="leaderboardSeasonProgress" aria-hidden="true">
-        <span style={{ width: `${season.progressPercent}%` }} />
+        <div className="leaderboardSeasonProgress" aria-hidden="true">
+          <span style={{ width: `${season.progressPercent}%` }} />
+        </div>
       </div>
     </section>
   )
@@ -456,8 +465,12 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               className={`leaderboardPodiumPlayer isRank${player.rank} ${isCurrentUser ? "isCurrentUser" : ""}`}
             >
               <span className="leaderboardPodiumRank">#{player.rank}</span>
-              <span className="leaderboardPodiumCrest" aria-hidden="true">
-                {player.rank === 1 ? <Crown weight="fill" /> : player.username?.charAt(0)?.toUpperCase()}
+              <span className="leaderboardPodiumIdentity">
+                <PlayerPortrait name={player.username} size={player.rank === 1 ? 58 : 50} />
+                <span className="leaderboardPodiumCrest" aria-label={`${player.rankLabel} rank`}>
+                  <CrestIcon tone={getCrestTone(player.rankLabel)} size={30} />
+                </span>
+                {player.rank === 1 ? <span className="leaderboardPodiumCrown"><CrownIcon size={30} /></span> : null}
               </span>
               <strong>{player.username}</strong>
               <span className="leaderboardPodiumTier">{player.rankLabel}</span>
@@ -703,16 +716,6 @@ export default function LeaderboardPage({
           onPageChange={handlePageChange}
         />
 
-        <LeaderboardStandingPanel
-          currentVisiblePlayer={currentVisiblePlayer}
-          currentRankProgress={currentRankProgress}
-          currentLeaderboardStats={currentLeaderboardStats}
-          rankedRounds={rankedRounds.length}
-          selfRank={selfRank}
-          totalCount={totalCount}
-          season={season}
-        />
-
         {isLoading ? <LeaderboardTableSkeleton /> : null}
 
         {!isLoading && loadError ? (
@@ -800,6 +803,7 @@ export default function LeaderboardPage({
                       <td>
                         <div className="leaderboardEntryHoverWrap">
                           <span className="leaderboardPlayerName">
+                            <PlayerPortrait name={player.username} size={30} className="leaderboardPlayerPortrait" />
                             {player.username}
                             {isCurrentUser ? <span className="leaderboardYouBadge">YOU</span> : null}
                           </span>
@@ -835,6 +839,16 @@ export default function LeaderboardPage({
             </table>
           </>
         ) : null}
+
+        <LeaderboardStandingPanel
+          currentVisiblePlayer={currentVisiblePlayer}
+          currentRankProgress={currentRankProgress}
+          currentLeaderboardStats={currentLeaderboardStats}
+          rankedRounds={rankedRounds.length}
+          selfRank={selfRank}
+          totalCount={totalCount}
+          season={season}
+        />
       </section>
     </div>
   )

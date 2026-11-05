@@ -1,4 +1,4 @@
-import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 const SEGMENT_COUNT = 5
 
@@ -79,6 +79,11 @@ export default function PowerupTray({
             aria-keyshortcuts={powerup.slotKey}
             disabled={!canUse}
           >
+            {canUse ? (
+              <span className="powerupReadyFlag" aria-hidden="true">
+                Ready · press <kbd>{powerup.slotKey}</kbd>
+              </span>
+            ) : null}
             <div className="powerupTop">
               <div className="powerupHeading">
                 <div className="powerupLead">
@@ -86,7 +91,7 @@ export default function PowerupTray({
                     {powerup.slotKey}
                   </div>
                   <span className="powerupIconWrap" aria-hidden="true">
-                    <PowerupGlyph powerupId={powerup.id} />
+                    <PowerEmblem powerupId={powerup.id} size={30} />
                   </span>
                 </div>
                 <div className="powerupHeadingCopy">

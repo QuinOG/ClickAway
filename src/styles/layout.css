@@ -236,7 +236,7 @@
 
 .leaderboardSectionEyebrow {
     margin: 0;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.1px;
     text-transform: uppercase;
@@ -309,7 +309,7 @@
 
 .leaderboardStandingSpotlightLabel {
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.85px;
     text-transform: uppercase;
@@ -344,7 +344,7 @@
 
 .leaderboardStandingStatLabel {
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.8px;
     text-transform: uppercase;
@@ -502,7 +502,7 @@
     flex-direction: column;
     gap: 1px;
     line-height: 0.7;
-    font-size: 8px;
+    font-size: 11px;
     color: rgba(183, 203, 230, 0.58);
 }
 
@@ -646,7 +646,7 @@
     border: 1px solid rgba(167, 213, 255, 0.58);
     border-radius: 999px;
     padding: 2px 7px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.34px;
     line-height: 1;
@@ -792,7 +792,7 @@
     border: 1px solid rgba(176, 209, 245, 0.44);
     border-radius: 999px;
     padding: 4px 10px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.32px;
     text-transform: uppercase;
@@ -1084,7 +1084,7 @@
 }
 
 .commandHeaderGlyph {
-    width: 72px;
+    width: 60px;
     aspect-ratio: 1;
     display: grid;
     place-items: center;
@@ -1094,7 +1094,7 @@
 }
 
 .commandHeaderGlyph span {
-    width: 46px;
+    width: 40px;
     aspect-ratio: 1;
     display: grid;
     place-items: center;
@@ -1103,24 +1103,25 @@
     color: var(--scene-accent);
 }
 
-.commandHeaderGlyph svg { width: 25px; height: 25px; }
+.commandHeaderGlyph svg { width: 22px; height: 22px; }
 .commandHeaderCopy { min-width: 0; }
 .commandHeaderEyebrow { margin: 0 0 5px; }
 
 .commandHeaderTitle {
     margin: 0;
     font-family: var(--ca-font-display);
-    font-size: clamp(30px, 4vw, 48px);
-    line-height: 1;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.05;
     letter-spacing: -0.025em;
     color: var(--ca-color-ink-strong);
 }
 
 .commandHeaderSubtitle {
     max-width: 62ch;
-    margin: 9px 0 0;
+    margin: 6px 0 0;
     color: var(--ca-color-ink-muted);
-    line-height: 1.55;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
 .commandHeaderStatus,
@@ -1516,7 +1517,7 @@
 
 .brandTag {
     margin: 0;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0.16em;
@@ -1534,18 +1535,18 @@
 
 .navGroup {
     min-width: 0;
-    display: grid;
-    gap: 3px;
+    display: flex;
+    align-items: center;
 }
 
+/* Group captions stay available to assistive tech but no longer add tiny visual noise. */
 .navGroupLabel {
-    padding-inline: 7px;
-    font-size: 8px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(172, 199, 229, 0.56);
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }
 
 .navGroupLinks,
@@ -1554,14 +1555,10 @@
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 2px;
-    border: 1px solid rgba(157, 198, 238, 0.11);
+    padding: 3px;
+    border: 1px solid rgba(157, 198, 238, 0.1);
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.025);
-    clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
-}
-
-.navUtility {
-    align-self: end;
 }
 
 .navItem,
@@ -1570,9 +1567,9 @@
     min-width: 36px;
     min-height: 36px;
     height: 36px;
-    padding: 0 9px;
+    padding: 0 11px;
     border: 1px solid transparent;
-    border-radius: 3px;
+    border-radius: 7px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1580,9 +1577,9 @@
     color: rgba(222, 235, 250, 0.78);
     background: transparent;
     font: inherit;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.015em;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
     text-decoration: none;
     opacity: 1;
     cursor: pointer;
@@ -1607,11 +1604,10 @@
 }
 
 .navItem.active {
-    border-color: rgba(102, 211, 255, 0.36);
+    border-color: rgba(102, 211, 255, 0.28);
     color: #f7fcff;
-    background:
-        linear-gradient(180deg, rgba(68, 186, 255, 0.18), rgba(42, 133, 218, 0.08));
-    box-shadow: inset 0 -2px 0 rgba(91, 214, 255, 0.72);
+    background: rgba(68, 186, 255, 0.14);
+    box-shadow: none;
     animation: none;
 }
 
@@ -1636,22 +1632,25 @@
 }
 
 .navPlay {
-    align-self: end;
-    min-width: 86px;
-    height: 42px;
+    min-width: 84px;
+    height: 40px;
     padding-inline: 16px;
-    border-color: rgba(81, 220, 255, 0.46);
-    color: #f7fdff;
-    background:
-        linear-gradient(135deg, rgba(36, 181, 242, 0.34), rgba(41, 115, 221, 0.22));
-    box-shadow: 0 0 18px rgba(39, 180, 245, 0.14), inset 0 0 0 1px rgba(211, 246, 255, 0.05);
-    clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+    border-color: rgba(85, 217, 255, 0.42);
+    border-radius: 10px;
+    color: var(--ca-color-accent-soft, #a5ecff);
+    background: transparent;
+}
+
+.navPlay:hover {
+    border-color: rgba(85, 217, 255, 0.7);
+    background: rgba(85, 217, 255, 0.1);
 }
 
 .navPlay.active {
-    border-color: rgba(110, 228, 255, 0.72);
-    background: linear-gradient(135deg, rgba(35, 194, 255, 0.48), rgba(46, 120, 229, 0.3));
-    box-shadow: 0 0 24px rgba(49, 194, 255, 0.22), inset 0 -2px 0 rgba(162, 239, 255, 0.9);
+    border-color: transparent;
+    color: var(--ca-color-ink-inverse, #07111d);
+    background: var(--ca-color-accent, #55d9ff);
+    box-shadow: 0 6px 20px rgba(49, 194, 255, 0.22);
 }
 
 .navPendingBadge {
@@ -1662,7 +1661,7 @@
     border-radius: 999px;
     display: inline-grid;
     place-items: center;
-    font-size: 9px;
+    font-size: 11px;
     line-height: 1;
     color: #fff4dc;
     background: rgba(224, 105, 55, 0.58);
@@ -1674,7 +1673,7 @@
     border-radius: 999px;
     background: rgba(255, 199, 92, 0.15);
     color: #ffd17a;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 800;
     font-style: normal;
     letter-spacing: 0.02em;
@@ -1782,7 +1781,7 @@
 }
 
 .shellIdentityRank {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: rgba(174, 206, 234, 0.72);
@@ -1792,7 +1791,7 @@
     display: grid;
     justify-items: end;
     gap: 3px;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: rgba(210, 226, 243, 0.8);
@@ -1877,7 +1876,7 @@
 
 .profileHoverIdentityLabel,
 .profileHoverRankLabel {
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -1933,7 +1932,7 @@
 }
 
 .profileHoverRankMeta {
-    font-size: 9px;
+    font-size: 11px;
     line-height: 1.25;
     color: rgba(209, 224, 247, 0.88);
 }
@@ -1967,7 +1966,7 @@
 
 .profileHoverStatLabel {
     overflow: hidden;
-    font-size: 7px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-overflow: ellipsis;
@@ -2001,7 +2000,7 @@
     justify-content: center;
     color: #dff7ff;
     background: rgba(55, 165, 225, 0.1);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-decoration: none;
     clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
@@ -2134,7 +2133,7 @@
     }
 
     .shellIdentityProgress {
-        font-size: 8px;
+        font-size: 11px;
     }
 
     .shellIdentityPopover {
@@ -2196,7 +2195,7 @@
     .mobileDockItem .navItemLabel {
         max-width: 100%;
         overflow: hidden;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 700;
         line-height: 1;
         text-overflow: ellipsis;
@@ -2279,7 +2278,7 @@
     .mobileMoreEyebrow {
         display: block;
         margin-bottom: 4px;
-        font-size: 8px;
+        font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
@@ -2322,7 +2321,7 @@
 
     .mobileMoreGroupLabel {
         margin: 0;
-        font-size: 8px;
+        font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;

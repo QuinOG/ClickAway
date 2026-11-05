@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { MODULE_SLOTS, LOADOUT_POWERUPS, PASSIVE_LOADOUT_MODULES } from "../../../constants/buildcraft.js"
 import { ModuleSlotGlyph, PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { getUnlockText } from "../armoryUtils.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
+import { PartEmblem } from "../../../components/art/GameIcons.jsx"
 
 // A wall panel is a lane's parts sorted by level, so "what's next" reads top
 // to bottom as a ladder rather than a shuffled grid.
@@ -38,19 +40,19 @@ function ArmoryUnlockWallPanel({
               key={part.id}
               className={`armoryUnlockWallItem tone-${tone} ${isOwned ? "isOwned" : "isLocked"} ${isInstalled ? "isInstalled" : ""}`}
               data-armory-state={visualState}
+              title={part.description}
             >
               <span className={`armoryPartGlyph tone-${tone}`} aria-hidden="true">{renderPartGlyph(part)}</span>
               <span className="armoryUnlockWallItemBody">
                 <strong className="armoryUnlockWallItemLabel">{part.label}</strong>
-                <span className="armoryUnlockWallItemMeta">
-                  {isOwned ? part.description : getUnlockText(part.unlockLevel)}
-                </span>
+                <span className="armoryUnlockWallItemMeta">{part.description}</span>
+                {isOwned ? null : (
+                  <span className="armoryUnlockWallItemLock" aria-label={getUnlockText(part.unlockLevel)}>
+                    Lv {part.unlockLevel}
+                  </span>
+                )}
               </span>
-              <ArmoryStateEmblem
-                state={visualState}
-                label={isOwned ? (isInstalled ? "Installed" : "Collected") : `Lv ${part.unlockLevel}`}
-                compact
-              />
+              {isInstalled ? <ArmoryStateEmblem state="installed" label="Installed" compact /> : null}
             </li>
           )
         })}
@@ -65,7 +67,10 @@ function ArmoryUnlockWallPanel({
  * glass with their level requirement, so "what's next" isn't a disabled
  * card discovered by accident.
  */
+const WALL_TABS = [{ id: "all", label: "All" }, ...MODULE_SLOTS.map((slot) => ({ id: slot.id, label: slot.label })), { id: "power", label: "Power Tools" }]
+
 export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeLoadout }) {
+  const [activeTab, setActiveTab] = useState("all")
   if (!isOpen) return null
 
   const allParts = [...PASSIVE_LOADOUT_MODULES, ...LOADOUT_POWERUPS]
@@ -93,6 +98,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
           </button>
         </header>
 
+        <div className="armoryUnlockWallTop">
         <section className="armoryCollectionSummary" aria-label="Parts collection summary">
           <div
             className="armoryCollectionRing"
@@ -121,22 +127,48 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
           </div>
         </section>
 
-        <div className="armoryUnlockWallGrid">
-          {MODULE_SLOTS.map((slot) => (
+        {nextUnlock ? (
+          <section className="armoryUnlockWallNext" aria-label="Next unlock">
+            <span className="armoryUnlockWallNextIcon" aria-hidden="true">
+              {LOADOUT_POWERUPS.includes(nextUnlock) ? <PowerupGlyph powerupId={nextUnlock.id} /> : <PartEmblem partId={nextUnlock.id} slotId={nextUnlock.slotId} size={48} />}
+            </span>
+            <span className="armoryUnlockWallNextCopy">
+              <span className="armoryUnlockWallEyebrow">Next unlock · Level {nextUnlock.unlockLevel}</span>
+              <strong>{nextUnlock.label}</strong>
+              <span>{nextUnlock.description}</span>
+            </span>
+            <span className="armoryUnlockWallNextGap">
+              <b>{Math.max(1, nextUnlock.unlockLevel - playerLevel)}</b>
+              <small>{nextUnlock.unlockLevel - playerLevel === 1 ? "level away" : "levels away"}</small>
+            </span>
+          </section>
+        ) : null}
+        </div>
+
+        <div className="armoryUnlockWallTabs" role="tablist" aria-label="Part categories">
+          {WALL_TABS.map((tab) => (
+            <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} className={`armoryUnlockWallTab ${activeTab === tab.id ? "isActive" : ""}`} onClick={() => setActiveTab(tab.id)}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={`armoryUnlockWallGrid tab-${activeTab}`}>
+          {MODULE_SLOTS.filter((slot) => activeTab === "all" || activeTab === slot.id).map((slot) => (
             <ArmoryUnlockWallPanel
               key={slot.id}
               tone={slot.id}
               label={slot.label}
               description={slot.description}
               headerGlyph={<ModuleSlotGlyph slotId={slot.id} />}
-              renderPartGlyph={() => <ModuleSlotGlyph slotId={slot.id} />}
+              renderPartGlyph={(part) => <PartEmblem partId={part.id} slotId={slot.id} size={30} />}
               parts={PASSIVE_LOADOUT_MODULES.filter((module) => module.slotId === slot.id)}
               playerLevel={playerLevel}
               installedPartIds={installedPartIds}
             />
           ))}
 
-          <ArmoryUnlockWallPanel
+          {activeTab === "all" || activeTab === "power" ? <ArmoryUnlockWallPanel
             tone="power"
             label="Power Tools"
             description="Powerups you can equip to keys 1, 2, and 3."
@@ -145,7 +177,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
             parts={LOADOUT_POWERUPS}
             playerLevel={playerLevel}
             installedPartIds={installedPartIds}
-          />
+          /> : null}
         </div>
       </section>
     </>

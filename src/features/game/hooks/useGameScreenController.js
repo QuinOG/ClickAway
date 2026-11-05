@@ -451,7 +451,7 @@ export function useGameScreenController({
     [getElapsedMs, randomizeButtonPosition]
   )
 
-  const addClickFeedback = useCallback((clientX, clientY, value, type) => {
+  const addClickFeedback = useCallback((clientX, clientY, value, type, detail = null) => {
     const arenaElement = arenaRef.current
     if (!arenaElement) return
 
@@ -462,7 +462,7 @@ export function useGameScreenController({
 
     setClickFeedbackItems((currentItems) => [
       ...currentItems.slice(-(MAX_TRANSIENT_FEEDBACK_ITEMS - 1)),
-      { id: feedbackId, x: feedbackX, y: feedbackY, value, type },
+      { id: feedbackId, x: feedbackX, y: feedbackY, value, type, detail },
     ])
 
     const timeoutId = setTimeout(() => {
@@ -990,8 +990,9 @@ export function useGameScreenController({
       addClickFeedback(
         event.clientX,
         event.clientY,
-        streak > 0 ? `Streak broken  -${result.penaltyApplied}` : `-${result.penaltyApplied}`,
-        streak > 0 ? "streakBreak" : "miss"
+        `-${result.penaltyApplied}`,
+        streak > 0 ? "streakBreak" : "miss",
+        streak > 0 ? `${streak} streak lost` : null
       )
       return
     }
@@ -999,8 +1000,9 @@ export function useGameScreenController({
     addClickFeedback(
       event.clientX,
       event.clientY,
-      streak > 0 ? "Streak broken" : "Miss",
-      streak > 0 ? "streakBreak" : "miss"
+      "Miss",
+      streak > 0 ? "streakBreak" : "miss",
+      streak > 0 ? `${streak} streak lost` : null
     )
   }, [
     addClickFeedback,
@@ -1410,6 +1412,7 @@ export function useGameScreenController({
       rankLabel: playerRankLabel,
       streak,
       comboMultiplier,
+      comboStep: roundMode.comboStep,
       comboActive: comboMultiplier > 1,
       bestStreak,
       isPlaying,
@@ -1438,6 +1441,7 @@ export function useGameScreenController({
       clickFeedbackItems,
       targetSpawnSequence,
       isTargetVisible: phase === ROUND_PHASE.PLAYING,
+      finalSeconds: isPlaying && isTimedRound && timeLeft > 0 && timeLeft <= 5 ? timeLeft : null,
     },
     powerupTrayProps: {
       powerupSlots,
@@ -1454,6 +1458,7 @@ export function useGameScreenController({
       canChangeMode,
       activeLoadoutName: resolvedLoadout?.name ?? "Loadout",
       playerBestScore,
+      recentRounds: playerRecentRounds,
       activeLoadoutPresentation: previewLoadoutPresentation,
       showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus)
         || hasUnseenUnlockedParts(playerLevel, seenUnlockPartIds),

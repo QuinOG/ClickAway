@@ -1,3 +1,5 @@
+import { ModuleEmblem, PowerEmblem } from "../../components/art/GameIcons.jsx"
+
 export function BuildIdentityGlyph({ identity = "Balanced", className = "" }) {
   const glyphTone = String(identity || "Balanced").toLowerCase()
 
@@ -43,7 +45,7 @@ export function BuildIdentityGlyph({ identity = "Balanced", className = "" }) {
   )
 }
 
-export function ModuleSlotGlyph({ slotId = "tempoCore", className = "" }) {
+function LegacyModuleSlotGlyph({ slotId = "tempoCore", className = "" }) {
   if (slotId === "streakLens") {
     return (
       <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -74,7 +76,7 @@ export function ModuleSlotGlyph({ slotId = "tempoCore", className = "" }) {
   )
 }
 
-export function PowerupGlyph({ powerupId = "", className = "" }) {
+function LegacyPowerupGlyph({ powerupId = "", className = "" }) {
   if (powerupId === "time_boost") {
     return (
       <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -173,3 +175,15 @@ export function PowerupGlyph({ powerupId = "", className = "" }) {
     </svg>
   )
 }
+
+// Illustrated art replaces the line glyphs everywhere these are used, so the
+// Armory, spec sheet, compare bench and unlock ceremony share one asset family.
+export function ModuleSlotGlyph({ slotId = "tempoCore", className = "" }) {
+  return <ModuleEmblem slotId={slotId} className={className} size={24} />
+}
+
+export function PowerupGlyph({ powerupId = "", className = "" }) {
+  return <PowerEmblem powerupId={powerupId} className={className} size={24} />
+}
+
+export { LegacyModuleSlotGlyph, LegacyPowerupGlyph }

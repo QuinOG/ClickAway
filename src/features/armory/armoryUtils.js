@@ -150,3 +150,28 @@ export function measureSpotlightRect(shellElement, targetElement) {
     height: Math.max(0, bottom - top),
   }
 }
+
+// Stat-by-stat comparison of a candidate part against the installed one.
+// `better` says which direction helps the player so deltas can be colored.
+const DELTA_STATS = [
+  { key: "initialButtonSize", label: "Target", better: "up", format: (v) => `${v > 0 ? "+" : ""}${v}px` },
+  { key: "minButtonSize", label: "Min target", better: "up", format: (v) => `${v > 0 ? "+" : ""}${v}px` },
+  { key: "shrinkFactor", label: "Shrink", better: "up", format: (v) => (v > 0 ? "slower" : "faster") },
+  { key: "scoreMultiplier", label: "Score", better: "up", base: 1, format: (v) => `${v > 0 ? "+" : ""}${Math.round(v * 100)}%` },
+  { key: "comboStep", label: "Combo", better: "down", format: (v) => (v < 0 ? `${Math.abs(v)} hit${Math.abs(v) === 1 ? "" : "s"} sooner` : `${v} hit${v === 1 ? "" : "s"} later`) },
+  { key: "missPenalty", label: "Miss cost", better: "down", format: (v) => `${v > 0 ? "+" : ""}${v}` },
+  { key: "powerupAwardMultiplier", label: "Charges", better: "down", base: 1, format: (v) => (v < 0 ? `${Math.round(Math.abs(v) * 100)}% faster` : `${Math.round(v * 100)}% slower`) },
+  { key: "startingPowerupCharges", label: "Start charges", better: "up", format: (v) => `${v > 0 ? "+" : ""}${v}` },
+]
+
+export function getModuleDeltaChips(candidate = null, installed = null) {
+  const next = candidate?.effects ?? {}
+  const current = installed?.effects ?? {}
+  return DELTA_STATS.flatMap((stat) => {
+    const base = stat.base ?? 0
+    const delta = Number(next[stat.key] ?? base) - Number(current[stat.key] ?? base)
+    if (!Number.isFinite(delta) || Math.abs(delta) < 1e-9) return []
+    const isGood = stat.better === "up" ? delta > 0 : delta < 0
+    return [{ key: stat.key, label: stat.label, value: stat.format(Number(delta.toFixed(3))), tone: isGood ? "gain" : "cost" }]
+  })
+}

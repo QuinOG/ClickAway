@@ -9,6 +9,7 @@ export default function ClickFeedbackLayer({ clickFeedbackItems }) {
         >
           <span className="clickFeedbackLocus" />
           <span className="clickFeedbackValue">{feedback.value}</span>
+          {feedback.detail ? <span className="clickFeedbackDetail">{feedback.detail}</span> : null}
         </span>
       ))}
     </div>

@@ -13,8 +13,10 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
+import { getModeLabel } from "../utils/gameModeLabelsAndRankedFilters.js"
 import {
   fetchChallenges,
   fetchUserReplays,
@@ -26,7 +28,15 @@ function formatTimestamp(value) {
   if (!value) return "Unknown"
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return "Unknown"
-  return parsed.toLocaleString()
+  const elapsedMs = Date.now() - parsed.getTime()
+  const minutes = Math.round(elapsedMs / 60_000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.round(hours / 24)
+  if (days < 14) return `${days}d ago`
+  return parsed.toLocaleDateString()
 }
 
 function ChallengeStatusBadge({ status = "pending" }) {
@@ -49,6 +59,7 @@ function ChallengeStatusBadge({ status = "pending" }) {
 function ChallengeCard({
   challenge,
   currentUserId,
+  currentUsername,
   onRespond,
   onRaceGhost,
   isResponding = false,
@@ -60,10 +71,15 @@ function ChallengeCard({
 
   return (
     <article className="challengeCard" data-status={challenge.status}>
+      <div className="challengeVersus" aria-hidden="true">
+        <span className="challengeVersusSide isYou"><PlayerPortrait name={currentUsername} size={52} /></span>
+        <span className="challengeVersusBadge">VS</span>
+        <span className="challengeVersusSide isRival"><PlayerPortrait name={opponentLabel || "Rival"} size={52} /></span>
+      </div>
       <div className="challengeCardHeader">
         <div className="challengeRivalIdentity">
           <span className="challengeRivalCrest" aria-hidden="true">
-            {opponentLabel?.charAt(0)?.toUpperCase() || "?"}
+            <PlayerPortrait name={opponentLabel || "Rival"} size={44} />
           </span>
           <div>
             <p className="leaderboardSectionEyebrow">
@@ -79,7 +95,7 @@ function ChallengeCard({
         className="challengeTargetLine"
         aria-label={`${challenge.modeId} target score ${Number(challenge.replayScore || 0).toLocaleString()}`}
       >
-        <span className="challengeTargetMode">{challenge.modeId}</span>
+        <span className="challengeTargetMode">{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })}</span>
         <span className="challengeTargetBeam" aria-hidden="true"><i /></span>
         <span className="challengeTargetScore">
           <small>Beat</small>
@@ -134,7 +150,7 @@ function ChallengeCard({
   )
 }
 
-export default function ChallengesPage({ currentUserId = "" }) {
+export default function ChallengesPage({ currentUserId = "", currentUsername = "Player" }) {
   const navigate = useNavigate()
   const { signalAction } = useActionFeedback()
   const [challenges, setChallenges] = useState([])
@@ -255,123 +271,6 @@ export default function ChallengesPage({ currentUserId = "" }) {
           )}
         />
 
-        <section className="duelComposer" aria-labelledby="duel-composer-title">
-          <div className="duelVersusStage" aria-hidden="true">
-            <div className="duelCombatant is-player">
-              <span className="duelCombatantCrest"><UserFocus weight="duotone" /></span>
-              <small>You</small>
-            </div>
-            <div className="duelSignalLine">
-              <span />
-              <Sword weight="fill" />
-              <span />
-            </div>
-            <div className={`duelCombatant is-rival ${sendForm.opponentUsername.trim() ? "isLocked" : ""}`}>
-              <span className="duelCombatantCrest">
-                {sendForm.opponentUsername.trim()
-                  ? sendForm.opponentUsername.trim().charAt(0).toUpperCase()
-                  : <Crosshair weight="duotone" />}
-              </span>
-              <small>{sendForm.opponentUsername.trim() || "Rival"}</small>
-            </div>
-            <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
-              <small>{selectedReplay?.modeId ?? "Replay signal"}</small>
-              <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "—"}</strong>
-              <span>{selectedReplay ? "score to defend" : "select a run"}</span>
-            </div>
-          </div>
-
-          <form className="duelLaunchForm" onSubmit={handleSendChallenge}>
-            <h2 className="uiVisuallyHidden" id="duel-composer-title">Create a ghost duel</h2>
-
-            <label className="duelStep duelRivalStep">
-              <span className="duelStepNumber">01</span>
-              <span className="duelStepCopy"><strong>Lock rival</strong><small>Player signal</small></span>
-              <span className="duelInputWrap">
-                <UserFocus weight="duotone" aria-hidden="true" />
-                <input
-                  type="text"
-                  value={sendForm.opponentUsername}
-                  onChange={(event) => {
-                    setSendSuccess("")
-                    setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
-                  }}
-                  placeholder="Opponent username"
-                  required
-                />
-                {sendForm.opponentUsername.trim() ? <Check weight="bold" aria-hidden="true" /> : null}
-              </span>
-            </label>
-
-            <fieldset className="duelStep duelReplayStep">
-              <legend>
-                <span className="duelStepNumber">02</span>
-                <span className="duelStepCopy"><strong>Arm replay</strong><small>Score they must beat</small></span>
-              </legend>
-              {replays.length > 0 ? (
-                <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
-                  {replays.map((replay) => {
-                    const isSelected = String(replay.id) === String(sendForm.replayId)
-                    return (
-                      <button
-                        key={replay.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        className={`duelReplayCard ${isSelected ? "isSelected" : ""}`}
-                        onClick={(event) => {
-                          setSendSuccess("")
-                          setSendForm((current) => ({ ...current, replayId: String(replay.id) }))
-                          signalAction(event.currentTarget, {
-                            eventName: FEEDBACK_EVENTS.SELECTION,
-                            eventId: `duel-replay-${replay.id}`,
-                          })
-                        }}
-                      >
-                        <span className="duelReplayMode">{replay.modeId}</span>
-                        <strong>{Number(replay.score || 0).toLocaleString()}</strong>
-                        <span className="duelReplayMeta"><Crosshair weight="bold" /> Score</span>
-                        {isSelected ? <Check className="duelReplayCheck" weight="bold" /> : null}
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <button type="button" className="duelNoReplay" onClick={() => navigate("/game")}>
-                  <Play weight="fill" aria-hidden="true" />
-                  <span><strong>Record a run</strong><small>Finish a round to create a challenge replay.</small></span>
-                  <ArrowRight weight="bold" aria-hidden="true" />
-                </button>
-              )}
-            </fieldset>
-
-            <div className="duelStep duelLaunchStep">
-              <span className="duelStepNumber">03</span>
-              <label className="duelMessageField">
-                <span className="duelStepCopy"><strong>Launch</strong><small>Optional transmission</small></span>
-                <input
-                  type="text"
-                  maxLength={280}
-                  value={sendForm.message}
-                  onChange={(event) => setSendForm((current) => ({ ...current, message: event.target.value }))}
-                  placeholder="Think you can beat this run?"
-                />
-              </label>
-              <button type="submit" className="duelLaunchButton" disabled={isSending || !launchReady}>
-                <PaperPlaneTilt weight="fill" aria-hidden="true" />
-                <span>{isSending ? "Transmitting" : "Send duel"}</span>
-                <ArrowRight weight="bold" aria-hidden="true" />
-              </button>
-            </div>
-
-            {sendError ? <p className="formError duelFormSignal" role="alert">{sendError}</p> : null}
-            {sendSuccess ? (
-              <p className="duelFormSignal isSuccess" role="status">
-                <Check weight="bold" aria-hidden="true" /> Duel transmitted to {sendSuccess}
-              </p>
-            ) : null}
-          </form>
-        </section>
 
         <section className="duelInbox" aria-labelledby="duel-inbox-title">
           <div className="duelInboxHeader">
@@ -448,12 +347,136 @@ export default function ChallengesPage({ currentUserId = "" }) {
                 key={challenge.id}
                 challenge={challenge}
                 currentUserId={currentUserId}
+                currentUsername={currentUsername}
                 onRespond={handleRespond}
                 onRaceGhost={handleRaceGhost}
                 isResponding={respondingChallengeId === challenge.id}
               />
             ))}
           </div>
+        </section>
+
+        <section className="duelComposer" aria-labelledby="duel-composer-title">
+          <div className="duelVersusStage" aria-hidden="true">
+            <div className="duelCombatant is-player">
+              <span className="duelCombatantCrest"><PlayerPortrait name={currentUsername} size={56} /></span>
+              <small>You</small>
+            </div>
+            <div className="duelSignalLine">
+              <span />
+              <Sword weight="fill" />
+              <span />
+            </div>
+            <div className={`duelCombatant is-rival ${sendForm.opponentUsername.trim() ? "isLocked" : ""}`}>
+              <span className="duelCombatantCrest">
+                {sendForm.opponentUsername.trim()
+                  ? <PlayerPortrait name={sendForm.opponentUsername.trim()} size={56} />
+                  : <Crosshair weight="duotone" />}
+              </span>
+              <small>{sendForm.opponentUsername.trim() || "Rival"}</small>
+            </div>
+            <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
+              <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Target score"}</small>
+              <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "—"}</strong>
+              <span>{selectedReplay ? "score to defend" : "select a run"}</span>
+            </div>
+          </div>
+
+          <form className="duelLaunchForm" onSubmit={handleSendChallenge}>
+            <h2 className="uiVisuallyHidden" id="duel-composer-title">Create a ghost duel</h2>
+
+            <label className="duelStep duelRivalStep">
+              <span className="duelStepNumber">01</span>
+              <span className="duelStepCopy"><strong>Pick a rival</strong><small>Their username</small></span>
+              <span className="duelInputWrap">
+                <UserFocus weight="duotone" aria-hidden="true" />
+                <input
+                  type="text"
+                  value={sendForm.opponentUsername}
+                  onChange={(event) => {
+                    setSendSuccess("")
+                    setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
+                  }}
+                  placeholder="Opponent username"
+                  required
+                />
+                {sendForm.opponentUsername.trim() ? <Check weight="bold" aria-hidden="true" /> : null}
+              </span>
+            </label>
+
+            <fieldset className="duelStep duelReplayStep">
+              <legend>
+                <span className="duelStepNumber">02</span>
+                <span className="duelStepCopy"><strong>Choose a run</strong><small>The score they must beat</small></span>
+              </legend>
+              {replays.length > 0 ? (
+                <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
+                  {replays.map((replay) => {
+                    const isSelected = String(replay.id) === String(sendForm.replayId)
+                    return (
+                      <button
+                        key={replay.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        className={`duelReplayCard ${isSelected ? "isSelected" : ""}`}
+                        onClick={(event) => {
+                          setSendSuccess("")
+                          setSendForm((current) => ({ ...current, replayId: String(replay.id) }))
+                          signalAction(event.currentTarget, {
+                            eventName: FEEDBACK_EVENTS.SELECTION,
+                            eventId: `duel-replay-${replay.id}`,
+                          })
+                        }}
+                      >
+                        <span className="duelReplayMode">{getModeLabel({ modeId: replay.modeId, fallback: replay.modeId })}</span>
+                        <strong>{Number(replay.score || 0).toLocaleString()}</strong>
+                        <span className="duelReplayMeta"><Crosshair weight="bold" /> Score</span>
+                        {isSelected ? <Check className="duelReplayCheck" weight="bold" /> : null}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <button type="button" className="duelNoReplay" onClick={() => navigate("/game")}>
+                  <Play weight="fill" aria-hidden="true" />
+                  <span><strong>Record a run</strong><small>Finish a round to create a challenge replay.</small></span>
+                  <ArrowRight weight="bold" aria-hidden="true" />
+                </button>
+              )}
+            </fieldset>
+
+            <div className="duelStep duelLaunchStep">
+              <span className="duelStepNumber">03</span>
+              <label className="duelMessageField">
+                <span className="duelStepCopy"><strong>Add a message</strong><small>Optional</small></span>
+                <input
+                  type="text"
+                  maxLength={280}
+                  value={sendForm.message}
+                  onChange={(event) => setSendForm((current) => ({ ...current, message: event.target.value }))}
+                  placeholder="Think you can beat this run?"
+                />
+              </label>
+              <button type="submit" className="duelLaunchButton" disabled={isSending || !launchReady}>
+                <PaperPlaneTilt weight="fill" aria-hidden="true" />
+                <span>{isSending ? "Transmitting" : "Send duel"}</span>
+                <ArrowRight weight="bold" aria-hidden="true" />
+              </button>
+            </div>
+
+            {!launchReady && !sendSuccess ? (
+              <p className="duelLaunchHint">
+                {sendForm.opponentUsername.trim() ? "Choose a run to send the duel." : "Pick a rival and a run to send the duel."}
+              </p>
+            ) : null}
+            {sendError ? <p className="formError duelFormSignal" role="alert">{sendError}</p> : null}
+            {sendSuccess ? (
+              <p className="duelFormSignal isSuccess" role="status">
+                <Check weight="bold" aria-hidden="true" /> Duel transmitted to {sendSuccess}
+              </p>
+            ) : null}
+          </form>
         </section>
       </section>
     </div>

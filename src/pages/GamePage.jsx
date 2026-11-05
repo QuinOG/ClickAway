@@ -100,7 +100,18 @@ export default function GamePage({ onPhaseChange, ...props }) {
     : null
 
   if (game.phase === ROUND_PHASE.READY && !entranceOverlay) {
-    activeOverlay = <ReadyOverlay key="ready-overlay" {...game.readyOverlayProps} />
+    activeOverlay = (
+      <ReadyOverlay
+        key="ready-overlay"
+        {...game.readyOverlayProps}
+        targetPreview={{
+          skinClass: game.arenaProps.buttonSkinClass,
+          imageSrc: game.arenaProps.buttonSkinImageSrc,
+          imageScale: game.arenaProps.buttonSkinImageScale,
+          arenaThemeClass: game.arenaProps.arenaThemeClass,
+        }}
+      />
+    )
   } else if (game.phase === ROUND_PHASE.GAME_OVER) {
     activeOverlay = <GameOverFlow key="game-over-flow" {...game.gameOverOverlayProps} />
   }

@@ -247,6 +247,10 @@
         transform: translate(0, 0) scale(1.12);
     }
 
+    62% {
+        opacity: 1;
+    }
+
     to {
         opacity: 0;
         transform: translate(10px, -32px) scale(1.22);

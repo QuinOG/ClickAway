@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
+import { CoinIcon, GemIcon, ModeEmblem } from "../components/art/GameIcons.jsx"
 import { HISTORY_PREVIEW_FIELDS } from "../features/history/historyPageTableFieldsAndInsights.js"
 import { buildHistorySnapshot } from "../features/history/historyRoundsSnapshotBuilder.js"
 import { fetchHistoryPage } from "../services/clickAwayHttpApiClient.js"
@@ -119,7 +120,9 @@ function HistoryTrajectory({ rounds = [] }) {
   const plottedRounds = rounds.slice(0, 8).reverse()
   const scores = plottedRounds.map((round) => Number(round.score) || 0)
   const highestScore = Math.max(...scores, 1)
-  const lowestScore = Math.min(...scores, 0)
+  const minimumScore = scores.length > 0 ? Math.min(...scores) : 0
+  // Start the scale just under the lowest run so real movement is visible.
+  const lowestScore = Math.max(0, Math.floor((minimumScore - (highestScore - minimumScore) * 0.35) / 10) * 10)
   const scoreRange = Math.max(1, highestScore - lowestScore)
   const points = plottedRounds.map((round, index) => {
     const x = plottedRounds.length === 1 ? 300 : 24 + (index * 552) / (plottedRounds.length - 1)
@@ -138,7 +141,7 @@ function HistoryTrajectory({ rounds = [] }) {
       aria-label={`Score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
     >
       <div className="historyTrajectoryCopy">
-        <p className="commandHeaderEyebrow">Performance vector</p>
+        <p className="commandHeaderEyebrow">Score trend</p>
         <h2>Recent trajectory</h2>
         <span className={`historyTrajectoryDelta ${scoreChange >= 0 ? "isPositive" : "isNegative"}`}>
           <span aria-hidden="true">{trendIcon}</span>
@@ -163,17 +166,27 @@ function HistoryTrajectory({ rounds = [] }) {
             <polygon points={`24,122 ${pointString} 576,122`} fill="url(#history-fill)" />
           ) : null}
           <polyline points={pointString} fill="none" stroke="url(#history-line)" strokeWidth="4" vectorEffect="non-scaling-stroke" />
-          {points.map((point) => (
-            <circle
-              key={point.round.id}
-              cx={point.x}
-              cy={point.y}
-              r="6"
-              className={`historyTrajectoryPoint ${getModeToneClassName(point.round)}`}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
         </svg>
+        {points.map((point) => (
+          <span
+            key={point.round.id}
+            className={`historyTrajectoryMarker ${getModeToneClassName(point.round)}`}
+            style={{ left: `${(point.x / 600) * 100}%`, top: `${(point.y / 150) * 100}%` }}
+          />
+        ))}
+        {points.length > 0 ? (
+          <span
+            className="historyTrajectoryEndLabel"
+            style={{ left: `${(points.at(-1).x / 600) * 100}%`, top: `${(points.at(-1).y / 150) * 100}%` }}
+          >
+            {formatNumber(points.at(-1).round.score)}
+          </span>
+        ) : null}
+        <span className="historyTrajectoryAxis isMid">{formatNumber(Math.round((highestScore + lowestScore) / 2))}</span>
+        <span className="historyTrajectoryAxis isTop">{formatNumber(highestScore)}</span>
+        <span className="historyTrajectoryAxis isBottom">{formatNumber(lowestScore)}</span>
+        <span className="historyTrajectoryAxis isStart">{plottedRounds.length} rounds ago</span>
+        <span className="historyTrajectoryAxis isEnd">Latest</span>
       </div>
 
       <div className="historyTrajectoryLegend" aria-hidden="true">
@@ -185,10 +198,15 @@ function HistoryTrajectory({ rounds = [] }) {
   )
 }
 
+function getModeTone(round) {
+  const label = getModeLabelFromHistoryEntry(round).toLowerCase()
+  return label === "ranked" ? "ranked" : label === "practice" ? "practice" : "casual"
+}
+
 function HistoryRoundCard({ round, markers = [] }) {
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
-      <div className="historyRoundCardSignal" aria-hidden="true"><Crosshair weight="duotone" /></div>
+      <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
       <div className="historyRoundCardMain">
         <div className="historyRoundCardTopline">
           <span className={`historyModeBadge ${getModeToneClassName(round)}`}>
@@ -201,8 +219,8 @@ function HistoryRoundCard({ round, markers = [] }) {
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
-          <span><Coins weight="fill" aria-hidden="true" /> {formatNumber(round.coinsEarned)}</span>
-          <span><Lightning weight="fill" aria-hidden="true" /> {formatNumber(round.xpEarned ?? 0)}</span>
+          <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
+          <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
         </div>
       </div>
       <div className="historyRoundCardOutcome">
@@ -294,7 +312,17 @@ export default function HistoryPage({
       })
     }
 
-    if (historySnapshot.bestScoreRound) {
+    const isLatestAlsoPeak = Boolean(
+      historySnapshot.latestRound
+      && historySnapshot.bestScoreRound
+      && historySnapshot.latestRound.id === historySnapshot.bestScoreRound.id
+    )
+
+    if (isLatestAlsoPeak && cards[0]) {
+      cards[0].eyebrow = "Latest run · Personal best"
+    }
+
+    if (historySnapshot.bestScoreRound && !isLatestAlsoPeak) {
       cards.push({
         eyebrow: "Peak Score",
         title: historySnapshot.bestScoreRound.loadoutSnapshot?.loadoutName || "Saved loadout",
@@ -405,36 +433,6 @@ export default function HistoryPage({
               </section>
             ) : null}
 
-            {historySnapshot.recentSampleSize >= 3 ? (
-              <section className="historyTrendStrip" aria-label="Recent performance trend">
-                <p className="historyTrendLabel">
-                  Last {historySnapshot.recentSampleSize} rounds
-                </p>
-                <div className="historyTrendStats">
-                  <span className="historyTrendStat">
-                    <span className="historyTrendStatLabel">Avg Score</span>
-                    <strong className="historyTrendStatValue">
-                      {formatNumber(historySnapshot.recentAverageScore)}
-                    </strong>
-                  </span>
-                  <span className="historyTrendStat">
-                    <span className="historyTrendStatLabel">Avg Accuracy</span>
-                    <strong className="historyTrendStatValue">
-                      {formatPercent(historySnapshot.recentAccuracyPercent)}
-                    </strong>
-                  </span>
-                  {historySnapshot.recentRankedSampleSize > 0 ? (
-                    <span className="historyTrendStat">
-                      <span className="historyTrendStatLabel">Net RR</span>
-                      <strong className={`historyTrendStatValue ${historySnapshot.recentRankDelta > 0 ? "isTrendPositive" : historySnapshot.recentRankDelta < 0 ? "isTrendNegative" : ""}`}>
-                        {historySnapshot.recentRankDelta > 0 ? "+" : ""}{historySnapshot.recentRankDelta} RR
-                      </strong>
-                    </span>
-                  ) : null}
-                </div>
-              </section>
-            ) : null}
-
             <section className="historyLogSection" aria-label="Full match log">
               <div className="historySectionHeader">
                 <h2 className="historySectionTitle">Full Log</h2>
@@ -526,6 +524,36 @@ export default function HistoryPage({
                 </div>
               ) : null}
             </section>
+
+            {historySnapshot.recentSampleSize >= 3 ? (
+              <section className="historyTrendStrip" aria-label="Recent performance trend">
+                <p className="historyTrendLabel">
+                  Last {historySnapshot.recentSampleSize} rounds
+                </p>
+                <div className="historyTrendStats">
+                  <span className="historyTrendStat">
+                    <span className="historyTrendStatLabel">Avg Score</span>
+                    <strong className="historyTrendStatValue">
+                      {formatNumber(historySnapshot.recentAverageScore)}
+                    </strong>
+                  </span>
+                  <span className="historyTrendStat">
+                    <span className="historyTrendStatLabel">Avg Accuracy</span>
+                    <strong className="historyTrendStatValue">
+                      {formatPercent(historySnapshot.recentAccuracyPercent)}
+                    </strong>
+                  </span>
+                  {historySnapshot.recentRankedSampleSize > 0 ? (
+                    <span className="historyTrendStat">
+                      <span className="historyTrendStatLabel">Net RR</span>
+                      <strong className={`historyTrendStatValue ${historySnapshot.recentRankDelta > 0 ? "isTrendPositive" : historySnapshot.recentRankDelta < 0 ? "isTrendNegative" : ""}`}>
+                        {historySnapshot.recentRankDelta > 0 ? "+" : ""}{historySnapshot.recentRankDelta} RR
+                      </strong>
+                    </span>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
           </main>
         )}
       </section>

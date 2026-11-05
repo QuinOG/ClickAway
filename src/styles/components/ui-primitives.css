@@ -405,7 +405,7 @@
 }
 
 .uiSegmentedInput:disabled + .uiSegmentedLabel { opacity: 0.46; cursor: not-allowed; }
-.uiSegmentedDescription { color: var(--ui-ink-muted); font-size: 0.68rem; font-weight: 500; }
+.uiSegmentedDescription { color: var(--ui-ink-muted); font-size: 0.6875rem; font-weight: 500; }
 
 /* Compact status, progress, and resilient content states. */
 .uiBadge {
@@ -419,7 +419,7 @@
     padding: 3px 9px;
     color: var(--ui-badge-color);
     background: color-mix(in srgb, var(--ui-badge-color) 12%, transparent);
-    font-size: 0.68rem;
+    font-size: 0.6875rem;
     font-weight: 800;
     line-height: 1;
     letter-spacing: 0.025em;
