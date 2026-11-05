@@ -120,6 +120,8 @@ export default function ArmoryInstruments({
         // value, the candidate's value while previewing a swap, and a tag
         // only when this stat departs from stock.
         if (!isComparing) {
+          // Short forms keep every value on one line in a fifth of the pane.
+          const shortText = (exact) => exact.text.replace(" cadence", "").replace(/^every /, "")
           const standardIndex = scale.indexOf("Standard")
           const departure = standardIndex === -1 || currentIndex === standardIndex
             ? "isStock"
@@ -133,9 +135,9 @@ export default function ArmoryInstruments({
             >
               <span className="armoryInstrumentLabel">{stat.label}</span>
               <span className="armoryInstrumentReadout">
-                <span className="armoryInstrumentValue">{currentExact.text}</span>
+                <span className="armoryInstrumentValue">{shortText(currentExact)}</span>
                 {showPreview ? (
-                  <span className="armoryInstrumentNext"><i aria-hidden="true">→</i> {previewExact.text}</span>
+                  <span className="armoryInstrumentNext"><i aria-hidden="true">→</i> {shortText(previewExact)}</span>
                 ) : null}
               </span>
               {departure === "isStock" ? null : (

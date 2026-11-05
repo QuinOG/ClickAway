@@ -3095,3 +3095,64 @@
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { padding-top: 8px; }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing::before { z-index: -1; }
+
+/* ---- r73 (council II p3): one continuous calibration report ----------------
+ * The header strip was five separate pills whose values clipped
+ * ("x1.00 cadence", "100px"), it only showed the candidate's numbers while
+ * hovering, and the report under the featured part used different labels and
+ * units ("Shrink control x0.96" vs "4.0% / hit"). The strip is now one glass
+ * instrument with hairline dividers whose candidate values show whenever a
+ * part is featured, and the report uses the same labels and units in fixed
+ * Current / With <part> columns marked as a preview.
+ * ------------------------------------------------------------------------ */
+.armoryWorkspace > .armoryInstruments {
+    background: linear-gradient(180deg, #0a1322, #0d1829);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%), inset 0 8px 18px rgb(0 0 0 / 35%);
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange {
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    padding: 9px 12px 10px;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentReadout { display: grid; gap: 1px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentValue { font-size: 17px; font-variant-numeric: tabular-nums; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp .armoryInstrumentValue,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown .armoryInstrumentValue,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange .armoryInstrumentValue { color: rgb(220 232 248 / 55%); font-size: 14px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext { font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp::before,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: #4fe3a6;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown::before { background: #ff7a66; }
+
+/* Report: same labels and units as the strip, fixed columns. */
+.armorySwapReport { grid-template-columns: minmax(0, 1fr) minmax(84px, auto) minmax(104px, auto); }
+.armorySwapReportHead > span:nth-child(3) { display: inline-flex; justify-content: flex-end; align-items: center; gap: 6px; text-align: right; color: rgb(var(--tone, 160 210 255)); }
+.armorySwapReportHead > span:nth-child(4) { display: none; }
+.armorySwapReportPreview {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 10%);
+    color: #e9f1ff;
+    font-size: 8.5px;
+    font-style: normal;
+    letter-spacing: 0.1em;
+}
+.armorySwapReportRow > .armorySwapReportFrom { padding-right: 4px; }
+.armorySwapReport { column-gap: 0; }
+.armorySwapReportHead > span:nth-child(2) { padding-right: 4px; }
+.armorySwapReportHead > span:nth-child(3) { padding-right: 12px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext { font-size: 15px; }
