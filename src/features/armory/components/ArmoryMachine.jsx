@@ -5,10 +5,11 @@ import {
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
+import { getExactMetric } from "../armoryExactMetrics.js"
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
-export const MACHINE_TARGET_SCALE = 1.85
+export const MACHINE_TARGET_SCALE = 2.05
 
 const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
   MODULE_SLOTS.map((slot) => [slot.id, slot.defaultModuleId])
@@ -148,6 +149,18 @@ export default function ArmoryMachine({
       {/* Keyed by bay so switching bays rolls a fresh machine onto the stage
           (reduced motion crossfades instead — see armory.css). */}
       <div className="armoryMachine" key={loadout.id} ref={machineRef}>
+        {/* One build header: the name (click to rename), its identity and the
+            build tools sit together above the machine. */}
+        <header className="armoryMachineHeader">
+          <MachineNameplate
+            loadout={loadout}
+            presentation={presentation}
+            nameplateRef={nameplateRef}
+            machineApi={machineApi}
+          />
+          <MachineWorkshopActions machineApi={machineApi} />
+        </header>
+
         <div className="armoryMachineCore">
           <div className="armoryMachineAssembly">
             <div className="armoryMachineCoreStage">
@@ -163,8 +176,14 @@ export default function ArmoryMachine({
                 <span className="armoryMachineRigTicks" />
                 {presentation.moduleStack.map((module) => (
                   <span
+                    key={`conduit-${module.slotId}`}
+                    className={`armoryMachineRigConduit conduit-${module.slotId} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
+                  />
+                ))}
+                {presentation.moduleStack.map((module) => (
+                  <span
                     key={module.slotId}
-                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
+                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
                   >
                     <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
                   </span>
@@ -181,6 +200,14 @@ export default function ArmoryMachine({
                 })}
                 aria-hidden="true"
               >
+                {/* Live aim window: the target is drawn at this build's start
+                    size, and its centre states that size, the shrink pace
+                    and the floor it shrinks to. */}
+                <span className="armoryMachineAimReadout">
+                  <small>Aim window</small>
+                  <b>{presentation.roundRules.initialButtonSize}px</b>
+                  <em>{getExactMetric("Shrink Pace", presentation.roundRules).text} · floor {presentation.roundRules.minButtonSize}px</em>
+                </span>
               </span>
             </div>
 
@@ -199,7 +226,25 @@ export default function ArmoryMachine({
 
         <div className="armoryMachineRack" aria-label="Equipped powerups">
           {presentation.powerSlots.map((powerSlot, index) => (
-            <div key={`${powerSlot.id}-${index + 1}`} className="armoryMachineRackSlot">
+            <button
+              type="button"
+              key={`${powerSlot.id}-${index + 1}`}
+              className={`armoryMachineRackSlot ${machineApi.editingPowerSlotIndex === index ? "isEditing" : ""}`}
+              aria-pressed={machineApi.editingPowerSlotIndex === index}
+              aria-label={`Key ${index + 1}: ${powerSlot.label}, ${powerSlot.cadenceLabel}. Edit this key`}
+              onClick={() => machineApi.openPowerKey?.(index)}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData("text/plain", String(index))
+                event.dataTransfer.effectAllowed = "move"
+              }}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault()
+                const fromIndex = Number(event.dataTransfer.getData("text/plain"))
+                if (Number.isInteger(fromIndex) && fromIndex !== index) machineApi.swapPowerSlots?.(fromIndex, index)
+              }}
+            >
               <span className="armoryMachineRackKey" aria-hidden="true">{index + 1}</span>
               <span className="armoryMachineRackGlyph" aria-hidden="true">
                 <PowerEmblem powerupId={powerSlot.id} size={28} />
@@ -208,18 +253,10 @@ export default function ArmoryMachine({
                 <strong className="armoryMachineRackLabel">{powerSlot.label}</strong>
                 <span className="armoryMachineRackMeta">{powerSlot.cadenceLabel}</span>
               </span>
-            </div>
+            </button>
           ))}
         </div>
 
-        <MachineNameplate
-          loadout={loadout}
-          presentation={presentation}
-          nameplateRef={nameplateRef}
-          machineApi={machineApi}
-        />
-
-        <MachineWorkshopActions machineApi={machineApi} />
       </div>
     </section>
   )

@@ -27,7 +27,44 @@ async function hitTargets(page, count, delay = 120) {
 
 test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
   test.setTimeout(180_000)
-  if (SCENE === "armory") {
+  if (SCENE.startsWith("route:")) {
+    const page = await newPage(browser)
+    await gotoRoute(page, route(SCENE.slice(6)))
+    await page.waitForTimeout(1000)
+    await page.screenshot({ path: SHOT, fullPage: process.env.FULL === "1" })
+  } else if (SCENE === "settings") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("shop"))
+    await page.getByRole("button", { name: "Open feedback settings" }).click()
+    await page.waitForTimeout(800)
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "practice") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(800)
+    await page.getByRole("button", { name: "Select Practice" }).click()
+    await page.getByRole("button", { name: /Start Practice/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 4, 120)
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "compareclosed") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(900)
+    await page.getByRole("button", { name: "Compare Modes" }).click()
+    await page.waitForTimeout(600)
+    await page.keyboard.press("Escape")
+    await page.waitForTimeout(600)
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "longcombo") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(900)
+    await page.getByRole("button", { name: /Start Casual/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 30, 70)
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "armory") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
     await page.waitForTimeout(1200)
@@ -67,6 +104,39 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
       await page.waitForTimeout(2600)
     }
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "poweractive") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(900)
+    await page.getByRole("button", { name: /Start Casual/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 13, 110)
+    await page.keyboard.press("3")
+    await page.waitForTimeout(350)
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "install") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(1000)
+    await page.locator(".armoryMachineHousing", { hasText: "Streak Lens" }).first().click({ timeout: 5000 })
+    await page.waitForTimeout(400)
+    await page.locator(".armoryPartCard", { hasText: "Stabilizer" }).first().hover()
+    await page.waitForTimeout(400)
+    await page.locator(".armoryPartCard", { hasText: "Rapid Fire" }).first().hover()
+    await page.waitForTimeout(40)
+    await page.locator(".armoryPartFeatureInstall").click()
+    await page.waitForTimeout(600)
+    console.log("installed:", await page.locator(".armoryMachineHousing", { hasText: "Streak Lens" }).first().textContent())
+    await page.screenshot({ path: SHOT })
+  } else if (SCENE === "preview") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(1000)
+    await page.locator(".armoryMachineHousing", { hasText: "Streak Lens" }).first().click({ timeout: 5000 })
+    await page.waitForTimeout(400)
+    await page.locator(".armoryPartCard", { hasText: "Stabilizer" }).first().hover()
+    await page.waitForTimeout(700)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "mods" || SCENE === "range") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
@@ -96,7 +166,7 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await hitTargets(page, 6, 110)
     await page.waitForTimeout(500)
     await page.screenshot({ path: SHOT })
-  } else if (SCENE === "spec" || SCENE === "compare" || SCENE === "wall" || SCENE === "powers") {
+  } else if (SCENE === "spec" || SCENE === "compare" || SCENE === "wall" || SCENE === "powers" || SCENE === "testrun") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
     await page.waitForTimeout(1000)
@@ -104,6 +174,7 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     if (SCENE === "compare") await page.getByRole("button", { name: "Compare Modes" }).click()
     if (SCENE === "wall") await page.getByRole("button", { name: "Unlock Wall" }).click()
     if (SCENE === "powers") await page.locator(".armoryRailStepButton", { hasText: "Powerups" }).click()
+    if (SCENE === "testrun") await page.locator(".armoryRailStepButton", { hasText: "Test Run" }).click()
     await page.waitForTimeout(700)
     await page.screenshot({ path: SHOT })
   } else if (SCENE === "final") {

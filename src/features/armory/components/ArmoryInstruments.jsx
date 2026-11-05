@@ -30,7 +30,7 @@ function getGaugeRating(label, roundRules) {
 
 // A 180-degree dial: filled arc + needle at the 1-10 rating, ten ticks, and an
 // optional ghost needle for the compared build.
-function InstrumentGauge({ rating, compareRating = null }) {
+function InstrumentGauge({ rating, compareRating = null, previewRating = null }) {
   const needleAngle = (value) => -90 + (value / 10) * 180
   return (
     <svg className="armoryInstrumentGauge" viewBox="0 0 100 58" aria-hidden="true">
@@ -41,6 +41,12 @@ function InstrumentGauge({ rating, compareRating = null }) {
       ))}
       {compareRating !== null ? (
         <line className="armoryGaugeNeedle isCompare" x1="50" y1="52" x2="50" y2="20" transform={`rotate(${needleAngle(compareRating)} 50 52)`} />
+      ) : null}
+      {previewRating !== null ? (
+        <>
+          <path className="armoryGaugePreviewArc" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" strokeDasharray={`0 ${Math.min(rating, previewRating) * 10} ${Math.abs(previewRating - rating) * 10} 100`} />
+          <line className="armoryGaugeNeedle isPreview" x1="50" y1="52" x2="50" y2="16" transform={`rotate(${needleAngle(previewRating)} 50 52)`} />
+        </>
       ) : null}
       <line className="armoryGaugeNeedle" x1="50" y1="52" x2="50" y2="18" transform={`rotate(${needleAngle(rating)} 50 52)`} />
       <circle className="armoryGaugeHub" cx="50" cy="52" r="4.5" />
@@ -80,6 +86,7 @@ export default function ArmoryInstruments({
   comparePresentation = null,
   primaryLabel = "Active",
   compareLabel = "Ghost",
+  previewRules = null,
 }) {
   if (!presentation) return null
 
@@ -104,16 +111,24 @@ export default function ArmoryInstruments({
         const currentExact = getExactMetric(stat.label, presentation.roundRules)
         const rating = getGaugeRating(stat.label, presentation.roundRules)
         const compareRating = isComparing ? getGaugeRating(stat.label, comparePresentation.roundRules) : null
+        const previewRatingRaw = previewRules ? getGaugeRating(stat.label, previewRules) : null
+        const previewRating = previewRatingRaw !== null && rating !== null && previewRatingRaw !== rating ? previewRatingRaw : null
+        const previewClass = previewRating === null ? "" : previewRating > rating ? "isPreviewUp" : "isPreviewDown"
         const toneClass = rating === null ? "" : rating >= 7 ? "isHigh" : rating <= 3 ? "isLow" : "isMid"
 
         return (
           <article
             key={stat.label}
-            className={`armoryInstrument ${isComparing ? "isComparing" : ""} ${rating !== null ? `hasGauge ${toneClass}` : ""}`}
+            className={`armoryInstrument ${isComparing ? "isComparing" : ""} ${rating !== null ? `hasGauge ${toneClass}` : ""} ${previewClass}`}
           >
             <span className="armoryInstrumentLabel">{stat.label}</span>
+            {previewRating !== null ? (
+              <span className="armoryInstrumentPreviewDelta" aria-hidden="true">
+                {previewRating > rating ? "+" : "−"}{Math.abs(previewRating - rating)}
+              </span>
+            ) : null}
             {rating !== null ? (
-              <InstrumentGauge rating={rating} compareRating={compareRating} />
+              <InstrumentGauge rating={rating} compareRating={compareRating} previewRating={previewRating} />
             ) : (
               <InstrumentDial
                 scale={scale}

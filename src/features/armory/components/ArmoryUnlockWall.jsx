@@ -4,6 +4,7 @@ import { ModuleSlotGlyph, PowerupGlyph } from "../../buildcraft/loadoutBuildcraf
 import { getUnlockText } from "../armoryUtils.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 import { PartEmblem } from "../../../components/art/GameIcons.jsx"
+import { useOverlayDismiss } from "../useOverlayDismiss.js"
 
 // A wall panel is a lane's parts sorted by level, so "what's next" reads top
 // to bottom as a ladder rather than a shuffled grid.
@@ -71,6 +72,7 @@ const WALL_TABS = [{ id: "all", label: "All" }, ...MODULE_SLOTS.map((slot) => ({
 
 export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeLoadout }) {
   const [activeTab, setActiveTab] = useState("all")
+  useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   const allParts = [...PASSIVE_LOADOUT_MODULES, ...LOADOUT_POWERUPS]

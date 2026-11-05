@@ -283,7 +283,7 @@ function LeaderboardStandingPanel({
       value: formatPercent(currentLeaderboardStats.accuracyPercent),
     },
     {
-      label: "Ranked Rounds",
+      label: "Games",
       value: formatNumericValue(normalizedRankedRounds),
     },
   ]
@@ -311,6 +311,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
+      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -320,8 +321,8 @@ function LeaderboardStandingPanel({
         ))}
         {season ? (
           <article className="leaderboardStandingStat">
-            <span className="leaderboardStandingStatLabel">Season Tier</span>
-            <strong className="leaderboardStandingStatValue">{rewardTier.label}</strong>
+            <span className="leaderboardStandingStatLabel">Reward</span>
+            <strong className="leaderboardStandingStatValue">{rewardTier.tier > 0 ? rewardTier.label : "None yet"}</strong>
           </article>
         ) : null}
       </div>
@@ -696,13 +697,24 @@ export default function LeaderboardPage({
 
         <SeasonBanner season={season} />
 
-        {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
-          <PodiumStage
-            rows={leaderboardRows}
-            currentUserId={currentUserId}
-            currentUsername={currentUsername}
+        <div className="leaderboardTopRow">
+          {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
+            <PodiumStage
+              rows={leaderboardRows}
+              currentUserId={currentUserId}
+              currentUsername={currentUsername}
+            />
+          ) : null}
+          <LeaderboardStandingPanel
+            currentVisiblePlayer={currentVisiblePlayer}
+            currentRankProgress={currentRankProgress}
+            currentLeaderboardStats={currentLeaderboardStats}
+            rankedRounds={rankedRounds.length}
+            selfRank={selfRank}
+            totalCount={totalCount}
+            season={season}
           />
-        ) : null}
+        </div>
 
         <LeaderboardControls
           board={board}
@@ -840,15 +852,6 @@ export default function LeaderboardPage({
           </>
         ) : null}
 
-        <LeaderboardStandingPanel
-          currentVisiblePlayer={currentVisiblePlayer}
-          currentRankProgress={currentRankProgress}
-          currentLeaderboardStats={currentLeaderboardStats}
-          rankedRounds={rankedRounds.length}
-          selfRank={selfRank}
-          totalCount={totalCount}
-          season={season}
-        />
       </section>
     </div>
   )

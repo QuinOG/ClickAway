@@ -1,3 +1,4 @@
+import { LOADOUT_POWERUPS } from "../../constants/buildcraft.js"
 import {
   PLACEMENT_MATCH_COUNT,
   PLACEMENT_MATCH_SCORE_MAX,
@@ -12,7 +13,7 @@ export const QUICKSTART_CARDS = [
   {
     eyebrow: "2",
     title: "Start the round",
-    body: "Pick your mode in Ready, press Start Round, and use the 3-second countdown to center up.",
+    body: "Pick a mode card in the lobby, press its Start button (Start Casual, Start Ranked…), and use the 3-second countdown to center up.",
   },
   {
     eyebrow: "3",
@@ -29,7 +30,7 @@ export const QUICKSTART_CARDS = [
 export const ROUND_FLOW_STEPS = [
   {
     title: "Ready",
-    body: "Choose a mode, preview the rules, and confirm Start.",
+    body: "Pick a mode card to see its briefing (time, miss cost, pressure), then press its Start button.",
   },
   {
     title: "Countdown",
@@ -49,7 +50,7 @@ export const ROUND_FLOW_STEPS = [
   },
   {
     title: "Play Again",
-    body: "You return to Ready with your chosen mode preserved.",
+    body: "Play Again starts the same mode right away; Change Mode returns you to the lobby.",
   },
 ]
 
@@ -60,7 +61,8 @@ export const CONTROLS_ROWS = [
   ["Use Power Slot 1", "Press 1 during live rounds when the first equipped power is charged."],
   ["Use Power Slot 2", "Press 2 during live rounds when the second equipped power is charged."],
   ["Use Power Slot 3", "Press 3 during live rounds when the third equipped power is charged."],
-  ["Mode Carousel", "In Ready overlay: Left/Right arrows or carousel arrows change mode; Enter starts."],
+  ["Choose Mode", "In the lobby, click a mode card (Practice, Casual, Ranked) or use Left/Right arrow keys; press its Start button or Enter to begin."],
+  ["Close Armory Panels", "Press Escape to close the Spec Sheet, Compare Modes, or Unlock Wall."],
 ]
 
 export const NAVIGATION_ROWS = [
@@ -122,14 +124,14 @@ export const SCORING_ROWS = [
   ["Target Shrink", "Each successful hit shrinks size by mode shrinkFactor until minButtonSize."],
 ]
 
-export const POWERUP_ROWS = [
-  ["Time +2s", "Lv 1", "Every 5 streak", "Adds 2 seconds in timed rounds."],
-  ["Grow +10", "Lv 1", "Every 8 streak", "Increases current target size by 10, capped at round start size."],
-  ["Freeze 1s", "Lv 1", "Every 12 streak", "Stops movement and reposition for 1 second."],
-  ["Magnet Center", "Lv 4", "Every 9 streak", "Centers the target, adds 6 size, and freezes it briefly."],
-  ["Combo Surge", "Lv 7", "Every 14 streak", "Your next 4 hits score as if streak were 4 higher."],
-  ["Guard Charge", "Lv 11", "Every 16 streak", "The next miss within 8 seconds keeps streak and prevents miss penalty."],
-]
+// Generated from the live catalog so every Armory tool is listed with its
+// current unlock level, cadence and description.
+export const POWERUP_ROWS = LOADOUT_POWERUPS.map((powerup) => [
+  powerup.label,
+  `Lv ${powerup.unlockLevel}`,
+  `Every ${powerup.awardEvery} streak`,
+  powerup.description,
+])
 
 export const POWERUP_RULES_POINTS = [
   "Power-up charges start at 0 every round and do not carry across rounds.",

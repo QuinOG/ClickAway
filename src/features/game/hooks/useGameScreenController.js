@@ -66,6 +66,17 @@ import {
 import { getWarmupSuggestion } from "../../../utils/trainingRecommendations.js"
 import { buildWorkshopNote, selectLoadoutStatsEntry } from "../../../utils/armoryFieldDataUtils.js"
 
+// The bottom strip of the arena is reserved for the powerup tray's ready
+// callouts, so targets never spawn (even partly) behind them. Spawning,
+// centring and the dimensions reported for server replay all use this same
+// playfield so the seeded simulation stays in step.
+const PLAYFIELD_BOTTOM_RESERVE_PX = 52
+
+function getPlayfieldRect(arenaElement) {
+  const arenaRect = arenaElement.getBoundingClientRect()
+  return { width: arenaRect.width, height: Math.max(0, arenaRect.height - PLAYFIELD_BOTTOM_RESERVE_PX) }
+}
+
 function getArenaClickCoordinates(event, arenaElement) {
   if (!arenaElement) return null
 
@@ -94,7 +105,8 @@ function buildClickFeedbackId() {
   return `${Date.now()}-${Math.random()}`
 }
 
-const MAX_TRANSIENT_FEEDBACK_ITEMS = 14
+// Capped so long combos cannot stack a cloud of popups around the target.
+const MAX_TRANSIENT_FEEDBACK_ITEMS = 6
 
 function isStreakMilestone(streak) {
   return streak === 5 || (streak >= 10 && streak % 10 === 0)
@@ -425,16 +437,14 @@ export function useGameScreenController({
     const arenaElement = arenaRef.current
     if (!arenaElement) return
 
-    const arenaRect = arenaElement.getBoundingClientRect()
-    setButtonPosition(getCenteredPosition(arenaRect, nextButtonSize))
+    setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
   const randomizeButtonPosition = useCallback((nextButtonSize) => {
     const arenaElement = arenaRef.current
     if (!arenaElement) return
 
-    const arenaRect = arenaElement.getBoundingClientRect()
-    setButtonPosition(getRandomPosition(arenaRect, nextButtonSize, rngRef.current))
+    setButtonPosition(getRandomPosition(getPlayfieldRect(arenaElement), nextButtonSize, rngRef.current))
     markButtonSpawned()
     setTargetSpawnSequence((currentSequence) => currentSequence + 1)
   }, [markButtonSpawned])
@@ -844,16 +854,25 @@ export function useGameScreenController({
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
+    // Timed effects (freeze, center hold, size lock) stay "active" for their
+    // real duration so the tray and the target can show it.
+    const activeDurationMs = {
+      freeze_movement: FREEZE_MOVEMENT_DURATION_MS,
+      magnet_center: MAGNET_CENTER_FREEZE_MS,
+      size_lock: SIZE_LOCK_DURATION_MS,
+    }[powerup.effectType] ?? 0
     setActivatedPowerup({
       id: powerup.id,
       label: powerup.label,
+      effectType: powerup.effectType,
+      durationMs: activeDurationMs,
       sequence: eventTimeMs,
     })
     if (activationCueTimeoutRef.current) window.clearTimeout(activationCueTimeoutRef.current)
     activationCueTimeoutRef.current = window.setTimeout(() => {
       setActivatedPowerup(null)
       activationCueTimeoutRef.current = null
-    }, 1100)
+    }, Math.max(1100, activeDurationMs))
     applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
 
@@ -933,7 +952,7 @@ export function useGameScreenController({
       addCenterFeedback("Personal best", "milestone personalBest")
     }
     result.grantedPowerups.forEach((powerup) => {
-      addCenterFeedback(`${powerup.slotKey}+`, "positive")
+      addCenterFeedback(`Key ${powerup.slotKey} charged`, "positive chargeGain")
       emitFeedback?.(FEEDBACK_EVENTS.POWER_READY, {
         eventId: `${feedbackEventId}-power-${powerup.id}`,
       })
@@ -985,6 +1004,10 @@ export function useGameScreenController({
 
     triggerScreenShake()
     emitFeedback?.(FEEDBACK_EVENTS.MISS, { eventId: feedbackEventId })
+    // A miss supersedes any streak celebration still on screen.
+    if (streak > 0) {
+      setClickFeedbackItems((currentItems) => currentItems.filter((item) => !String(item.type).includes("milestone")))
+    }
 
     if (result.penaltyApplied > 0) {
       addClickFeedback(
@@ -1032,10 +1055,10 @@ export function useGameScreenController({
 
       const arenaElement = arenaRef.current
       if (arenaElement) {
-        const arenaRect = arenaElement.getBoundingClientRect()
+        const playfieldRect = getPlayfieldRect(arenaElement)
         arenaDimensionsRef.current = {
-          arenaWidth: Math.round(arenaRect.width),
-          arenaHeight: Math.round(arenaRect.height),
+          arenaWidth: Math.round(playfieldRect.width),
+          arenaHeight: Math.round(playfieldRect.height),
         }
       }
 
@@ -1442,6 +1465,7 @@ export function useGameScreenController({
       targetSpawnSequence,
       isTargetVisible: phase === ROUND_PHASE.PLAYING,
       finalSeconds: isPlaying && isTimedRound && timeLeft > 0 && timeLeft <= 5 ? timeLeft : null,
+      activeEffect: activatedPowerup?.durationMs > 0 ? activatedPowerup.effectType : null,
     },
     powerupTrayProps: {
       powerupSlots,

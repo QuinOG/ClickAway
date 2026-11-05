@@ -116,8 +116,19 @@ function HighlightCard({ eyebrow, title, value, meta, stats = [], tone = "neutra
   )
 }
 
+const TRAJECTORY_MODES = [
+  { id: "practice", label: "Practice" },
+  { id: "casual", label: "Casual" },
+  { id: "ranked", label: "Ranked" },
+]
+
+// Modes have different timers and scoring pressure, so the trend compares one
+// mode at a time (defaulting to the latest round's mode) instead of drawing a
+// single line through Practice, Casual and Ranked scores.
 function HistoryTrajectory({ rounds = [] }) {
-  const plottedRounds = rounds.slice(0, 8).reverse()
+  const [modeFilter, setModeFilter] = useState(() => (rounds[0] ? getModeTone(rounds[0]) : "casual"))
+  const modeLabel = TRAJECTORY_MODES.find((mode) => mode.id === modeFilter)?.label ?? "Casual"
+  const plottedRounds = rounds.filter((round) => getModeTone(round) === modeFilter).slice(0, 8).reverse()
   const scores = plottedRounds.map((round) => Number(round.score) || 0)
   const highestScore = Math.max(...scores, 1)
   const minimumScore = scores.length > 0 ? Math.min(...scores) : 0
@@ -138,11 +149,11 @@ function HistoryTrajectory({ rounds = [] }) {
   return (
     <section
       className="historyTrajectory"
-      aria-label={`Score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
+      aria-label={`${modeLabel} score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
     >
       <div className="historyTrajectoryCopy">
         <p className="commandHeaderEyebrow">Score trend</p>
-        <h2>Recent trajectory</h2>
+        <h2>{modeLabel} trajectory</h2>
         <span className={`historyTrajectoryDelta ${scoreChange >= 0 ? "isPositive" : "isNegative"}`}>
           <span aria-hidden="true">{trendIcon}</span>
           {scoreChange > 0 ? "+" : ""}{formatNumber(scoreChange)}
@@ -185,14 +196,25 @@ function HistoryTrajectory({ rounds = [] }) {
         <span className="historyTrajectoryAxis isMid">{formatNumber(Math.round((highestScore + lowestScore) / 2))}</span>
         <span className="historyTrajectoryAxis isTop">{formatNumber(highestScore)}</span>
         <span className="historyTrajectoryAxis isBottom">{formatNumber(lowestScore)}</span>
-        <span className="historyTrajectoryAxis isStart">{plottedRounds.length} rounds ago</span>
+        <span className="historyTrajectoryAxis isStart">
+          {plottedRounds.length ? `${plottedRounds.length} ${modeLabel.toLowerCase()} rounds ago` : `No ${modeLabel.toLowerCase()} rounds yet`}
+        </span>
         <span className="historyTrajectoryAxis isEnd">Latest</span>
       </div>
 
-      <div className="historyTrajectoryLegend" aria-hidden="true">
-        <span data-mode="practice"><i /> Practice</span>
-        <span data-mode="casual"><i /> Casual</span>
-        <span data-mode="ranked"><i /> Ranked</span>
+      <div className="historyTrajectoryLegend isFilter" role="group" aria-label="Trend mode">
+        {TRAJECTORY_MODES.map((mode) => (
+          <button
+            key={mode.id}
+            type="button"
+            data-mode={mode.id}
+            className={modeFilter === mode.id ? "isActive" : ""}
+            aria-pressed={modeFilter === mode.id}
+            onClick={() => setModeFilter(mode.id)}
+          >
+            <i /> {mode.label}
+          </button>
+        ))}
       </div>
     </section>
   )
@@ -203,7 +225,14 @@ function getModeTone(round) {
   return label === "ranked" ? "ranked" : label === "practice" ? "practice" : "casual"
 }
 
+// Practice never pays coins or XP, so its record says so instead of showing
+// reward numbers that contradict the rules.
+function isPracticeRound(round) {
+  return round.progressionMode === "practice" || (!round.progressionMode && round.modeId === "easy")
+}
+
 function HistoryRoundCard({ round, markers = [] }) {
+  const isPractice = isPracticeRound(round)
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
       <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
@@ -219,14 +248,19 @@ function HistoryRoundCard({ round, markers = [] }) {
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
-          <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
-          <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
+          {isPractice ? (
+            <span className="historyNoStakes">No stakes</span>
+          ) : (
+            <>
+              <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
+              <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
+            </>
+          )}
         </div>
       </div>
       <div className="historyRoundCardOutcome">
         <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span>
         {markers.map((marker) => <small key={marker}>{marker}</small>)}
-        <ArrowRight weight="bold" aria-hidden="true" />
       </div>
     </article>
   )
@@ -482,8 +516,8 @@ export default function HistoryPage({
                           <td className="historyNumericCell historyAccuracyCell">
                             {formatPercent(round.accuracyPercent)}
                           </td>
-                          <td className="historyNumericCell">{formatNumber(round.coinsEarned)}</td>
-                          <td className="historyNumericCell">{formatNumber(round.xpEarned ?? 0)}</td>
+                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.coinsEarned)}</td>
+                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.xpEarned ?? 0)}</td>
                           <td className="historyNumericCell">
                             <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>
                               {getRankResultText(round)}

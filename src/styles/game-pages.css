@@ -364,3 +364,42 @@
 .leaderboardPodiumPlayer .leaderboardPodiumCrest svg.gameIcon,
 .leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 30px; height: 30px; }
 .leaderboardPodiumPlayer .leaderboardPodiumCrown { top: -20px; }
+
+/* ---- r49: honest history cards --------------------------------------------
+ * Review fix: cards no longer carry a navigation arrow they cannot honour,
+ * and Practice rounds read "No stakes" instead of showing coin/XP numbers.
+ * ------------------------------------------------------------------------ */
+.historyNoStakes {
+    padding: 1px 8px;
+    border-radius: 999px;
+    color: #7ff5c4;
+    background: rgb(80 230 160 / 12%);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ---- r55: history trend compares one mode at a time ---------------------- */
+.historyTrajectoryLegend.isFilter { display: flex; flex-wrap: wrap; gap: 6px; }
+.historyTrajectoryLegend.isFilter button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 999px;
+    color: rgb(220 232 248 / 70%);
+    background: rgb(255 255 255 / 5%);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.historyTrajectoryLegend.isFilter button.isActive {
+    color: #fff;
+    background: rgb(98 225 193 / 16%);
+    box-shadow: inset 0 0 0 1px rgb(98 225 193 / 55%);
+}
+.historyTrajectoryLegend.isFilter button:focus-visible { outline: 2px solid #8eeeff; outline-offset: 2px; }
+.historyTrajectoryLegend.isFilter { flex-wrap: nowrap; gap: 4px; } .historyTrajectoryLegend.isFilter button { padding: 3px 8px; font-size: 11px; white-space: nowrap; }

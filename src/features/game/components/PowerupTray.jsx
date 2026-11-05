@@ -62,7 +62,10 @@ export default function PowerupTray({
           : powerup.effectType === "guard_charge" && powerup.isGuardActive
         const canUse = isPlaying && charges > 0
         const isRecentlyActivated = activatedPowerup?.id === powerup.id
-        const powerupState = getPowerupState({ ...powerup, isPlaying }, charges)
+        const isTimedActive = isRecentlyActivated && activatedPowerup.durationMs > 0
+        const powerupState = isTimedActive
+          ? { label: "Active", tone: "active" }
+          : getPowerupState({ ...powerup, isPlaying }, charges)
         const filledSegments = getFilledSegments({
           charges,
           streak,
@@ -73,15 +76,22 @@ export default function PowerupTray({
           <button
             key={powerup.slotKey}
             type="button"
-            className={`powerupItem power-${powerup.id} ${canUse ? "ready" : ""} ${isActive ? "active" : ""} ${isRecentlyActivated ? "justActivated" : ""}`}
+            className={`powerupItem power-${powerup.id} ${canUse ? "ready" : ""} ${isActive ? "active" : ""} ${isRecentlyActivated ? "justActivated" : ""} ${isTimedActive ? "timedActive" : ""}`}
+            style={isTimedActive ? { "--active-ms": `${activatedPowerup.durationMs}ms` } : undefined}
             onClick={() => onUsePowerup?.(powerup.id)}
             aria-label={`${powerup.label}: ${powerupState.label}${charges > 1 ? `, ${charges} charges` : ""}. Shortcut ${powerup.slotKey}`}
             aria-keyshortcuts={powerup.slotKey}
             disabled={!canUse}
           >
-            {canUse ? (
+            {canUse && !isTimedActive ? (
               <span className="powerupReadyFlag" aria-hidden="true">
                 Ready · press <kbd>{powerup.slotKey}</kbd>
+              </span>
+            ) : null}
+            {isTimedActive ? (
+              <span key={activatedPowerup.sequence} className="powerupActiveFlag" aria-hidden="true">
+                <i className="powerupActiveRing" />
+                Active
               </span>
             ) : null}
             <div className="powerupTop">

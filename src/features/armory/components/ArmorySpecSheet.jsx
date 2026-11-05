@@ -1,5 +1,6 @@
 import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { getProfileStats } from "../armorySpecRatings.js"
+import { useOverlayDismiss } from "../useOverlayDismiss.js"
 
 /**
  * The build's service manual, slid out from the machine. It carries the plain-
@@ -78,6 +79,7 @@ export default function ArmorySpecSheet({
   presentation,
   loadoutStats = null,
 }) {
+  useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   const { roundRules } = presentation

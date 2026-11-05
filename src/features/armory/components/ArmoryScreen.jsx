@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { PartEmblem } from "../../../components/art/GameIcons.jsx"
@@ -14,7 +14,6 @@ import {
   getPowerupOptionPresentation,
 } from "../../../constants/buildcraftPresentation.js"
 import {
-  BuildIdentityGlyph,
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
@@ -78,6 +77,14 @@ export default function ArmoryScreen({
 
   // Which rack key is mid-drag, so its tab reads as lifted off the rack.
   const [draggedKeyIndex, setDraggedKeyIndex] = useState(null)
+  const [previewModuleId, setPreviewModuleId] = useState(null)
+  const handlePreviewModule = useCallback((moduleId) => setPreviewModuleId(moduleId), [])
+  const previewRules = previewModuleId && activeStepId === "passives"
+    ? buildRoundRules(selectedMode, {
+        ...activeLoadout,
+        moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: previewModuleId },
+      })
+    : null
 
   const installedModuleId = activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] ?? ""
   const inspectedModule = getPassiveModuleById(installedModuleId)
@@ -132,20 +139,6 @@ export default function ArmoryScreen({
       </aside>
 
       <header className="armoryCommandBar">
-        <div className="armoryCommandIdentity">
-          <span className="armoryCommandIdentityGlyph" aria-hidden="true">
-            <BuildIdentityGlyph
-              identity={activePresentation.identity.label}
-              className="armoryRailIdentityGlyphIcon"
-            />
-          </span>
-          <div className="armoryRailIdentityCopy">
-            <span className="armoryRailLabel">Active build</span>
-            <strong className="armoryCommandName">{activeLoadout.name}</strong>
-            <span className="armoryRailHint">Changes save instantly to this bay.</span>
-          </div>
-        </div>
-
         <nav className="armoryWorkflow" aria-label="Armory steps" aria-describedby="armory-workflow-help">
           <span className="armoryWorkflowLabel">Build setup</span>
           <span id="armory-workflow-help" className="armoryVisuallyHidden">
@@ -181,6 +174,7 @@ export default function ArmoryScreen({
       <div className="armoryWorkspace" ref={workspaceRef}>
         <ArmoryInstruments
           presentation={activePresentation}
+          previewRules={previewRules}
         />
 
         <div className="armoryStepStack">
@@ -234,6 +228,7 @@ export default function ArmoryScreen({
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 currentRules={activePresentation.roundRules}
+                onPreviewPart={handlePreviewModule}
                 getCandidateRules={(moduleId) => buildRoundRules(selectedMode, {
                   ...activeLoadout,
                   moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: moduleId },
@@ -290,6 +285,10 @@ export default function ArmoryScreen({
                   />
                 ))}
               </div>
+              <p className="armoryHotbarEditingHint">
+                <kbd>{hotbarApi.editingPowerSlotIndex + 1}</kbd>
+                Editing key {hotbarApi.editingPowerSlotIndex + 1} — click a keycap on the machine to switch keys, or drag one onto another to swap.
+              </p>
 
               <ArmoryPartsGallery
                 tone="power"
@@ -353,30 +352,21 @@ export default function ArmoryScreen({
                   </p>
                   <p className="armoryReviewNote">No XP, no coins, no rank — nothing is saved.</p>
                 </div>
-                <div className="armoryRangeLauncherActions">
-                  <button type="button" className="primaryButton" onClick={rangeApi.open}>
-                    Start test run
-                  </button>
-                  <button
-                    type="button"
-                    className="secondaryButton"
-                    onClick={specSheetApi.open}
-                  >
-                    Build details
-                  </button>
-                </div>
-              </section>
-              <section className="armoryRangeReadiness" aria-label={`${activeLoadout.name} test run readiness`}>
-                <ArmoryStateEmblem state="ready" label="Ready to test" />
-                <div className="armoryRangeReadinessTrack" aria-hidden="true">
-                  <span className="isReady" />
-                  <span className="isReady" />
-                  <span className="isReady" />
-                </div>
-                <div className="armoryRangeReadinessChecks">
-                  <span><strong>3/3</strong> mods equipped</span>
-                  <span><strong>3/3</strong> powerups equipped</span>
-                  <span><strong>{selectedMode.label}</strong> rules loaded</span>
+                <button type="button" className="primaryButton armoryRangeLaunchButton" aria-label="Start test run" onClick={rangeApi.open}>
+                  <span className="armoryRangeLaunchRing" aria-hidden="true"><b>10</b><small>sec</small></span>
+                  <span className="armoryRangeLaunchCopy" aria-hidden="true">
+                    <strong>Start test run</strong>
+                    <small>{selectedMode.label} rules · nothing saved</small>
+                  </span>
+                </button>
+                {/* Readiness is the launch button's status line, not a separate panel. */}
+                <div className="armoryRangeReadiness" role="group" aria-label={`${activeLoadout.name} test run readiness`}>
+                  <ArmoryStateEmblem state="ready" label="Ready to test" />
+                  <div className="armoryRangeReadinessChecks">
+                    <span><strong>3/3</strong> mods equipped</span>
+                    <span><strong>3/3</strong> powerups equipped</span>
+                    <span><strong>{selectedMode.label}</strong> rules loaded</span>
+                  </div>
                 </div>
               </section>
             </div>

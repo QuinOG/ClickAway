@@ -110,7 +110,7 @@ export default function GameHud({
         </section>
       </div>
 
-      {isGhostDuel || drillGoal || (!isTimedRound && isPlaying) ? (
+      {isGhostDuel || drillGoal ? (
         <div className="hudContextRail">
           {isGhostDuel ? (
             <div className="hudGhostContext" aria-label={`Ghost duel against ${ghostUsername || "Rival"}`}>
@@ -132,12 +132,12 @@ export default function GameHud({
             </div>
           ) : null}
 
-          {!isTimedRound && isPlaying ? (
-            <button className="secondaryButton hudActionButton" type="button" onClick={onEndRound}>
-              End Practice
-            </button>
-          ) : null}
         </div>
+      ) : null}
+      {!isTimedRound && isPlaying ? (
+        <button className="secondaryButton hudActionButton hudEndPractice" type="button" onClick={onEndRound}>
+          End Practice
+        </button>
       ) : null}
     </header>
   )
