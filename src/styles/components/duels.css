@@ -332,3 +332,23 @@
 .duelLaunchHint { margin: -4px 0 0; color: var(--ca-color-ink-faint); font-size: 13px; text-align: right; }
 .duelReplayLock small { font-size: 12px; }
 .duelReplayLock span { font-size: 12px; letter-spacing: 0.06em; }
+
+/* ---- r48: the duel form gets the room ------------------------------------
+ * Review fix: the decorative versus stage took a third of the composer and
+ * pushed the form to the bottom edge. The stage narrows and shortens, and the
+ * incoming challenge card is tightened so the whole send flow fits on screen.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 1000px) {
+    .duelComposer { grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1.5fr); }
+    .duelVersusStage { min-height: 0; padding: 24px 18px; }
+    .duelCommandSurface .challengeCard { padding: 12px 16px; }
+    .duelCommandSurface .challengeTargetLine { margin: 8px 0; }
+    .duelCommandSurface .challengeCardMessage { margin: 4px 0 0; }
+}
+@media (min-width: 1000px) {
+    .duelPage .duelCommandSurface .duelComposer { grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1.5fr); }
+    .duelPage .duelCommandSurface .duelVersusStage { min-height: 0; padding: 20px 16px; }
+    .duelPage .duelCommandSurface .challengeCard { padding: 12px 18px; row-gap: 2px; }
+    .duelPage .duelCommandSurface .challengeTargetLine { margin: 6px 0; }
+    .duelPage .duelCommandSurface .challengeVersusSide { width: 60px; height: 60px; }
+}
