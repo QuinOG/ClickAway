@@ -1608,3 +1608,47 @@
 .armoryPartFeature.isConfirmed .armoryPartFeatureEyebrow { color: #7ff5c4; }
 .armoryPartFeatureInstall { white-space: nowrap; }
 @keyframes installedPop { from { transform: scale(0.8); opacity: 0; } }
+
+/* ---- r53: one slot selector — the machine's keycaps ----------------------
+ * Review R2 fix (both judges): the Powerups step repeated the three equipped
+ * tools in the side panel. The machine keycaps are now the selector (click to
+ * edit a key, drag to swap); the side tabs are hidden and a one-line hint
+ * names the key being edited.
+ * ------------------------------------------------------------------------ */
+.armoryHotbarEditor .armoryHotbarTabs { display: none; }
+.armoryHotbarEditingHint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    color: rgb(185 208 236 / 75%);
+    font-size: 12.5px;
+}
+.armoryHotbarEditingHint kbd {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #ffd98a;
+    font-family: var(--ca-font-display);
+    font-size: 14px;
+    background: linear-gradient(180deg, #2b3f5e, #15223a);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 0 0 2px #071019, 0 3px 0 #0b1422;
+}
+.armoryMachine button.armoryMachineRackSlot {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+.armoryMachine .armoryMachineRackSlot.isEditing {
+    transform: translateY(4px);
+    box-shadow:
+        inset 0 2px 0 rgb(255 255 255 / 16%),
+        inset 0 -3px 0 rgb(0 0 0 / 28%),
+        0 0 0 2px #ffd166,
+        0 3px 0 #0b1422,
+        0 3px 0 2px #071019,
+        0 0 22px rgb(255 205 102 / 45%);
+}
+.armoryMachine .armoryMachineRackSlot:focus-visible { outline: 3px solid #8eeeff; outline-offset: 4px; }

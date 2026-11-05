@@ -290,6 +290,14 @@ export function useArmoryScreenController({
     setActiveModuleSlotId(slotId)
   }, [commitActiveLoadoutName])
 
+  // The machine's keycaps are the powerup slot selector: clicking one opens
+  // the Powerups step on that key.
+  const openPowerKey = useCallback((slotIndex) => {
+    commitActiveLoadoutName()
+    setActiveStepId("hotbar")
+    setEditingPowerSlotIndex(slotIndex)
+  }, [commitActiveLoadoutName])
+
   // Installing a tool that is racked on another key swaps the two keys in one
   // action instead of dead-ending on a disabled card.
   const handleInstallPower = useCallback((powerupId) => {
@@ -673,6 +681,9 @@ export function useArmoryScreenController({
       confirmBayAction,
       cancelBayAction,
       openModuleLane,
+      openPowerKey,
+      swapPowerSlots: handleSwapPowerSlots,
+      editingPowerSlotIndex: activeStepId === "hotbar" ? editingPowerSlotIndex : null,
       selectedModuleSlotId: activeModuleSlotId,
       openSpecSheet,
       openModeMatrix,

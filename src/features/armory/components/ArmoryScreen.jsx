@@ -300,6 +300,10 @@ export default function ArmoryScreen({
                   />
                 ))}
               </div>
+              <p className="armoryHotbarEditingHint">
+                <kbd>{hotbarApi.editingPowerSlotIndex + 1}</kbd>
+                Editing key {hotbarApi.editingPowerSlotIndex + 1} — click a keycap on the machine to switch keys, or drag one onto another to swap.
+              </p>
 
               <ArmoryPartsGallery
                 tone="power"

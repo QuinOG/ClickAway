@@ -205,7 +205,25 @@ export default function ArmoryMachine({
 
         <div className="armoryMachineRack" aria-label="Equipped powerups">
           {presentation.powerSlots.map((powerSlot, index) => (
-            <div key={`${powerSlot.id}-${index + 1}`} className="armoryMachineRackSlot">
+            <button
+              type="button"
+              key={`${powerSlot.id}-${index + 1}`}
+              className={`armoryMachineRackSlot ${machineApi.editingPowerSlotIndex === index ? "isEditing" : ""}`}
+              aria-pressed={machineApi.editingPowerSlotIndex === index}
+              aria-label={`Key ${index + 1}: ${powerSlot.label}, ${powerSlot.cadenceLabel}. Edit this key`}
+              onClick={() => machineApi.openPowerKey?.(index)}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData("text/plain", String(index))
+                event.dataTransfer.effectAllowed = "move"
+              }}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault()
+                const fromIndex = Number(event.dataTransfer.getData("text/plain"))
+                if (Number.isInteger(fromIndex) && fromIndex !== index) machineApi.swapPowerSlots?.(fromIndex, index)
+              }}
+            >
               <span className="armoryMachineRackKey" aria-hidden="true">{index + 1}</span>
               <span className="armoryMachineRackGlyph" aria-hidden="true">
                 <PowerEmblem powerupId={powerSlot.id} size={28} />
@@ -214,7 +232,7 @@ export default function ArmoryMachine({
                 <strong className="armoryMachineRackLabel">{powerSlot.label}</strong>
                 <span className="armoryMachineRackMeta">{powerSlot.cadenceLabel}</span>
               </span>
-            </div>
+            </button>
           ))}
         </div>
 
