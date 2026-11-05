@@ -217,3 +217,14 @@
     white-space: nowrap;
 }
 .leaderboardTopRow .leaderboardStandingStatValue { font-size: 18px; line-height: 1.1; white-space: nowrap; }
+/* r56: standing stats state their scope once and never clip */
+.leaderboardStandingScope {
+    margin: 0 0 -4px;
+    color: rgb(185 208 236 / 60%);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.leaderboardTopRow .leaderboardStandingStatLabel { overflow: visible; text-overflow: clip; }
+.leaderboardTopRow .leaderboardStandingStatValue { font-size: 17px; }

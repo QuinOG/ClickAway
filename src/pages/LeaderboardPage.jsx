@@ -283,7 +283,7 @@ function LeaderboardStandingPanel({
       value: formatPercent(currentLeaderboardStats.accuracyPercent),
     },
     {
-      label: "Ranked games",
+      label: "Games",
       value: formatNumericValue(normalizedRankedRounds),
     },
   ]
@@ -311,6 +311,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
+      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -320,8 +321,8 @@ function LeaderboardStandingPanel({
         ))}
         {season ? (
           <article className="leaderboardStandingStat">
-            <span className="leaderboardStandingStatLabel">Season Tier</span>
-            <strong className="leaderboardStandingStatValue">{rewardTier.label}</strong>
+            <span className="leaderboardStandingStatLabel">Reward</span>
+            <strong className="leaderboardStandingStatValue">{rewardTier.tier > 0 ? rewardTier.label : "None yet"}</strong>
           </article>
         ) : null}
       </div>
