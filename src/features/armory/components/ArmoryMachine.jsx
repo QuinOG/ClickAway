@@ -9,7 +9,7 @@ import { getExactMetric } from "../armoryExactMetrics.js"
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
-export const MACHINE_TARGET_SCALE = 2.05
+export const MACHINE_TARGET_SCALE = 1.65
 
 const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
   MODULE_SLOTS.map((slot) => [slot.id, slot.defaultModuleId])
@@ -166,7 +166,7 @@ export default function ArmoryMachine({
             {/* The workbench cradle the instrument is bolted to. */}
             <span className="armoryMachineBench" aria-hidden="true">
               <i /><i /><i /><i />
-              <em>CA-01 · Targeting rig</em>
+              <em>CA-01</em>
             </span>
             <div className="armoryMachineCoreStage">
               <span className="armoryMachineRig" aria-hidden="true">
