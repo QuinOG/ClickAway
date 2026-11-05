@@ -202,3 +202,11 @@ html[data-motion-reduced="true"] .feedbackToggleControl > span::after {
     padding: 12px 4px 4px;
     background: linear-gradient(180deg, transparent, var(--ca-color-surface, #0e1726) 30%);
 }
+/* r57: on short screens the pinned footer is a solid bar with a divider, and
+   the form ends with clearance so the last control can scroll fully clear. */
+.feedbackSettingsSheet .feedbackSettingsActions {
+    background: var(--ca-color-surface, #0e1726);
+    box-shadow: 0 -1px 0 rgb(255 255 255 / 8%), 0 -10px 18px rgb(0 0 0 / 35%);
+    padding-top: 12px;
+}
+.feedbackSettingsSheet .feedbackSettingsStatus { margin-bottom: 6px; }
