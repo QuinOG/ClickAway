@@ -2012,3 +2012,57 @@
 .armoryBayWall .armoryBay:not(.isActive) .armoryBayFooter { position: absolute; right: 10px; bottom: 9px; padding: 0; }
 .armoryBayWall .armoryBay:not(.isActive),
 .armoryBayWall .armoryBay:not(.isActive) .armoryBaySelect { min-height: 0; height: auto; }
+
+/* ---- r64 (council c3): the part cards become labelled sockets on the ring --
+ * The three mod cards under the ring repeated each mount's emblem in a second
+ * tier of boxes, so the machine read as a ring above a row of cards. The
+ * cards are now name plates docked beside their mounts (same buttons, same
+ * click-to-edit), and the room they gave back makes the machine ~15% larger.
+ * ------------------------------------------------------------------------ */
+.armoryMachine .armoryMachineAssembly { position: relative; gap: 0; }
+.armoryMachine .armoryMachineCoreStage { height: 372px; }
+.armoryMachine .armoryMachineCoreStage::before { width: 440px; height: 440px; }
+.armoryMachine .armoryMachineRig { width: 312px; height: 312px; }
+.armoryMachine .armoryMachineRigMount { width: 66px; height: 66px; }
+.armoryMachine .armoryMachineRigMount.mount-streakLens { top: -4px; }
+.armoryMachine .armoryMachineRigMount.mount-tempoCore { left: -58px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig { left: calc(100% + 58px); }
+.armoryMachine .armoryMachineRigConduit.conduit-tempoCore { left: -26px; width: 40px; }
+.armoryMachine .armoryMachineRigConduit.conduit-powerRig { right: -26px; width: 40px; }
+.armoryMachine .armoryMachineHousingRow {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing {
+    position: absolute;
+    display: grid;
+    width: auto;
+    max-width: 150px;
+    min-height: 0;
+    padding: 6px 12px 7px;
+    border-radius: 10px;
+    pointer-events: auto;
+    background: linear-gradient(180deg, rgb(29 43 69 / 92%), rgb(16 26 44 / 92%));
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), inset 3px 0 0 rgba(var(--tone), 0.95), 0 4px 0 rgb(0 0 0 / 35%);
+    text-align: left;
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing::after { display: none; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousingGlyph { display: none; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousingBody { justify-items: start; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousingLabel { font-size: 14px; white-space: nowrap; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing:hover { transform: translateY(-1px); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.isSelected {
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), 0 0 0 4px rgba(var(--tone), 0.95), inset 3px 0 0 rgba(var(--tone), 0.95), 0 0 22px rgba(var(--tone), 0.4);
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore { left: 0; top: calc(50% + 58px); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig {
+    right: 0;
+    left: auto;
+    top: calc(50% + 58px);
+    text-align: right;
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), inset -3px 0 0 rgba(var(--tone), 0.95), 0 4px 0 rgb(0 0 0 / 35%);
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig .armoryMachineHousingBody { justify-items: end; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens { left: calc(50% + 46px); top: 18px; }
