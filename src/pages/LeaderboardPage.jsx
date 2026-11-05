@@ -283,7 +283,7 @@ function LeaderboardStandingPanel({
       value: formatPercent(currentLeaderboardStats.accuracyPercent),
     },
     {
-      label: "Ranked Rounds",
+      label: "Ranked games",
       value: formatNumericValue(normalizedRankedRounds),
     },
   ]
@@ -696,13 +696,24 @@ export default function LeaderboardPage({
 
         <SeasonBanner season={season} />
 
-        {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
-          <PodiumStage
-            rows={leaderboardRows}
-            currentUserId={currentUserId}
-            currentUsername={currentUsername}
+        <div className="leaderboardTopRow">
+          {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
+            <PodiumStage
+              rows={leaderboardRows}
+              currentUserId={currentUserId}
+              currentUsername={currentUsername}
+            />
+          ) : null}
+          <LeaderboardStandingPanel
+            currentVisiblePlayer={currentVisiblePlayer}
+            currentRankProgress={currentRankProgress}
+            currentLeaderboardStats={currentLeaderboardStats}
+            rankedRounds={rankedRounds.length}
+            selfRank={selfRank}
+            totalCount={totalCount}
+            season={season}
           />
-        ) : null}
+        </div>
 
         <LeaderboardControls
           board={board}
@@ -840,15 +851,6 @@ export default function LeaderboardPage({
           </>
         ) : null}
 
-        <LeaderboardStandingPanel
-          currentVisiblePlayer={currentVisiblePlayer}
-          currentRankProgress={currentRankProgress}
-          currentLeaderboardStats={currentLeaderboardStats}
-          rankedRounds={rankedRounds.length}
-          selfRank={selfRank}
-          totalCount={totalCount}
-          season={season}
-        />
       </section>
     </div>
   )

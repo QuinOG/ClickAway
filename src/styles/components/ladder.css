@@ -168,3 +168,52 @@
 .leaderboardPodiumSignal span:first-child { display: none; }
 .leaderboardPodiumDeck { max-width: 720px; }
 .leaderboardPodiumTier { color: var(--ca-color-ink-muted); }
+
+/* ---- r47: your standing sits beside the podium ---------------------------
+ * Review fix: the oversized podium pushed the player's own standing below
+ * the fold. The podium is compacted and the standing panel moves up beside
+ * it as a side card.
+ * ------------------------------------------------------------------------ */
+.leaderboardTopRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.42fr);
+    gap: 16px;
+    align-items: stretch;
+}
+.leaderboardTopRow > :only-child { grid-column: 1 / -1; }
+@media (max-width: 1000px) { .leaderboardTopRow { grid-template-columns: 1fr; } }
+.leaderboardTopRow .leaderboardPodiumDeck { transform: scale(0.88); transform-origin: center bottom; margin-top: -18px; }
+.leaderboardTopRow .leaderboardPodiumDeck { transform: none; margin-top: 0; }
+.leaderboardTopRow .leaderboardStandingPanel {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    margin: 0;
+    padding: 16px 18px;
+}
+.leaderboardTopRow .leaderboardStandingMain {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+}
+.leaderboardTopRow .leaderboardStandingSpotlight { order: -1; min-width: 96px; padding: 10px 12px; }
+.leaderboardTopRow .leaderboardStandingSpotlightValue { font-size: 34px; line-height: 1; }
+.leaderboardTopRow .leaderboardStandingHeading { display: grid; gap: 6px; }
+.leaderboardTopRow .leaderboardStandingTitle { font-size: 20px; line-height: 1.1; }
+.leaderboardTopRow .leaderboardStandingLead { margin: 0; font-size: 12.5px; line-height: 1.35; }
+.leaderboardTopRow .leaderboardStandingTierBadge { justify-self: start; }
+.leaderboardTopRow .leaderboardStandingStats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+.leaderboardTopRow .leaderboardStandingStat { display: grid; gap: 2px; min-width: 0; padding: 7px 9px; }
+.leaderboardTopRow .leaderboardStandingStatLabel {
+    overflow: hidden;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.leaderboardTopRow .leaderboardStandingStatValue { font-size: 18px; line-height: 1.1; white-space: nowrap; }
