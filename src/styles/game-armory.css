@@ -2529,3 +2529,251 @@
 .armoryMachine .armoryMachineRack .armoryMachineRackSlot:not(.isEditing) { box-shadow: inset 0 0 0 2px #071019, 0 3px 0 #070d18, inset 0 -3px 0 rgb(0 0 0 / 30%); }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { top: calc(50% + 66px); }
+
+/* ---- r70 (council II p2): build bays are machine cartridges ----------------
+ * The active bay read as a profile card and the docked bays as abbreviated
+ * list rows with 14px pips, over ~200px of empty rail. All three bays are now
+ * equal cartridges filling the rail: a numbered spine in the build's identity
+ * colour, an ID strip (name, identity, lamp), a miniature of the machine
+ * (core / lens / rig silhouettes from r69 around the target at wall scale)
+ * and a one-line field record, with Compare in the same corner on each.
+ * ------------------------------------------------------------------------ */
+.armoryBayWall,
+.armoryRail .armoryBayWall { grid-auto-rows: minmax(0, 1fr); align-content: stretch; gap: 10px; min-height: 0; }
+.armoryBayWall .armoryBay.armoryCart,
+.armoryBayWall .armoryBay.armoryCart:not(.isActive) {
+    --cart: 79, 200, 255;
+    position: relative;
+    display: block;
+    min-height: 0;
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background:
+        repeating-linear-gradient(90deg, rgb(255 255 255 / 1.8%) 0 2px, transparent 2px 6px),
+        linear-gradient(180deg, #1c2a42, #111a2c);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%), inset 0 2px 0 rgb(255 255 255 / 10%), 0 4px 0 #070d18;
+    transform: none;
+}
+.armoryBayWall .armoryBay.armoryCart[data-identity="control"] { --cart: 83, 215, 179; }
+.armoryBayWall .armoryBay.armoryCart[data-identity="pressure"] { --cart: 255, 146, 82; }
+.armoryBayWall .armoryBay.armoryCart[data-identity="precision"] { --cart: 196, 120, 255; }
+.armoryBayWall .armoryBay.armoryCart::before,
+.armoryBayWall .armoryBay.armoryCart::after { display: none; }
+.armoryBayWall .armoryBay.armoryCart.isActive {
+    background:
+        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(var(--cart), 0.14), transparent 70%),
+        linear-gradient(180deg, #213352, #131e33);
+    box-shadow: inset 0 0 0 2px rgba(var(--cart), 0.85), 0 0 22px rgba(var(--cart), 0.22), 0 4px 0 #070d18;
+}
+
+.armoryBayWall .armoryCart .armoryCartBody,
+.armoryBayWall .armoryCart:not(.isActive) .armoryCartBody {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.armoryBayWall .armoryCart .armoryCartBody:focus-visible { outline: 2px solid rgb(var(--cart)); outline-offset: -4px; }
+
+/* Numbered spine in the build's identity colour. */
+.armoryCart .armoryCartSpine {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    display: grid;
+    place-items: start center;
+    padding-top: 12px;
+    background:
+        repeating-linear-gradient(180deg, rgb(0 0 0 / 22%) 0 2px, transparent 2px 9px) 50% 100% / 100% 46% no-repeat,
+        linear-gradient(180deg, rgba(var(--cart), 0.55), rgba(var(--cart), 0.18));
+    box-shadow: inset -2px 0 0 rgb(0 0 0 / 35%);
+}
+.armoryCart .armoryCartSpine b {
+    color: #06101c;
+    font-family: var(--ca-font-display);
+    font-size: 15px;
+    font-weight: 400;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    letter-spacing: 0.06em;
+}
+.armoryCart:not(.isActive) .armoryCartSpine b { color: rgb(230 240 255 / 85%); }
+
+/* ID strip. */
+.armoryCart .armoryCartStrip {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 8px;
+    padding: 10px 12px 0;
+}
+.armoryCart .armoryCartName { font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.armoryCart .armoryCartIdentity {
+    grid-column: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: rgb(var(--cart));
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.armoryCart .armoryCartIdentityGlyph { display: inline-grid; width: 13px; height: 13px; }
+.armoryCart .armoryCartIdentityGlyph svg { width: 13px; height: 13px; }
+.armoryCart .armoryCartLamp {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: rgb(170 190 215 / 60%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.armoryCart .armoryCartLamp::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #33415a;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%);
+}
+.armoryCart.isActive .armoryCartLamp { color: #8ff0c9; }
+.armoryCart.isActive .armoryCartLamp::before { background: #4fe3a6; box-shadow: 0 0 8px #4fe3a6; }
+
+/* Miniature of the machine in a recessed window. */
+.armoryCart .armoryCartWindow {
+    grid-column: 2;
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 64px;
+    margin: 8px 12px;
+    border-radius: 10px;
+    background:
+        linear-gradient(rgb(110 180 255 / 7%) 1px, transparent 1px) 0 0 / 12px 12px,
+        linear-gradient(90deg, rgb(110 180 255 / 7%) 1px, transparent 1px) 0 0 / 12px 12px,
+        #08101e;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%), inset 0 6px 14px rgb(0 0 0 / 55%);
+}
+.armoryCart .armoryCartMachine { position: relative; display: grid; place-items: center; width: 120px; height: 58px; }
+.armoryCart .armoryCartTarget,
+.armoryBayWall .armoryCart .armoryBayMiniTarget {
+    position: relative;
+    z-index: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1a0a2c 0 30%, #c45cf5 31% 52%, #3a1257 53% 66%, #9a3fe0 67%);
+    box-shadow: 0 0 0 2px #2a3a56, 0 0 0 4px #121c2f, 0 0 12px rgb(196 92 245 / 50%);
+}
+.armoryCart .armoryCartMachine::before {
+    content: "";
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    top: calc(50% - 2px);
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #5a6e90, #2a3a56);
+}
+.armoryCart .armoryCartPart {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, currentColor 30%, #1a2840), #0d1626 75%);
+    box-shadow: 0 0 0 1.5px #070d18, 0 0 0 2.5px color-mix(in srgb, currentColor 60%, transparent);
+}
+.armoryCart .armoryCartPart.part-tempoCore { left: 6px; top: 50%; width: 24px; height: 30px; border-radius: 6px; transform: translateY(-50%); color: rgb(var(--armory-tone-tempo)); }
+.armoryCart .armoryCartPart.part-streakLens { left: 50%; top: -4px; width: 22px; height: 22px; border-radius: 50%; transform: translateX(-50%); color: rgb(var(--armory-tone-streak)); }
+.armoryCart .armoryCartPart.part-powerRig { right: 6px; top: 50%; width: 22px; height: 30px; border-radius: 5px; transform: translateY(-50%); color: rgb(var(--armory-tone-power)); }
+.armoryCart .armoryCartPart svg,
+.armoryCart .armoryCartPart .gameIcon { width: 14px; height: 14px; }
+.armoryCart:not(.isActive) .armoryCartWindow { filter: saturate(0.75); }
+
+/* One-line field record, with Compare docked in the same corner on every bay. */
+.armoryCart .armoryCartStats {
+    grid-column: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-height: 30px;
+    margin: 0;
+    padding: 0 12px 10px;
+    color: rgb(170 190 215 / 55%);
+    font-size: 11px;
+}
+.armoryCart .armoryCartStats span { display: inline-flex; align-items: baseline; gap: 3px; }
+.armoryCart .armoryCartStats b { color: #eef5ff; font-family: var(--ca-font-display); font-size: 16px; font-weight: 400; }
+.armoryCart .armoryCartStats b i { font-size: 11px; font-style: normal; }
+.armoryCart .armoryCartStats small { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.armoryCart .armoryCartStats.isEmpty { align-items: center; font-size: 11px; font-style: italic; }
+.armoryCart:not(.isActive) .armoryCartStats { padding-right: 88px; }
+.armoryCart .armoryCartCompare {
+    position: absolute;
+    right: 10px;
+    bottom: 9px;
+    z-index: 3;
+    min-height: 26px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 7%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+    color: #e6efff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+}
+.armoryCart .armoryCartCompare:hover,
+.armoryCart .armoryCartCompare:focus-visible { background: rgba(var(--cart), 0.22); box-shadow: inset 0 0 0 1px rgba(var(--cart), 0.7); }
+.armoryBayWall .armoryCart .armoryCartBody,
+.armoryBayWall .armoryCart:not(.isActive) .armoryCartBody { gap: 0; align-items: stretch; grid-template-columns: 26px minmax(0, 1fr); }
+.armoryCart .armoryCartSpine { align-self: stretch; grid-template-rows: auto 1fr; gap: 8px; padding-top: 10px; }
+/* The lamp lives on the spine so the name gets the full strip. */
+.armoryCart .armoryCartStrip { grid-template-columns: minmax(0, 1fr); padding: 9px 10px 0; }
+.armoryCart .armoryCartLamp {
+    position: absolute;
+    left: 9px;
+    bottom: 11px;
+    width: 8px;
+    height: 8px;
+    overflow: hidden;
+    gap: 0;
+    font-size: 0;
+}
+.armoryCart .armoryCartLamp::before { flex: 0 0 8px; width: 8px; height: 8px; }
+.armoryCart .armoryCartWindow { margin: 6px 10px; min-height: 58px; }
+.armoryCart .armoryCartStats {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 12px;
+    min-height: 28px;
+    padding: 0 10px 9px;
+}
+.armoryCart .armoryCartStats span { display: grid; gap: 0; line-height: 1; }
+.armoryCart .armoryCartStats b { font-size: 15px; line-height: 1.05; }
+.armoryCart .armoryCartStats small { font-size: 8.5px; letter-spacing: 0.08em; }
+.armoryCart .armoryCartStats.isEmpty { display: flex; align-items: center; white-space: nowrap; font-size: 10.5px; }
+.armoryCart:not(.isActive) .armoryCartStats { padding-right: 78px; }
+.armoryCart .armoryCartCompare { right: 8px; bottom: 8px; padding: 0 11px; }
+.armoryBayWall .armoryBay.armoryCart:not(.isActive) .armoryBayMiniTarget { display: block; }
