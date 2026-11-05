@@ -521,6 +521,9 @@ export function useArmoryScreenController({
 
   const closeCompareBench = useCallback(() => {
     setIsCompareOpen(false)
+    // The compare tip explains the bench; once it closes, the tip would only
+    // cover the workshop controls, so it goes with it.
+    setActiveFirstTouchTipId((currentId) => (currentId === "compare" ? null : currentId))
   }, [])
 
   const openWalkthrough = useCallback((source = "manual") => {
