@@ -246,7 +246,7 @@ export function useArmoryRangeRound({
     )
     if (result.grantedPowerups.length > 0) {
       setChargesEarned((count) => count + result.grantedPowerups.length)
-      result.grantedPowerups.forEach((powerup) => addCenterFeedback(`${powerup.slotKey}+`, "positive"))
+      result.grantedPowerups.forEach((powerup) => addCenterFeedback(`Key ${powerup.slotKey} charged`, "positive chargeGain"))
     }
 
     setButtonSize((currentSize) => {

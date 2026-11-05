@@ -942,7 +942,7 @@ export function useGameScreenController({
       addCenterFeedback("Personal best", "milestone personalBest")
     }
     result.grantedPowerups.forEach((powerup) => {
-      addCenterFeedback(`${powerup.slotKey}+`, "positive")
+      addCenterFeedback(`Key ${powerup.slotKey} charged`, "positive chargeGain")
       emitFeedback?.(FEEDBACK_EVENTS.POWER_READY, {
         eventId: `${feedbackEventId}-power-${powerup.id}`,
       })
@@ -994,6 +994,10 @@ export function useGameScreenController({
 
     triggerScreenShake()
     emitFeedback?.(FEEDBACK_EVENTS.MISS, { eventId: feedbackEventId })
+    // A miss supersedes any streak celebration still on screen.
+    if (streak > 0) {
+      setClickFeedbackItems((currentItems) => currentItems.filter((item) => !String(item.type).includes("milestone")))
+    }
 
     if (result.penaltyApplied > 0) {
       addClickFeedback(
