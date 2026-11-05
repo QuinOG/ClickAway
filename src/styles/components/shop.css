@@ -1884,3 +1884,35 @@
 }
 
 .shopItemCard-locked .shopItemStateTag svg { opacity: 0.8; }
+
+/* s03: the category rail pins under the nav while the catalog scrolls.
+   overflow: clip keeps the card's decoration clipped without creating a
+   scroll container, so sticky positioning resolves to the page scroller. */
+.shopCard { overflow: clip; }
+
+.shopTabRailSentinel {
+    display: block;
+    height: 0;
+    scroll-margin-top: 22px;
+}
+
+.shopCard > .shopTabRail {
+    position: sticky;
+    /* .mainContent has 26px top padding; this pins the rail 6px under the nav. */
+    top: -20px;
+    z-index: 5;
+}
+
+.shopCard > .shopTabRail.isStuck {
+    padding: 6px;
+    background: #080d19;
+    border-color: rgba(158, 203, 255, 0.22);
+    box-shadow: 0 14px 30px rgba(1, 5, 12, 0.55);
+}
+
+.shopTabRail.isStuck .shopTab {
+    min-height: 44px;
+    padding: 6px 12px;
+}
+
+.shopTabRail.isStuck .shopTabOwned { display: none; }
