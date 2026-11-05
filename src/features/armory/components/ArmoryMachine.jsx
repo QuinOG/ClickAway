@@ -5,6 +5,7 @@ import {
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
+import { getExactMetric } from "../armoryExactMetrics.js"
 
 // The bench renders the target larger than in-round so it reads as the hero
 // object, while size differences between builds stay proportional and visible.
@@ -199,6 +200,14 @@ export default function ArmoryMachine({
                 })}
                 aria-hidden="true"
               >
+                {/* Live aim window: the target is drawn at this build's start
+                    size, and its centre states that size, the shrink pace
+                    and the floor it shrinks to. */}
+                <span className="armoryMachineAimReadout">
+                  <small>Aim window</small>
+                  <b>{presentation.roundRules.initialButtonSize}px</b>
+                  <em>{getExactMetric("Shrink Pace", presentation.roundRules).text} · floor {presentation.roundRules.minButtonSize}px</em>
+                </span>
               </span>
             </div>
 
