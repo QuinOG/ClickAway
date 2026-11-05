@@ -2073,3 +2073,43 @@
 
 .shopItemCard-affordable .shopItemHeader { min-height: 24px; align-items: center; }
 .shopItemCard-affordable .shopItemRarity { margin-left: 0; font-size: 11.5px; }
+
+/* s09: one display stage for every preview. Orbs, sprites, arena scenes and
+   portraits all sit under the same top spotlight on the same lit pedestal,
+   with a matching contact shadow, so mixed art styles read as one set. The
+   stage takes a faint wash of the card's rarity colour at every tier. */
+.shopItemCard .shopItemPreviewFrame,
+.shopItemCard.rarity-epic .shopItemPreviewFrame,
+.shopItemCard.rarity-legendary .shopItemPreviewFrame {
+    background:
+        radial-gradient(60% 75% at 50% -10%, color-mix(in srgb, var(--rarity, #8fd1ff) 16%, transparent), transparent 70%),
+        radial-gradient(70% 30% at 50% 100%, rgb(0 0 0 / 35%), transparent 70%),
+        linear-gradient(180deg, #111b30, #070c18);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 7%),
+        inset 0 0 0 1px color-mix(in srgb, var(--rarity, #8fd1ff) 14%, transparent);
+}
+
+.shopItemCard .shopItemPreviewFrame::after {
+    left: 50%;
+    right: auto;
+    bottom: 14px;
+    width: 62%;
+    height: 16px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 55%), rgb(0 0 0 / 0%));
+    box-shadow: 0 -1px 0 color-mix(in srgb, var(--rarity, #8fd1ff) 30%, transparent);
+    filter: none;
+    opacity: 1;
+    z-index: 0;
+}
+
+.shopItemCard .shopPreviewButtonStage,
+.shopItemCard .shopPreview,
+.shopItemCard .shopPreviewPortrait,
+.shopItemCard .shopArenaScene {
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 8px 10px rgb(0 0 0 / 45%));
+}
