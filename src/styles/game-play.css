@@ -1686,3 +1686,19 @@
     background: linear-gradient(180deg, rgb(120 210 255 / 22%), rgb(20 40 70 / 92%));
 }
 .powerupTray .powerupItem.timedActive:disabled .powerupLabel { color: #e9f8ff; }
+
+/* ---- r50: End Practice is never under the timer --------------------------
+ * Review fix: the button sat in the rail beneath the timer medallion, which
+ * covered most of it. It now has its own spot to the left of the score plate.
+ * ------------------------------------------------------------------------ */
+.gameHud { position: relative; }
+.gameHud .hudEndPractice {
+    position: absolute;
+    top: 50%;
+    right: calc(50% + 336px);
+    transform: translateY(-50%);
+    z-index: 5;
+    min-height: 44px;
+    padding-inline: 18px;
+    white-space: nowrap;
+}

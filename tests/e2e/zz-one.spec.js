@@ -38,6 +38,15 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await page.getByRole("button", { name: "Open feedback settings" }).click()
     await page.waitForTimeout(800)
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "practice") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(800)
+    await page.getByRole("button", { name: "Select Practice" }).click()
+    await page.getByRole("button", { name: /Start Practice/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 4, 120)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "armory") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
