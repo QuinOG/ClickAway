@@ -1920,3 +1920,22 @@
 }
 
 .shopTabRail.isStuck .shopTabOwned { display: none; }
+
+/* s05: card proportions. Larger previews in a taller stage, no reserved
+   second description line (rows still align because cards stretch and the
+   action is pinned to the bottom), and the wide Night Beam art is scaled
+   and tilted so it carries the same visual weight as its siblings. */
+.shopItemPreviewFrame { min-height: 136px; }
+
+.shopPreviewButtonStage,
+.shopPreview,
+.shopPreview.is-profile-image { width: 108px; height: 108px; }
+
+.shopPreviewPortrait svg { width: 108px; height: 108px; }
+.shopItemCard .shopArenaScene { max-width: 190px; }
+
+.shopItemInfo p { min-height: 0; }
+.shopItemCard { gap: 9px; }
+.shopItemFooter { padding-top: 4px; }
+
+.shopItemCard[data-shop-item-id="profile_flashlight"] .shopPreview { transform: rotate(-32deg); }

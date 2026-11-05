@@ -316,7 +316,7 @@ export const SHOP_CATEGORIES = [
         cost: 100,
         effectClass: "profile-image-flashlight",
         imageSrc: "/flashlight.png",
-        shopImageScale: 94,
+        shopImageScale: 132,
         description:
           "A tactical flashlight portrait casting a focused beam.",
       }),
