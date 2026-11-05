@@ -752,3 +752,72 @@
     width: 100%;
     margin: 2px 0 4px;
 }
+
+/* p04: medals become the hero of each tile. Larger (76px) with a bevelled
+   rim and rim light; unlocked medals glow in their tier colour. Locked
+   tiles are no longer washed out: they stay legible and their medals keep
+   a dimmed version of the tier metal, so later tiers stay distinguishable. */
+.profilePageCenter .achievementTile.isLocked {
+    filter: none;
+    opacity: 1;
+    border-style: solid;
+    background: linear-gradient(180deg, rgba(14, 21, 36, 0.96), rgba(9, 14, 25, 0.98));
+}
+
+.profilePageCenter .achievementTile.isLocked:hover { filter: brightness(1.05); }
+
+.profilePageCenter .achievementTile.isLocked .achievementTitle { color: rgb(226 236 248 / 82%); }
+.profilePageCenter .achievementTile.isLocked .achievementDescription { color: rgb(200 216 236 / 72%); }
+
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementTileHeaderMain {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: center;
+}
+
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementTileHeader { justify-content: center; }
+
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedal { width: 78px; height: 78px; }
+
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc {
+    width: 66px;
+    height: 66px;
+    border-width: 3px;
+}
+
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc svg.gameIcon { width: 42px; height: 42px; }
+
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalLock { width: 26px; height: 26px; right: 0; bottom: 0; }
+
+/* Bevel + rim light on every disc. */
+.achievementMedalDisc { position: relative; }
+
+.achievementMedalDisc::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1.5px solid rgb(255 255 255 / 35%);
+    border-bottom-color: rgb(0 0 0 / 25%);
+    pointer-events: none;
+}
+
+.achievementMedal.isUnlocked { box-shadow: 0 0 26px var(--medal-glow), 0 0 0 1px color-mix(in srgb, var(--medal-hi) 40%, transparent); }
+
+/* Locked and in-progress medals show their tier metal, dimmed. */
+.achievementMedal.isProgressing .achievementMedalDisc,
+.achievementMedal.isUntouched .achievementMedalDisc {
+    background:
+        radial-gradient(circle at 34% 28%, rgb(255 255 255 / 30%), transparent 42%),
+        linear-gradient(160deg, var(--medal-hi), var(--medal-lo));
+    filter: saturate(0.5) brightness(0.62);
+}
+
+.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon,
+.achievementMedal.isUntouched .achievementMedalDisc svg.gameIcon { filter: grayscale(0.4); opacity: 0.85; }
+
+.achievementMedal.isProgressing { background: conic-gradient(color-mix(in srgb, var(--medal-hi) 80%, transparent) var(--medal-progress, 0%), rgb(255 255 255 / 9%) 0); }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementDescription { text-align: center; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementStatusRow { justify-content: center; }
