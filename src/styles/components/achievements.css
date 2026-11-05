@@ -821,3 +821,38 @@
 .achievementMedal.isProgressing { background: conic-gradient(color-mix(in srgb, var(--medal-hi) 80%, transparent) var(--medal-progress, 0%), rgb(255 255 255 / 9%) 0); }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementDescription { text-align: center; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementStatusRow { justify-content: center; }
+
+/* p05: the category master banner is one compact row: medal and title,
+   the requirement, the state chip, then progress, with no inactive middle. */
+.profilePageCenter .achievementTile.isFeaturedBanner {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    padding: 10px 16px;
+    gap: 18px;
+}
+
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementFeaturedBannerContent {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementTileHeader { flex-shrink: 0; }
+
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementTitle { font-size: 17px; white-space: nowrap; }
+
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding-left: 16px;
+    border-left: 1px solid rgb(170 210 248 / 16%);
+}
+
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementStatusRow { flex-shrink: 0; margin: 0; }
+
+@media (max-width: 760px) {
+    .profilePageCenter .achievementTile.isFeaturedBanner { grid-template-columns: 1fr; }
+    .profilePageCenter .achievementTile.isFeaturedBanner .achievementFeaturedBannerContent { flex-wrap: wrap; }
+    .profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { border-left: 0; padding-left: 0; flex-basis: 100%; }
+}
