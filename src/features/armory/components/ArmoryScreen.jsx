@@ -364,8 +364,12 @@ export default function ArmoryScreen({
                   <p className="armoryReviewNote">No XP, no coins, no rank — nothing is saved.</p>
                 </div>
                 <div className="armoryRangeLauncherActions">
-                  <button type="button" className="primaryButton" onClick={rangeApi.open}>
-                    Start test run
+                  <button type="button" className="primaryButton armoryRangeLaunchButton" aria-label="Start test run" onClick={rangeApi.open}>
+                    <span className="armoryRangeLaunchRing" aria-hidden="true"><b>10</b><small>sec</small></span>
+                    <span className="armoryRangeLaunchCopy" aria-hidden="true">
+                      <strong>Start test run</strong>
+                      <small>{selectedMode.label} rules · nothing saved</small>
+                    </span>
                   </button>
                   <button
                     type="button"

@@ -172,12 +172,20 @@ export function ReviewModeButton({ mode, isActive = false, onClick }) {
   return (
     <button
       type="button"
-      className={`armoryModeButton ${isActive ? "isActive" : ""}`}
+      className={`armoryModeButton mode-${mode.id} ${isActive ? "isActive" : ""}`}
+      aria-pressed={isActive}
       onClick={onClick}
     >
+      <span
+        className="armoryModeButtonRing"
+        aria-hidden="true"
+        style={{ "--ring": `${mode.isTimedRound === false ? 100 : Math.min(100, (mode.durationSeconds / 30) * 100)}%` }}
+      >
+        {mode.isTimedRound === false ? "∞" : mode.durationSeconds}
+      </span>
       <span className="armoryModeButtonLabel">{mode.label}</span>
       <span className="armoryModeButtonMeta">
-        {mode.isTimedRound === false ? "No timer" : `${mode.durationSeconds}s`}
+        {mode.missPenalty > 0 ? `Miss −${mode.missPenalty}` : "Free misses"}
       </span>
     </button>
   )

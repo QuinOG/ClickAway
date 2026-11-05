@@ -1328,3 +1328,99 @@
     font-variant-numeric: tabular-nums;
 }
 .armoryInstrumentPreviewDelta { top: -9px; right: 10px; box-shadow: 0 0 0 2px #0b1322; }
+
+/* ---- r37: Test Run launch pad --------------------------------------------
+ * Council fix: mode rows become three side-by-side mode tiles with a timer
+ * ring, and "Start test run" becomes a full-width glowing launch button with
+ * a 10-second ring; the readiness checklist sits directly beneath it.
+ * ------------------------------------------------------------------------ */
+.armoryRangeLauncher .armoryReviewModeRow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+.armoryRangeLauncher .armoryModeButton {
+    --mode: #7fc8ff;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+    width: auto;
+    min-height: 72px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    text-align: left;
+}
+.armoryRangeLauncher .armoryModeButton.mode-easy { --mode: #5ef2b8; }
+.armoryRangeLauncher .armoryModeButton.mode-hard { --mode: #ffd166; }
+.armoryRangeLauncher .armoryModeButton.isActive {
+    box-shadow: inset 0 0 0 2px var(--mode), 0 0 18px color-mix(in srgb, var(--mode) 28%, transparent);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--mode) 16%, #111a2b), #0d1524);
+}
+.armoryModeButtonRing {
+    grid-row: 1 / 3;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    color: #f3f8ff;
+    font-family: var(--ca-font-display);
+    font-size: 16px;
+    background:
+        radial-gradient(circle, #0b1322 60%, transparent 62%),
+        conic-gradient(var(--mode) var(--ring), rgb(255 255 255 / 10%) 0);
+}
+.armoryRangeLauncher .armoryModeButton:not(.isActive) .armoryModeButtonRing { opacity: 0.7; }
+.armoryRangeLauncher .armoryModeButtonLabel { font-family: var(--ca-font-display); font-size: 17px; color: #fff; }
+.armoryRangeLauncher .armoryModeButton.isActive .armoryModeButtonLabel { color: var(--mode); }
+.armoryRangeLauncher .armoryModeButtonMeta { font-size: 11px; color: rgb(185 208 236 / 65%); white-space: nowrap; }
+
+.armoryRangeLauncher .armoryRangeLauncherHero { display: grid; gap: 14px; }
+.armoryRangeLauncher .armoryRangeLauncherCopy { max-width: none; }
+.armoryRangeLauncher .armoryRangeLauncherActions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 10px;
+}
+.armoryRangeLaunchButton.primaryButton {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    min-height: 78px;
+    padding: 12px 22px 12px 14px;
+    border-radius: 16px;
+    text-align: left;
+    box-shadow: 0 0 0 2px rgb(255 255 255 / 25%) inset, 0 0 28px rgb(70 190 255 / 45%), 0 6px 0 #0b5d8f;
+    animation: launchGlow 2.4s ease-in-out infinite;
+}
+.armoryRangeLaunchRing {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    flex: none;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #0a3a5c 58%, transparent 60%),
+        conic-gradient(#ffffff 0 100%);
+    color: #fff;
+}
+.armoryRangeLaunchRing b { font-family: var(--ca-font-display); font-size: 20px; font-weight: 400; line-height: 1; }
+.armoryRangeLaunchRing small { font-size: 8.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+.armoryRangeLaunchCopy { display: grid; gap: 2px; }
+.armoryRangeLaunchCopy strong { font-family: var(--ca-font-display); font-size: 24px; font-weight: 400; line-height: 1.05; }
+.armoryRangeLaunchCopy small { font-size: 12px; font-weight: 700; opacity: 0.75; }
+.armoryRangeLauncherActions .secondaryButton { align-self: center; }
+@keyframes launchGlow { 50% { box-shadow: 0 0 0 2px rgb(255 255 255 / 25%) inset, 0 0 40px rgb(70 190 255 / 70%), 0 6px 0 #0b5d8f; } }
+@media (prefers-reduced-motion: reduce) { .armoryRangeLaunchButton.primaryButton { animation: none; } }
+.armoryRangeLaunchButton.primaryButton { width: 100%; justify-self: stretch; }
+.armoryRangeLauncher .armoryModeButton { grid-template-columns: 40px minmax(0, 1fr); column-gap: 10px; padding-inline: 12px; }
+.armoryModeButtonRing { width: 40px; height: 40px; font-size: 14px; }
+.armoryRangeLauncher .armoryModeButtonMeta { font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; }
+.armoryRangeLauncher .armoryRangeLauncherHero { grid-template-columns: minmax(0, 1fr); justify-content: stretch; }
