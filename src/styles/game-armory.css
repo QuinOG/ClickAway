@@ -1965,3 +1965,50 @@
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem,
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem { grid-column: 1 / -1; grid-row: 3; justify-self: start; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem br { display: none; }
+
+/* ---- r63 (council c2): docked bays are slim rows ---------------------------
+ * Three equal-height bay cards repeated the same icon cluster and 01/02/03
+ * numerals, so the active build had no more presence than the docked ones.
+ * Docked bays collapse to one row (name, identity, three part pips, a
+ * compact Compare pill); the active bay keeps its full card and the rail
+ * stops stretching every card to the same height.
+ * ------------------------------------------------------------------------ */
+.armoryBayWall { grid-auto-rows: auto; align-content: start; gap: 8px; }
+.armoryBayWall .armoryBay:not(.isActive) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0;
+}
+.armoryBayWall .armoryBay:not(.isActive) .armoryBaySelect {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 9px 4px 9px 14px;
+}
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayHeader,
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayNumber,
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMiniTarget { display: none; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayNameplate { order: -1; padding-right: 0; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayName { font-size: 15px; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayIdentity { font-size: 10px; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMini { min-height: 0; padding: 0; background: none; box-shadow: none; opacity: 0.9; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMiniModules { gap: 4px; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMiniModule { width: 22px; height: 22px; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMiniModule svg,
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMiniModule .gameIcon { width: 16px; height: 16px; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayFooter { display: block; padding: 0 10px 0 0; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayFooter > .armoryBayAction {
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 11px;
+}
+.armoryBayWall .armoryBay:not(.isActive) { position: relative; grid-template-columns: minmax(0, 1fr); }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBaySelect { padding: 10px 12px 10px 14px; gap: 6px; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayNameplate { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayName { white-space: nowrap; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMini,
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayMiniModules { border: 0; background: none; box-shadow: none; padding: 0; min-height: 0; justify-content: flex-start; }
+.armoryBayWall .armoryBay:not(.isActive) .armoryBayFooter { position: absolute; right: 10px; bottom: 9px; padding: 0; }
+.armoryBayWall .armoryBay:not(.isActive),
+.armoryBayWall .armoryBay:not(.isActive) .armoryBaySelect { min-height: 0; height: auto; }

@@ -83,9 +83,11 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNum
           <button
             type="button"
             className="armoryBayAction"
+            aria-label="Compare with active"
+            title="Compare with active build"
             onClick={() => bayApi.openBayCompare(loadout.id)}
           >
-            Compare with active
+            Compare
           </button>
         </div>
       )}
