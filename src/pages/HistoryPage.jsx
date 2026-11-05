@@ -203,7 +203,14 @@ function getModeTone(round) {
   return label === "ranked" ? "ranked" : label === "practice" ? "practice" : "casual"
 }
 
+// Practice never pays coins or XP, so its record says so instead of showing
+// reward numbers that contradict the rules.
+function isPracticeRound(round) {
+  return round.progressionMode === "practice" || (!round.progressionMode && round.modeId === "easy")
+}
+
 function HistoryRoundCard({ round, markers = [] }) {
+  const isPractice = isPracticeRound(round)
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
       <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
@@ -219,14 +226,19 @@ function HistoryRoundCard({ round, markers = [] }) {
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
-          <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
-          <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
+          {isPractice ? (
+            <span className="historyNoStakes">No stakes</span>
+          ) : (
+            <>
+              <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
+              <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
+            </>
+          )}
         </div>
       </div>
       <div className="historyRoundCardOutcome">
         <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span>
         {markers.map((marker) => <small key={marker}>{marker}</small>)}
-        <ArrowRight weight="bold" aria-hidden="true" />
       </div>
     </article>
   )
@@ -482,8 +494,8 @@ export default function HistoryPage({
                           <td className="historyNumericCell historyAccuracyCell">
                             {formatPercent(round.accuracyPercent)}
                           </td>
-                          <td className="historyNumericCell">{formatNumber(round.coinsEarned)}</td>
-                          <td className="historyNumericCell">{formatNumber(round.xpEarned ?? 0)}</td>
+                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.coinsEarned)}</td>
+                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.xpEarned ?? 0)}</td>
                           <td className="historyNumericCell">
                             <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>
                               {getRankResultText(round)}
