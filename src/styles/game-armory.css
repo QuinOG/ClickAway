@@ -1815,3 +1815,46 @@
 /* Header sits at the top now, so the options panel drops down, right-aligned. */
 .armoryMachineHeader .armoryMachineOptionsPanel { top: calc(100% + 7px); bottom: auto; left: auto; right: 0; transform: none; }
 .armoryMachineHeader:has(.isConfirming) .armoryMachineNameHint { display: none; }
+
+/* ---- r60 (council): Test Run is one launch panel --------------------------
+ * The readiness checklist sat in its own boxed row under the launch panel,
+ * restating what the button already implied, and "Build details" duplicated
+ * the header's Spec Sheet. The launch button now spans the panel at full
+ * size and readiness is its status line directly beneath.
+ * ------------------------------------------------------------------------ */
+.armoryRangeLauncher .armoryRangeLauncherHero { gap: 16px; padding: 22px 22px 18px; }
+.armoryRangeLauncher .armoryRangeLaunchButton.primaryButton { min-height: 96px; padding: 14px 26px 14px 16px; gap: 20px; }
+.armoryRangeLauncher .armoryRangeLaunchRing { width: 66px; height: 66px; }
+.armoryRangeLauncher .armoryRangeLaunchRing b { font-size: 25px; }
+.armoryRangeLauncher .armoryRangeLaunchCopy strong { font-size: 30px; }
+.armoryRangeLauncher .armoryRangeLaunchCopy small { font-size: 13px; }
+.armoryRangeLauncher .armoryRangeReadiness {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+}
+.armoryRangeLauncher .armoryRangeReadinessChecks { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.armoryRangeLauncher .armoryRangeReadinessChecks span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: 0;
+    border: 0;
+    color: rgb(185 208 236 / 70%);
+    font-size: 12px;
+}
+.armoryRangeLauncher .armoryRangeReadinessChecks span::before {
+    content: "✓";
+    align-self: center;
+    color: #4fe3a6;
+    font-size: 12px;
+    font-weight: 800;
+}
+.armoryRangeLauncher .armoryRangeReadinessChecks strong { font-size: 12.5px; }
+.armoryRangeLauncher .armoryRangeReadiness { flex-wrap: nowrap; }
+.armoryRangeLauncher .armoryRangeReadiness > .armoryStateEmblem { gap: 0; font-size: 0; letter-spacing: 0; }

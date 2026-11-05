@@ -352,34 +352,21 @@ export default function ArmoryScreen({
                   </p>
                   <p className="armoryReviewNote">No XP, no coins, no rank — nothing is saved.</p>
                 </div>
-                <div className="armoryRangeLauncherActions">
-                  <button type="button" className="primaryButton armoryRangeLaunchButton" aria-label="Start test run" onClick={rangeApi.open}>
-                    <span className="armoryRangeLaunchRing" aria-hidden="true"><b>10</b><small>sec</small></span>
-                    <span className="armoryRangeLaunchCopy" aria-hidden="true">
-                      <strong>Start test run</strong>
-                      <small>{selectedMode.label} rules · nothing saved</small>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="secondaryButton"
-                    onClick={specSheetApi.open}
-                  >
-                    Build details
-                  </button>
-                </div>
-              </section>
-              <section className="armoryRangeReadiness" aria-label={`${activeLoadout.name} test run readiness`}>
-                <ArmoryStateEmblem state="ready" label="Ready to test" />
-                <div className="armoryRangeReadinessTrack" aria-hidden="true">
-                  <span className="isReady" />
-                  <span className="isReady" />
-                  <span className="isReady" />
-                </div>
-                <div className="armoryRangeReadinessChecks">
-                  <span><strong>3/3</strong> mods equipped</span>
-                  <span><strong>3/3</strong> powerups equipped</span>
-                  <span><strong>{selectedMode.label}</strong> rules loaded</span>
+                <button type="button" className="primaryButton armoryRangeLaunchButton" aria-label="Start test run" onClick={rangeApi.open}>
+                  <span className="armoryRangeLaunchRing" aria-hidden="true"><b>10</b><small>sec</small></span>
+                  <span className="armoryRangeLaunchCopy" aria-hidden="true">
+                    <strong>Start test run</strong>
+                    <small>{selectedMode.label} rules · nothing saved</small>
+                  </span>
+                </button>
+                {/* Readiness is the launch button's status line, not a separate panel. */}
+                <div className="armoryRangeReadiness" role="group" aria-label={`${activeLoadout.name} test run readiness`}>
+                  <ArmoryStateEmblem state="ready" label="Ready to test" />
+                  <div className="armoryRangeReadinessChecks">
+                    <span><strong>3/3</strong> mods equipped</span>
+                    <span><strong>3/3</strong> powerups equipped</span>
+                    <span><strong>{selectedMode.label}</strong> rules loaded</span>
+                  </div>
                 </div>
               </section>
             </div>
