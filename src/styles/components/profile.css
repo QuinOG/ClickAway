@@ -810,3 +810,58 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 .profilePageCenter .profileFormAverage { color: rgb(226 238 252 / 92%); }
 .profilePageCenter .profileFormAverage span { color: rgb(206 224 244 / 86%); }
 .profilePageCenter .profileInstrumentDetail { color: rgb(214 230 248 / 84%); }
+
+/* p08: a player identity hero. The header becomes a spotlit nameplate: a
+   larger portrait in a rank-metal frame with a halo, a bigger name, the
+   title as a rank-coloured plate, and a quieter stripe so the band reads as
+   lit metal rather than pattern. Desktop and tablet only; mobile keeps its
+   compact header. */
+@media (min-width: 761px) {
+    .profilePageCenter .profileCommandHeader {
+        padding-block: 26px;
+        background:
+            radial-gradient(ellipse 34% 150% at 8% 50%, rgba(var(--rank-accent-rgb), 0.42), transparent 72%),
+            radial-gradient(ellipse 60% 120% at 100% 0%, rgb(120 170 255 / 10%), transparent 70%),
+            repeating-linear-gradient(135deg, rgb(255 255 255 / 1.4%) 0 12px, transparent 12px 24px),
+            linear-gradient(90deg, #1d2f4c, #111c30);
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 8%),
+            inset 0 -2px 0 var(--skin-ink),
+            inset 0 -4px 0 rgba(var(--rank-accent-rgb), 0.55);
+    }
+
+    .profilePageCenter .profileIdentityRow { gap: 22px; }
+
+    .profilePageCenter .profileAvatar {
+        width: 108px;
+        height: 108px;
+        border-radius: 24px;
+        box-shadow:
+            0 0 0 3px var(--skin-ink),
+            0 0 0 7px rgba(var(--rank-accent-rgb), 0.95),
+            0 0 0 9px var(--skin-ink),
+            0 0 34px 8px rgba(var(--rank-accent-rgb), 0.35),
+            0 8px 0 6px #0a1220;
+    }
+
+    .profilePageCenter .profileAvatar .playerPortrait { border-radius: 20px; }
+
+    .profilePageCenter .profilePlayerName {
+        font-size: clamp(38px, 3.6vw, 50px);
+        line-height: 1.02;
+    }
+
+    .profilePageCenter .profilePlayerTitle {
+        justify-self: start;
+        margin: 4px 0 2px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: linear-gradient(180deg, rgba(var(--rank-accent-rgb), 0.3), rgba(var(--rank-accent-rgb), 0.14));
+        box-shadow: inset 0 0 0 1px rgba(var(--rank-accent-rgb), 0.55), 0 2px 0 var(--skin-ink);
+        color: #fff3d6;
+        font-size: 12.5px;
+        letter-spacing: 0.1em;
+    }
+
+    .profilePageCenter .profileLead { font-size: 14px; color: rgb(222 234 248 / 88%); }
+}
