@@ -2002,3 +2002,54 @@
     align-items: center;
     justify-content: center;
 }
+
+/* s07: rarity frames. Every tier owns its card edge, so Rare no longer reads
+   like Core: Common and Core stay neutral, Rare takes a blue rim, Epic a
+   violet rim with a soft underglow, and Legendary an amber rim, a warm
+   surface and a diagonal foil sheen. */
+.shopItemCard[class*="rarity-"] {
+    border-color: color-mix(in srgb, var(--rarity) 22%, rgba(255, 255, 255, 0.08));
+}
+
+.shopItemCard.rarity-rare {
+    border-color: color-mix(in srgb, var(--rarity) 42%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--rarity) 30%, transparent), 0 10px 22px rgba(7, 15, 30, 0.2);
+}
+
+.shopItemCard.rarity-epic {
+    border-color: color-mix(in srgb, var(--rarity) 58%, transparent);
+    background:
+        linear-gradient(0deg, color-mix(in srgb, var(--rarity) 10%, transparent), transparent 55%),
+        linear-gradient(180deg, rgba(16, 25, 43, 0.96), rgba(9, 14, 26, 0.98));
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--rarity) 40%, transparent),
+        0 0 18px color-mix(in srgb, var(--rarity) 14%, transparent),
+        0 10px 22px rgba(7, 15, 30, 0.2);
+}
+
+.shopItemCard.rarity-legendary {
+    border-color: color-mix(in srgb, var(--rarity) 72%, transparent);
+    background:
+        linear-gradient(0deg, color-mix(in srgb, var(--rarity) 12%, transparent), transparent 60%),
+        linear-gradient(180deg, rgba(26, 24, 34, 0.97), rgba(12, 12, 22, 0.98));
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--rarity) 55%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--rarity) 18%, transparent),
+        0 0 22px color-mix(in srgb, var(--rarity) 18%, transparent),
+        0 10px 22px rgba(7, 15, 30, 0.2);
+}
+
+.shopItemCard.rarity-legendary::before {
+    background:
+        linear-gradient(115deg, transparent 30%, color-mix(in srgb, var(--rarity) 12%, transparent) 42%, rgba(255, 244, 214, 0.1) 47%, transparent 56%),
+        radial-gradient(circle at 100% 0%, var(--shop-item-glow), rgba(255, 255, 255, 0) 42%);
+}
+
+.shopItemCard.rarity-epic::after,
+.shopItemCard.rarity-legendary::after { width: 70%; height: 3px; }
+
+.shopItemCard.rarity-rare:hover,
+.shopItemCard.rarity-epic:hover,
+.shopItemCard.rarity-legendary:hover { border-color: var(--rarity); }
+
+.shopItemCard.rarity-legendary .shopItemRarity { text-shadow: 0 0 10px color-mix(in srgb, var(--rarity) 55%, transparent); }
