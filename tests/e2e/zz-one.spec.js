@@ -67,6 +67,20 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
       await page.waitForTimeout(2600)
     }
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "install") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("armory"))
+    await page.waitForTimeout(1000)
+    await page.locator(".armoryMachineHousing", { hasText: "Streak Lens" }).first().click({ timeout: 5000 })
+    await page.waitForTimeout(400)
+    await page.locator(".armoryPartCard", { hasText: "Stabilizer" }).first().hover()
+    await page.waitForTimeout(400)
+    await page.locator(".armoryPartCard", { hasText: "Rapid Fire" }).first().hover()
+    await page.waitForTimeout(40)
+    await page.locator(".armoryPartFeatureInstall").click()
+    await page.waitForTimeout(600)
+    console.log("installed:", await page.locator(".armoryMachineHousing", { hasText: "Streak Lens" }).first().textContent())
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "preview") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
