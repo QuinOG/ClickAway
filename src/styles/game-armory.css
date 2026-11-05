@@ -1653,3 +1653,105 @@
 }
 .armoryMachine .armoryMachineRackSlot:focus-visible { outline: 3px solid #8eeeff; outline-offset: 4px; }
 .armoryPartFeature:has(.armoryChargeRhythm) .armoryPartFeatureFeel { -webkit-line-clamp: 3; display: block; overflow: visible; }
+
+/* ---- r58 (council): the workspace is one workbench ------------------------
+ * Both reviewers flagged the right column as four equally weighted boxes
+ * (five tall gauge cards, featured card, an "Installed" bar, the picker).
+ * The gauges become a shallow readout strip that caps the step panel as its
+ * header, so the two read as one framed bench; the installed part stops
+ * being a full-width bar and takes its place as the first tile in the picker.
+ * ------------------------------------------------------------------------ */
+.armoryWorkspace { row-gap: 0; align-content: start; }
+.armoryWorkspace > .armoryInstruments {
+    position: relative;
+    z-index: 2;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    padding: 8px 4px;
+    border-radius: 16px 16px 0 0;
+    background: linear-gradient(180deg, rgb(28 44 69 / 96%), rgb(17 28 46 / 96%));
+    box-shadow: var(--skin-frame-soft), inset 0 -1px 0 rgb(255 255 255 / 8%);
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.hasGauge {
+    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-areas:
+        "label label"
+        "value value"
+        "gauge exact";
+    justify-items: start;
+    align-content: center;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 1px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: none;
+    box-shadow: none;
+    text-align: left;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument + .armoryInstrument::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 0;
+    width: 1px;
+    background: rgb(255 255 255 / 9%);
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument { position: relative; }
+.armoryWorkspace > .armoryInstruments .armoryInstrumentGauge { grid-area: gauge; width: 30px; height: 18px; margin: 0; }
+.armoryWorkspace > .armoryInstruments .armoryInstrumentLabel { grid-area: label; justify-self: stretch; font-size: 10px; line-height: 1.2; letter-spacing: 0.04em; }
+.armoryWorkspace > .armoryInstruments .armoryInstrumentReadout { grid-area: value; justify-content: start; }
+.armoryWorkspace > .armoryInstruments .armoryInstrumentValue { font-size: 15px; line-height: 1.15; }
+.armoryWorkspace > .armoryInstruments .armoryInstrumentReadout { margin-block: 1px 2px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrumentExact { grid-area: exact; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.hasGauge .armoryInstrumentExact span {
+    padding: 0;
+    background: none;
+    font-size: 9px;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrumentPreviewDelta { top: -6px; right: 4px; }
+.armoryWorkspace > .armoryStepStack > .armoryStepCard { border-radius: 0 0 16px 16px; }
+
+/* The installed part is the first tile of the picker, not a separate bar. */
+.armoryPartsGallery .armoryPartsShelf { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled {
+    position: relative;
+    order: -1;
+    grid-column: auto;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-items: start;
+    gap: 4px;
+    padding: 9px 6px 8px;
+    text-align: center;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartGlyph { width: 36px; height: 36px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem {
+    position: static;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgb(83 215 179 / 16%);
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem .armoryStateEmblemIcon { display: none; }
+
+/* The room the gauges gave back goes to the picker: every tile names its
+   part in full and says what it does in a line or two. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard { align-content: start; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartLabel { display: block; font-size: 13.5px; line-height: 1.15; white-space: normal; overflow: visible; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartFeel {
+    display: -webkit-box;
+    margin-top: 4px;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: rgb(214 228 246 / 68%);
+    font-size: 11px;
+    line-height: 1.3;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartFeel { display: -webkit-box; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem { white-space: normal; line-height: 1.15; }

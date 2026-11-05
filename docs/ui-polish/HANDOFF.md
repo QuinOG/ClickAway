@@ -85,3 +85,6 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r55 (review R2): History's trend compares one mode at a time — the legend becomes Practice / Casual / Ranked toggle chips, defaulting to the latest round's mode, with the title and axis naming the mode ('Ranked trajectory', '3 ranked rounds ago').
 - r56 (review R2): Ladder standing states its scope once ('Ranked rounds only · this season'), labels never clip (Games, Reward), and the season reward tile reads 'None yet' instead of an 'Unranked' that contradicted the Gold II badge.
 - r57 (review R2): short-screen Settings — the pinned footer is a solid bar with a top divider and the form ends with clearance; at 1024x650 the last control (bottom 433px) scrolls fully clear of the footer (top 526px).
+
+## Armory Layout Improvements (council: GPT 6.1 Sol + Sonnet 5.5, medium)
+- r58 (council 7.3 / 7.0): the right column is one workbench — the five tall gauge cards (~185px) become a ~70px readout strip capping the step panel (label, exact value, mini dial + plain read; hover-preview glow and step badges kept), the installed part stops being a full-width bar and becomes the first picker tile, and picker tiles show full names plus a short description. Powerups grid no longer clips at 1440x900. Shots: docs/ui-polish/r58/{armory,mods,powers,testrun}-{before,after}.png.
