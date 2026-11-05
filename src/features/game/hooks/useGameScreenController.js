@@ -853,16 +853,25 @@ export function useGameScreenController({
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
+    // Timed effects (freeze, center hold, size lock) stay "active" for their
+    // real duration so the tray and the target can show it.
+    const activeDurationMs = {
+      freeze_movement: FREEZE_MOVEMENT_DURATION_MS,
+      magnet_center: MAGNET_CENTER_FREEZE_MS,
+      size_lock: SIZE_LOCK_DURATION_MS,
+    }[powerup.effectType] ?? 0
     setActivatedPowerup({
       id: powerup.id,
       label: powerup.label,
+      effectType: powerup.effectType,
+      durationMs: activeDurationMs,
       sequence: eventTimeMs,
     })
     if (activationCueTimeoutRef.current) window.clearTimeout(activationCueTimeoutRef.current)
     activationCueTimeoutRef.current = window.setTimeout(() => {
       setActivatedPowerup(null)
       activationCueTimeoutRef.current = null
-    }, 1100)
+    }, Math.max(1100, activeDurationMs))
     applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
 
@@ -1455,6 +1464,7 @@ export function useGameScreenController({
       targetSpawnSequence,
       isTargetVisible: phase === ROUND_PHASE.PLAYING,
       finalSeconds: isPlaying && isTimedRound && timeLeft > 0 && timeLeft <= 5 ? timeLeft : null,
+      activeEffect: activatedPowerup?.durationMs > 0 ? activatedPowerup.effectType : null,
     },
     powerupTrayProps: {
       powerupSlots,

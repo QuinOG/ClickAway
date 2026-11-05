@@ -67,6 +67,16 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
       await page.waitForTimeout(2600)
     }
     await page.screenshot({ path: SHOT })
+  } else if (SCENE === "poweractive") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("play"))
+    await page.waitForTimeout(900)
+    await page.getByRole("button", { name: /Start Casual/i }).click()
+    await page.waitForTimeout(3800)
+    await hitTargets(page, 13, 110)
+    await page.keyboard.press("3")
+    await page.waitForTimeout(350)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "install") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))

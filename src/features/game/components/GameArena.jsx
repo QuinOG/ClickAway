@@ -19,11 +19,12 @@ export default function GameArena({
   isTargetVisible = true,
   roundOverlay = null,
   finalSeconds = null,
+  activeEffect = null,
 }) {
   const isFinalSeconds = finalSeconds !== null
   return (
     <div
-      className={`arena ${arenaThemeClass} ${isFinalSeconds ? `isFinalSeconds${finalSeconds <= 3 ? " isFinalDanger" : ""}` : ""}`}
+      className={`arena ${arenaThemeClass} ${isFinalSeconds ? `isFinalSeconds${finalSeconds <= 3 ? " isFinalDanger" : ""}` : ""} ${activeEffect ? `hasActiveEffect effect-${activeEffect}` : ""}`}
       ref={arenaRef}
       onClick={onArenaClick}
     >
