@@ -66,6 +66,17 @@ import {
 import { getWarmupSuggestion } from "../../../utils/trainingRecommendations.js"
 import { buildWorkshopNote, selectLoadoutStatsEntry } from "../../../utils/armoryFieldDataUtils.js"
 
+// The bottom strip of the arena is reserved for the powerup tray's ready
+// callouts, so targets never spawn (even partly) behind them. Spawning,
+// centring and the dimensions reported for server replay all use this same
+// playfield so the seeded simulation stays in step.
+const PLAYFIELD_BOTTOM_RESERVE_PX = 52
+
+function getPlayfieldRect(arenaElement) {
+  const arenaRect = arenaElement.getBoundingClientRect()
+  return { width: arenaRect.width, height: Math.max(0, arenaRect.height - PLAYFIELD_BOTTOM_RESERVE_PX) }
+}
+
 function getArenaClickCoordinates(event, arenaElement) {
   if (!arenaElement) return null
 
@@ -425,16 +436,14 @@ export function useGameScreenController({
     const arenaElement = arenaRef.current
     if (!arenaElement) return
 
-    const arenaRect = arenaElement.getBoundingClientRect()
-    setButtonPosition(getCenteredPosition(arenaRect, nextButtonSize))
+    setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
   const randomizeButtonPosition = useCallback((nextButtonSize) => {
     const arenaElement = arenaRef.current
     if (!arenaElement) return
 
-    const arenaRect = arenaElement.getBoundingClientRect()
-    setButtonPosition(getRandomPosition(arenaRect, nextButtonSize, rngRef.current))
+    setButtonPosition(getRandomPosition(getPlayfieldRect(arenaElement), nextButtonSize, rngRef.current))
     markButtonSpawned()
     setTargetSpawnSequence((currentSequence) => currentSequence + 1)
   }, [markButtonSpawned])
@@ -1032,10 +1041,10 @@ export function useGameScreenController({
 
       const arenaElement = arenaRef.current
       if (arenaElement) {
-        const arenaRect = arenaElement.getBoundingClientRect()
+        const playfieldRect = getPlayfieldRect(arenaElement)
         arenaDimensionsRef.current = {
-          arenaWidth: Math.round(arenaRect.width),
-          arenaHeight: Math.round(arenaRect.height),
+          arenaWidth: Math.round(playfieldRect.width),
+          arenaHeight: Math.round(playfieldRect.height),
         }
       }
 
