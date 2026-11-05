@@ -148,6 +148,18 @@ export default function ArmoryMachine({
       {/* Keyed by bay so switching bays rolls a fresh machine onto the stage
           (reduced motion crossfades instead — see armory.css). */}
       <div className="armoryMachine" key={loadout.id} ref={machineRef}>
+        {/* One build header: the name (click to rename), its identity and the
+            build tools sit together above the machine. */}
+        <header className="armoryMachineHeader">
+          <MachineNameplate
+            loadout={loadout}
+            presentation={presentation}
+            nameplateRef={nameplateRef}
+            machineApi={machineApi}
+          />
+          <MachineWorkshopActions machineApi={machineApi} />
+        </header>
+
         <div className="armoryMachineCore">
           <div className="armoryMachineAssembly">
             <div className="armoryMachineCoreStage">
@@ -236,14 +248,6 @@ export default function ArmoryMachine({
           ))}
         </div>
 
-        <MachineNameplate
-          loadout={loadout}
-          presentation={presentation}
-          nameplateRef={nameplateRef}
-          machineApi={machineApi}
-        />
-
-        <MachineWorkshopActions machineApi={machineApi} />
       </div>
     </section>
   )

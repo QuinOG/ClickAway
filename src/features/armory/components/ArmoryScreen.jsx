@@ -14,7 +14,6 @@ import {
   getPowerupOptionPresentation,
 } from "../../../constants/buildcraftPresentation.js"
 import {
-  BuildIdentityGlyph,
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
@@ -140,20 +139,6 @@ export default function ArmoryScreen({
       </aside>
 
       <header className="armoryCommandBar">
-        <div className="armoryCommandIdentity">
-          <span className="armoryCommandIdentityGlyph" aria-hidden="true">
-            <BuildIdentityGlyph
-              identity={activePresentation.identity.label}
-              className="armoryRailIdentityGlyphIcon"
-            />
-          </span>
-          <div className="armoryRailIdentityCopy">
-            <span className="armoryRailLabel">Active build</span>
-            <strong className="armoryCommandName">{activeLoadout.name}</strong>
-            <span className="armoryRailHint">Changes save instantly to this bay.</span>
-          </div>
-        </div>
-
         <nav className="armoryWorkflow" aria-label="Armory steps" aria-describedby="armory-workflow-help">
           <span className="armoryWorkflowLabel">Build setup</span>
           <span id="armory-workflow-help" className="armoryVisuallyHidden">
