@@ -41,6 +41,15 @@ function StateIcon({ state }) {
   return <LockKey weight="fill" aria-hidden="true" />
 }
 
+/* Rarity follows price so the catalog reads as a progression. */
+function getRarity(item) {
+  if (item.builtIn || !item.cost) return { id: "core", label: "Core" }
+  if (item.cost <= 300) return { id: "common", label: "Common" }
+  if (item.cost <= 800) return { id: "rare", label: "Rare" }
+  if (item.cost <= 1200) return { id: "epic", label: "Epic" }
+  return { id: "legendary", label: "Legendary" }
+}
+
 function getTypeClass(type) {
   return String(type ?? "cosmetic").replace(/_/g, "-")
 }
@@ -114,7 +123,8 @@ export default function ShopItemCard({
     hasImage ? "hasImage" : item.effectClass
   }`
   const previewFrameClassName = `shopItemPreviewFrame is-${itemTypeClass}`
-  const cardClassName = `shopItemCard shopItemCard-${visualState}${isSelected ? " shopItemCard-selected" : ""}`
+  const rarity = getRarity(item)
+  const cardClassName = `shopItemCard shopItemCard-${visualState} rarity-${rarity.id}${isSelected ? " shopItemCard-selected" : ""}`
   const actionButtonClassName = `primaryButton shopActionButton ${
     isEquipped ? "isEquipped" : isOwned ? "isEquip" : canAfford ? "isBuy" : "isLocked"
   }`
@@ -136,17 +146,19 @@ export default function ShopItemCard({
       data-shop-state={visualState}
       data-selected={isSelected ? "true" : "false"}
       data-shop-item-id={item.id}
+      data-rarity={rarity.id}
     >
       <div className="shopItemHeader">
         <span className={`shopItemStateTag is-${visualState}`}>
           <StateIcon state={visualState} />
-          {visualState === "affordable" || visualState === "locked" ? (
+          {visualState === "locked" ? (
             <>
               <span className="uiVisuallyHidden">{stateLabel}: </span>
               {formatCoins(item.cost)} coins
             </>
           ) : stateLabel}
         </span>
+        <span className="shopItemRarity">{rarity.label}</span>
       </div>
 
       <div className="shopItemShowcase">
@@ -200,6 +212,12 @@ export default function ShopItemCard({
           disabled={isActionDisabled || isSubmitting}
         >
           {actionLabelDisplay}
+          {!isOwned && canAfford && !isActionBusy ? (
+            <span className="shopActionPrice">
+              <Coins weight="fill" aria-hidden="true" />
+              {formatCoins(item.cost)}
+            </span>
+          ) : null}
         </button>
       </div>
     </article>
