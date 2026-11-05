@@ -2099,3 +2099,41 @@
     font-weight: 700;
     white-space: nowrap;
 }
+
+/* ---- r66 (council c3): the inspector is one surface that fills its column -
+ * Step card > lane panel > featured card > swap-impact box stacked four
+ * frames, and the panel stopped short of the column, leaving 150-280px of
+ * dead space on Mods and Test Run. The inner frames flatten into the step
+ * surface (featured part separated by a divider, not a card), the panel runs
+ * to the bottom of the column, and Test Run centres its launch group in it.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 1101px) {
+    .armoryWorkspace { grid-template-rows: auto minmax(0, 1fr); align-content: stretch; }
+    .armoryWorkspace > .armoryStepStack { display: flex; flex-direction: column; min-height: 0; }
+    .armoryWorkspace > .armoryStepStack > .armoryStepCard { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+    .armoryWorkspace .armoryStepCard > .armoryStepContent { display: flex; flex: 1; flex-direction: column; padding: 16px 18px 18px; }
+    .armoryWorkspace .armoryStepContent > .armoryLanePanel,
+    .armoryWorkspace .armoryStepContent > .armoryHotbarEditor,
+    .armoryWorkspace .armoryStepContent > .armoryRangeLauncher { display: flex; flex: 1; flex-direction: column; }
+    .armoryWorkspace .armoryLanePanel > .armoryPartsGallery,
+    .armoryWorkspace .armoryHotbarEditor > .armoryPartsGallery { display: flex; flex: 1; flex-direction: column; }
+    .armoryWorkspace .armoryRangeLauncher > .armoryRangeLauncherHero { display: flex; flex: 1; flex-direction: column; justify-content: center; gap: 22px; }
+    .armoryWorkspace .armoryRangeLauncherHero > .armoryRangeLauncherCopy { justify-items: center; text-align: center; }
+    .armoryWorkspace .armoryRangeLauncherHero > .armoryRangeReadiness { justify-content: center; }
+}
+.armoryWorkspace .armoryLanePanel { padding: 0; background: none; box-shadow: none; }
+.armoryWorkspace .armoryPartFeature {
+    margin-bottom: 16px;
+    padding: 4px 4px 18px;
+    border-radius: 0;
+    background: radial-gradient(circle at 60px 60px, rgba(var(--tone), 0.22), transparent 150px);
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 10%);
+}
+.armoryWorkspace .armoryPartFeature.isConfirmed { box-shadow: inset 0 -2px 0 rgb(80 230 160 / 60%); }
+.armoryWorkspace .armorySwapImpact { background: rgb(0 0 0 / 18%); box-shadow: none; }
+.armoryWorkspace .armoryRangeLauncher .armoryRangeLauncherHero {
+    border: 0;
+    border-radius: 14px;
+    background: radial-gradient(ellipse 80% 70% at 50% 100%, rgb(79 200 255 / 12%), transparent 70%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
