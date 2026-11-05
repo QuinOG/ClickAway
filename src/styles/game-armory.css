@@ -1858,3 +1858,80 @@
 .armoryRangeLauncher .armoryRangeReadinessChecks strong { font-size: 12.5px; }
 .armoryRangeLauncher .armoryRangeReadiness { flex-wrap: nowrap; }
 .armoryRangeLauncher .armoryRangeReadiness > .armoryStateEmblem { gap: 0; font-size: 0; letter-spacing: 0; }
+
+/* ---- r61 (council c2): Build Setup is one progression rail ----------------
+ * Three wide step cards with two lines of helper text plus a floating
+ * "Ready? / Play" made a ~100px bar of equal-weight boxes. Steps are now
+ * compact numbered nodes joined by a track that ends in Play. The lead text
+ * stays in the DOM for assistive tech but leaves the visual rail.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 1101px) {
+    .armoryCommandBar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 10px 24px;
+    }
+    .armoryCommandBar .armoryWorkflow { flex: none; display: block; }
+    .armoryCommandBar .armoryWorkflowLabel { display: none; }
+    .armoryCommandBar .armoryRailProgress { display: flex; align-items: center; gap: 44px; }
+    .armoryCommandBar .armoryRailStepButton {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 5px 18px 5px 6px;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 4%);
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%), 0 3px 0 #0a1220;
+    }
+    /* The track between nodes; lit once you are past that step. */
+    .armoryCommandBar .armoryRailStepButton + .armoryRailStepButton::before,
+    .armoryCommandBar .armoryCommandAction::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: calc(100% + 6px);
+        width: 32px;
+        height: 3px;
+        border-radius: 2px;
+        background: rgb(255 255 255 / 12%);
+        transform: translateY(-50%);
+    }
+    .armoryCommandBar .armoryRailStepIndex {
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        font-family: var(--ca-font-display);
+        font-size: 15px;
+        font-weight: 400;
+        background: rgb(0 0 0 / 30%);
+        box-shadow: inset 0 0 0 2px rgb(255 255 255 / 16%);
+    }
+    .armoryCommandBar .armoryRailStepGlyph { display: grid; width: 26px; height: 26px; border: 0; background: none; box-shadow: none; }
+    .armoryCommandBar .armoryRailStepGlyph svg { width: 22px; height: 22px; }
+    .armoryCommandBar .armoryRailStepBody { display: block; }
+    .armoryCommandBar .armoryRailStepTitle { font-size: 17px; white-space: nowrap; }
+    .armoryCommandBar .armoryRailStepLead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+    .armoryCommandBar .armoryRailStepButton.isActive {
+        color: #06101c;
+        background: linear-gradient(180deg, #8eeeff, #4fc8ff);
+        box-shadow: inset 0 0 0 2px rgb(255 255 255 / 45%), 0 0 22px rgb(79 216 255 / 40%), 0 3px 0 #0b5d8f;
+    }
+    .armoryCommandBar .armoryRailStepButton.isActive .armoryRailStepIndex { color: #fff; background: #0a2a44; box-shadow: none; }
+    .armoryCommandBar .armoryRailStepButton.isActive .armoryRailStepGlyph { color: #06101c; }
+    .armoryCommandBar .armoryCommandAction { position: relative; display: block; margin-left: 44px; }
+    .armoryCommandBar .armoryCommandAction .armoryRailLabel { display: none; }
+    .armoryCommandBar .armoryCommandAction .primaryButton { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 30px; border-radius: 999px; font-size: 17px; text-decoration: none; }
+    .armoryCommandBar .armoryCommandAction .primaryButton::after { content: "▶"; font-size: 12px; }
+}
