@@ -2053,3 +2053,23 @@
 .shopItemCard.rarity-legendary:hover { border-color: var(--rarity); }
 
 .shopItemCard.rarity-legendary .shopItemRarity { text-shadow: 0 0 10px color-mix(in srgb, var(--rarity) 55%, transparent); }
+
+/* s08: one label per card. Affordable cards drop the visible "Affordable"
+   pill, since the Unlock button already carries the price; the tag stays in
+   the markup for assistive tech. Owned, Equipped and Locked keep their tags,
+   and the rarity label leads the header. */
+.shopItemStateTag.is-affordable {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.shopItemCard-affordable .shopItemHeader { min-height: 24px; align-items: center; }
+.shopItemCard-affordable .shopItemRarity { margin-left: 0; font-size: 11.5px; }
