@@ -40,17 +40,25 @@ function SwapImpact({ rows }) {
     <div className="armorySwapImpact" aria-label="Swap impact">
       <span className="armorySwapImpactTitle">Swap impact</span>
       {rows.map(({ key, label, from, to }) => {
-        const low = Math.min(from.rating, to.rating)
-        const high = Math.max(from.rating, to.rating)
-        const tone = to.rating > from.rating ? "isGain" : to.rating < from.rating ? "isLoss" : "isEven"
+        const delta = to.rating - from.rating
+        const steps = Math.min(5, Math.abs(delta))
+        const tone = delta > 0 ? "isGain" : delta < 0 ? "isLoss" : "isEven"
         return (
           <div key={key} className={`armorySwapImpactRow ${tone}`}>
             <span className="armorySwapImpactLabel">{label}</span>
-            <span className="armorySwapImpactBar" aria-hidden="true">
-              {Array.from({ length: 10 }, (_, index) => {
-                const segment = index < low ? "isOn" : index < high ? (to.rating > from.rating ? "isGained" : "isLost") : ""
-                return <i key={index} className={segment} />
-              })}
+            <span className="armorySwapImpactDiverge" aria-hidden="true">
+              <span className="armorySwapImpactSide isLossSide">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <i key={index} className={delta < 0 && index < steps ? "isLost" : ""} />
+                ))}
+              </span>
+              <em className="armorySwapImpactAxis" />
+              <span className="armorySwapImpactSide isGainSide">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <i key={index} className={delta > 0 && index < steps ? "isGained" : ""} />
+                ))}
+              </span>
+              <b className="armorySwapImpactDelta">{delta > 0 ? `+${delta}` : delta < 0 ? `−${Math.abs(delta)}` : "±0"}</b>
             </span>
             <span className="armorySwapImpactValue">
               <s>{from.value}</s> {"→"} <b>{to.value}</b>

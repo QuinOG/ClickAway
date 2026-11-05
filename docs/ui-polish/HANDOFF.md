@@ -62,3 +62,4 @@ Next candidates: arena entrance/countdown; powerup tray charge-ready moment; Arm
 - r32: HUD score plate gets a PB race — big signed PB-pace delta in the empty left zone and a full-width track along the plate's bottom (score fill green ahead / amber behind, white ghost marker at PB pace, chequered finish flag = PB).
 - r33: active bay's truncated service line becomes an accuracy ring (conic, % inside) plus Rounds and gold Best-streak tiles; full summary kept as the aria-label.
 - r34: promotion's old→new tier chips become a seven-node division ladder — tier-coloured diamonds, rail lit up to the new division (fill animation), new division crowned and pulsing with its label enlarged.
+- r35 (council): swap-impact rows become centre-anchored diverging bars — solid red cells grow left for a loss, solid green right for a gain (5 steps each side), signed step count; replaces the red hatch that read as a missing texture.

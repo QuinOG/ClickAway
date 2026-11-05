@@ -1273,3 +1273,24 @@
 .armoryBayServiceTile b { color: #f3f8ff; font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .armoryBayServiceTile.isStreak b { color: #ffc46b; }
 .armoryBayServiceRing { width: 36px; height: 36px; } .armoryBayServiceTile { padding: 3px 2px; } .armoryBayServiceTile b { font-size: 16px; }
+
+/* ---- r35: diverging swap-impact bars -------------------------------------
+ * Council fix: the red hatch read as a missing texture. Each changed stat is
+ * now a centre-anchored diverging bar — solid red cells grow left for a loss,
+ * solid green cells grow right for a gain — with a signed step count.
+ * ------------------------------------------------------------------------ */
+.armorySwapImpactDiverge {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2px minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 4px;
+}
+.armorySwapImpactSide { display: flex; gap: 3px; }
+.armorySwapImpactSide.isLossSide { flex-direction: row-reverse; }
+.armorySwapImpactSide i { flex: 1; height: 11px; border-radius: 2px; background: rgb(255 255 255 / 6%); }
+.armorySwapImpactSide i.isGained { background: linear-gradient(180deg, #8bffcf, #2fc48a); box-shadow: 0 0 8px rgb(80 230 160 / 50%); }
+.armorySwapImpactSide i.isLost { background: linear-gradient(180deg, #ff9a86, #e0523c); box-shadow: 0 0 8px rgb(255 100 80 / 40%); }
+.armorySwapImpactAxis { height: 19px; border-radius: 1px; background: rgb(255 255 255 / 45%); }
+.armorySwapImpactDelta { font-size: 12px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; color: rgb(220 232 248 / 55%); }
+.armorySwapImpactRow.isGain .armorySwapImpactDelta { color: #7ff5c4; }
+.armorySwapImpactRow.isLoss .armorySwapImpactDelta { color: #ff9a8a; }
