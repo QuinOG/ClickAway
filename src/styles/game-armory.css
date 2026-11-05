@@ -2233,3 +2233,142 @@
 /* A tile with no plate is simply available to fit. */
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard > .armoryStateEmblem.is-available { display: none; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartLabel { opacity: 0.55; }
+
+/* ---- r68 (council II p1): Test Run has a firing range ------------------------
+ * The step spent its largest area on empty space, two lines of prose and an
+ * oversized button. It now shows the range the build is about to fire on: a
+ * lane with the target drawn at its real start size, its floor as a dashed
+ * ghost, a dimension line, and the start/floor/per-hit/per-miss rules pinned
+ * to the corners. The launch button becomes a footer control beneath it.
+ * ------------------------------------------------------------------------ */
+.armoryWorkspace .armoryRangeLauncher > .armoryRangeLauncherHero { justify-content: flex-start; gap: 12px; padding: 14px 16px 16px; }
+.armoryRangeLauncher .armoryRangeLauncherCopy { display: grid; justify-items: center; gap: 2px; text-align: center; }
+.armoryRangeLauncher .armoryRangeLauncherCopy .armoryReviewLead,
+.armoryRangeLauncher .armoryRangeLauncherCopy .armoryReviewNote { display: inline; margin: 0; color: rgb(185 208 236 / 68%); font-size: 12.5px; }
+.armoryRangeLauncher .armoryRangeLauncherCopy .armoryReviewNote { display: none; }
+
+.armoryRangeScene {
+    align-self: stretch;
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 230px;
+    overflow: hidden;
+    border-radius: 14px;
+    background:
+        radial-gradient(ellipse 60% 55% at 50% 42%, rgb(170 80 255 / 18%), transparent 70%),
+        linear-gradient(180deg, #070d1a 0%, #0b1426 46%, #0d1a30 100%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%), inset 0 18px 40px rgb(0 0 0 / 45%);
+}
+/* The lane: a receding floor grid below the horizon line. */
+.armoryRangeLane { position: absolute; inset: 0; pointer-events: none; }
+.armoryRangeLane::before {
+    content: "";
+    position: absolute;
+    left: -40%;
+    right: -40%;
+    top: 58%;
+    bottom: -60%;
+    background:
+        repeating-linear-gradient(90deg, rgb(110 200 255 / 22%) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(0deg, rgb(110 200 255 / 18%) 0 1px, transparent 1px 34px);
+    transform: perspective(260px) rotateX(62deg);
+    transform-origin: 50% 0;
+    mask-image: linear-gradient(180deg, rgb(0 0 0 / 90%), transparent 85%);
+}
+.armoryRangeLane::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 58%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(120 210 255 / 55%), transparent);
+    box-shadow: 0 0 14px rgb(120 210 255 / 45%);
+}
+/* The target at its real start diameter, with a ground shadow on the lane. */
+.armoryRangeTarget {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    display: grid;
+    place-items: center;
+    width: var(--range-start);
+    height: var(--range-start);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, #1a0a2c 0 12%, #f08bff 13% 24%, #3a1257 25% 40%, #c45cf5 41% 58%, #3a1257 59% 72%, #9a3fe0 73% 100%);
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 85%), 0 0 26px rgb(196 92 245 / 70%), 0 0 60px rgb(196 92 245 / 35%);
+}
+.armoryRangeTarget::after {
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: calc(100% + 18px);
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgb(196 92 245 / 45%), transparent 70%);
+}
+.armoryRangeTargetFloor {
+    width: var(--range-floor);
+    height: var(--range-floor);
+    border: 1.5px dashed #8ff3ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgb(143 243 255 / 70%);
+}
+/* Dimension line across the target's diameter. */
+.armoryRangeSpan {
+    position: absolute;
+    left: 50%;
+    top: calc(42% - var(--range-start) / 2 - 26px);
+    width: var(--range-start);
+    height: 8px;
+    transform: translateX(-50%);
+    border-inline: 1px solid rgb(225 236 250 / 60%);
+}
+.armoryRangeSpan::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgb(225 236 250 / 45%);
+}
+.armoryRangeSpan b {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    padding: 0 6px;
+    transform: translate(-50%, -50%);
+    background: #0a1222;
+    color: #eef6ff;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+/* The round's rules pinned to the range's corners. */
+.armoryRangeTag {
+    position: absolute;
+    display: grid;
+    gap: 1px;
+    padding: 6px 11px 7px;
+    border-radius: 10px;
+    background: rgb(4 9 18 / 62%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.armoryRangeTag small { color: rgb(170 195 225 / 70%); font-size: 9.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.armoryRangeTag b { color: #f2f7ff; font-family: var(--ca-font-display); font-size: 19px; font-weight: 400; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.armoryRangeTag.is-start { top: 12px; left: 12px; }
+.armoryRangeTag.is-floor { top: 12px; right: 12px; text-align: right; }
+.armoryRangeTag.is-floor b { color: #8ff3ff; }
+.armoryRangeTag.is-shrink { bottom: 12px; left: 12px; }
+.armoryRangeTag.is-miss { bottom: 12px; right: 12px; text-align: right; }
+.armoryRangeScene.isFreeMiss .armoryRangeTag.is-miss b { color: #4fe3a6; }
+.armoryRangeScene:not(.isFreeMiss) .armoryRangeTag.is-miss b { color: #ff9a8a; }
+
+/* The launch button is a footer control under the range. */
+.armoryRangeLauncher .armoryRangeLaunchButton.primaryButton { min-height: 64px; padding: 8px 22px 8px 10px; gap: 14px; }
+.armoryRangeLauncher .armoryRangeLaunchRing { width: 46px; height: 46px; }
+.armoryRangeLauncher .armoryRangeLaunchRing b { font-size: 18px; }
+.armoryRangeLauncher .armoryRangeLaunchCopy strong { font-size: 23px; }
+.armoryRangeLauncher .armoryRangeLaunchCopy small { font-size: 12px; }
