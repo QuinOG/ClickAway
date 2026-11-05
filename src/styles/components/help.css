@@ -632,3 +632,69 @@
     .helpMissionCard,
     .helpMissionCard::after { transition: none; }
 }
+
+/* ---- r45: quick start teaches by sight ------------------------------------
+ * Each quick-start step gets a tiny game-style picture in its top-right
+ * corner: mode chips, a countdown ring, a target with a streak bar, keycaps.
+ * ------------------------------------------------------------------------ */
+.quickStartCard { position: relative; }
+.quickStartVisual {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    pointer-events: none;
+}
+.quickStartVisual.isModes i {
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #06101c;
+}
+.quickStartVisual.isModes .isPractice { background: #5ef2b8; }
+.quickStartVisual.isModes .isCasual { background: #7fc8ff; box-shadow: 0 0 0 2px #0b1322, 0 0 0 3px #7fc8ff; }
+.quickStartVisual.isModes .isRanked { background: #ffd166; }
+.quickStartVisual.isCountdown b {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #fff;
+    font-family: var(--ca-font-display);
+    font-size: 17px;
+    font-weight: 400;
+    background: radial-gradient(circle, #0b1322 60%, transparent 62%), conic-gradient(#5fb4ff 0 66%, rgb(255 255 255 / 12%) 0);
+}
+.quickStartVisual.isCountdown em { width: 8px; height: 8px; border-radius: 50%; background: #5fb4ff; }
+.quickStartVisual.isCountdown em:last-child { background: rgb(255 255 255 / 15%); }
+.quickStartTarget {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 14%, #c07bff 16% 32%, #2a1846 34% 54%, #c07bff 56% 66%, transparent 68%);
+    box-shadow: 0 0 12px rgb(192 123 255 / 55%);
+}
+.quickStartStreak { display: flex; align-items: center; gap: 2px; }
+.quickStartStreak i { width: 7px; height: 12px; border-radius: 2px; background: rgb(255 255 255 / 12%); }
+.quickStartStreak i.isOn { background: linear-gradient(180deg, #ffe08a, #e0a934); }
+.quickStartStreak small { margin-left: 4px; padding: 1px 5px; border-radius: 5px; color: #2a1a00; background: #ffd166; font-size: 10px; font-weight: 800; }
+.quickStartVisual.isKeys kbd {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #ffd98a;
+    font-family: var(--ca-font-display);
+    font-size: 14px;
+    background: linear-gradient(180deg, #2b3f5e, #15223a);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 0 0 2px #071019, 0 4px 0 #0b1422, 0 4px 0 2px #071019;
+}
+.quickStartVisual.isModes { gap: 3px; } .quickStartVisual.isModes i { padding: 2px 5px; font-size: 8.5px; letter-spacing: 0.02em; }

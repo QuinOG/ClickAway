@@ -27,7 +27,12 @@ async function hitTargets(page, count, delay = 120) {
 
 test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
   test.setTimeout(180_000)
-  if (SCENE === "armory") {
+  if (SCENE.startsWith("route:")) {
+    const page = await newPage(browser)
+    await gotoRoute(page, route(SCENE.slice(6)))
+    await page.waitForTimeout(1000)
+    await page.screenshot({ path: SHOT, fullPage: process.env.FULL === "1" })
+  } else if (SCENE === "armory") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
     await page.waitForTimeout(1200)
