@@ -32,6 +32,12 @@ test(`one-scene capture: ${SCENE}`, async ({ browser }) => {
     await gotoRoute(page, route(SCENE.slice(6)))
     await page.waitForTimeout(1000)
     await page.screenshot({ path: SHOT, fullPage: process.env.FULL === "1" })
+  } else if (SCENE === "settings") {
+    const page = await newPage(browser)
+    await gotoRoute(page, route("shop"))
+    await page.getByRole("button", { name: "Open feedback settings" }).click()
+    await page.waitForTimeout(800)
+    await page.screenshot({ path: SHOT })
   } else if (SCENE === "armory") {
     const page = await newPage(browser)
     await gotoRoute(page, route("armory"))
