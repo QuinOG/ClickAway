@@ -33,6 +33,7 @@ import ArmoryTestRange from "./ArmoryTestRange.jsx"
 import ArmoryUnlockCeremony from "./ArmoryUnlockCeremony.jsx"
 import ArmoryUnlockWall from "./ArmoryUnlockWall.jsx"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
+import { getExactMetric } from "../armoryExactMetrics.js"
 import {
   ArmoryDetailPanel,
   ArmoryFirstTouchTip,
@@ -94,6 +95,8 @@ export default function ArmoryScreen({
   const inspectedPowerCopy = getPowerupOptionPresentation(hotbarApi.selectedPowerupId)
   const editingSlotPresentation = activePresentation
     .powerSlots?.[hotbarApi.editingPowerSlotIndex] ?? null
+  const rangeRules = activePresentation.roundRules ?? {}
+  const rangeShrink = getExactMetric("Shrink Pace", rangeRules).text
 
   // Powers racked on another key stay live in the gallery and install as a swap.
   const powerParts = LOADOUT_POWERUPS.map((powerup) => {
@@ -345,12 +348,31 @@ export default function ArmoryScreen({
 
               <section className="armoryRangeLauncherHero">
                 <div className="armoryRangeLauncherCopy">
-                  <p className="armoryReviewEyebrow">{selectedMode.label} rules</p>
+                  <p className="armoryReviewEyebrow">{selectedMode.label} range</p>
                   <h3 className="armoryReviewTitle">Test {activeLoadout.name}</h3>
                   <p className="armoryReviewLead">
                     Try a 10-second run with your current mods and powerups.
                   </p>
                   <p className="armoryReviewNote">No XP, no coins, no rank — nothing is saved.</p>
+                </div>
+                {/* The range itself: the build's target drawn at its real start
+                    size on a lane, with its floor and the round's rules pinned
+                    around it. */}
+                <div
+                  className={`armoryRangeScene${selectedMode.missPenalty > 0 ? "" : " isFreeMiss"}`}
+                  role="img"
+                  aria-label={`Range preview: the target starts at ${rangeRules.initialButtonSize}px, shrinks ${rangeShrink.replace(" / hit", " per hit")} to a ${rangeRules.minButtonSize}px floor, and ${selectedMode.missPenalty > 0 ? `each miss costs ${selectedMode.missPenalty}` : "misses are free"}.`}
+                  style={{ "--range-start": `${rangeRules.initialButtonSize}px`, "--range-floor": `${rangeRules.minButtonSize}px` }}
+                >
+                  <span className="armoryRangeLane" aria-hidden="true" />
+                  <span className="armoryRangeTarget" aria-hidden="true">
+                    <i className="armoryRangeTargetFloor" />
+                  </span>
+                  <span className="armoryRangeSpan" aria-hidden="true"><b>{rangeRules.initialButtonSize}px</b></span>
+                  <span className="armoryRangeTag is-start" aria-hidden="true"><small>Starts at</small><b>{rangeRules.initialButtonSize}px</b></span>
+                  <span className="armoryRangeTag is-floor" aria-hidden="true"><small>Shrinks to</small><b>{rangeRules.minButtonSize}px</b></span>
+                  <span className="armoryRangeTag is-shrink" aria-hidden="true"><small>Per hit</small><b>−{rangeShrink.replace(" / hit", "")}</b></span>
+                  <span className="armoryRangeTag is-miss" aria-hidden="true"><small>Per miss</small><b>{selectedMode.missPenalty > 0 ? `−${selectedMode.missPenalty} pt` : "Free"}</b></span>
                 </div>
                 <button type="button" className="primaryButton armoryRangeLaunchButton" aria-label="Start test run" onClick={rangeApi.open}>
                   <span className="armoryRangeLaunchRing" aria-hidden="true"><b>10</b><small>sec</small></span>

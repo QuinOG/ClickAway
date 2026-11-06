@@ -5,12 +5,12 @@ import { PartEmblem } from "../../../components/art/GameIcons.jsx"
 // differences stay readable even from across the room.
 export const BAY_TARGET_SCALE = 0.32
 
-// Etched service plate: a one-line field record so a bay never has to be
-// activated just to see how it's actually performed. Keyed on loadout.id
-// (stable), never on the display name, so renames never orphan the record.
+// Field record strip: so a bay never has to be activated just to see how
+// it has actually performed. Keyed on loadout.id (stable), never on the
+// display name, so renames never orphan the record.
 function ArmoryBayServicePlate({ stats }) {
   if (!stats || stats.totalRounds <= 0) {
-    return <p className="armoryBayServicePlate isEmpty">No field data yet — take it to the arena.</p>
+    return <p className="armoryCartStats isEmpty" title="No field data yet">No runs yet</p>
   }
 
   const attempts = stats.totalHits + stats.totalMisses
@@ -20,17 +20,17 @@ function ArmoryBayServicePlate({ stats }) {
     + `${accuracyPercent !== null ? `, ${accuracyPercent}% accuracy` : ""}, best streak ${stats.bestStreak}`
 
   return (
-    <div className="armoryBayServicePlate isTiles" role="img" aria-label={summary}>
-      <span className="armoryBayServiceRing" style={{ "--acc": `${accuracyPercent ?? 0}%` }}>
-        <b>{accuracyPercent ?? "—"}</b>
-        <small>acc</small>
-      </span>
-      <span className="armoryBayServiceTile"><b>{stats.totalRounds}</b><small>rounds</small></span>
-      <span className="armoryBayServiceTile isStreak"><b>{stats.bestStreak}</b><small>streak</small></span>
-    </div>
+    <span className="armoryCartStats" role="img" aria-label={summary}>
+      <span><b>{accuracyPercent ?? "—"}<i>%</i></b><small>acc</small></span>
+      <span><b>{stats.totalRounds}</b><small>rounds</small></span>
+      <span><b>{stats.bestStreak}</b><small>streak</small></span>
+    </span>
   )
 }
 
+// A bay is a build cartridge: a numbered spine in the build's identity
+// colour, an ID strip, a miniature of its machine (core, lens and rig in
+// their r69 silhouettes around the target at wall scale) and its field record.
 function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNumber }) {
   const identity = (presentation?.identity.label || "Balanced").toLowerCase()
   const miniTargetSize = Math.round(
@@ -38,40 +38,36 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNum
   )
 
   return (
-    <div className={`armoryBay ${isActive ? "isActive" : ""}`} data-identity={identity}>
+    <div className={`armoryBay armoryCart ${isActive ? "isActive" : ""}`} data-identity={identity}>
       <button
         type="button"
-        className="armoryBaySelect"
+        className="armoryBaySelect armoryCartBody"
         onClick={onActivate}
         aria-pressed={isActive}
       >
-        <span className="armoryBayNumber" aria-hidden="true">{String(bayNumber).padStart(2, "0")}</span>
-        <span className="armoryBayHeader">
-          <span className="armoryBayLamp" aria-hidden="true" />
-          <span className="armoryBayLampLabel">{isActive ? "Active" : "Docked"}</span>
-        </span>
-
-        <span className="armoryBayMini" aria-hidden="true">
-          <span
-            className="armoryBayMiniTarget"
-            style={{ width: `${miniTargetSize}px`, height: `${miniTargetSize}px` }}
-          />
-          <span className="armoryBayMiniModules">
-            {presentation.moduleStack.map((module) => (
-              <span key={module.slotId} className={`armoryBayMiniModule tone-${module.slotId}`}>
-                <PartEmblem partId={module.moduleId} slotId={module.slotId} size={22} />
-              </span>
-            ))}
-          </span>
-        </span>
-
-        <span className="armoryBayNameplate">
-          <strong className="armoryBayName">{loadout.name}</strong>
-          <span className="armoryBayIdentity">
-            <span className="armoryBayIdentityGlyph" aria-hidden="true">
+        <span className="armoryCartSpine" aria-hidden="true"><b>{String(bayNumber).padStart(2, "0")}</b></span>
+        <span className="armoryCartStrip">
+          <strong className="armoryCartName">{loadout.name}</strong>
+          <span className="armoryCartIdentity">
+            <span className="armoryCartIdentityGlyph" aria-hidden="true">
               <BuildIdentityGlyph identity={presentation.identity.label} />
             </span>
             {presentation.identity.label}
+          </span>
+          <span className="armoryCartLamp">{isActive ? "Active" : "Docked"}</span>
+        </span>
+
+        <span className="armoryCartWindow" aria-hidden="true">
+          <span className="armoryCartMachine">
+            <span
+              className="armoryBayMiniTarget armoryCartTarget"
+              style={{ width: `${miniTargetSize}px`, height: `${miniTargetSize}px` }}
+            />
+            {presentation.moduleStack.map((module) => (
+              <span key={module.slotId} className={`armoryCartPart part-${module.slotId}`}>
+                <PartEmblem partId={module.moduleId} slotId={module.slotId} size={14} />
+              </span>
+            ))}
           </span>
         </span>
 
@@ -79,17 +75,15 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNum
       </button>
 
       {isActive ? null : (
-        <div className="armoryBayFooter">
-          <button
-            type="button"
-            className="armoryBayAction"
-            aria-label="Compare with active"
-            title="Compare with active build"
-            onClick={() => bayApi.openBayCompare(loadout.id)}
-          >
-            Compare
-          </button>
-        </div>
+        <button
+          type="button"
+          className="armoryCartCompare"
+          aria-label="Compare with active"
+          title="Compare with active build"
+          onClick={() => bayApi.openBayCompare(loadout.id)}
+        >
+          Compare
+        </button>
       )}
     </div>
   )

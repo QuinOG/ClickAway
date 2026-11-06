@@ -2137,3 +2137,1022 @@
     background: radial-gradient(ellipse 80% 70% at 50% 100%, rgb(79 200 255 / 12%), transparent 70%);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
 }
+
+/* ---- r67 (council II p1): the picker is a parts tray ------------------------
+ * Every tile repeated a paragraph that the featured area above already shows,
+ * while the part's own art stayed a 22px glyph. Tiles are now components on a
+ * tray: a large socketed emblem, the name, and one state plate (installed,
+ * available, on a key, or locked at a level). Descriptions stay readable to
+ * assistive tech and appear in full in the featured area; locked parts sink
+ * to the end of the tray.
+ * ------------------------------------------------------------------------ */
+.armoryPartsGallery .armoryPartsShelf { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled),
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    min-height: 0;
+    padding: 12px 8px 10px;
+    text-align: center;
+    background:
+        radial-gradient(ellipse 70% 55% at 50% 34%, rgba(var(--tray-tone, 120, 170, 220), 0.16), transparent 72%),
+        linear-gradient(180deg, rgb(255 255 255 / 4%), rgb(0 0 0 / 14%));
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.tone-tempoCore { --tray-tone: var(--armory-tone-tempo); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.tone-streakLens { --tray-tone: var(--armory-tone-streak); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.tone-powerRig,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.tone-power { --tray-tone: var(--armory-tone-power); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked { order: 1; }
+
+/* The socket: a recessed, tone-rimmed bay holding a large emblem. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) .armoryPartGlyph,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartGlyph {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 40%, rgba(var(--tray-tone), 0.30), rgb(6 12 24 / 92%) 70%);
+    box-shadow:
+        inset 0 0 0 2px rgba(var(--tray-tone), 0.55),
+        inset 0 6px 14px rgb(0 0 0 / 55%),
+        0 0 18px rgba(var(--tray-tone), 0.18);
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph svg { width: 28px; height: 28px; filter: drop-shadow(0 0 6px rgba(var(--tray-tone), 0.55)); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph { box-shadow: inset 0 0 0 2px rgb(255 255 255 / 12%), inset 0 6px 14px rgb(0 0 0 / 55%); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph svg { filter: grayscale(1); }
+
+.armoryPartsGallery .armoryPartsShelf .armoryPartBody { display: block; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartLabel { padding: 0; font-size: 14.5px; line-height: 1.15; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartFeel,
+.armoryPartsGallery .armoryPartsShelf .armoryPartDeltas {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* One state plate per tile, always in the same place. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard > .armoryStateEmblem,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem {
+    position: static;
+    margin-top: auto;
+    gap: 4px;
+    padding: 2px 9px 2px 3px;
+    border-radius: 999px;
+    background: rgba(var(--armory-state-color), 0.12);
+    box-shadow: inset 0 0 0 1px rgba(var(--armory-state-color), 0.3);
+    font-size: 9.5px;
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard > .armoryStateEmblem .armoryStateEmblemIcon,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem .armoryStateEmblemIcon,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem .armoryStateEmblemIcon,
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem .armoryStateEmblemIcon {
+    display: grid;
+    width: 15px;
+    height: 15px;
+    border: 0;
+    border-radius: 50%;
+    clip-path: none;
+    background: none;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard > .armoryStateEmblem .armoryStateEmblemIcon svg { width: 11px; height: 11px; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem { background: rgb(83 215 179 / 18%); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem { font-size: 9.5px; letter-spacing: 0.06em; color: rgba(var(--armory-state-color), 0.92); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) > .armoryStateEmblem .armoryStateEmblemIcon svg { width: 11px; height: 11px; }
+/* A tile with no plate is simply available to fit. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard > .armoryStateEmblem.is-available { display: none; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartLabel { opacity: 0.55; }
+
+/* ---- r68 (council II p1): Test Run has a firing range ------------------------
+ * The step spent its largest area on empty space, two lines of prose and an
+ * oversized button. It now shows the range the build is about to fire on: a
+ * lane with the target drawn at its real start size, its floor as a dashed
+ * ghost, a dimension line, and the start/floor/per-hit/per-miss rules pinned
+ * to the corners. The launch button becomes a footer control beneath it.
+ * ------------------------------------------------------------------------ */
+.armoryWorkspace .armoryRangeLauncher > .armoryRangeLauncherHero { justify-content: flex-start; gap: 12px; padding: 14px 16px 16px; }
+.armoryRangeLauncher .armoryRangeLauncherCopy { display: grid; justify-items: center; gap: 2px; text-align: center; }
+.armoryRangeLauncher .armoryRangeLauncherCopy .armoryReviewLead,
+.armoryRangeLauncher .armoryRangeLauncherCopy .armoryReviewNote { display: inline; margin: 0; color: rgb(185 208 236 / 68%); font-size: 12.5px; }
+.armoryRangeLauncher .armoryRangeLauncherCopy .armoryReviewNote { display: none; }
+
+.armoryRangeScene {
+    align-self: stretch;
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 230px;
+    overflow: hidden;
+    border-radius: 14px;
+    background:
+        radial-gradient(ellipse 60% 55% at 50% 42%, rgb(170 80 255 / 18%), transparent 70%),
+        linear-gradient(180deg, #070d1a 0%, #0b1426 46%, #0d1a30 100%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%), inset 0 18px 40px rgb(0 0 0 / 45%);
+}
+/* The lane: a receding floor grid below the horizon line. */
+.armoryRangeLane { position: absolute; inset: 0; pointer-events: none; }
+.armoryRangeLane::before {
+    content: "";
+    position: absolute;
+    left: -40%;
+    right: -40%;
+    top: 58%;
+    bottom: -60%;
+    background:
+        repeating-linear-gradient(90deg, rgb(110 200 255 / 22%) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(0deg, rgb(110 200 255 / 18%) 0 1px, transparent 1px 34px);
+    transform: perspective(260px) rotateX(62deg);
+    transform-origin: 50% 0;
+    mask-image: linear-gradient(180deg, rgb(0 0 0 / 90%), transparent 85%);
+}
+.armoryRangeLane::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 58%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(120 210 255 / 55%), transparent);
+    box-shadow: 0 0 14px rgb(120 210 255 / 45%);
+}
+/* The target at its real start diameter, with a ground shadow on the lane. */
+.armoryRangeTarget {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    display: grid;
+    place-items: center;
+    width: var(--range-start);
+    height: var(--range-start);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, #1a0a2c 0 12%, #f08bff 13% 24%, #3a1257 25% 40%, #c45cf5 41% 58%, #3a1257 59% 72%, #9a3fe0 73% 100%);
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 85%), 0 0 26px rgb(196 92 245 / 70%), 0 0 60px rgb(196 92 245 / 35%);
+}
+.armoryRangeTarget::after {
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: calc(100% + 18px);
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgb(196 92 245 / 45%), transparent 70%);
+}
+.armoryRangeTargetFloor {
+    width: var(--range-floor);
+    height: var(--range-floor);
+    border: 1.5px dashed #8ff3ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgb(143 243 255 / 70%);
+}
+/* Dimension line across the target's diameter. */
+.armoryRangeSpan {
+    position: absolute;
+    left: 50%;
+    top: calc(42% - var(--range-start) / 2 - 26px);
+    width: var(--range-start);
+    height: 8px;
+    transform: translateX(-50%);
+    border-inline: 1px solid rgb(225 236 250 / 60%);
+}
+.armoryRangeSpan::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgb(225 236 250 / 45%);
+}
+.armoryRangeSpan b {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    padding: 0 6px;
+    transform: translate(-50%, -50%);
+    background: #0a1222;
+    color: #eef6ff;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+/* The round's rules pinned to the range's corners. */
+.armoryRangeTag {
+    position: absolute;
+    display: grid;
+    gap: 1px;
+    padding: 6px 11px 7px;
+    border-radius: 10px;
+    background: rgb(4 9 18 / 62%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.armoryRangeTag small { color: rgb(170 195 225 / 70%); font-size: 9.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.armoryRangeTag b { color: #f2f7ff; font-family: var(--ca-font-display); font-size: 19px; font-weight: 400; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.armoryRangeTag.is-start { top: 12px; left: 12px; }
+.armoryRangeTag.is-floor { top: 12px; right: 12px; text-align: right; }
+.armoryRangeTag.is-floor b { color: #8ff3ff; }
+.armoryRangeTag.is-shrink { bottom: 12px; left: 12px; }
+.armoryRangeTag.is-miss { bottom: 12px; right: 12px; text-align: right; }
+.armoryRangeScene.isFreeMiss .armoryRangeTag.is-miss b { color: #4fe3a6; }
+.armoryRangeScene:not(.isFreeMiss) .armoryRangeTag.is-miss b { color: #ff9a8a; }
+
+/* The launch button is a footer control under the range. */
+.armoryRangeLauncher .armoryRangeLaunchButton.primaryButton { min-height: 64px; padding: 8px 22px 8px 10px; gap: 14px; }
+.armoryRangeLauncher .armoryRangeLaunchRing { width: 46px; height: 46px; }
+.armoryRangeLauncher .armoryRangeLaunchRing b { font-size: 18px; }
+.armoryRangeLauncher .armoryRangeLaunchCopy strong { font-size: 23px; }
+.armoryRangeLauncher .armoryRangeLaunchCopy small { font-size: 12px; }
+
+/* ---- r69 (council II p1): the machine is an assembled instrument on a bench --
+ * Core, lens and rig were three identical rotated diamonds around a dial, so
+ * three different equipment categories read as interchangeable badges, and
+ * the whole thing floated in flat navy. Each component now has its own
+ * silhouette (core: a vented housing; lens: a bezelled glass barrel; rig: a
+ * battery pack with a terminal and charge cells), solid bolted arms replace
+ * the dotted conduits, the instrument sits in a riveted cradle on a faint
+ * blueprint grid, and the three power keys share one console plate.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 1101px) {
+    .armoryStage {
+        background:
+            radial-gradient(ellipse 60% 55% at 50% 50%, transparent 30%, #0a1322 100%),
+            linear-gradient(rgb(110 180 255 / 9%) 1px, transparent 1px) 0 0 / 28px 28px,
+            linear-gradient(90deg, rgb(110 180 255 / 9%) 1px, transparent 1px) 0 0 / 28px 28px;
+    }
+}
+
+/* The cradle: a bevelled, riveted plate under the lower half of the ring. */
+.armoryMachine .armoryMachineAssembly { position: relative; }
+.armoryMachine .armoryMachineBench {
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    z-index: 0;
+    width: 380px;
+    height: 112px;
+    transform: translateX(-50%);
+    clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%);
+    background:
+        repeating-linear-gradient(90deg, rgb(255 255 255 / 2.5%) 0 2px, transparent 2px 7px),
+        linear-gradient(180deg, #2a3a55 0%, #1a2740 18%, #121c2f 100%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 22%), inset 0 -10px 24px rgb(0 0 0 / 50%);
+    pointer-events: none;
+}
+.armoryMachine .armoryMachineBench::before {
+    content: "";
+    position: absolute;
+    left: 9%;
+    right: 9%;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgb(160 210 255 / 55%), transparent);
+}
+.armoryMachine .armoryMachineBench i {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #9fb4d2, #3b4c68 60%, #1a2538);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 60%);
+}
+.armoryMachine .armoryMachineBench i:nth-child(1) { left: 12%; top: 14px; }
+.armoryMachine .armoryMachineBench i:nth-child(2) { right: 12%; top: 14px; }
+.armoryMachine .armoryMachineBench i:nth-child(3) { left: 5%; bottom: 14px; }
+.armoryMachine .armoryMachineBench i:nth-child(4) { right: 5%; bottom: 14px; }
+.armoryMachine .armoryMachineBench em {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    color: rgb(170 195 225 / 42%);
+    font-size: 9.5px;
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 -1px 0 rgb(0 0 0 / 70%);
+}
+.armoryMachine .armoryMachineCoreStage { position: relative; z-index: 1; }
+.armoryMachine .armoryMachineHousingRow { z-index: 2; }
+
+/* Components: one silhouette per category, no longer rotated diamonds. */
+.armoryMachine .armoryMachineRigMount { transform: translate(-50%, -50%); }
+.armoryMachine .armoryMachineRigMount > * { transform: none; }
+
+/* Core: a heavy vented housing with corner bolts. */
+.armoryMachine .armoryMachineRigMount.mount-tempoCore {
+    width: 74px;
+    height: 88px;
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 9px 9px, #8aa0c0 0 2.5px, transparent 3px),
+        radial-gradient(circle at calc(100% - 9px) 9px, #8aa0c0 0 2.5px, transparent 3px),
+        repeating-linear-gradient(180deg, rgb(0 0 0 / 50%) 0 3px, transparent 3px 7px) 50% calc(100% - 10px) / 60% 18px no-repeat,
+        radial-gradient(circle at 50% 38%, color-mix(in srgb, currentColor 32%, #1a2840), #0d1626 72%);
+}
+.armoryMachine .armoryMachineRigMount.mount-tempoCore > * { margin-bottom: 16px; }
+/* Lens: a round glass barrel with a thick bezel. */
+.armoryMachine .armoryMachineRigMount.mount-streakLens {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background:
+        linear-gradient(140deg, rgb(255 255 255 / 26%) 0 16%, transparent 32%),
+        radial-gradient(circle, color-mix(in srgb, currentColor 30%, #0e1830) 0 50%, #0b1322 51% 58%, #3a4f74 59% 68%, #18243a 69%);
+}
+.armoryMachine .armoryMachineRigMount.mount-streakLens.isSelected::after { border-radius: 50%; }
+/* Rig: a battery pack with a terminal cap and three charge cells. */
+.armoryMachine .armoryMachineRigMount.mount-powerRig {
+    width: 68px;
+    height: 88px;
+    border-radius: 12px;
+    background:
+        linear-gradient(90deg, currentColor 0 30%, transparent 30% 35%, currentColor 35% 65%, transparent 65% 70%, currentColor 70%) 50% calc(100% - 10px) / 64% 8px no-repeat,
+        radial-gradient(circle at 50% 36%, color-mix(in srgb, currentColor 30%, #1a2840), #0d1626 72%);
+}
+.armoryMachine .armoryMachineRigMount.mount-powerRig::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -11px;
+    width: 26px;
+    height: 8px;
+    border-radius: 4px 4px 0 0;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #6d82a4, #2b3a55);
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322);
+}
+.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin-bottom: 16px; }
+.armoryMachine .armoryMachineRigMount.mount-tempoCore.isSelected::after,
+.armoryMachine .armoryMachineRigMount.mount-powerRig.isSelected::after { border-radius: 20px; }
+
+/* Solid bolted arms instead of dotted energy conduits. */
+.armoryMachine .armoryMachineRigConduit.conduit-tempoCore,
+.armoryMachine .armoryMachineRigConduit.conduit-powerRig {
+    top: calc(50% - 7px);
+    height: 14px;
+    border-radius: 3px;
+    background:
+        linear-gradient(180deg, transparent 0 42%, rgba(var(--flow), 0.9) 42% 58%, transparent 58%),
+        linear-gradient(180deg, #5a6e90, #2a3a56 55%, #1a2538);
+    background-size: auto;
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322);
+    opacity: 1;
+    animation: none;
+}
+.armoryMachine .armoryMachineRigConduit.isSelected { box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), 0 0 14px rgba(var(--flow), 0.8); }
+
+/* The three power keys share one console plate. */
+.armoryMachine .armoryMachineRack {
+    position: relative;
+    padding: 12px;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 10px 10px, #7d93b4 0 2.5px, transparent 3px),
+        radial-gradient(circle at calc(100% - 10px) 10px, #7d93b4 0 2.5px, transparent 3px),
+        radial-gradient(circle at 10px calc(100% - 10px), #7d93b4 0 2.5px, transparent 3px),
+        radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #7d93b4 0 2.5px, transparent 3px),
+        linear-gradient(180deg, #223250, #121c2f);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 16%), inset 0 -8px 18px rgb(0 0 0 / 45%), 0 6px 0 #070d18;
+}
+.armoryMachine .armoryMachineRack .armoryMachineRackSlot:not(.isEditing) { box-shadow: inset 0 0 0 2px #071019, 0 3px 0 #070d18, inset 0 -3px 0 rgb(0 0 0 / 30%); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { top: calc(50% + 66px); }
+
+/* ---- r70 (council II p2): build bays are machine cartridges ----------------
+ * The active bay read as a profile card and the docked bays as abbreviated
+ * list rows with 14px pips, over ~200px of empty rail. All three bays are now
+ * equal cartridges filling the rail: a numbered spine in the build's identity
+ * colour, an ID strip (name, identity, lamp), a miniature of the machine
+ * (core / lens / rig silhouettes from r69 around the target at wall scale)
+ * and a one-line field record, with Compare in the same corner on each.
+ * ------------------------------------------------------------------------ */
+.armoryBayWall,
+.armoryRail .armoryBayWall { grid-auto-rows: minmax(0, 1fr); align-content: stretch; gap: 10px; min-height: 0; }
+.armoryBayWall .armoryBay.armoryCart,
+.armoryBayWall .armoryBay.armoryCart:not(.isActive) {
+    --cart: 79, 200, 255;
+    position: relative;
+    display: block;
+    min-height: 0;
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background:
+        repeating-linear-gradient(90deg, rgb(255 255 255 / 1.8%) 0 2px, transparent 2px 6px),
+        linear-gradient(180deg, #1c2a42, #111a2c);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%), inset 0 2px 0 rgb(255 255 255 / 10%), 0 4px 0 #070d18;
+    transform: none;
+}
+.armoryBayWall .armoryBay.armoryCart[data-identity="control"] { --cart: 83, 215, 179; }
+.armoryBayWall .armoryBay.armoryCart[data-identity="pressure"] { --cart: 255, 146, 82; }
+.armoryBayWall .armoryBay.armoryCart[data-identity="precision"] { --cart: 196, 120, 255; }
+.armoryBayWall .armoryBay.armoryCart::before,
+.armoryBayWall .armoryBay.armoryCart::after { display: none; }
+.armoryBayWall .armoryBay.armoryCart.isActive {
+    background:
+        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(var(--cart), 0.14), transparent 70%),
+        linear-gradient(180deg, #213352, #131e33);
+    box-shadow: inset 0 0 0 2px rgba(var(--cart), 0.85), 0 0 22px rgba(var(--cart), 0.22), 0 4px 0 #070d18;
+}
+
+.armoryBayWall .armoryCart .armoryCartBody,
+.armoryBayWall .armoryCart:not(.isActive) .armoryCartBody {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.armoryBayWall .armoryCart .armoryCartBody:focus-visible { outline: 2px solid rgb(var(--cart)); outline-offset: -4px; }
+
+/* Numbered spine in the build's identity colour. */
+.armoryCart .armoryCartSpine {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    display: grid;
+    place-items: start center;
+    padding-top: 12px;
+    background:
+        repeating-linear-gradient(180deg, rgb(0 0 0 / 22%) 0 2px, transparent 2px 9px) 50% 100% / 100% 46% no-repeat,
+        linear-gradient(180deg, rgba(var(--cart), 0.55), rgba(var(--cart), 0.18));
+    box-shadow: inset -2px 0 0 rgb(0 0 0 / 35%);
+}
+.armoryCart .armoryCartSpine b {
+    color: #06101c;
+    font-family: var(--ca-font-display);
+    font-size: 15px;
+    font-weight: 400;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    letter-spacing: 0.06em;
+}
+.armoryCart:not(.isActive) .armoryCartSpine b { color: rgb(230 240 255 / 85%); }
+
+/* ID strip. */
+.armoryCart .armoryCartStrip {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 8px;
+    padding: 10px 12px 0;
+}
+.armoryCart .armoryCartName { font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.armoryCart .armoryCartIdentity {
+    grid-column: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: rgb(var(--cart));
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.armoryCart .armoryCartIdentityGlyph { display: inline-grid; width: 13px; height: 13px; }
+.armoryCart .armoryCartIdentityGlyph svg { width: 13px; height: 13px; }
+.armoryCart .armoryCartLamp {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: rgb(170 190 215 / 60%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.armoryCart .armoryCartLamp::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #33415a;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 40%);
+}
+.armoryCart.isActive .armoryCartLamp { color: #8ff0c9; }
+.armoryCart.isActive .armoryCartLamp::before { background: #4fe3a6; box-shadow: 0 0 8px #4fe3a6; }
+
+/* Miniature of the machine in a recessed window. */
+.armoryCart .armoryCartWindow {
+    grid-column: 2;
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 64px;
+    margin: 8px 12px;
+    border-radius: 10px;
+    background:
+        linear-gradient(rgb(110 180 255 / 7%) 1px, transparent 1px) 0 0 / 12px 12px,
+        linear-gradient(90deg, rgb(110 180 255 / 7%) 1px, transparent 1px) 0 0 / 12px 12px,
+        #08101e;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 7%), inset 0 6px 14px rgb(0 0 0 / 55%);
+}
+.armoryCart .armoryCartMachine { position: relative; display: grid; place-items: center; width: 120px; height: 58px; }
+.armoryCart .armoryCartTarget,
+.armoryBayWall .armoryCart .armoryBayMiniTarget {
+    position: relative;
+    z-index: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1a0a2c 0 30%, #c45cf5 31% 52%, #3a1257 53% 66%, #9a3fe0 67%);
+    box-shadow: 0 0 0 2px #2a3a56, 0 0 0 4px #121c2f, 0 0 12px rgb(196 92 245 / 50%);
+}
+.armoryCart .armoryCartMachine::before {
+    content: "";
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    top: calc(50% - 2px);
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #5a6e90, #2a3a56);
+}
+.armoryCart .armoryCartPart {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 40%, color-mix(in srgb, currentColor 30%, #1a2840), #0d1626 75%);
+    box-shadow: 0 0 0 1.5px #070d18, 0 0 0 2.5px color-mix(in srgb, currentColor 60%, transparent);
+}
+.armoryCart .armoryCartPart.part-tempoCore { left: 6px; top: 50%; width: 24px; height: 30px; border-radius: 6px; transform: translateY(-50%); color: rgb(var(--armory-tone-tempo)); }
+.armoryCart .armoryCartPart.part-streakLens { left: 50%; top: -4px; width: 22px; height: 22px; border-radius: 50%; transform: translateX(-50%); color: rgb(var(--armory-tone-streak)); }
+.armoryCart .armoryCartPart.part-powerRig { right: 6px; top: 50%; width: 22px; height: 30px; border-radius: 5px; transform: translateY(-50%); color: rgb(var(--armory-tone-power)); }
+.armoryCart .armoryCartPart svg,
+.armoryCart .armoryCartPart .gameIcon { width: 14px; height: 14px; }
+.armoryCart:not(.isActive) .armoryCartWindow { filter: saturate(0.75); }
+
+/* One-line field record, with Compare docked in the same corner on every bay. */
+.armoryCart .armoryCartStats {
+    grid-column: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-height: 30px;
+    margin: 0;
+    padding: 0 12px 10px;
+    color: rgb(170 190 215 / 55%);
+    font-size: 11px;
+}
+.armoryCart .armoryCartStats span { display: inline-flex; align-items: baseline; gap: 3px; }
+.armoryCart .armoryCartStats b { color: #eef5ff; font-family: var(--ca-font-display); font-size: 16px; font-weight: 400; }
+.armoryCart .armoryCartStats b i { font-size: 11px; font-style: normal; }
+.armoryCart .armoryCartStats small { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.armoryCart .armoryCartStats.isEmpty { align-items: center; font-size: 11px; font-style: italic; }
+.armoryCart:not(.isActive) .armoryCartStats { padding-right: 88px; }
+.armoryCart .armoryCartCompare {
+    position: absolute;
+    right: 10px;
+    bottom: 9px;
+    z-index: 3;
+    min-height: 26px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 7%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+    color: #e6efff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+}
+.armoryCart .armoryCartCompare:hover,
+.armoryCart .armoryCartCompare:focus-visible { background: rgba(var(--cart), 0.22); box-shadow: inset 0 0 0 1px rgba(var(--cart), 0.7); }
+.armoryBayWall .armoryCart .armoryCartBody,
+.armoryBayWall .armoryCart:not(.isActive) .armoryCartBody { gap: 0; align-items: stretch; grid-template-columns: 26px minmax(0, 1fr); }
+.armoryCart .armoryCartSpine { align-self: stretch; grid-template-rows: auto 1fr; gap: 8px; padding-top: 10px; }
+/* The lamp lives on the spine so the name gets the full strip. */
+.armoryCart .armoryCartStrip { grid-template-columns: minmax(0, 1fr); padding: 9px 10px 0; }
+.armoryCart .armoryCartLamp {
+    position: absolute;
+    left: 9px;
+    bottom: 11px;
+    width: 8px;
+    height: 8px;
+    overflow: hidden;
+    gap: 0;
+    font-size: 0;
+}
+.armoryCart .armoryCartLamp::before { flex: 0 0 8px; width: 8px; height: 8px; }
+.armoryCart .armoryCartWindow { margin: 6px 10px; min-height: 58px; }
+.armoryCart .armoryCartStats {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 12px;
+    min-height: 28px;
+    padding: 0 10px 9px;
+}
+.armoryCart .armoryCartStats span { display: grid; gap: 0; line-height: 1; }
+.armoryCart .armoryCartStats b { font-size: 15px; line-height: 1.05; }
+.armoryCart .armoryCartStats small { font-size: 8.5px; letter-spacing: 0.08em; }
+.armoryCart .armoryCartStats.isEmpty { display: flex; align-items: center; white-space: nowrap; font-size: 10.5px; }
+.armoryCart:not(.isActive) .armoryCartStats { padding-right: 78px; }
+.armoryCart .armoryCartCompare { right: 8px; bottom: 8px; padding: 0 11px; }
+.armoryBayWall .armoryBay.armoryCart:not(.isActive) .armoryBayMiniTarget { display: block; }
+
+/* ---- r71 (council II p2): a swap report with actual measurements ----------
+ * The instrument strip carried five mini speedometers and five "STANDARD"
+ * captions, and the swap block encoded each change twice (segment bars and a
+ * +2/-2 score) with the real numbers in its smallest text. The strip is now a
+ * measurement panel: exact values, the candidate's value beside it while a
+ * part is previewed, and a tag only where a stat departs from stock. Under the
+ * featured part, a report lists each changed stat as Current -> With <part>,
+ * edged mint when it helps and coral when it costs.
+ * ------------------------------------------------------------------------ */
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure {
+    display: grid;
+    grid-template-areas: none;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 2px;
+    padding: 9px 12px 10px;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentLabel {
+    grid-area: auto;
+    color: rgb(170 192 220 / 70%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentReadout {
+    grid-area: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 6px;
+    margin: 0;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentValue {
+    color: #f2f7ff;
+    font-family: var(--ca-font-display);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext {
+    color: #dfe9f7;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext i { font-style: normal; opacity: 0.6; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp .armoryInstrumentNext { color: #6ff0be; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown .armoryInstrumentNext { color: #ff9a8a; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentTag {
+    justify-self: start;
+    margin-top: 3px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isAbove .armoryInstrumentTag { color: #8ff0c9; background: rgb(83 215 179 / 16%); }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isBelow .armoryInstrumentTag { color: #ffb0a2; background: rgb(255 120 100 / 16%); }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange { background: rgb(255 255 255 / 4%); }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp { box-shadow: inset 0 -2px 0 #4fe3a6; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown { box-shadow: inset 0 -2px 0 #ff7a66; }
+
+/* The swap report. */
+.armorySwapReport {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 18px auto;
+    align-items: center;
+    row-gap: 4px;
+    margin-top: 12px;
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+.armorySwapReportHead,
+.armorySwapReportRow { display: contents; }
+.armorySwapReportHead > span {
+    padding: 0 0 4px;
+    color: rgb(170 192 220 / 62%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.armorySwapReportHead > span:nth-child(2),
+.armorySwapReportHead > span:nth-child(4) { text-align: right; }
+.armorySwapReportHead > span:nth-child(4) { color: rgb(var(--tone, 160 210 255)); }
+.armorySwapReportRow > * {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    background: rgb(255 255 255 / 3.5%);
+}
+.armorySwapReportRow > .armorySwapReportLabel {
+    padding-left: 12px;
+    border-radius: 8px 0 0 8px;
+    color: #e4edf9;
+    font-size: 13px;
+    font-weight: 700;
+}
+.armorySwapReportRow > .armorySwapReportFrom { justify-content: flex-end; color: rgb(185 205 230 / 62%); font-size: 14px; }
+.armorySwapReportRow > .armorySwapReportArrow { justify-content: center; color: rgb(185 205 230 / 45%); font-size: 13px; }
+.armorySwapReportRow > .armorySwapReportTo {
+    justify-content: flex-end;
+    padding-right: 12px;
+    border-radius: 0 8px 8px 0;
+    font-family: var(--ca-font-display);
+    font-size: 18px;
+    font-weight: 400;
+}
+.armorySwapReportRow.isGain > .armorySwapReportLabel { box-shadow: inset 3px 0 0 #4fe3a6; }
+.armorySwapReportRow.isLoss > .armorySwapReportLabel { box-shadow: inset 3px 0 0 #ff7a66; }
+.armorySwapReportRow.isGain > .armorySwapReportTo { color: #6ff0be; }
+.armorySwapReportRow.isLoss > .armorySwapReportTo { color: #ff9a8a; }
+.armorySwapReportRow.isEven > * { opacity: 0.6; }
+.armorySwapReport { grid-area: trade; margin-top: 4px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure { min-width: 0; padding: 9px 10px 10px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentValue { font-size: 16px; }
+
+/* ---- r72 (council II p2): the hardware is in charge -------------------------
+ * The machine still read as a large glowing gauge with small attachments:
+ * the most prominent object was a statistic while the parts being chosen were
+ * ~80px badges. The aperture shrinks ~20% and its wide coloured arcs become a
+ * thin fitted-state accent inside a segmented steel housing on a mounting
+ * yoke. Core, lens and rig grow by about half and gain real detail (cooling
+ * fins and a recessed chamber; a thick clipped glass lens; a two-cell battery
+ * with terminals and charge windows), and each name plate hangs directly
+ * under or beside its component on a bracket.
+ * ------------------------------------------------------------------------ */
+.armoryMachine .armoryMachineRig { width: 270px; height: 270px; }
+
+/* Segmented steel housing around the aperture. */
+.armoryMachine .armoryMachineRigRing {
+    background:
+        repeating-conic-gradient(from 7deg, rgb(0 0 0 / 55%) 0 1.2deg, transparent 1.2deg 30deg),
+        repeating-conic-gradient(from 22deg, #c4d3ea 0 0.9deg, transparent 0.9deg 30deg),
+        conic-gradient(from 200deg, #32445f, #5b6f93, #2a3a55, #1a2639, #3b4e70, #32445f);
+    -webkit-mask: radial-gradient(circle closest-side, transparent 0 calc(100% - 26px), #000 calc(100% - 25px));
+            mask: radial-gradient(circle closest-side, transparent 0 calc(100% - 26px), #000 calc(100% - 25px));
+}
+.armoryMachine .armoryMachineRigRing::after { display: none; }
+/* The fitted-state arcs become a thin accent on the housing's inner lip. */
+.armoryMachine .armoryMachineRigArc {
+    -webkit-mask: radial-gradient(circle closest-side, transparent 0 calc(100% - 27px), #000 calc(100% - 26px) calc(100% - 21px), transparent calc(100% - 20px));
+            mask: radial-gradient(circle closest-side, transparent 0 calc(100% - 27px), #000 calc(100% - 26px) calc(100% - 21px), transparent calc(100% - 20px));
+}
+.armoryMachine .armoryMachineRigTicks { inset: 30px; }
+.armoryMachine .armoryMachineRigBed { inset: 26px; }
+
+/* Mounting yoke from the housing down to the bench. */
+.armoryMachine .armoryMachineCoreStage::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 112px);
+    z-index: -1;
+    width: 120px;
+    height: 70px;
+    transform: translateX(-50%);
+    clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+    background:
+        radial-gradient(circle at 22% 78%, #9fb4d2 0 3px, transparent 3.5px),
+        radial-gradient(circle at 78% 78%, #9fb4d2 0 3px, transparent 3.5px),
+        linear-gradient(90deg, #1a2639, #4a5d80 50%, #1a2639);
+}
+.armoryMachine .armoryMachineBench { width: 520px; }
+
+/* Positions for the larger components. */
+.armoryMachine .armoryMachineRigMount.mount-tempoCore { left: -74px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig { left: calc(100% + 74px); }
+.armoryMachine .armoryMachineRigMount.mount-streakLens { top: -6px; }
+.armoryMachine .armoryMachineRigConduit.conduit-tempoCore { left: -26px; width: 40px; }
+.armoryMachine .armoryMachineRigConduit.conduit-powerRig { right: -26px; width: 40px; }
+.armoryMachine .armoryMachineRigConduit.conduit-tempoCore,
+.armoryMachine .armoryMachineRigConduit.conduit-powerRig { top: calc(50% - 10px); height: 20px; border-radius: 4px; }
+
+/* Core: cooling fins either side of a recessed chamber, bolted corners. */
+.armoryMachine .armoryMachineRigMount.mount-tempoCore {
+    width: 116px;
+    height: 100px;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 10px 10px, #9fb4d2 0 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 10px) 10px, #9fb4d2 0 3px, transparent 3.5px),
+        radial-gradient(circle at 10px calc(100% - 10px), #9fb4d2 0 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #9fb4d2 0 3px, transparent 3.5px),
+        radial-gradient(circle at 50% 50%, color-mix(in srgb, currentColor 45%, #0b1528) 0 22px, #050a14 23px 27px, #3e5276 28px 30px, transparent 31px),
+        repeating-linear-gradient(180deg, #4d6186 0 4px, #141f33 4px 8px) 6px 50% / 18px 56px no-repeat,
+        repeating-linear-gradient(180deg, #4d6186 0 4px, #141f33 4px 8px) calc(100% - 6px) 50% / 18px 56px no-repeat,
+        linear-gradient(180deg, #2f4262, #16223a);
+}
+.armoryMachine .armoryMachineRigMount.mount-tempoCore > * { margin: 0; }
+.armoryMachine .armoryMachineRigMount.mount-tempoCore svg,
+.armoryMachine .armoryMachineRigMount.mount-powerRig svg,
+.armoryMachine .armoryMachineRigMount.mount-streakLens svg { width: 34px; height: 34px; }
+
+/* Lens: a thick glass assembly held by four retaining clips. */
+.armoryMachine .armoryMachineRigMount.mount-streakLens {
+    width: 96px;
+    height: 96px;
+    background:
+        linear-gradient(140deg, rgb(255 255 255 / 30%) 0 14%, transparent 30%),
+        radial-gradient(circle, color-mix(in srgb, currentColor 34%, #0e1830) 0 44%, #060c18 45% 50%, #4a5f86 51% 60%, #1c2a42 61% 72%, #3a4d70 73% 78%, #141f33 79%);
+}
+.armoryMachine .armoryMachineRigMount.mount-streakLens::before {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background:
+        linear-gradient(#8ea3c4, #3a4d70) 50% 0 / 16px 10px no-repeat,
+        linear-gradient(#3a4d70, #8ea3c4) 50% 100% / 16px 10px no-repeat,
+        linear-gradient(90deg, #8ea3c4, #3a4d70) 0 50% / 10px 16px no-repeat,
+        linear-gradient(90deg, #3a4d70, #8ea3c4) 100% 50% / 10px 16px no-repeat;
+    pointer-events: none;
+}
+
+/* Rig: two battery cells with terminals and lit charge windows. */
+.armoryMachine .armoryMachineRigMount.mount-powerRig {
+    width: 104px;
+    height: 104px;
+    border-radius: 14px;
+    background:
+        linear-gradient(currentColor, currentColor) 26% calc(100% - 12px) / 22% 26px no-repeat,
+        linear-gradient(currentColor, currentColor) 74% calc(100% - 12px) / 22% 18px no-repeat,
+        linear-gradient(#070d18, #070d18) 26% calc(100% - 10px) / 30% 32px no-repeat,
+        linear-gradient(#070d18, #070d18) 74% calc(100% - 10px) / 30% 32px no-repeat,
+        linear-gradient(90deg, transparent 49%, rgb(0 0 0 / 55%) 49% 51%, transparent 51%),
+        radial-gradient(circle at 50% 34%, color-mix(in srgb, currentColor 32%, #1a2840), #0d1626 70%),
+        linear-gradient(180deg, #2f4262, #16223a);
+}
+.armoryMachine .armoryMachineRigMount.mount-powerRig::before {
+    top: -12px;
+    width: 64px;
+    height: 10px;
+    border-radius: 0;
+    background:
+        linear-gradient(180deg, #8ea3c4, #3a4d70) 0 0 / 22px 10px no-repeat,
+        linear-gradient(180deg, #8ea3c4, #3a4d70) 100% 0 / 22px 10px no-repeat;
+    box-shadow: none;
+}
+.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0 0 34px; }
+
+/* Name plates hang from their components on a short bracket. */
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig {
+    top: calc(50% + 62px);
+    left: calc(50% - 209px);
+    right: auto;
+    transform: translateX(-50%);
+    text-align: center;
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { left: calc(50% + 209px); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore .armoryMachineHousingBody,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig .armoryMachineHousingBody { justify-items: center; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore:hover,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig:hover { transform: translateX(-50%) translateY(-1px); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore.isSelected,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig.isSelected { box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), inset 0 3px 0 rgba(var(--tone), 0.95), 0 4px 0 rgb(0 0 0 / 35%); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.isSelected { outline: 2px solid rgba(var(--tone), 0.9); outline-offset: 2px; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -12px;
+    width: 18px;
+    height: 10px;
+    transform: translateX(-50%);
+    background:
+        radial-gradient(circle at 50% 60%, #9fb4d2 0 2px, transparent 2.5px),
+        linear-gradient(180deg, #4a5d80, #24324c);
+    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+}
+/* The lens plate hangs to the right of the lens on a side bracket. */
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens { left: calc(50% + 60px); top: 22px; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens::before {
+    left: -12px;
+    top: 50%;
+    width: 10px;
+    height: 16px;
+    transform: translateY(-50%);
+    clip-path: polygon(0 20%, 100% 0, 100% 100%, 0 80%);
+}
+.armoryMachine .armoryMachineRigMount.mount-tempoCore { left: -66px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig { left: calc(100% + 66px); }
+.armoryMachine .armoryMachineRigConduit.conduit-tempoCore { left: -20px; width: 34px; }
+.armoryMachine .armoryMachineRigConduit.conduit-powerRig { right: -20px; width: 34px; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore { left: calc(50% - 201px); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { left: calc(50% + 201px); }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { max-width: 132px; padding: 5px 10px 6px; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing .armoryMachineHousingLabel { font-size: 13px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig {
+    background:
+        linear-gradient(color-mix(in srgb, currentColor 75%, #000), color-mix(in srgb, currentColor 75%, #000)) 26% calc(100% - 13px) / 18% 14px no-repeat,
+        linear-gradient(color-mix(in srgb, currentColor 75%, #000), color-mix(in srgb, currentColor 75%, #000)) 74% calc(100% - 13px) / 18% 9px no-repeat,
+        linear-gradient(#070d18, #070d18) 26% calc(100% - 10px) / 28% 22px no-repeat,
+        linear-gradient(#070d18, #070d18) 74% calc(100% - 10px) / 28% 22px no-repeat,
+        linear-gradient(90deg, transparent 49%, rgb(0 0 0 / 55%) 49% 51%, transparent 51%),
+        radial-gradient(circle at 50% 34%, color-mix(in srgb, currentColor 32%, #1a2840), #0d1626 70%),
+        linear-gradient(180deg, #2f4262, #16223a);
+}
+.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0 0 24px; }
+.armoryMachine .armoryMachineBench em { left: 7%; transform: none; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { top: calc(50% + 70px); }
+.armoryMachine .armoryMachineBench em { left: 10%; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { padding-top: 8px; }
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing::before { z-index: -1; }
+
+/* ---- r73 (council II p3): one continuous calibration report ----------------
+ * The header strip was five separate pills whose values clipped
+ * ("x1.00 cadence", "100px"), it only showed the candidate's numbers while
+ * hovering, and the report under the featured part used different labels and
+ * units ("Shrink control x0.96" vs "4.0% / hit"). The strip is now one glass
+ * instrument with hairline dividers whose candidate values show whenever a
+ * part is featured, and the report uses the same labels and units in fixed
+ * Current / With <part> columns marked as a preview.
+ * ------------------------------------------------------------------------ */
+.armoryWorkspace > .armoryInstruments {
+    background: linear-gradient(180deg, #0a1322, #0d1829);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%), inset 0 8px 18px rgb(0 0 0 / 35%);
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange {
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    padding: 9px 12px 10px;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentReadout { display: grid; gap: 1px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentValue { font-size: 17px; font-variant-numeric: tabular-nums; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp .armoryInstrumentValue,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown .armoryInstrumentValue,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange .armoryInstrumentValue { color: rgb(220 232 248 / 55%); font-size: 14px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext { font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp::before,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: #4fe3a6;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown::before { background: #ff7a66; }
+
+/* Report: same labels and units as the strip, fixed columns. */
+.armorySwapReport { grid-template-columns: minmax(0, 1fr) minmax(84px, auto) minmax(104px, auto); }
+.armorySwapReportHead > span:nth-child(3) { display: inline-flex; justify-content: flex-end; align-items: center; gap: 6px; text-align: right; color: rgb(var(--tone, 160 210 255)); }
+.armorySwapReportHead > span:nth-child(4) { display: none; }
+.armorySwapReportPreview {
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 10%);
+    color: #e9f1ff;
+    font-size: 8.5px;
+    font-style: normal;
+    letter-spacing: 0.1em;
+}
+.armorySwapReportRow > .armorySwapReportFrom { padding-right: 4px; }
+.armorySwapReport { column-gap: 0; }
+.armorySwapReportHead > span:nth-child(2) { padding-right: 4px; }
+.armorySwapReportHead > span:nth-child(3) { padding-right: 12px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext { font-size: 15px; }

@@ -23,8 +23,8 @@ function getPartVisualState({ part, isLocked, isInstalled }) {
   return "available"
 }
 
-// What a swap does to the build's rated profile: one 10-segment bar per stat
-// that changes, with gained segments lit green and lost segments struck red.
+// What a swap does to the build's measured rules: each stat that changes,
+// with its current and proposed values.
 function getSwapImpact(currentRules, nextRules) {
   if (!currentRules || !nextRules) return []
   const nextByKey = Object.fromEntries(getProfileStats(nextRules).map((stat) => [stat.key, stat]))
@@ -35,34 +35,42 @@ function getSwapImpact(currentRules, nextRules) {
   })
 }
 
-function SwapImpact({ rows, title = "Swap impact" }) {
+// A swap report: the actual measurements before and after, one aligned row
+// per changed stat, edged mint when the change helps and coral when it costs.
+const REPORT_LABELS = {
+  size: "Aim window",
+  floor: "Floor size",
+  shrink: "Shrink pace",
+  combo: "Combo ramp",
+  miss: "Miss cost",
+  charge: "Charge rate",
+  payout: "Score payout",
+}
+
+function formatReportValue(key, value) {
+  if (key === "miss") return value === "0" ? "0 points" : `${value.replace("-", "")} point${value === "-1" ? "" : "s"}`
+  if (key === "combo") return `${value.replace("every ", "")} hits`
+  if (key === "shrink") return `${((1 - Number(value.replace("x", ""))) * 100).toFixed(1)}% / hit`
+  return value
+}
+
+function SwapImpact({ rows, title = "Swap report", fromLabel = "Current", toLabel = "Proposed", isPreview = false }) {
   return (
-    <div className="armorySwapImpact" aria-label={title}>
-      <span className="armorySwapImpactTitle">{title}</span>
+    <div className="armorySwapReport" role="table" aria-label={title}>
+      <div className="armorySwapReportHead" role="row">
+        <span role="columnheader">{title}</span>
+        <span role="columnheader">{fromLabel}</span>
+        <span role="columnheader">{toLabel}{isPreview ? <em className="armorySwapReportPreview">Preview</em> : null}</span>
+      </div>
       {rows.map(({ key, label, from, to }) => {
         const delta = to.rating - from.rating
-        const steps = Math.min(5, Math.abs(delta))
         const tone = delta > 0 ? "isGain" : delta < 0 ? "isLoss" : "isEven"
+        const verdict = delta > 0 ? "better" : delta < 0 ? "worse" : "no change"
         return (
-          <div key={key} className={`armorySwapImpactRow ${tone}`}>
-            <span className="armorySwapImpactLabel">{label}</span>
-            <span className="armorySwapImpactDiverge" aria-hidden="true">
-              <span className="armorySwapImpactSide isLossSide">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <i key={index} className={delta < 0 && index < steps ? "isLost" : ""} />
-                ))}
-              </span>
-              <em className="armorySwapImpactAxis" />
-              <span className="armorySwapImpactSide isGainSide">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <i key={index} className={delta > 0 && index < steps ? "isGained" : ""} />
-                ))}
-              </span>
-              <b className="armorySwapImpactDelta">{delta > 0 ? `+${delta}` : delta < 0 ? `−${Math.abs(delta)}` : "±0"}</b>
-            </span>
-            <span className="armorySwapImpactValue">
-              <s>{from.value}</s> {"→"} <b>{to.value}</b>
-            </span>
+          <div key={key} className={`armorySwapReportRow ${tone}`} role="row" aria-label={`${REPORT_LABELS[key] ?? label}: ${formatReportValue(key, from.value)} to ${formatReportValue(key, to.value)}, ${verdict}`}>
+            <span className="armorySwapReportLabel" role="rowheader">{REPORT_LABELS[key] ?? label}</span>
+            <span className="armorySwapReportFrom" role="cell">{formatReportValue(key, from.value)}</span>
+            <b className="armorySwapReportTo" role="cell">{formatReportValue(key, to.value)}</b>
           </div>
         )
       })}
@@ -151,11 +159,10 @@ export default function ArmoryPartsGallery({
   const featuredChips = featuredPart?.effects ? getModuleDeltaChips(featuredPart, installedPart) : []
   const featuredGains = featuredChips.filter((chip) => chip.tone === "gain")
   const featuredCosts = featuredChips.filter((chip) => chip.tone === "cost")
-  // While the pointer or focus is inside the gallery, the featured candidate
-  // is "previewed" so the instrument gauges can show where it would move them.
-  const [isPreviewing, setIsPreviewing] = useState(false)
+  // The featured candidate is always previewed, so the measurement strip
+  // shows where it would move each stat without the player hovering first.
   const confirmedPart = confirmed && confirmed.partId === installedPartId ? installedPart : null
-  const previewPartId = isPreviewing && !confirmedPart ? featuredPart?.id ?? null : null
+  const previewPartId = !confirmedPart ? featuredPart?.id ?? null : null
   useEffect(() => {
     onPreviewPart?.(previewPartId)
   }, [onPreviewPart, previewPartId])
@@ -203,12 +210,6 @@ export default function ArmoryPartsGallery({
       role="group"
       aria-label={galleryLabel}
       onKeyDown={handleGalleryKeyDown}
-      onMouseEnter={() => setIsPreviewing(true)}
-      onMouseLeave={() => setIsPreviewing(false)}
-      onFocus={() => setIsPreviewing(true)}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setIsPreviewing(false)
-      }}
     >
       {confirmedPart ? (
         <div className={`armoryPartFeature tone-${tone} isConfirmed`} aria-label={`Installed: ${confirmedPart.label}`}>
@@ -220,7 +221,7 @@ export default function ArmoryPartsGallery({
             <strong className="armoryPartFeatureName">{confirmedPart.label}</strong>
             <span className="armoryPartFeatureFeel">{confirmedPart.description}</span>
           </div>
-          {confirmed.rows.length ? <SwapImpact rows={confirmed.rows} title="Applied changes" /> : null}
+          {confirmed.rows.length ? <SwapImpact rows={confirmed.rows} title="Applied changes" fromLabel="Before" toLabel="Now" /> : null}
           <span className="armoryPartFeatureInstalled" role="status">Installed {"✓"}</span>
         </div>
       ) : featuredPart ? (
@@ -238,7 +239,7 @@ export default function ArmoryPartsGallery({
           {chargeMultiplier !== null && featuredPart.awardEvery ? (
             <ChargeRhythm candidate={featuredPart} installed={installedPart} multiplier={chargeMultiplier} />
           ) : null}
-          {swapImpact.length ? <SwapImpact rows={swapImpact} /> : featuredPart.effects ? (
+          {swapImpact.length ? <SwapImpact rows={swapImpact} toLabel={`With ${featuredPart.label}`} isPreview /> : featuredPart.effects ? (
             <div className="armoryPartFeatureTrade">
               <div className="armoryPartFeatureSide is-gain">
                 <span className="armoryPartFeatureSideLabel">You gain</span>
