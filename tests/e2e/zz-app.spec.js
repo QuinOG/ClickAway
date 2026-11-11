@@ -19,7 +19,7 @@ async function shot(page, name, opts = {}) {
   if (opts.fullPage !== false) {
     const extra = await page.evaluate(() => { const m = document.querySelector(".mainContent"); return m ? m.scrollHeight - m.clientHeight : 0 }).catch(() => 0)
     if (extra > 0) {
-      await page.setViewportSize({ width: 1440, height: Math.min(900 + extra, 3600) })
+      await page.setViewportSize({ width: 1440, height: Math.min(900 + extra, 4600) })
       await page.waitForTimeout(500)
       await page.screenshot({ path: `${OUT}/${String(n).padStart(2, "0")}-${name}.png` }).catch(() => {})
       await page.setViewportSize({ width: 1440, height: 900 })

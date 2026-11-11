@@ -1,8 +1,14 @@
+import ArenaWorldArt from "../art/ArenaWorldArt.jsx"
+
 export default function AuthArenaArrival({ mode = "login", children }) {
   const isSignup = mode === "signup"
 
   return (
     <div className="authArrival">
+      <div className="authStadium" aria-hidden="true">
+        <ArenaWorldArt className="authStadiumArt" />
+        <span className="authStadiumFloor" />
+      </div>
       <div className="authTitleScreen" aria-hidden="true">
         <span className="authTitleMark">
           <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
@@ -10,7 +16,9 @@ export default function AuthArenaArrival({ mode = "login", children }) {
         <span className="authWordmark">ClickAway</span>
         <span className="authTagline">Precision arena · Season 1</span>
       </div>
-      <section className="authPanel" aria-labelledby="auth-page-title">
+      <section className="authPanel authPass" aria-labelledby="auth-page-title">
+        <span className="authPassStub" aria-hidden="true"><b>Competitor pass</b><i>Admit one · Season 1</i></span>
+        <span className="authPassSeal" aria-hidden="true">S1</span>
         <div className="authPanelHeader">
           <span className="authEyebrow">
             {isSignup ? "New competitor" : "Competitor access"}

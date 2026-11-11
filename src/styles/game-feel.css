@@ -1975,10 +1975,6 @@
 .shopCommandSurface { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important; }
 .shopCommandSurface .shopCommandLoadoutMeta { display: grid !important; grid-template-columns: 1fr; gap: 6px !important; }
 .shopCommandSurface .shopCommandLoadoutMeta span > span { white-space: normal !important; overflow: visible !important; }
-/* legendary cards get a raised gold shelf and a slight tilt */
-.shopGrid .shopItemCard.rarity-legendary::after {
-    background: linear-gradient(180deg, #fff1b0, #e9a93a 45%, #8a5c1e) !important;
-}
 
 /* ---- F. Ladder podium depth: side faces and a shared floor ------------- */
 .leaderboardPodiumDeck { perspective: 900px; }
@@ -2152,3 +2148,362 @@
 .helpDoc .helpTopicGroup > :last-child { position: relative; z-index: 1; }
 .leaderboardTopRow { align-items: start !important; }
 .helpDoc .helpTopicGroup .rankTierGrid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 8px !important; }
+
+/* ======================= Round 9 (run 2, round 3) ======================= */
+/* ---- A. Shop items are boxed products: material frame by rarity, a
+   printed lid band, a cellophane window and a paper price tag ----------- */
+.shopGrid .shopItemCard {
+    --mat: linear-gradient(135deg, #8a98ae 0%, #5d6a80 30%, #9aa8bc 52%, #4f5b70 75%, #7c8aa0 100%);
+    --mat-ink: #e8eef8;
+    border: 9px solid transparent !important;
+    border-radius: 10px !important;
+    background:
+        linear-gradient(180deg, #16233a, #0b1424) padding-box,
+        repeating-linear-gradient(115deg, rgb(255 255 255 / 0%) 0 3px, rgb(255 255 255 / 7%) 3px 4px) border-box,
+        var(--mat) border-box !important;
+    box-shadow: 0 0 0 2px #040912, inset 0 0 0 2px #040912, 0 8px 0 2px #040912, 0 14px 18px rgb(0 0 0 / 45%) !important;
+}
+.shopGrid .shopItemCard.rarity-rare {
+    --mat: linear-gradient(135deg, #6fc4ff 0%, #1f6fc0 35%, #57b0f5 55%, #164f92 80%, #3a8ad8 100%);
+}
+.shopGrid .shopItemCard.rarity-epic {
+    --mat: radial-gradient(circle at 20% 15%, #f2dcff 0 1.5px, transparent 2.5px), radial-gradient(circle at 75% 65%, #f2dcff 0 1px, transparent 2px), linear-gradient(135deg, #c48bff 0%, #6a2fc0 35%, #a466ef 55%, #4a1f8f 80%, #8a4ee0 100%);
+}
+.shopGrid .shopItemCard.rarity-legendary {
+    --mat: linear-gradient(120deg, #fff4c0 0%, #f2b844 18%, #a8701a 34%, #ffe08a 48%, #c98a24 62%, #fff1b0 76%, #a8701a 100%);
+    box-shadow: 0 0 0 2px #040912, inset 0 0 0 2px #040912, 0 8px 0 2px #040912, 0 0 26px rgb(255 190 70 / 45%), 0 14px 18px rgb(0 0 0 / 45%) !important;
+}
+.shopGrid .shopItemCard::before { display: none !important; }
+/* lid band: the rarity is printed across the top of the box */
+.shopGrid .shopItemCard .shopItemHeader {
+    margin: -2px -2px 8px !important;
+    padding: 5px 10px !important;
+    border-bottom: 2px solid #040912;
+    background: rgb(4 9 18 / 55%);
+}
+.shopGrid .shopItemCard .shopItemRarity {
+    padding: 0 !important;
+    color: var(--rare, #c9d4e4) !important;
+    background: none !important;
+    font-family: var(--ca-font-display);
+    font-size: 12px !important;
+    letter-spacing: 0.18em !important;
+    text-shadow: 0 1px 0 #040912;
+}
+/* cellophane window over the item */
+.shopGrid .shopItemCard .shopItemPreviewFrame {
+    position: relative;
+    border: 2px solid #040912 !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 12%), inset 0 6px 14px rgb(0 0 0 / 55%) !important;
+}
+.shopGrid .shopItemCard .shopItemPreviewFrame::after {
+    content: "";
+    position: absolute; inset: 0; z-index: 3;
+    border-radius: 12px;
+    background: linear-gradient(118deg, rgb(255 255 255 / 0%) 30%, rgb(255 255 255 / 16%) 38%, rgb(255 255 255 / 0%) 46%, rgb(255 255 255 / 0%) 62%, rgb(255 255 255 / 8%) 66%, rgb(255 255 255 / 0%) 70%);
+    pointer-events: none;
+}
+/* paper price tag tied to the box corner */
+.shopPriceTag {
+    position: absolute;
+    z-index: 5;
+    top: -16px;
+    right: -14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px 5px 18px;
+    border: 2px solid #040912;
+    color: #2a1600;
+    font-family: var(--ca-font-display);
+    font-size: 17px;
+    line-height: 1;
+    background:
+        radial-gradient(circle at 8px 50%, #0b1424 0 3px, #040912 3px 4px, transparent 4.5px),
+        linear-gradient(180deg, #fff6dc, #efdcae);
+    clip-path: polygon(0 50%, 10px 0, 100% 0, 100% 100%, 10px 100%);
+    transform: rotate(7deg);
+    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 55%));
+}
+.shopPriceTag svg { width: 14px; height: 14px; color: #a8701a; }
+.shopPriceTag.is-equipped, .shopPriceTag.is-owned {
+    color: #fff;
+    background:
+        radial-gradient(circle at 8px 50%, #0b1424 0 3px, #040912 3px 4px, transparent 4.5px),
+        linear-gradient(180deg, #3fd18a, #1f8a52);
+    text-shadow: 0 1px 0 #040912;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.shopPriceTag.is-owned { background: radial-gradient(circle at 8px 50%, #0b1424 0 3px, #040912 3px 4px, transparent 4.5px), linear-gradient(180deg, #8fa3bd, #4f5b70); }
+/* the state chip is redundant with the tag on locked items */
+.shopGrid .shopItemCard .shopItemStateTag { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* legendary glow spills onto the plank */
+.shopGrid .shopItemCard.rarity-legendary::after {
+    box-shadow: 0 4px 0 #040912, 0 -8px 20px rgb(255 190 70 / 55%) !important;
+}
+.shopGrid { padding-top: 14px; }
+
+/* ---- History: bars stay inside the bezel; the side column is a placard - */
+.historyTrajectory .historyClimb { padding-bottom: 30px !important; overflow: hidden; }
+.historyTrajectory .historyClimbPillar { height: calc(var(--climb) - 78px) !important; }
+.historyTrajectory .historyClimbLabel {
+    position: absolute;
+    bottom: -24px;
+    margin: 0 !important;
+}
+.historyTrajectory .historyClimbStep { position: relative; }
+.historyTrajectory .historyTrajectoryCopy {
+    align-self: center;
+    padding: 14px 18px 16px;
+    border: 3px solid #040912;
+    border-radius: 8px;
+    background:
+        radial-gradient(circle at 8px 8px, #c9d4e4 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 8px) 8px, #c9d4e4 1.5px, transparent 2.5px),
+        radial-gradient(circle at 8px calc(100% - 8px), #c9d4e4 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #c9d4e4 1.5px, transparent 2.5px),
+        linear-gradient(180deg, #2c3c58, #18243a);
+    box-shadow: inset 0 0 0 2px #a8792a, inset 0 3px 0 rgb(255 255 255 / 14%), 0 4px 0 #040912;
+}
+.historyTrajectory .historyTrajectoryCopy h2 { font-family: var(--ca-font-display); color: #fff; text-shadow: 0 2px 0 #040912; }
+.historyTrajectory .historyTrajectoryDelta {
+    display: inline-flex;
+    margin-top: 6px;
+    padding: 4px 10px;
+    border: 2px solid #040912;
+    border-radius: 4px;
+    background: #020509;
+    font-family: var(--ca-font-display);
+    font-size: 22px;
+    text-shadow: 0 0 8px currentColor;
+}
+/* filter chips become mode-coloured tokens */
+.historyTrajectoryLegend.isFilter button {
+    --tok: 79 184 255;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px 5px 6px !important;
+    border: 2px solid #040912 !important;
+    border-radius: 999px !important;
+    color: #c9d4e4 !important;
+    background: linear-gradient(180deg, #23324c, #141f33) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 12%), 0 3px 0 #040912 !important;
+    font-family: var(--ca-font-display);
+}
+.historyTrajectoryLegend.isFilter button[data-mode="practice"] { --tok: 62 229 154; }
+.historyTrajectoryLegend.isFilter button[data-mode="ranked"] { --tok: 255 201 74; }
+.historyTrajectoryLegend.isFilter button i {
+    width: 18px; height: 18px; border: 2px solid #040912 !important; border-radius: 50% !important; transform: none !important;
+    background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 70%), rgb(var(--tok)) 45%, rgb(var(--tok) / 60%)) !important;
+}
+.historyTrajectoryLegend.isFilter button.isActive {
+    color: #040912 !important;
+    background: linear-gradient(180deg, rgb(var(--tok)), rgb(var(--tok) / 70%)) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 45%), 0 3px 0 #040912, 0 0 14px rgb(var(--tok) / 45%) !important;
+}
+
+/* ---- C. Login: the stadium behind, the form as a competitor pass ------- */
+.authStadium {
+    position: fixed;
+    z-index: 0;
+    inset: 80px 0 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.authStadium .authStadiumArt { position: absolute; inset: 0 0 34%; width: 100%; height: 66%; opacity: 0.62; }
+.authStadium .authStadiumArt .awaBoardText, .authStadium .authStadiumArt .awaScreenIdle { display: none; }
+.authStadium .authStadiumFloor {
+    position: absolute; left: -10%; right: -10%; bottom: -8%; height: 46%;
+    background: var(--gf-court);
+    transform: perspective(700px) rotateX(38deg);
+    transform-origin: center bottom;
+    opacity: 0.8;
+}
+.authStadium::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 45% 60% at 50% 50%, rgb(6 11 22 / 55%), rgb(6 11 22 / 20%) 70%, rgb(6 11 22 / 70%));
+}
+.authArrival > :not(.authStadium) { position: relative; z-index: 1; }
+.authPanel.authPass { padding-top: 64px !important; overflow: visible; }
+.authPassStub {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    border-bottom: 3px dashed rgb(255 230 170 / 55%);
+    background: linear-gradient(180deg, #ffe9a0, #e9a93a 70%, #c98a24);
+    color: #2a1600;
+}
+.authPassStub::before, .authPassStub::after {
+    content: ""; position: absolute; bottom: -12px; width: 22px; height: 22px; border-radius: 50%;
+    background: #06101e; border: 2px solid #040912;
+}
+.authPassStub::before { left: -25px; }
+.authPassStub::after { right: -25px; }
+.authPassStub b { font-family: var(--ca-font-display); font-size: 18px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
+.authPassStub i { font-style: normal; font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.authPassSeal {
+    position: absolute;
+    z-index: 3;
+    right: -30px; top: 56px;
+    width: 70px; height: 70px;
+    display: grid; place-items: center;
+    border: 3px double #e2463a;
+    border-radius: 50%;
+    color: #e2463a;
+    font-family: var(--ca-font-display);
+    font-size: 24px;
+    background: radial-gradient(circle, rgb(226 70 58 / 12%), transparent 70%);
+    box-shadow: 0 0 0 4px rgb(226 70 58 / 35%);
+    transform: rotate(-14deg);
+    opacity: 0.9;
+}
+
+/* ---- B. Help: manual pages are printed paper; art panels are dark plates  */
+.helpDoc .helpTopicGroup {
+    color: #2a1c0e;
+    background:
+        repeating-linear-gradient(180deg, transparent 0 31px, rgb(120 80 30 / 13%) 31px 32px),
+        linear-gradient(90deg, #1a2234 0 44px, #040912 44px 46px, rgb(120 80 30 / 25%) 46px 52px, transparent 52px),
+        radial-gradient(ellipse at 30% 20%, #fbf2da, #efdfb8 70%, #e2cc9a) !important;
+    box-shadow: 5px 5px 0 -1px #d9c493, 5px 5px 0 1px #040912, 10px 10px 0 -1px #c9b27c, 10px 10px 0 1px #040912, 0 14px 24px rgb(0 0 0 / 45%) !important;
+}
+.helpDoc .helpTopicGroup::before { color: rgb(150 90 20 / 14%) !important; -webkit-text-stroke: 2px rgb(110 60 10 / 22%) !important; }
+.helpDoc .helpTopicGroup .helpGroupTitle { color: #2a1c0e !important; text-shadow: none !important; }
+.helpDoc .helpTopicGroup .helpGroupHeader::after { background: linear-gradient(90deg, #7a4a12, rgb(122 74 18 / 0)) !important; }
+.helpDoc .helpTopicGroup .helpSubhead { color: #8a4a10 !important; font-family: var(--ca-font-display); font-weight: 400; }
+/* text-heavy power cards are printed straight onto the page */
+.helpDoc .helpTopicGroup .helpPowerupCard {
+    border: 2px solid #2a1c0e !important;
+    border-radius: 6px !important;
+    background: rgb(255 250 235 / 55%) !important;
+    box-shadow: 3px 3px 0 rgb(42 28 14 / 22%) !important;
+}
+.helpDoc .helpTopicGroup .helpPowerupCard,
+.helpDoc .helpTopicGroup .helpPowerupCard :is(h3, h4, p, strong, span, b, small):not(.helpPowerupEmblem *) { color: #2a1c0e !important; text-shadow: none !important; }
+.helpDoc .helpTopicGroup .helpPowerupCard .helpPowerupMeta { color: #9a4a08 !important; font-weight: 800; }
+.helpDoc .helpTopicGroup .helpPowerupEmblem { box-shadow: 0 0 0 2px #2a1c0e !important; }
+/* the "Full rulebook" drawer is an inked tab */
+.helpDoc .helpTopicGroup .helpRulebook > summary {
+    border: 2px solid #2a1c0e !important;
+    background: #2a1c0e !important;
+    color: #f3e6c8 !important;
+}
+.helpDoc .helpTopicGroup .helpRulebook[open] .helpRulebookBody { color: #2a1c0e; }
+.helpDoc .helpTopicGroup .helpBlock {
+    border: 2px solid #2a1c0e !important;
+    background: rgb(255 250 235 / 45%) !important;
+    box-shadow: 3px 3px 0 rgb(42 28 14 / 22%) !important;
+}
+.helpDoc .helpTopicGroup .helpBlock > :is(h2, h3, p, .cardH2, .muted) { color: #2a1c0e !important; text-shadow: none !important; }
+.helpDoc .helpTopicGroup .helpBlock .muted { color: #6a4a24 !important; }
+.helpDoc .helpTopicGroup .helpBlock :is(p, li, dt, dd, summary, h3, h4, strong, span, a) { color: #2a1c0e !important; text-shadow: none !important; }
+.helpDoc .helpTopicGroup .helpBlock :is(summary, dt, h3, strong) { color: #7a3d08 !important; font-weight: 800; }
+.helpDoc .helpTopicGroup .rankTierCard {
+    border: 2px solid #040912 !important;
+    background: linear-gradient(180deg, #1d2c46, #101a2c) !important;
+    box-shadow: 3px 3px 0 rgb(42 28 14 / 30%) !important;
+    opacity: 1 !important;
+}
+.helpDoc .helpTopicGroup .rankTierCard :is(p, span) { color: #e8eef8 !important; }
+.helpDoc .helpTopicGroup .rankTierCard .rankTierLabel { color: #ffd25c !important; }
+
+/* ---- D. Duels: an incoming challenge is a fight ticket ----------------- */
+.duelPage .duelCommandSurface .challengeCard {
+    --stub: 244px;
+    border: 3px solid #040912 !important;
+    border-image: none !important;
+    border-radius: 14px !important;
+    background:
+        radial-gradient(circle at var(--stub) 0, #0a1322 0 13px, #040912 13px 15px, transparent 15.5px),
+        radial-gradient(circle at var(--stub) 100%, #0a1322 0 13px, #040912 13px 15px, transparent 15.5px),
+        linear-gradient(115deg, #1d5fae 0 46%, #040912 46% 47.5%, #b0283e 47.5% 100%) 0 0 / var(--stub) 100% no-repeat,
+        repeating-linear-gradient(135deg, rgb(255 255 255 / 0%) 0 14px, rgb(255 255 255 / 2.5%) 14px 15px),
+        linear-gradient(180deg, #1c2b45, #111c30) !important;
+    box-shadow: 0 6px 0 #040912, 0 14px 22px rgb(0 0 0 / 45%) !important;
+}
+.duelPage .duelCommandSurface .challengeCard::before {
+    content: "";
+    position: absolute;
+    top: 16px; bottom: 16px; left: calc(var(--stub) - 2px);
+    border-left: 3px dashed rgb(255 230 170 / 45%);
+    pointer-events: none;
+}
+.duelPage .duelCommandSurface .challengeVersusSide { width: 78px !important; height: 78px !important; border-radius: 50% !important; }
+.duelPage .duelCommandSurface .challengeVersusBadge {
+    font-family: var(--ca-font-display);
+    font-size: 30px;
+    color: #ffd25c;
+    -webkit-text-stroke: 2px #040912;
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 #040912;
+}
+.duelPage .duelCommandSurface .challengeCardTitle { font-family: var(--ca-font-display); font-size: 30px !important; text-shadow: 0 3px 0 #040912; }
+.duelPage .duelCommandSurface .challengeTargetBeam { visibility: hidden; }
+.duelPage .duelCommandSurface .challengeTargetMode {
+    border: 2px solid #040912 !important;
+    border-radius: 4px;
+    color: #040912 !important;
+    background: linear-gradient(180deg, #8fe3ff, #3aa8e0);
+    font-family: var(--ca-font-display);
+    letter-spacing: 0.1em;
+}
+.duelPage .duelCommandSurface .challengeTargetScore {
+    padding: 6px 14px 8px;
+    border: 3px solid #040912;
+    border-radius: 6px;
+    background: #020509;
+    box-shadow: inset 0 0 0 2px #e2463a, 0 3px 0 #040912;
+    transform: rotate(-3deg);
+}
+.duelPage .duelCommandSurface .challengeTargetScore small { color: #ff8a78 !important; letter-spacing: 0.18em; }
+.duelPage .duelCommandSurface .challengeTargetScore strong { color: #fff !important; font-size: 36px !important; line-height: 1; text-shadow: 0 0 10px rgb(255 90 70 / 60%); }
+.duelPage .duelCommandSurface .challengeCardMessage { font-family: var(--ca-font-display); font-size: 18px; color: #ffe6b0 !important; }
+
+/* ---- E. Profile: achievements are a lit trophy path -------------------- */
+.profileAchievementsSection .achievementsRow { position: relative; }
+/* a rail connects the trophies at medal height */
+.profileAchievementsSection .achievementsRow::before {
+    content: "";
+    position: absolute; z-index: 0;
+    left: 8%; right: 8%; top: 66px; height: 8px;
+    border: 2px solid #040912;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #3a4a66, #1c2740);
+}
+.profileAchievementsSection .achievementsRow > .achievementTile { position: relative; z-index: 1; }
+/* lit trophies glow; locked ones are dim cast-iron */
+.profileAchievementsSection .achievementTile.isUnlocked .achievementMedal {
+    filter: drop-shadow(0 0 16px rgb(255 200 90 / 65%));
+}
+.profileAchievementsSection .achievementTile.isLocked .achievementMedal { filter: grayscale(0.85) brightness(0.55); }
+.profileAchievementsSection .achievementTile.isLocked :is(.achievementTitle, .achievementDescription) { opacity: 0.6; }
+/* the next trophy to earn stands out */
+.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementMedal {
+    filter: none;
+    transform: scale(1.22);
+}
+.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked :is(.achievementTitle, .achievementDescription) { opacity: 1; }
+.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementTitle { color: #ffd25c !important; }
+.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementTileHeader::before {
+    content: "NEXT";
+    position: absolute; top: -6px; left: 50%; translate: -50% 0; z-index: 3;
+    padding: 2px 10px;
+    border: 2px solid #040912;
+    border-radius: 4px;
+    color: #2a1600;
+    background: linear-gradient(180deg, #ffe9a0, #e9a93a);
+    font: 400 12px var(--ca-font-display);
+    letter-spacing: 0.14em;
+}
+.profileAchievementsSection .achievementTile .achievementTileHeader { position: relative; }
+/* no LOCKED/UNLOCKED chips and no percentages: the trophy state says it */
+.profileAchievementsSection .achievementsRow .achievementStatusRow { display: none !important; }
+.profileAchievementsSection .achievementsRow .achievementProgressMeta > :not(.achievementProgressText) { display: none !important; }
+.profileAchievementsSection .achievementsRow .achievementTile.isUnlocked .achievementProgress { visibility: hidden; }
+.profileAchievementsSection .achievementFeaturedBannerWrap .achievementStatusRow { display: none !important; }
