@@ -401,8 +401,8 @@
 }
 .historyClimbEmpty { margin: auto; color: #8fb3dd; }
 .historyClimbStep { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; --tone: #4fb8ff; }
-.historyClimbStep.tone-ranked, .historyClimbStep[class*="ranked"] { --tone: #ffc94a; }
-.historyClimbStep[class*="practice"] { --tone: #3ee59a; }
+.historyClimbStep.isRanked { --tone: #ffc94a; }
+.historyClimbStep.isPractice { --tone: #3ee59a; }
 .historyClimbMedal {
     position: relative;
     min-width: 58px; padding: 6px 8px;
@@ -704,23 +704,28 @@
     font-family: var(--ca-font-display); font-size: 20px !important; color: #ffd25c !important;
 }
 
-/* ---- Arena: solid stands, crowd, banners, jumbotron --------------------- */
-.arenaWorldStands path, .arenaWorldCrowd circle, .arenaWorldBanners path, .arenaWorldJumbotron * { vector-effect: non-scaling-stroke; }
-.arenaWorldArt .arenaWorldStands path:not([stroke]) { stroke: none !important; }
-.arenaWorldArt .arenaWorldCrowd circle, .arenaWorldArt .arenaWorldBanners path { stroke: #040912 !important; stroke-width: 1.5 !important; }
-.arenaWorldArt .arenaWorldBanners path { fill-opacity: 0.8; }
+/* ---- Arena: painted stands, crowd, banners, jumbotron (fills live in CSS
+   because .arenaWorldArt path is fill:none in game-play.css) ------------- */
+.arena .arenaWorldArt, .lobbyStage > .arenaWorldArt { opacity: 0.85 !important; }
+.arenaWorldArt .arenaWorldRoof path { fill: #0d1a2e !important; stroke: rgb(115 203 240 / 45%) !important; stroke-width: 3 !important; }
+.arenaWorldArt .arenaWorldStands path:nth-child(1) { fill: #0e1b30 !important; stroke: #040912 !important; }
+.arenaWorldArt .arenaWorldStands path:nth-child(2) { fill: #0b1626 !important; stroke: #040912 !important; }
+.arenaWorldArt .arenaWorldStands path:nth-child(3) { stroke: rgb(255 201 74 / 60%) !important; stroke-width: 3 !important; }
+.arenaWorldArt .arenaWorldStands path:nth-child(4) { stroke: rgb(79 216 255 / 18%) !important; stroke-width: 2 !important; }
+.arenaWorldArt .arenaWorldCrowd circle { stroke: none !important; }
+.arenaWorldArt .arenaWorldBanners path { stroke: #040912 !important; stroke-width: 2 !important; }
+.arenaWorldArt .arenaWorldBanners path:nth-child(odd) { fill: #2b8a5a !important; }
+.arenaWorldArt .arenaWorldBanners path:nth-child(even) { fill: #7dffb1 !important; }
+.arenaWorldArt .arenaWorldBanners path:nth-child(3), .arenaWorldArt .arenaWorldBanners path:nth-child(5) { fill: #2a6fb8 !important; }
+.arenaWorldArt .arenaWorldBanners path:nth-child(4), .arenaWorldArt .arenaWorldBanners path:nth-child(6) { fill: #8fd4ff !important; }
+.arenaWorldArt .arenaWorldBanners path:nth-child(7) { fill: #c98a24 !important; }
+.arenaWorldArt .arenaWorldBanners path:nth-child(8) { fill: #fff1b0 !important; }
+.arenaWorldArt .arenaWorldJumbotron path { stroke: #4fd8ff !important; }
+.arenaWorldArt .arenaWorldJumbotron path:last-child { stroke: #2a4466 !important; }
 .arenaWorldArt .arenaWorldJumbotron path[stroke-dasharray] { animation: gfJumbo 2.4s linear infinite; }
 @keyframes gfJumbo { to { stroke-dashoffset: -64; } }
 @media (prefers-reduced-motion: reduce) { .arenaWorldArt .arenaWorldJumbotron path { animation: none; } }
 .shopItemCard { position: relative; }
-.arenaWorldArt .arenaWorldStands path:first-child, .arenaWorldArt .arenaWorldStands path:nth-child(2) { fill: #0b1626 !important; }
-.arenaWorldArt .arenaWorldStands path:nth-child(3) { stroke: rgb(47 196 240 / 45%) !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(1) { fill: #3ee59a !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(2), .arenaWorldArt .arenaWorldBanners path:nth-child(3) { fill: #4fb8ff !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(4) { fill: #ffc94a !important; }
-.arenaWorldArt .arenaWorldJumbotron path { stroke: #4fd8ff !important; }
-.arenaWorldArt .arenaWorldJumbotron path:last-child { stroke: #2a4466 !important; }
-.arena .arenaWorldArt, .lobbyStage > .arenaWorldArt { opacity: 0.6 !important; }
 .shopItemCard { overflow: visible !important; } .shopItemCard::after { top: auto !important; width: auto !important; opacity: 1 !important; }
 .shopGrid .shopItemCard::after {
     left: -14px !important; right: -14px !important; bottom: -24px !important; height: 12px !important;
@@ -728,3 +733,110 @@
     box-shadow: 0 4px 0 #040912, 0 10px 14px rgb(0 0 0 / 45%) !important;
     border-radius: 2px !important;
 }
+.arenaWorldArt .arenaWorldCrowd path:not([style*="stroke"]) { stroke: none !important; }
+
+/* ======================= Round 4 ======================================== */
+/* ---- Brackets are no longer everywhere: drop the cyan inner notches, and
+   repeated items get a plain inked bevel instead of the gold-cornered frame. */
+.leaderboardPodium::after,
+.historyTrajectory::after,
+.shopCommandSurface::after,
+.duelComposer::after,
+.duelCommandSurface .challengeCard::after { display: none !important; }
+.historyRoundCard, .historyHighlightCard, .helpBlock {
+    border-image: none !important;
+    border-width: 2px !important;
+    border-color: #040912 !important;
+    border-radius: 12px !important;
+}
+
+/* ---- History: match tickets ------------------------------------------- */
+.historyRoundCard {
+    --tone: #4fb8ff;
+    position: relative;
+    padding-left: 92px !important;
+    background:
+        radial-gradient(circle at 78px 0, #0a1322 0 9px, transparent 10px),
+        radial-gradient(circle at 78px 100%, #0a1322 0 9px, transparent 10px),
+        linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, #0b1424) 0 78px, transparent 78px),
+        repeating-linear-gradient(180deg, transparent 0 4px, rgb(255 255 255 / 1.5%) 4px 5px),
+        linear-gradient(180deg, #1c2e49, #0e1828) !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 16%), inset 0 -4px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912 !important;
+}
+.historyRoundCard.isRanked { --tone: #ffc94a; }
+.historyRoundCard.isPractice { --tone: #3ee59a; }
+.historyRoundCard::before {
+    content: "";
+    position: absolute;
+    left: 77px; top: 12px; bottom: 12px;
+    border-left: 3px dashed rgb(4 9 18 / 80%);
+}
+.historyRoundCardSignal {
+    position: absolute !important;
+    left: 14px; top: 50%; translate: 0 -50%;
+    width: 52px !important; height: 52px !important;
+    display: grid !important; place-items: center;
+    border-radius: 50% !important;
+    border: 2px solid #040912 !important;
+    background: radial-gradient(circle at 50% 30%, rgb(255 255 255 / 30%), rgb(0 0 0 / 25%) 75%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 30%), 0 3px 0 #040912 !important;
+}
+.historyRoundCardScore {
+    font-family: var(--ca-font-display) !important; font-weight: 400 !important;
+}
+/* result chip becomes a rubber stamp */
+.historyRankBadge {
+    transform: rotate(-7deg);
+    border: 3px solid currentColor !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    font-family: var(--ca-font-display) !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: none !important;
+    opacity: 0.92;
+}
+.historyHighlightCard {
+    background:
+        radial-gradient(ellipse at 100% 0, rgb(255 201 74 / 16%), transparent 55%),
+        linear-gradient(180deg, #1c2e49, #0e1828) !important;
+    box-shadow: inset 0 0 0 2px rgb(255 201 74 / 35%), inset 0 -4px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912 !important;
+}
+.historyHighlightValue {
+    font-family: var(--ca-font-display) !important; font-weight: 400 !important; font-size: 40px !important;
+    background: linear-gradient(180deg, #fff6d6, #ffd25c 50%, #e89a24);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: none !important; filter: drop-shadow(0 3px 0 #040912);
+}
+
+/* ---- Settings: a ribbon title, carved close, saturated gold Apply ------- */
+.uiDialogTitle {
+    display: inline-block;
+    padding: 6px 36px 8px 20px !important;
+    font-size: 24px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2a1500 !important;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 45%) !important;
+    background: linear-gradient(180deg, #fff1b0, #ffd04a 50%, #e8941c);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 0 100%);
+    filter: drop-shadow(0 3px 0 #040912);
+}
+.uiDialogClose {
+    border: 2px solid #040912 !important;
+    border-radius: 50% !important;
+    background: radial-gradient(circle at 50% 30%, #c42a3a, #7a1420 75%) !important;
+    color: #fff !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 30%), 0 3px 0 #040912, 0 0 0 2px #c98a24 !important;
+}
+.feedbackSettingsActions .primaryButton,
+.feedbackSettingsActions button[type="submit"],
+.feedbackSettingsActions button:disabled {
+    filter: none !important;
+    opacity: 1 !important;
+    color: #2a1500 !important;
+    background: linear-gradient(180deg, #fff3b8 0%, #ffd34a 45%, #ffb020 100%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 70%), 0 4px 0 #b86a10, 0 4px 0 2px #040912, 0 0 18px rgb(255 190 60 / 35%) !important;
+}
+.feedbackSettingsActions button:disabled { cursor: default; }

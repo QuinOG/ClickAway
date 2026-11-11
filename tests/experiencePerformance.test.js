@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { existsSync } from "node:fs"
+import { existsSync, statSync } from "node:fs"
 
 import { canPrefetchRoutes, scheduleIdleRoutePrefetch } from "../src/app/routeModules.js"
 import { SHOP_CATEGORIES } from "../src/constants/shopCatalog.js"
@@ -31,14 +31,16 @@ test("idle route scheduling is cancellable", () => {
   assert.equal(cancelledHandle, 42)
 })
 
-test("heavy cosmetic sources use deployable modern assets", () => {
+test("cosmetic art is one lightweight illustrated SVG set", () => {
   const imageSources = SHOP_CATEGORIES.flatMap((category) => category.items)
     .map((item) => item.imageSrc)
     .filter(Boolean)
-  const optimizedSources = ["/cd.avif", "/earth.avif", "/eye.avif", "/melon.avif", "/moon.avif", "/wheel.avif"]
 
-  optimizedSources.forEach((source) => {
-    assert.ok(imageSources.includes(source), `${source} should be referenced by the catalog`)
-    assert.ok(existsSync(new URL(`../public${source}`, import.meta.url)), `${source} should exist`)
+  assert.ok(imageSources.length >= 20, "catalog should reference the illustrated set")
+  imageSources.forEach((source) => {
+    assert.match(source, /^\/skins\/[a-z]+\.svg$/, `${source} should come from the illustrated /skins set`)
+    const file = new URL(`../public${source}`, import.meta.url)
+    assert.ok(existsSync(file), `${source} should exist`)
+    assert.ok(statSync(file).size < 8192, `${source} should stay under 8KB`)
   })
 })
