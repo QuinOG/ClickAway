@@ -78,10 +78,13 @@ function buildRecentForm(roundHistory = []) {
   const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
   const scores = recentRounds.map((round) => toNumber(round.score))
   const maxScore = Math.max(...scores, 1)
+  const minScore = scores.length > 0 ? Math.min(...scores) : 0
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
     score: scores[index],
     height: Math.max(12, Math.round((scores[index] / maxScore) * 100)),
+    // 0.2–1: where this run sits between the worst and best of the window.
+    rise: 0.2 + (maxScore > minScore ? ((scores[index] - minScore) / (maxScore - minScore)) * 0.8 : 0.8),
     rankDelta: toNumber(round.rankDelta),
     isRanked: isRankedModeEntry(round),
   }))
@@ -364,6 +367,7 @@ export default function ProfilePage({
                     <li
                       key={bar.id}
                       className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
+                      style={{ "--rise": bar.rise.toFixed(3) }}
                       title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
                     >
                       {formatNumber(bar.score)}

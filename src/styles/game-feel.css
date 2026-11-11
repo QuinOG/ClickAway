@@ -3169,3 +3169,306 @@
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph { width: 30px !important; height: 30px !important; }
 .profileSheetMain .profileSignalBand { align-content: center !important; row-gap: 34px !important; }
 .profileSheetMain .profileSignalBand .profileFormTokens > li { transform: scale(1.32) !important; margin-inline: 4px; }
+
+/* ======================= Round 12 (run 2, round 6) ====================== */
+:root {
+    /* illustrated planks: two staggered rows, butt joints, a few grain strokes and a knot */
+    --gf-planks: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='440' height='96'><rect x='3' y='0' width='217' height='46' fill='%23000' fill-opacity='.07'/><rect x='223' y='48' width='217' height='46' fill='%23fff' fill-opacity='.05'/><g fill='none' stroke='%23421d06' stroke-opacity='.5' stroke-width='1.3'><path d='M0 11 C90 8 170 15 260 10 S390 13 440 11'/><path d='M0 32 C100 35 190 28 280 33 S400 30 440 32'/><path d='M0 60 C80 57 160 63 250 59 S380 61 440 60'/><path d='M0 81 C110 84 200 77 290 81 S400 79 440 81'/><ellipse cx='322' cy='21' rx='12' ry='4'/><ellipse cx='322' cy='21' rx='6' ry='2'/><ellipse cx='96' cy='71' rx='10' ry='3.5'/></g><rect x='0' y='46' width='440' height='2' fill='%23240f03'/><rect x='0' y='48' width='440' height='1' fill='%23ffe0b0' fill-opacity='.3'/><rect x='0' y='94' width='440' height='2' fill='%23240f03'/><rect x='0' y='0' width='440' height='1' fill='%23ffe0b0' fill-opacity='.3'/><rect x='0' y='0' width='3' height='46' fill='%23240f03'/><rect x='3' y='0' width='1' height='46' fill='%23ffe0b0' fill-opacity='.25'/><rect x='220' y='48' width='3' height='46' fill='%23240f03'/><rect x='223' y='48' width='1' height='46' fill='%23ffe0b0' fill-opacity='.25'/></svg>");
+}
+
+/* ---- A. Profile: the scouting report is a compact instrument panel ----- */
+.profileSheetMain .profileSignalBand {
+    flex: none !important;
+    align-content: start !important;
+    row-gap: 14px !important;
+    column-gap: 14px !important;
+    padding: 28px 14px 14px !important;
+}
+.profileSheetMain .profileSignalBand > section + section { border-left: 0 !important; }
+.profileSheetMain .profileSignalBand > section.profileFormPanel {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 10px !important;
+    padding: 0 !important;
+}
+.profileSheetMain .profileFormPanel .profileMiniHeading {
+    display: flex !important; align-items: baseline; justify-content: space-between;
+    padding: 0 6px;
+}
+.profileSheetMain .profileFormPanel .profileMiniHeading > div { display: flex; align-items: baseline; gap: 12px; }
+.profileSheetMain .profileFormPanel .profileMiniHeading strong {
+    padding: 3px 10px;
+    border: 2px solid #040912;
+    border-radius: 4px;
+    background: #020509;
+    font: 400 18px var(--ca-font-display);
+    text-shadow: 0 0 8px currentColor;
+}
+/* the form coins stand on score columns in a recessed tray */
+.profileSheetMain .profileSignalBand .profileFormTokens {
+    --tray: 128px;
+    position: relative;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-around !important;
+    height: calc(var(--tray) + 78px);
+    margin: 0 !important;
+    padding: 0 18px 16px !important;
+    border: 3px solid #040912;
+    border-radius: 10px;
+    background:
+        linear-gradient(180deg, transparent calc(100% - 18px), #3a5a86 calc(100% - 18px) calc(100% - 16px), #050a14 calc(100% - 16px)),
+        repeating-linear-gradient(180deg, transparent 0 31px, rgb(120 170 230 / 14%) 31px 32px),
+        linear-gradient(180deg, #03070d, #0a1424);
+    box-shadow: inset 0 4px 10px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 10%);
+}
+.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken {
+    --col: #4fb8ff;
+    position: relative;
+    flex: none;
+    width: 58px !important; height: 58px !important;
+    margin: 0 0 calc(var(--rise, 0.5) * var(--tray)) !important;
+    transform: none !important;
+    font-size: 15px !important;
+    z-index: 1;
+}
+.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken.isRanked { --col: #ffc94a; }
+.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken.isLoss { --col: #ff5a6a; }
+.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken::before {
+    content: "";
+    position: absolute; z-index: -1;
+    top: 100%; left: 50%; translate: -50% 0;
+    width: 18px;
+    height: calc(var(--rise, 0.5) * var(--tray) + 2px);
+    border: 2px solid #040912;
+    border-top: 0;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--col) 55%, #040912), var(--col) 45%, color-mix(in srgb, var(--col) 70%, #040912));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--col) 45%, transparent);
+}
+/* Top build and Nearest achievement are framed sub-plaques */
+.profileSheetMain .profileSignalBand > section:is(.profileBuildSignature, .profileNearestGoal) {
+    padding: 16px 16px 16px 14px !important;
+    border: 3px solid #040912 !important;
+    border-radius: 10px !important;
+    background:
+        radial-gradient(circle at 9px 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 9px) 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at 9px calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        linear-gradient(180deg, #2c3c58, #18243a) !important;
+    box-shadow: inset 0 0 0 2px #a8792a, inset 0 3px 0 rgb(255 255 255 / 16%), 0 4px 0 #040912 !important;
+}
+
+/* ---- A. Profile: the trophies stand on the shelf ----------------------- */
+.profileAchievementsSection .achievementsRow::before { display: none !important; }
+.profileAchievementsSection .achievementsRow::after {
+    top: var(--shelf-y, 98px) !important; bottom: auto !important;
+    height: 22px !important;
+    border-width: 3px !important;
+    /* contact shadows where each trophy stands, then the plank */
+    background:
+        radial-gradient(ellipse 5% 7px at 10% 2px, rgb(0 0 0 / 70%), transparent),
+        radial-gradient(ellipse 5% 7px at 30% 2px, rgb(0 0 0 / 70%), transparent),
+        radial-gradient(ellipse 5% 7px at 50% 2px, rgb(0 0 0 / 70%), transparent),
+        radial-gradient(ellipse 5% 7px at 70% 2px, rgb(0 0 0 / 70%), transparent),
+        radial-gradient(ellipse 5% 7px at 90% 2px, rgb(0 0 0 / 70%), transparent),
+        linear-gradient(180deg, #e2ad70 0 4px, #a8692f 4px 13px, #6a3d16 13px 17px, #3a1f08 17px) !important;
+    background-size: auto !important;
+    box-shadow: 0 10px 14px rgb(0 0 0 / 60%) !important;
+    z-index: 0;
+}
+.profileAchievementsSection .achievementTile .achievementTitle { margin-top: 16px !important; }
+.profileAchievementsSection .achievementsRow { padding-bottom: 0 !important; }
+/* ---- B. Duels: an illustrated plank counter under a lamp --------------- */
+.duelFightComposer .duelRunTokens {
+    background:
+        radial-gradient(ellipse 30% 70% at 50% 46%, rgb(255 236 180 / 34%), rgb(255 210 140 / 12%) 55%, transparent 80%),
+        radial-gradient(ellipse 70% 150% at 50% 20%, transparent 40%, rgb(10 4 0 / 70%) 100%),
+        var(--gf-planks),
+        linear-gradient(180deg, #b0763c 0%, #92592a 55%, #74421c 100%) !important;
+    background-size: auto, auto, 440px 96px, auto !important;
+    background-position: center, center, center top, center !important;
+}
+.duelFightComposer .duelRunTokens::after {
+    background: linear-gradient(180deg, #e2ad70 0 3px, #9a5e2a 3px 11px, #5a3212 11px 15px, #040912 15px) !important;
+    background-size: auto !important;
+}
+.duelFightComposer .duelRunTokens .duelReplayCard { filter: drop-shadow(0 18px 3px rgb(25 10 0 / 75%)) !important; }
+.duelFightComposer .duelRunTokens .duelReplayCard:first-child { filter: drop-shadow(-12px 18px 3px rgb(25 10 0 / 75%)) !important; }
+.duelFightComposer .duelRunTokens .duelReplayCard:last-child { filter: drop-shadow(12px 18px 3px rgb(25 10 0 / 75%)) !important; }
+.duelFightComposer .duelLaunchStep {
+    background:
+        linear-gradient(180deg, rgb(10 4 0 / 55%), rgb(10 4 0 / 72%)),
+        var(--gf-planks),
+        linear-gradient(180deg, #8a5226, #5a3416) !important;
+    background-size: auto, 440px 96px, auto !important;
+}
+
+/* ---- C. Ladder: stats and rating are engraved into the plate ----------- */
+.ladderPlate .ladderPlateIdentity {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--plate-trim) 45%, #fff) 0%, var(--plate-trim) 50%, color-mix(in srgb, var(--plate-trim) 70%, #040912) 100%) !important;
+    background-size: auto !important;
+}
+.ladderPlate:not(.isRank1, .isRank2, .isRank3, .isCurrentUser) .ladderPlateIdentity { --plate-trim: #b4c3d8; }
+.ladderPlate .ladderPlateStats {
+    gap: 0 !important;
+    padding: 4px 2px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--plate-low) 55%, #000) !important;
+    box-shadow:
+        inset 0 3px 6px rgb(0 0 0 / 70%),
+        inset 0 -2px 0 color-mix(in srgb, var(--plate-trim) 55%, transparent),
+        0 -1px 0 rgb(0 0 0 / 45%),
+        0 1px 0 rgb(255 255 255 / 25%) !important;
+}
+.ladderPlate .ladderPlateStat {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+}
+.ladderPlate .ladderPlateStat + .ladderPlateStat { box-shadow: inset 2px 0 0 rgb(0 0 0 / 55%), inset 3px 0 0 rgb(255 255 255 / 10%) !important; }
+.ladderPlate .ladderPlateStat dt { color: color-mix(in srgb, var(--plate-trim) 70%, #fff) !important; opacity: 0.85; }
+.ladderPlate .ladderPlateStat dd { text-shadow: 0 -1px 0 rgb(0 0 0 / 80%), 0 1px 0 rgb(255 255 255 / 12%); }
+.ladderPlate .ladderPlateHero {
+    border: 0 !important;
+    background: color-mix(in srgb, var(--plate-low) 45%, #000) !important;
+    box-shadow:
+        inset 0 4px 8px rgb(0 0 0 / 75%),
+        inset 0 0 0 2px rgb(0 0 0 / 55%),
+        inset 0 -3px 0 color-mix(in srgb, var(--plate-trim) 60%, transparent),
+        0 -2px 0 rgb(0 0 0 / 45%),
+        0 2px 0 rgb(255 255 255 / 28%) !important;
+}
+
+/* ---- D. History: placard, filters and score axis live in the chart bezel */
+.historyTrajectory {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto !important;
+    position: relative;
+}
+.historyTrajectory > * { grid-area: 1 / 1 !important; }
+.historyTrajectory .historyClimb {
+    height: 348px !important;
+    padding: 142px 34px 30px 84px !important;
+    margin: 6px 4px 12px !important;
+    background:
+        linear-gradient(180deg, transparent calc(100% - 32px), #3a5a86 calc(100% - 32px) calc(100% - 30px), transparent calc(100% - 30px)),
+        linear-gradient(90deg, transparent 0 74px, rgb(120 170 230 / 30%) 74px 76px, transparent 76px),
+        linear-gradient(180deg, #0d1828 0 96px, #2c3c58 96px 98px, #040912 98px 100px, transparent 100px),
+        repeating-linear-gradient(90deg, transparent 0 59px, rgb(120 170 230 / 7%) 59px 60px),
+        linear-gradient(180deg, #03070d, #08111d) !important;
+}
+.historyTrajectory .historyClimb::before,
+.historyTrajectory .historyClimb::after { display: none !important; }
+.historyTrajectory .historyClimbLine { top: 142px !important; bottom: 30px !important; left: 84px !important; right: 34px !important; }
+.historyTrajectory .historyClimbAxis {
+    position: absolute;
+    top: 142px; bottom: 30px; left: 0; right: 34px;
+    list-style: none;
+    pointer-events: none;
+}
+.historyTrajectory .historyClimbAxis span {
+    position: absolute;
+    left: 0; width: 66px;
+    bottom: var(--axis);
+    translate: 0 50%;
+    text-align: right;
+    color: #8fb0d8;
+    font: 400 13px var(--ca-font-display);
+}
+.historyTrajectory .historyClimbAxis span::after {
+    content: "";
+    position: absolute; top: 50%; left: 76px;
+    width: 2000px;
+    border-top: 1px dashed rgb(120 170 230 / 28%);
+}
+.historyTrajectory .historyTrajectoryCopy {
+    align-self: start; justify-self: start;
+    z-index: 3;
+    display: flex !important; align-items: center; gap: 14px;
+    margin: 30px 0 0 26px !important;
+    padding: 8px 14px 8px 16px !important;
+}
+.historyTrajectory .historyTrajectoryCopy .commandHeaderEyebrow { display: none !important; }
+.historyTrajectory .historyTrajectoryCopy h2 { margin: 0 !important; font-size: 22px !important; white-space: nowrap; }
+.historyTrajectory .historyTrajectoryDelta { margin: 0 !important; }
+.historyTrajectory .historyTrajectoryLegend {
+    align-self: start; justify-self: end;
+    z-index: 3;
+    margin: 30px 30px 0 0 !important;
+    padding: 5px !important;
+    border: 2px solid #040912;
+    border-radius: 999px;
+    background: #040912;
+    box-shadow: inset 0 2px 5px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 12%);
+}
+/* quieter plaques: no grain behind the small engraved text */
+.historyHighlightCard {
+    background: linear-gradient(180deg, #f3d382 0%, #e2b252 35%, #c38f36 70%, #9a6a22 100%) !important;
+    background-size: auto !important;
+}
+
+/* ---- E. Play: mode cards are plaques; the record is a scoreboard ------- */
+.lobbyModeRail .lobbyModeChoice {
+    background:
+        radial-gradient(circle at 18px 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 9px) 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at 18px calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
+        linear-gradient(115deg, transparent 0 72%, rgb(var(--mode) / 22%) 72% 76%, transparent 76% 80%, rgb(var(--mode) / 22%) 80% 84%, transparent 84%),
+        linear-gradient(180deg, #2c3c58 0%, #1a263c 55%, #131d30 100%) !important;
+}
+.lobbyModeRail .lobbyModeChoice.isSelected {
+    background:
+        radial-gradient(circle at 18px 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 9px) 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at 18px calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
+        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
+        linear-gradient(115deg, transparent 0 72%, rgb(var(--mode) / 30%) 72% 76%, transparent 76% 80%, rgb(var(--mode) / 30%) 80% 84%, transparent 84%),
+        radial-gradient(ellipse 80% 120% at 0% 50%, rgb(var(--mode) / 26%), transparent 70%),
+        linear-gradient(180deg, #34486a 0%, #1e2e4a 55%, #16233a 100%) !important;
+}
+/* the mode emblem is a medallion set into the plaque */
+.lobbyModeRail .lobbyModeEmblem {
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: radial-gradient(circle at 40% 30%, #34486a, #0a1222 75%) !important;
+    box-shadow: 0 0 0 3px #040912, 0 0 0 6px rgb(var(--mode)), 0 0 0 8px #040912, 0 4px 0 6px #040912, inset 0 3px 6px rgb(0 0 0 / 60%) !important;
+}
+.arenaLobby .lobbyModeRecord {
+    border: 3px solid #040912 !important;
+    border-radius: 8px !important;
+    background:
+        radial-gradient(circle, rgb(255 184 74 / 9%) 1px, transparent 1.6px) 0 0 / 5px 5px,
+        linear-gradient(180deg, #020509, #060c16) !important;
+    box-shadow: inset 0 0 0 3px #1d2a40, inset 0 0 24px rgb(0 0 0 / 85%), 0 0 0 3px #2c3c58, 0 0 0 5px #040912, 0 5px 0 5px #040912 !important;
+}
+.arenaLobby .lobbyModeRecord .lobbyModeRecordHeader > span {
+    color: #ffb84a !important;
+    font-family: var(--ca-font-display);
+    letter-spacing: 0.22em;
+    text-shadow: 0 0 6px rgb(255 160 50 / 70%);
+}
+.arenaLobby .lobbyModeRecord .lobbyModeRecordTiles > span {
+    border: 2px solid #1d2a40 !important;
+    background: #010306 !important;
+    box-shadow: inset 0 2px 6px rgb(0 0 0 / 80%) !important;
+}
+.arenaLobby .lobbyModeRecord .lobbyModeRecordTiles b {
+    color: #ffc94a !important;
+    font-family: var(--ca-font-display);
+    text-shadow: 0 0 8px rgb(255 180 60 / 75%);
+}
+.arenaLobby .lobbyModeRecord .lobbyModeRecordTiles small { color: rgb(255 184 74 / 60%) !important; }
+.arenaLobby .lobbyModeRecord .lobbyModeRecordChart b:not(.isEmpty) {
+    background: repeating-linear-gradient(0deg, #ffb84a 0 4px, transparent 4px 6px) !important;
+    box-shadow: none !important;
+    filter: drop-shadow(0 0 4px rgb(255 170 50 / 70%));
+}
+.arenaLobby .lobbyModeRecord .lobbyModeRecordChart b.isLatest {
+    background: repeating-linear-gradient(0deg, #fff0b8 0 4px, transparent 4px 6px) !important;
+}

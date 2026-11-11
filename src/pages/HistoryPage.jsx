@@ -163,6 +163,15 @@ function HistoryTrajectory({ rounds = [] }) {
       <ol className="historyClimb" aria-hidden="true">
         {plottedRounds.length === 0 ? <li className="historyClimbEmpty">No {modeLabel.toLowerCase()} rounds yet</li> : null}
         {plottedRounds.length > 1 ? (
+          <li className="historyClimbAxis">
+            {[100, 67, 34].map((level) => (
+              <span key={level} style={{ "--axis": `${level}%` }}>
+                {formatNumber(Math.round(lowestScore + ((level - 34) / 66) * scoreRange))}
+              </span>
+            ))}
+          </li>
+        ) : null}
+        {plottedRounds.length > 1 ? (
           <li className="historyClimbLine" style={{ "--line-tone": LINE_TONES[modeFilter] ?? "#4fb8ff" }}>
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
               <polygon points={`${plotPoints[0].x},100 ${plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} ${plotPoints.at(-1).x},100`} />
