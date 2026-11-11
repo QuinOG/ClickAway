@@ -1,0 +1,5 @@
+Round 3 changes (vs i2):
+- 04 Shop is a storefront: every card sits on a wooden shelf plank; cards are display cases whose rim and glow are cast in their rarity colour (steel common, blue rare, purple epic, gold legendary) with a solid rarity tag; item art gets a shared ink outline and key-light treatment; Unlock and Equip buttons are price-tag shapes; the coin balance is a leather-and-gold pouch plate.
+- 05 Profile is a character sheet: a 56px uppercase name, a gold ribbon title, a gold division title, engraved stat plates with medallion emblems and 40px numbers, and carved category tabs. Achievements now sit in a lit wooden trophy cabinet: medals on dark velvet, each on its own brass shelf, with no card frames.
+- 10 Settings is a console: riveted brushed-metal plates with speaker and star medallions, gold eyebrows, a recessed segmented selector with a gold active key, and a chunky gold APPLY.
+- 02 / 11 Arena is a place: solid stands packed with a crowd silhouette, hanging banners in the mode colours, and a centre jumbotron (it carries the ON FIRE callout in the live round). The world art is drawn at 60% opacity, up from 34%; the aiming area is unchanged.

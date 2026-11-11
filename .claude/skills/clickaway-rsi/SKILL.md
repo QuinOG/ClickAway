@@ -5,7 +5,13 @@ description: ClickawayRSI — the recursive self-improvement loop for ClickAway'
 
 # ClickawayRSI
 
-Recursive self-improvement loop for ClickAway's UI/UX. **The skill improves itself too:** the last step of every run is updating `## Lessons` and `## Run log` below.
+Recursive self-improvement loop for ClickAway's UI/UX. **The skill improves itself too:** the last step of every run is updating `## Lessons` and `- On Windows, `python open()` without `encoding='utf-8'` writes cp1252: always pass the encoding when editing JSX/CSS, or non-ASCII characters like `·` get corrupted and render as missing-glyph boxes.
+- Bash heredocs choke on CSS that contains single-quoted data URIs. Write the block with the Write tool to the scratchpad, then `cat >>` it.
+- Before overriding a component's `::before`/`::after`, grep for its existing pseudo rules: inherited `top`/`width`/`height`/`overflow:hidden` silently break the new art (the shop shelf took three tries).
+- The world art in `.arenaWorldArt` sits behind a 0.34 opacity layer and a `path { fill: none }` rule. New filled shapes need CSS fills, not SVG attributes.
+- A reusable `post_round.py` in the scratchpad builds the PR comment: `python post_round.py N "scores" iN-changes.md "consensus" shot1,shot2`.
+
+## Run log` below.
 
 Before starting, restate the task to the user in 3–4 lines: who's on the council, the stop rule, and what this run is focusing on.
 
@@ -49,5 +55,11 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
 - Opus 5 is the harshest judge (≈0.5 below Sol). Plan for its list.
 - The user wants every round committed with before/after shots and visible in a PR. Open the PR in round 1, not at the end.
 
+- On Windows, `python open()` without `encoding='utf-8'` writes cp1252: always pass the encoding when editing JSX/CSS, or non-ASCII characters like `·` get corrupted and render as missing-glyph boxes.
+- Bash heredocs choke on CSS that contains single-quoted data URIs. Write the block with the Write tool to the scratchpad, then `cat >>` it.
+- Before overriding a component's `::before`/`::after`, grep for its existing pseudo rules: inherited `top`/`width`/`height`/`overflow:hidden` silently break the new art (the shop shelf took three tries).
+- The world art in `.arenaWorldArt` sits behind a 0.34 opacity layer and a `path { fill: none }` rule. New filled shapes need CSS fills, not SVG attributes.
+- A reusable `post_round.py` in the scratchpad builds the PR comment: `python post_round.py N "scores" iN-changes.md "consensus" shot1,shot2`.
+
 ## Run log
-- 2026-11-11 run 1 (branch `game-feel-council`, PR #12): i0 Sol 6.6 / Terra 6.8 / Opus 6.4 → i1 7.1 / 6.8 / 6.5 (global frames, world, titles, ladder plaques, console switches). r2 in progress: login title screen, illustrated Help manual, results ceremony, history track, duels VS board.
+- 2026-11-11 run 1 (branch `game-feel-council`, PR #12): i0 Sol 6.6 / Terra 6.8 / Opus 6.4 → i1 7.1 / 6.8 / 6.5 (global frames, world, titles, ladder plaques, console switches). i2 7.3 / 7.0 / 7.2 (login title screen, illustrated Help, results ceremony, history climb, duels VS, ladder tabs). r3: shop storefront, profile character sheet + trophy cabinet, settings console, arena crowd/banners/jumbotron.
