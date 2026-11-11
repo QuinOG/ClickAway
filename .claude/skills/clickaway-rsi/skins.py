@@ -73,10 +73,17 @@ items["donut"] = svg(
     + "".join(f'<rect x="{x}" y="{y}" width="10" height="4" rx="2" fill="{c}" transform="rotate({a} {x+5} {y+2})"/>'
               for x, y, c, a in [(34, 34, "#4fd8ff", 30), (80, 30, "#ffe08a", -20), (92, 52, "#7dffb1", 60), (26, 56, "#fff", -40), (54, 26, "#7dffb1", 10), (74, 44, "#fff", 80)]))
 items["bubble"] = svg(
-    f'<circle cx="64" cy="64" r="50" fill="#9fe6ff" fill-opacity=".25" stroke="{INK}" stroke-width="5"/>'
-    f'<path d="M108 52a46 46 0 0 1-56 56" fill="none" stroke="#ff9ce6" stroke-width="6" opacity=".8"/>'
-    f'<path d="M106 70a44 44 0 0 1-30 34" fill="none" stroke="#fff0a0" stroke-width="4" opacity=".8"/>'
-    f'<ellipse cx="44" cy="40" rx="14" ry="8" fill="#fff" opacity=".8" transform="rotate(-35 44 40)"/><circle cx="32" cy="58" r="4" fill="#fff" opacity=".7"/>')
+    # see-through: clear centre, tinted iridescent rim, thin ink line
+    f'<circle cx="64" cy="64" r="50" fill="url(#bubFill)"/>'
+    f'<circle cx="64" cy="64" r="46" fill="none" stroke="url(#bubRim)" stroke-width="10"/>'
+    f'<circle cx="64" cy="64" r="51" fill="none" stroke="{INK}" stroke-width="4.5"/>'
+    f'<path d="M30 46a38 38 0 0 1 24-24" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".9"/>'
+    f'<circle cx="28" cy="60" r="4" fill="#fff" opacity=".85"/>'
+    f'<path d="M92 100a44 44 0 0 0 14-20" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/>',
+    defs='<radialGradient id="bubFill" cx=".42" cy=".4" r=".62"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/>'
+         '<stop offset=".55" stop-color="#9fe6ff" stop-opacity=".22"/><stop offset="1" stop-color="#d9a6ff" stop-opacity=".75"/></radialGradient>'
+         '<linearGradient id="bubRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fe8ff"/><stop offset=".35" stop-color="#ff9ce6"/>'
+         '<stop offset=".65" stop-color="#fff0a0"/><stop offset="1" stop-color="#8affc8"/></linearGradient>')
 items["tennis"] = sphere("tennis", "#c8f040", "#8fb820",
     details='<path d="M18 40c26 4 36 24 30 50M110 88c-26-4-36-24-30-50" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>')
 items["eye"] = sphere("eye", "#f4f1ea", "#c9c2b4",

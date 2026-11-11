@@ -178,29 +178,11 @@ function LeaderboardTableSkeleton() {
   )
 }
 
-function SortableHeader({ label, columnKey, sortConfig, onSort }) {
-  const isActive = sortConfig.key === columnKey
-  const ariaSort = isActive
-    ? (sortConfig.direction === "asc" ? "ascending" : "descending")
-    : "none"
-
-  return (
-    <th className="leaderboardNumeric" aria-sort={ariaSort}>
-      <button
-        type="button"
-        className={`leaderboardSortButton${isActive ? " isActive" : ""}`}
-        onClick={() => onSort(columnKey)}
-      >
-        <span>{label}</span>
-        {isActive ? (
-          <span className="leaderboardSortIndicator" aria-hidden="true">
-            <span className={sortConfig.direction === "asc" ? "isActive" : ""}>{"\u25B2"}</span>
-            <span className={sortConfig.direction === "desc" ? "isActive" : ""}>{"\u25BC"}</span>
-          </span>
-        ) : null}
-      </button>
-    </th>
-  )
+function formatLadderStat(player, key) {
+  if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
+  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
+  if (key === "mmr") return formatNumericValue(player.mmr)
+  return formatNumericValue(player[key])
 }
 
 function RankDisplay({ rank = 0 }) {
@@ -468,7 +450,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               <span className="leaderboardPodiumRank">#{player.rank}</span>
               <span className="leaderboardPodiumIdentity">
                 <PlayerPortrait name={player.username} size={player.rank === 1 ? 58 : 50} />
-                <span className="leaderboardPodiumCrest" aria-label={`${player.rankLabel} rank`}>
+                <span className="leaderboardPodiumCrest" role="img" aria-label={`${player.rankLabel} rank`}>
                   <CrestIcon tone={getCrestTone(player.rankLabel)} size={30} />
                 </span>
                 {player.rank === 1 ? <span className="leaderboardPodiumCrown"><CrownIcon size={30} /></span> : null}
@@ -671,13 +653,6 @@ export default function LeaderboardPage({
     navigate("/profile")
   }
 
-  function handleRowKeyDown(event, isCurrentUser) {
-    if (!isCurrentUser) return
-    if (event.key !== "Enter" && event.key !== " ") return
-    event.preventDefault()
-    handleProfileOpen(isCurrentUser)
-  }
-
   return (
     <div className="pageCenter leaderboardPageScene">
       <section className="card leaderboardPageCard">
@@ -768,87 +743,79 @@ export default function LeaderboardPage({
             <div className="leaderboardTableIntro" aria-label="Ladder context">
               <span className={`leaderboardSortContextBadge${isDefaultLadderSort ? " isDefault" : ""}`}>
                 Sorted by {activeSortLabel}
-                {sortConfig.direction === "asc" ? " (Low to High)" : " (High to Low)"}
               </span>
+              <button type="button" className="ladderSortFlip" onClick={() => handleSort(sortConfig.key)}>
+                {sortConfig.direction === "asc" ? "Low to high ▲" : "High to low ▼"}
+              </button>
             </div>
 
-            <table className="table helpTable leaderboardTable">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Player</th>
-                  <th>Tier</th>
-                  {SORTABLE_COLUMNS.map((column) => (
-                    <SortableHeader
-                      key={column.key}
-                      label={column.label}
-                      columnKey={column.key}
-                      sortConfig={sortConfig}
-                      onSort={handleSort}
-                    />
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sortedRows.map((player) => {
-                  const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)
-                  const isPodium = player.rank <= 3
-                  const rowClassName = [
-                    "leaderboardTableRow",
-                    isPodium ? "isPodium" : "",
-                    isPodium ? `isRank${player.rank}` : "",
-                    isCurrentUser ? "isCurrentUser isInteractive" : "",
-                  ].filter(Boolean).join(" ")
+            <ol className="ladderPlates" aria-label={`Ladder sorted by ${activeSortLabel}`}>
+              {sortedRows.map((player) => {
+                const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)
+                const isPodium = player.rank <= 3
+                const plateClassName = [
+                  "ladderPlate",
+                  isPodium ? `isRank${player.rank}` : "",
+                  isCurrentUser ? "isCurrentUser" : "",
+                ].filter(Boolean).join(" ")
+                const stats = SORTABLE_COLUMNS.map((column) => ({
+                  ...column,
+                  value: formatLadderStat(player, column.key),
+                }))
+                const heroStat = stats.find((stat) => stat.key === sortConfig.key) ?? stats[0]
 
-                  return (
-                    <tr
-                      key={`${player.userId}-${player.rank}`}
-                      className={rowClassName}
-                      tabIndex={isCurrentUser ? 0 : undefined}
-                      onClick={isCurrentUser ? () => handleProfileOpen(true) : undefined}
-                      onKeyDown={isCurrentUser
-                        ? (event) => handleRowKeyDown(event, true)
-                        : undefined}
-                      aria-label={isCurrentUser ? `Open ${player.username} profile` : undefined}
-                    >
-                      <td><RankDisplay rank={player.rank} /></td>
-                      <td>
-                        <div className="leaderboardEntryHoverWrap">
-                          <span className="leaderboardPlayerName">
-                            <PlayerPortrait name={player.username} size={30} className="leaderboardPlayerPortrait" />
-                            {player.username}
-                            {isCurrentUser ? <span className="leaderboardYouBadge">YOU</span> : null}
-                          </span>
-                          <div className="leaderboardEntryHoverCard">
-                            <PlayerHoverCard
-                              rankProgress={player.rankProgress}
-                              rankLabel={player.rankLabel}
-                              rankMmr={player.mmr}
-                              coins={player.coins}
-                              level={player.level}
-                              accuracyPercent={player.accuracyPercent}
-                              bestScore={player.bestScore}
-                              bestStreak={player.bestStreak}
-                              rankedRounds={player.rankedRounds}
-                            />
-                          </div>
+                return (
+                  <li key={`${player.userId}-${player.rank}`} className={plateClassName}>
+                    <span className="ladderPlateRank"><RankDisplay rank={player.rank} /></span>
+                    <div className="leaderboardEntryHoverWrap ladderPlateIdentity">
+                      {isCurrentUser ? (
+                        <button
+                          type="button"
+                          className="leaderboardPlayerName"
+                          onClick={() => handleProfileOpen(true)}
+                          aria-label={`Open ${player.username} profile`}
+                        >
+                          <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
+                          {player.username}
+                          <span className="leaderboardYouBadge">YOU</span>
+                        </button>
+                      ) : (
+                        <span className="leaderboardPlayerName">
+                          <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
+                          {player.username}
+                        </span>
+                      )}
+                      <TierBadge tierLabel={player.rankLabel} className="leaderboardTierBadge" />
+                      <div className="leaderboardEntryHoverCard">
+                        <PlayerHoverCard
+                          rankProgress={player.rankProgress}
+                          rankLabel={player.rankLabel}
+                          rankMmr={player.mmr}
+                          coins={player.coins}
+                          level={player.level}
+                          accuracyPercent={player.accuracyPercent}
+                          bestScore={player.bestScore}
+                          bestStreak={player.bestStreak}
+                          rankedRounds={player.rankedRounds}
+                        />
+                      </div>
+                    </div>
+                    <dl className="ladderPlateStats">
+                      {stats.filter((stat) => stat.key !== heroStat.key).map((stat) => (
+                        <div key={stat.key} className="ladderPlateStat">
+                          <dt>{stat.label}</dt>
+                          <dd>{stat.value}</dd>
                         </div>
-                      </td>
-                      <td><TierBadge tierLabel={player.rankLabel} className="leaderboardTierBadge" /></td>
-                      <td className="leaderboardNumeric">{formatNumericValue(player.mmr)}</td>
-                      <td className="leaderboardNumeric">{formatNumericValue(player.bestScore)}</td>
-                      <td className="leaderboardNumeric">{formatNumericValue(player.bestStreak)}</td>
-                      <td className="leaderboardNumeric">
-                        {formatPercent(player.accuracyPercent)}
-                      </td>
-                      <td className="leaderboardNumeric">
-                        {player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                      ))}
+                    </dl>
+                    <div className="ladderPlateHero">
+                      <strong>{heroStat.value}</strong>
+                      <small>{heroStat.label}</small>
+                    </div>
+                  </li>
+                )
+              })}
+            </ol>
           </>
         ) : null}
 

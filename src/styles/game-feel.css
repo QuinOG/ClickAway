@@ -706,25 +706,7 @@
 
 /* ---- Arena: painted stands, crowd, banners, jumbotron (fills live in CSS
    because .arenaWorldArt path is fill:none in game-play.css) ------------- */
-.arena .arenaWorldArt, .lobbyStage > .arenaWorldArt { opacity: 0.85 !important; }
-.arenaWorldArt .arenaWorldRoof path { fill: #0d1a2e !important; stroke: rgb(115 203 240 / 45%) !important; stroke-width: 3 !important; }
-.arenaWorldArt .arenaWorldStands path:nth-child(1) { fill: #0e1b30 !important; stroke: #040912 !important; }
-.arenaWorldArt .arenaWorldStands path:nth-child(2) { fill: #0b1626 !important; stroke: #040912 !important; }
-.arenaWorldArt .arenaWorldStands path:nth-child(3) { stroke: rgb(255 201 74 / 60%) !important; stroke-width: 3 !important; }
-.arenaWorldArt .arenaWorldStands path:nth-child(4) { stroke: rgb(79 216 255 / 18%) !important; stroke-width: 2 !important; }
 .arenaWorldArt .arenaWorldCrowd circle { stroke: none !important; }
-.arenaWorldArt .arenaWorldBanners path { stroke: #040912 !important; stroke-width: 2 !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(odd) { fill: #2b8a5a !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(even) { fill: #7dffb1 !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(3), .arenaWorldArt .arenaWorldBanners path:nth-child(5) { fill: #2a6fb8 !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(4), .arenaWorldArt .arenaWorldBanners path:nth-child(6) { fill: #8fd4ff !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(7) { fill: #c98a24 !important; }
-.arenaWorldArt .arenaWorldBanners path:nth-child(8) { fill: #fff1b0 !important; }
-.arenaWorldArt .arenaWorldJumbotron path { stroke: #4fd8ff !important; }
-.arenaWorldArt .arenaWorldJumbotron path:last-child { stroke: #2a4466 !important; }
-.arenaWorldArt .arenaWorldJumbotron path[stroke-dasharray] { animation: gfJumbo 2.4s linear infinite; }
-@keyframes gfJumbo { to { stroke-dashoffset: -64; } }
-@media (prefers-reduced-motion: reduce) { .arenaWorldArt .arenaWorldJumbotron path { animation: none; } }
 .shopItemCard { position: relative; }
 .shopItemCard { overflow: visible !important; } .shopItemCard::after { top: auto !important; width: auto !important; opacity: 1 !important; }
 .shopGrid .shopItemCard::after {
@@ -840,3 +822,381 @@
     box-shadow: inset 0 2px 0 rgb(255 255 255 / 70%), 0 4px 0 #b86a10, 0 4px 0 2px #040912, 0 0 18px rgb(255 190 60 / 35%) !important;
 }
 .feedbackSettingsActions button:disabled { cursor: default; }
+
+/* ======================= Round 5 ======================================== */
+/* ---- Arena: painted stadium (ArenaWorldArt), no cyan wireframe -------- */
+.arena .arenaWorldArt, .lobbyStage > .arenaWorldArt { opacity: 1 !important; }
+.arenaHorizon { display: none !important; }
+.arenaWorldArt .awaBoardText {
+    font: 400 12px "Russo One", var(--ca-font-display);
+    letter-spacing: 4px;
+    fill: #ffcf6a;
+    filter: drop-shadow(0 0 3px rgb(255 160 60 / 80%));
+}
+.arenaWorldArt .awaScreenIdle {
+    font: 400 22px "Russo One", var(--ca-font-display);
+    letter-spacing: 5px;
+    fill: #8fe8ff;
+    opacity: 0.6;
+    filter: drop-shadow(0 0 4px rgb(79 216 255 / 70%));
+    transition: opacity 200ms ease;
+}
+.gameScreen.streakTier2 .awaScreenIdle,
+.gameScreen.streakTier3 .awaScreenIdle,
+.gameScreen.streakTier4 .awaScreenIdle { opacity: 0; }
+.arenaWorldArt .awaLamp { filter: drop-shadow(0 0 5px #ffd88a) drop-shadow(0 0 12px rgb(255 200 120 / 60%)); }
+.arenaWorldArt .awaBulb { filter: drop-shadow(0 0 3px #ffb547); animation: gfBulb 1.2s steps(2) infinite; }
+.arenaWorldArt .awaBulb:nth-of-type(odd) { animation-delay: -0.6s; }
+@keyframes gfBulb { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .arenaWorldArt .awaBulb { animation: none; } }
+
+/* streak callout reads as lit text on the scoreboard screen */
+.arenaStreakMark {
+    font-size: 26px !important;
+    color: rgb(var(--heat)) !important;
+    -webkit-text-stroke: 0 !important;
+    text-shadow: 0 0 10px rgba(var(--heat), 0.9), 0 0 2px #fff !important;
+}
+.gameScreen.streakTier4 .arenaStreakMark { font-size: 20px !important; }
+
+/* painted court floor with a warm spotlight pool */
+.arena .arenaFloor {
+    opacity: 1;
+    mask-image: linear-gradient(0deg, #000 30%, transparent 96%);
+    background:
+        radial-gradient(ellipse 34% 40% at 50% 46%, rgb(255 178 76 / 38%), rgb(255 150 60 / 12%) 55%, transparent 75%),
+        radial-gradient(ellipse 14% 17% at 50% 46%, transparent 0 90%, rgb(255 201 74 / 70%) 91% 97%, transparent 98%),
+        linear-gradient(90deg, transparent calc(50% - 2px), rgb(255 201 74 / 55%) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)),
+        linear-gradient(0deg, transparent 8%, rgb(255 201 74 / 45%) 8% calc(8% + 3px), transparent calc(8% + 3px)),
+        repeating-linear-gradient(90deg, rgb(4 9 18 / 85%) 0 3px, transparent 3px 96px),
+        repeating-linear-gradient(90deg, #263755 0 96px, #1d2b47 96px 192px);
+}
+.arenaStreakMark { opacity: 1 !important; }
+.arena.isFinalSeconds .arenaStreakMark, .arena:has(.clickFeedback.milestone) .arenaStreakMark { opacity: 0 !important; }
+.arena .arenaHeatGlow { opacity: max(0.35, var(--heat-strength)); }
+
+/* ---- Help: one illustrated round strip + numbered chapters ------------- */
+.helpRoundStrip {
+    list-style: none;
+    margin: 8px 0 18px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 30px;
+}
+.helpRoundPanel {
+    position: relative;
+    padding: 0 0 16px;
+    border: 3px solid #040912;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #1c2e49, #0e1828);
+    box-shadow: inset 0 2px 0 rgb(160 200 245 / 18%), 0 6px 0 #040912, 0 14px 22px rgb(0 0 0 / 35%);
+    text-align: center;
+    rotate: -1deg;
+}
+.helpRoundPanel:nth-child(even) { rotate: 1deg; }
+.helpRoundPanel:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: -27px; top: 74px;
+    width: 22px; height: 28px;
+    background: #ffd25c;
+    clip-path: polygon(0 0, 100% 50%, 0 100%, 30% 50%);
+    filter: drop-shadow(0 2px 0 #040912);
+}
+.helpRoundArt {
+    height: 150px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px 11px 0 0;
+    border-bottom: 3px solid #040912;
+    background:
+        radial-gradient(ellipse at 50% 110%, rgb(var(--panel-glow, 79 184 255) / 30%), transparent 70%),
+        repeating-linear-gradient(135deg, rgb(255 255 255 / 2.5%) 0 6px, transparent 6px 12px),
+        linear-gradient(180deg, #0a1322, #15263f);
+}
+.helpRoundPanel[data-step="count"] { --panel-glow: 79 216 255; }
+.helpRoundPanel[data-step="chase"] { --panel-glow: 217 75 255; }
+.helpRoundPanel[data-step="cash"] { --panel-glow: 255 190 70; }
+.helpRoundArt svg { width: 200px; height: 120px; }
+.helpRoundNumber {
+    position: absolute;
+    left: -12px; top: -14px;
+    width: 42px; height: 42px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 3px solid #040912;
+    background: radial-gradient(circle at 50% 30%, #fff1b0, #ffc94a 55%, #d8891c);
+    color: #2a1500;
+    font: 400 22px var(--ca-font-display);
+    box-shadow: 0 3px 0 #040912;
+    z-index: 1;
+}
+.helpRoundPanel h3 { margin: 14px 12px 4px; font: 400 21px var(--ca-font-display); text-transform: uppercase; color: #fff; }
+.helpRoundPanel p { margin: 0 14px; font-size: 14px; line-height: 1.45; color: #b9cbe2; }
+
+/* chapters: each topic group opens with a numbered gold plate */
+.helpDoc { counter-reset: gfChapter; }
+.helpTopicGroup { counter-increment: gfChapter; }
+.helpGroupHeader { align-items: center; gap: 14px !important; margin: 34px 0 14px !important; }
+.helpGroupHeader::before {
+    content: "CH." counter(gfChapter);
+    flex: none;
+    padding: 6px 12px 7px;
+    border: 2px solid #040912;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fff1b0, #ffd04a 50%, #e8941c);
+    color: #2a1500;
+    font: 400 15px var(--ca-font-display);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 3px 0 #040912;
+}
+.helpGroupHeader::after { height: 3px !important; background: linear-gradient(90deg, #c98a24, rgb(201 138 36 / 0)) !important; }
+.helpGroupTitle {
+    padding-left: 0 !important;
+    border-left: 0 !important;
+    font: 400 26px var(--ca-font-display) !important;
+    letter-spacing: 0.02em !important;
+    color: #fff !important;
+    text-shadow: 0 3px 0 #040912;
+}
+
+/* field guide: chapter bookmarks instead of six small tiles */
+.helpMissionGrid { gap: 14px !important; }
+.helpMissionCard {
+    min-height: 0 !important;
+    padding: 16px 12px 30px !important;
+    justify-items: center !important;
+    text-align: center;
+    border: 2px solid #040912 !important;
+    border-radius: 0 !important;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 18px), 0 100%) !important;
+    background: linear-gradient(180deg, var(--tab, #2a6fb8), color-mix(in srgb, var(--tab, #2a6fb8) 45%, #0b1424)) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%) !important;
+}
+.helpMissionCard:nth-child(1) { --tab: #2b8a5a; }
+.helpMissionCard:nth-child(2) { --tab: #8a3fb0; }
+.helpMissionCard:nth-child(3) { --tab: #2a6fb8; }
+.helpMissionCard:nth-child(4) { --tab: #b8741c; }
+.helpMissionCard:nth-child(5) { --tab: #a83246; }
+.helpMissionCard:nth-child(6) { --tab: #2a7f8f; }
+.helpMissionIndex { position: absolute; top: 6px; right: 8px; color: rgb(255 255 255 / 55%) !important; }
+.helpMissionCard strong { font: 400 15px var(--ca-font-display) !important; color: #fff !important; text-shadow: 0 2px 0 #040912; }
+.helpMissionCard small { color: rgb(255 255 255 / 75%) !important; }
+.helpMissionCard > svg { display: none; }
+@media (max-width: 900px) {
+    .helpRoundStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .helpRoundPanel:nth-child(2)::after { display: none; }
+}
+@media (max-width: 560px) {
+    .helpRoundStrip { grid-template-columns: 1fr; }
+    .helpRoundPanel::after { display: none; }
+}
+
+/* ---- Duels: a versus fight card, run tokens, one launch row ------------ */
+.duelPage .duelCommandSurface .duelComposer.duelFightComposer { display: block !important; }
+.duelFightComposer .duelLaunchForm { padding: 0 0 26px !important; gap: 22px !important; }
+.duelFightCard {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 0.8fr) 1fr;
+    align-items: center;
+    padding: 34px 40px 30px;
+    background:
+        linear-gradient(105deg, rgb(79 184 255 / 26%) 0 34%, transparent 34.2%),
+        linear-gradient(285deg, rgb(255 84 112 / 26%) 0 34%, transparent 34.2%),
+        repeating-linear-gradient(135deg, rgb(255 255 255 / 2.5%) 0 8px, transparent 8px 16px),
+        radial-gradient(ellipse 40% 70% at 50% 50%, rgb(255 160 60 / 22%), transparent 70%),
+        linear-gradient(180deg, #13223a, #0a1322);
+    border-bottom: 3px solid #040912;
+}
+.duelFighter { display: grid; justify-items: center; gap: 14px; min-width: 0; cursor: default; }
+.duelFighterPortrait {
+    width: 150px; height: 150px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 4px solid #040912;
+    background: radial-gradient(circle at 50% 30%, #2f4a70, #0b1626 72%);
+    box-shadow: inset 0 4px 0 rgb(255 255 255 / 18%), 0 0 0 6px #4fb8ff, 0 0 0 10px #040912, 0 0 44px rgb(80 180 255 / 45%);
+}
+.duelFighter.is-rival .duelFighterPortrait { box-shadow: inset 0 4px 0 rgb(255 255 255 / 18%), 0 0 0 6px #ff5470, 0 0 0 10px #040912, 0 0 44px rgb(255 84 112 / 45%); }
+.duelFighterUnknown { font: 400 72px var(--ca-font-display); color: #ff8095; text-shadow: 0 4px 0 #040912; }
+.duelFighterPlate {
+    display: grid; justify-items: center; gap: 2px;
+    min-width: 210px;
+    padding: 8px 18px 10px;
+    border: 3px solid #040912;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #2a6fb8, #163c66);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%), 0 4px 0 #040912;
+}
+.duelFighter.is-rival .duelFighterPlate { background: linear-gradient(180deg, #b8324a, #6a1626); }
+.duelFighterPlate small { font-weight: 800; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(255 255 255 / 75%); }
+.duelFighterPlate strong { font: 400 22px var(--ca-font-display); color: #fff; text-shadow: 0 2px 0 #040912; }
+.duelFightCard .duelRivalInput input {
+    width: 180px; min-height: 34px !important;
+    text-align: center;
+    font: 400 18px var(--ca-font-display) !important;
+    color: #fff !important;
+    background: rgb(20 4 10 / 55%) !important;
+}
+.duelFightCard .duelRivalInput input::placeholder { color: rgb(255 200 210 / 55%); }
+.duelFightCenter { display: grid; justify-items: center; gap: 14px; }
+.duelFightCenter .duelVsMark { font-size: 96px !important; }
+.duelFightCenter .duelReplayLock { margin: 0 !important; min-width: 210px; grid-column: auto !important; }
+
+.duelRunTokens { margin: 0; padding: 0 32px; border: 0; min-width: 0; }
+.duelRunTokens legend {
+    margin: 0 auto 6px; padding: 0;
+    font: 400 18px var(--ca-font-display); text-transform: uppercase; letter-spacing: 0.06em; color: #ffd25c;
+    text-shadow: 0 2px 0 #040912;
+}
+.duelFightComposer .duelReplayRail { display: flex !important; justify-content: center; gap: 26px !important; padding: 10px 6px 14px !important; overflow: visible !important; }
+.duelFightComposer .duelReplayCard {
+    width: 128px; height: 128px; min-height: 0 !important;
+    padding: 0 !important;
+    display: grid !important; place-content: center; justify-items: center !important; gap: 2px;
+    border: 4px solid #040912 !important;
+    border-radius: 50% !important;
+    background:
+        radial-gradient(circle, transparent 0 52px, rgb(4 9 18 / 55%) 53px 55px, transparent 56px),
+        radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--tone) 55%, #1f3250), #101c30 75%) !important;
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 25%), inset 0 -6px 0 rgb(0 0 0 / 30%), 0 0 0 4px var(--tone), 0 0 0 7px #040912, 0 7px 0 6px #040912 !important;
+    text-align: center !important;
+}
+.duelFightComposer .duelReplayCard::after { display: none !important; }
+.duelFightComposer .duelReplayCard strong { font-size: 34px !important; color: #fff !important; text-shadow: 0 3px 0 #040912; }
+.duelFightComposer .duelReplayCard .duelReplayMode { font-size: 11px !important; color: #fff !important; opacity: 0.85; }
+.duelFightComposer .duelReplayCard.isSelected { transform: translateY(-6px) scale(1.06); box-shadow: inset 0 3px 0 rgb(255 255 255 / 25%), 0 0 0 5px #ffd25c, 0 0 0 8px #040912, 0 8px 0 7px #040912, 0 0 30px rgb(255 210 92 / 55%) !important; }
+.duelFightComposer .duelReplayCheck { top: -4px !important; right: -4px !important; width: 30px; height: 30px; padding: 5px; border-radius: 50%; background: #ffd25c; color: #2a1500 !important; border: 3px solid #040912; }
+
+.duelFightComposer .duelLaunchStep {
+    display: flex !important; justify-content: center; align-items: center; gap: 22px;
+    padding: 0 32px; border: 0 !important; background: none !important; box-shadow: none !important;
+}
+.duelFightComposer .duelTaunt { display: block !important; width: min(420px, 100%); }
+.duelFightComposer .duelTaunt input { width: 100%; min-height: 50px !important; border-radius: 24px !important; padding: 0 20px !important; }
+.duelFightComposer .duelLaunchHint { text-align: center; }
+@media (max-width: 900px) {
+    .duelFightCard { grid-template-columns: 1fr; gap: 18px; padding: 24px 16px; }
+    .duelFightComposer .duelReplayRail { flex-wrap: wrap; }
+    .duelFightComposer .duelLaunchStep { flex-direction: column; padding: 0 16px; }
+}
+
+/* ---- Ladder: physical rank plates replace the sortable table ----------- */
+.leaderboardTableIntro { display: flex !important; justify-content: flex-end; align-items: center; gap: 10px; margin: 6px 0 2px; }
+.leaderboardSortContextBadge { font-weight: 800; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fb3d9; background: none !important; border: 0 !important; }
+.ladderSortFlip {
+    padding: 6px 12px;
+    border: 2px solid #040912; border-radius: 8px;
+    background: linear-gradient(180deg, #2a4466, #16263d);
+    color: #fff; font: 400 12px var(--ca-font-display); cursor: pointer;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%), 0 3px 0 #040912;
+}
+.ladderPlates { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 14px; }
+.ladderPlate {
+    --plate-top: #24395a; --plate-low: #111d31; --plate-trim: #4a6a94; --plate-ink: #fff;
+    position: relative;
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr) auto 170px;
+    align-items: center;
+    gap: 18px;
+    min-height: 78px;
+    padding: 8px 10px 8px 12px;
+    border: 3px solid #040912;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 10px 10px, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        radial-gradient(circle at calc(100% - 10px) 10px, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        radial-gradient(circle at 10px calc(100% - 10px), #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        repeating-linear-gradient(90deg, rgb(255 255 255 / 1.8%) 0 2px, transparent 2px 5px),
+        linear-gradient(180deg, var(--plate-top), var(--plate-low));
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 18%), inset 0 0 0 2px color-mix(in srgb, var(--plate-trim) 45%, transparent), inset 0 -5px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912;
+}
+.ladderPlate.isRank1 { --plate-top: #8a5a12; --plate-low: #3e2706; --plate-trim: #ffd25c; min-height: 92px; }
+.ladderPlate.isRank2 { --plate-top: #5d6b7e; --plate-low: #262e3a; --plate-trim: #dfe8f2; min-height: 86px; }
+.ladderPlate.isRank3 { --plate-top: #7a4423; --plate-low: #34190a; --plate-trim: #f0a06a; min-height: 86px; }
+.ladderPlate.isCurrentUser {
+    --plate-top: #1f5f8f; --plate-low: #0d2440; --plate-trim: #4fd8ff;
+    margin: 6px -10px;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%), inset 0 0 0 2px #4fd8ff, inset 0 -5px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912, 0 0 0 3px #4fd8ff, 0 0 34px rgb(79 216 255 / 45%);
+}
+.ladderPlate.isCurrentUser::before {
+    content: "YOU ARE HERE";
+    position: absolute; left: 50%; top: -13px; translate: -50% 0;
+    padding: 2px 12px;
+    border: 2px solid #040912; border-radius: 6px;
+    background: #4fd8ff; color: #04202e;
+    font: 400 11px var(--ca-font-display); letter-spacing: 0.08em;
+}
+.ladderPlateRank {
+    width: 58px; height: 64px;
+    display: grid; place-items: center;
+    clip-path: polygon(50% 0, 100% 14%, 100% 62%, 50% 100%, 0 62%, 0 14%);
+    background: linear-gradient(180deg, #040912, #040912);
+    position: relative;
+}
+.ladderPlateRank::before {
+    content: ""; position: absolute; inset: 3px;
+    clip-path: inherit;
+    background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--plate-trim) 80%, #fff), var(--plate-trim) 45%, color-mix(in srgb, var(--plate-trim) 45%, #040912));
+}
+.ladderPlateRank > * {
+    position: relative;
+    width: auto !important; height: auto !important;
+    background: none !important; border: 0 !important; box-shadow: none !important;
+    font: 400 26px var(--ca-font-display) !important;
+    color: #fff !important;
+    text-shadow: 0 2px 0 #040912, 0 0 2px #040912;
+}
+.ladderPlateIdentity { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.ladderPlate .leaderboardPlayerName {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 0; border: 0; background: none;
+    font: 400 22px var(--ca-font-display) !important;
+    color: var(--plate-ink) !important;
+    text-shadow: 0 2px 0 #040912;
+    cursor: default;
+}
+.ladderPlate button.leaderboardPlayerName { cursor: pointer; }
+.ladderPlate .leaderboardPlayerPortrait { border-radius: 50%; box-shadow: 0 0 0 3px #040912, 0 0 0 5px var(--plate-trim); }
+.ladderPlateStats { display: flex; gap: 6px; margin: 0; }
+.ladderPlateStat {
+    display: grid; justify-items: center; min-width: 74px;
+    padding: 4px 8px 5px;
+    border-radius: 8px;
+    background: rgb(4 9 18 / 45%);
+    box-shadow: inset 0 2px 4px rgb(0 0 0 / 45%);
+}
+.ladderPlateStat dt { font-weight: 800; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(255 255 255 / 60%); }
+.ladderPlateStat dd { margin: 0; font: 400 16px var(--ca-font-display); color: #fff; }
+.ladderPlateHero {
+    display: grid; justify-items: center;
+    padding: 6px 0 8px;
+    border: 2px solid #040912; border-radius: 10px;
+    background: linear-gradient(180deg, #070e1a, #0f1a2c);
+    box-shadow: inset 0 3px 8px rgb(0 0 0 / 60%), 0 1px 0 rgb(255 255 255 / 15%);
+}
+.ladderPlateHero strong { font: 400 30px/1 var(--ca-font-display); color: #ffd25c; text-shadow: 0 0 12px rgb(255 190 60 / 40%); }
+.ladderPlate.isCurrentUser .ladderPlateHero strong { color: #8fe8ff; text-shadow: 0 0 12px rgb(79 216 255 / 60%); }
+.ladderPlateHero small { font-weight: 800; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(255 255 255 / 55%); }
+@media (max-width: 900px) {
+    .ladderPlate { grid-template-columns: 58px minmax(0, 1fr) 110px; }
+    .ladderPlateStats { display: none; }
+}
+
+/* ---- History tickets: the punched notch and tear line read at 1440 ---- */
+.historyRoundCard {
+    background:
+        radial-gradient(circle at 78px 0, #050a14 0 12px, rgb(160 200 245 / 35%) 12px 14px, transparent 14.5px),
+        radial-gradient(circle at 78px 100%, #050a14 0 12px, rgb(160 200 245 / 35%) 12px 14px, transparent 14.5px),
+        linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, #0b1424) 0 78px, transparent 78px),
+        repeating-linear-gradient(180deg, transparent 0 4px, rgb(255 255 255 / 1.5%) 4px 5px),
+        linear-gradient(180deg, #1c2e49, #0e1828) !important;
+}
+.historyRoundCard::before { border-left: 3px dashed rgb(220 235 255 / 45%) !important; top: 16px !important; bottom: 16px !important; }
+.ladderPlate .leaderboardTierBadge { white-space: nowrap; }
+.duelFighterPortrait { overflow: hidden; }
+.duelFighterPortrait > * { width: 100% !important; height: 100% !important; border-radius: 50%; clip-path: circle(50%); }
+.arena .arenaFloor { top: 20% !important; bottom: -2% !important; height: auto !important; transform: perspective(600px) rotateX(35deg) !important; }
+.duelFighterPortrait > .duelFighterUnknown { display: grid; place-items: center; clip-path: none; }

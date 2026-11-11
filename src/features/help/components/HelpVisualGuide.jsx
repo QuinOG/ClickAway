@@ -103,3 +103,90 @@ export function HelpPowerupCards() {
     </div>
   )
 }
+
+/* One round, told as a four-panel strip: pick → count in → hit → cash in. */
+function PickArt() {
+  const chips = [["#3ee59a", "PRACTICE"], ["#4fb8ff", "CASUAL"], ["#ffc94a", "RANKED"]]
+  return (
+    <svg viewBox="0 0 200 120" aria-hidden="true">
+      {chips.map(([color, label], i) => (
+        <g key={label} transform={`translate(${20 + i * 56} ${i === 1 ? 18 : 30}) rotate(${(i - 1) * 6} 26 36)`}>
+          <rect width="52" height="72" rx="7" fill="#13233a" stroke="#040912" strokeWidth="3" />
+          <rect x="4" y="4" width="44" height="40" rx="4" fill={color} opacity={i === 1 ? 1 : 0.55} />
+          <circle cx="26" cy="24" r="10" fill="none" stroke="#040912" strokeWidth="3" />
+          <text x="26" y="60" textAnchor="middle" fill="#fff" fontFamily="Russo One" fontSize="8">{label}</text>
+        </g>
+      ))}
+      <path d="M118 96l14 18 4-8 9 8 4-4-9-8 8-4z" fill="#fff" stroke="#040912" strokeWidth="3" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function CountArt() {
+  return (
+    <svg viewBox="0 0 200 120" aria-hidden="true">
+      <circle cx="100" cy="60" r="46" fill="#0b1424" stroke="#040912" strokeWidth="4" />
+      <circle cx="100" cy="60" r="38" fill="none" stroke="#4fb8ff" strokeWidth="7" strokeDasharray="160 239" transform="rotate(-90 100 60)" strokeLinecap="round" />
+      <text x="100" y="80" textAnchor="middle" fill="#fff" stroke="#040912" strokeWidth="5" paintOrder="stroke" fontFamily="Russo One" fontSize="56">3</text>
+      <text x="30" y="44" textAnchor="middle" fill="#8fd4ff" opacity=".5" fontFamily="Russo One" fontSize="24">2</text>
+      <text x="170" y="44" textAnchor="middle" fill="#8fd4ff" opacity=".3" fontFamily="Russo One" fontSize="20">1</text>
+    </svg>
+  )
+}
+
+function ChaseArt() {
+  return (
+    <svg viewBox="0 0 200 120" aria-hidden="true">
+      {[[40, 80, 0.25], [76, 48, 0.45]].map(([x, y, o]) => (
+        <circle key={x} cx={x} cy={y} r="16" fill="none" stroke="#d94bff" strokeWidth="4" opacity={o} />
+      ))}
+      <path d="M40 80Q60 52 76 48T120 58" fill="none" stroke="#ffd25c" strokeWidth="3" strokeDasharray="5 6" />
+      <circle cx="124" cy="60" r="24" fill="#2a0f3a" stroke="#d94bff" strokeWidth="5" />
+      <circle cx="124" cy="60" r="5" fill="#fff" />
+      <path d="M134 68l16 20 4-8 9 8 4-4-9-8 8-4z" fill="#fff" stroke="#040912" strokeWidth="3" strokeLinejoin="round" />
+      <rect x="150" y="16" width="40" height="28" rx="6" fill="#ffc94a" stroke="#040912" strokeWidth="3" transform="rotate(8 170 30)" />
+      <text x="170" y="37" textAnchor="middle" fill="#2a1500" fontFamily="Russo One" fontSize="18" transform="rotate(8 170 30)">x4</text>
+    </svg>
+  )
+}
+
+function CashArt() {
+  return (
+    <svg viewBox="0 0 200 120" aria-hidden="true">
+      <g fill="none" stroke="#ffd25c" strokeWidth="3" strokeLinecap="round" opacity=".7">
+        <path d="M100 8v10M58 22l7 7M142 22l-7 7M44 58h10M156 58h-10" />
+      </g>
+      <circle cx="100" cy="58" r="30" fill="#ffc94a" stroke="#040912" strokeWidth="4" />
+      <circle cx="100" cy="58" r="21" fill="none" stroke="#c98a24" strokeWidth="4" />
+      <path d="M100 42l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z" fill="#fff6d6" stroke="#040912" strokeWidth="2" />
+      {[[52, 98], [72, 104], [128, 104], [148, 98]].map(([x, y]) => (
+        <g key={x}>
+          <ellipse cx={x} cy={y} rx="11" ry="7" fill="#e89a24" stroke="#040912" strokeWidth="3" />
+          <ellipse cx={x} cy={y - 2} rx="7" ry="3" fill="#ffd25c" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+const ROUND_STRIP = [
+  { id: "pick", title: "Pick a mode", art: PickArt, text: "Practice to learn, Casual for XP and coins, Ranked to climb." },
+  { id: "count", title: "Count in", art: CountArt, text: "Hit Start. A 3-second countdown lets you center up." },
+  { id: "chase", title: "Hit and chain", art: ChaseArt, text: "Click the target as it jumps. Keys 1, 2, 3 fire your powers." },
+  { id: "cash", title: "Cash in", art: CashArt, text: "Score, grade and rewards land. Play again or switch modes." },
+]
+
+export function HelpRoundStrip() {
+  return (
+    <ol className="helpRoundStrip" aria-label="How a round goes">
+      {ROUND_STRIP.map(({ id, title, art, text }, index) => (
+        <li key={id} className="helpRoundPanel" data-step={id}>
+          <span className="helpRoundNumber" aria-hidden="true">{index + 1}</span>
+          <div className="helpRoundArt">{art()}</div>
+          <h3>{title}</h3>
+          <p>{text}</p>
+        </li>
+      ))}
+    </ol>
+  )
+}

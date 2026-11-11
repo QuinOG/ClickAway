@@ -253,6 +253,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
     }
   }
 
+  const rivalName = sendForm.opponentUsername.trim()
   return (
     <div className="duelPage pageCenter">
       <section className="duelCommandSurface">
@@ -355,59 +356,48 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           </div>
         </section>
 
-        <section className="duelComposer" aria-labelledby="duel-composer-title">
-          <div className="duelVersusStage" aria-hidden="true">
-            <div className="duelCombatant is-player">
-              <span className="duelCombatantCrest"><PlayerPortrait name={currentUsername} size={56} /></span>
-              <small>You</small>
-            </div>
-            <div className="duelSignalLine">
-              <span />
-              <b className="duelVsMark">VS</b>
-              <span />
-            </div>
-            <div className={`duelCombatant is-rival ${sendForm.opponentUsername.trim() ? "isLocked" : ""}`}>
-              <span className="duelCombatantCrest">
-                {sendForm.opponentUsername.trim()
-                  ? <PlayerPortrait name={sendForm.opponentUsername.trim()} size={56} />
-                  : <Crosshair weight="duotone" />}
-              </span>
-              <small>{sendForm.opponentUsername.trim() || "Rival"}</small>
-            </div>
-            <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
-              <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Target score"}</small>
-              <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "—"}</strong>
-              <span>{selectedReplay ? "score to defend" : "select a run"}</span>
-            </div>
-          </div>
-
+        <section className="duelComposer duelFightComposer" aria-labelledby="duel-composer-title">
           <form className="duelLaunchForm" onSubmit={handleSendChallenge}>
             <h2 className="uiVisuallyHidden" id="duel-composer-title">Create a ghost duel</h2>
 
-            <label className="duelStep duelRivalStep">
-              <span className="duelStepNumber">01</span>
-              <span className="duelStepCopy"><strong>Pick a rival</strong><small>Their username</small></span>
-              <span className="duelInputWrap">
-                <UserFocus weight="duotone" aria-hidden="true" />
-                <input
-                  type="text"
-                  value={sendForm.opponentUsername}
-                  onChange={(event) => {
-                    setSendSuccess("")
-                    setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
-                  }}
-                  placeholder="Opponent username"
-                  required
-                />
-                {sendForm.opponentUsername.trim() ? <Check weight="bold" aria-hidden="true" /> : null}
-              </span>
-            </label>
+            <div className="duelFightCard">
+              <div className="duelFighter is-player">
+                <span className="duelFighterPortrait" aria-hidden="true"><PlayerPortrait name={currentUsername} size={112} /></span>
+                <span className="duelFighterPlate"><small>Challenger</small><strong>{currentUsername || "You"}</strong></span>
+              </div>
 
-            <fieldset className="duelStep duelReplayStep">
-              <legend>
-                <span className="duelStepNumber">02</span>
-                <span className="duelStepCopy"><strong>Choose a run</strong><small>The score they must beat</small></span>
-              </legend>
+              <div className="duelFightCenter">
+                <b className="duelVsMark" aria-hidden="true">VS</b>
+                <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
+                  <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Score to beat"}</small>
+                  <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "?"}</strong>
+                  <span>{selectedReplay ? "on the line" : "stake a run below"}</span>
+                </div>
+              </div>
+
+              <label className={`duelFighter is-rival ${rivalName ? "isLocked" : ""}`}>
+                <span className="duelFighterPortrait" aria-hidden="true">
+                  {rivalName ? <PlayerPortrait name={rivalName} size={112} /> : <span className="duelFighterUnknown">?</span>}
+                </span>
+                <span className="duelFighterPlate duelRivalInput">
+                  <small>Rival</small>
+                  <input
+                    type="text"
+                    value={sendForm.opponentUsername}
+                    onChange={(event) => {
+                      setSendSuccess("")
+                      setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
+                    }}
+                    placeholder="Enter username"
+                    aria-label="Opponent username"
+                    required
+                  />
+                </span>
+              </label>
+            </div>
+
+            <fieldset className="duelRunTokens">
+              <legend>Stake a run</legend>
               {replays.length > 0 ? (
                 <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
                   {replays.map((replay) => {
@@ -431,7 +421,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                       >
                         <span className="duelReplayMode">{getModeLabel({ modeId: replay.modeId, fallback: replay.modeId })}</span>
                         <strong>{Number(replay.score || 0).toLocaleString()}</strong>
-                        <span className="duelReplayMeta"><Crosshair weight="bold" /> Score</span>
+                        <span className="uiVisuallyHidden"> Score</span>
                         {isSelected ? <Check className="duelReplayCheck" weight="bold" /> : null}
                       </button>
                     )
@@ -446,16 +436,15 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
               )}
             </fieldset>
 
-            <div className="duelStep duelLaunchStep">
-              <span className="duelStepNumber">03</span>
-              <label className="duelMessageField">
-                <span className="duelStepCopy"><strong>Add a message</strong><small>Optional</small></span>
+            <div className="duelLaunchStep">
+              <label className="duelMessageField duelTaunt">
+                <span className="uiVisuallyHidden">Message (optional)</span>
                 <input
                   type="text"
                   maxLength={280}
                   value={sendForm.message}
                   onChange={(event) => setSendForm((current) => ({ ...current, message: event.target.value }))}
-                  placeholder="Think you can beat this run?"
+                  placeholder="Add a taunt (optional)"
                 />
               </label>
               <button type="submit" className="duelLaunchButton" disabled={isSending || !launchReady}>

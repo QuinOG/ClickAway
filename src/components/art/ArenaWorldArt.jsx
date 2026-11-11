@@ -1,3 +1,22 @@
+// Painted stadium behind the play field. Shapes carry their own inline fills
+// because game-play.css sets `.arenaWorldArt path { fill: none }`.
+const ink = "#040912"
+const f = (fill, stroke = "none", strokeWidth = 0) => ({ fill, stroke, strokeWidth })
+
+// Truss web: alternating diagonals between the roof's two chords.
+const quad = (end, ctrl, t) => end * (1 - t) ** 2 + 2 * t * (1 - t) * ctrl + end * t * t
+const TRUSS = Array.from({ length: 23 }, (_, i) => {
+  const x0 = 30 + i * 50
+  const x1 = Math.min(x0 + 50, 1170)
+  const top = (x) => quad(106, -6, (x - 30) / 1140)
+  const low = (x) => quad(136, 22, (x - 30) / 1140)
+  return i % 2
+    ? `M${x0} ${low(x0).toFixed(1)}L${x1} ${top(x1).toFixed(1)}`
+    : `M${x0} ${top(x0).toFixed(1)}L${x1} ${low(x1).toFixed(1)}`
+}).join("")
+
+const SEAT_ROWS = [204, 216, 228, 240, 252]
+
 export default function ArenaWorldArt({ className = "" }) {
   return (
     <svg
@@ -7,27 +26,73 @@ export default function ArenaWorldArt({ className = "" }) {
       aria-hidden="true"
       focusable="false"
     >
-      <g className="arenaWorldCanopy">
-        <path d="M38 164V92Q600 -16 1162 92v72" />
-        <path d="M74 164V112Q600 16 1126 112v52" />
-        <path d="M38 92h1124M74 112h1052M112 133h976" />
-        <path d="m180 164 54-51m112 30 38-45m448 45-38-45m352 66-54-51" />
+      <defs>
+        <linearGradient id="awaWall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#070f20" />
+          <stop offset="1" stopColor="#13284a" />
+        </linearGradient>
+        <linearGradient id="awaSteel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3a5476" />
+          <stop offset=".45" stopColor="#1f324d" />
+          <stop offset="1" stopColor="#111d30" />
+        </linearGradient>
+        <linearGradient id="awaStand" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#14223a" />
+          <stop offset="1" stopColor="#0b1527" />
+        </linearGradient>
+        <linearGradient id="awaBeam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff2cf" stopOpacity=".34" />
+          <stop offset=".7" stopColor="#ffd88a" stopOpacity=".07" />
+          <stop offset="1" stopColor="#ffd88a" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="awaScreen" cx=".5" cy=".45" r=".7">
+          <stop offset="0" stopColor="#1f5f8f" />
+          <stop offset="1" stopColor="#081b31" />
+        </radialGradient>
+        <linearGradient id="awaBoard" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1a1030" />
+          <stop offset="1" stopColor="#0a0814" />
+        </linearGradient>
+        <pattern id="awaScan" width="4" height="3" patternUnits="userSpaceOnUse">
+          <rect width="4" height="1" fill="#000" opacity=".28" />
+        </pattern>
+      </defs>
+
+      {/* back wall */}
+      <rect className="awaWall" x="0" y="0" width="1200" height="300" style={f("url(#awaWall)")} />
+
+      {/* light beams from the rig, drawn first so stands sit in the light */}
+      <g className="awaBeams">
+        <polygon points="250,118 330,118 470,600 60,600" style={f("url(#awaBeam)")} />
+        <polygon points="870,118 950,118 1140,600 730,600" style={f("url(#awaBeam)")} />
       </g>
-      <g className="arenaWorldSideRig">
-        <path d="M0 164h220v76H0m980-76h220v76H980" />
-        <path d="M22 164v180m48-180v116m80-116v156m48-156v95M1130 164v95m-48-95v156m-80-156v116m-48-116v180" />
-        <path d="M0 240h220m-220 24h220m-220 24h220m980-48h220m-220 24h220m-220 24h220" />
-        <path d="m0 344 220-104M0 240l220 104m980-104 220 104m-220-104 220 104" />
+
+      {/* side stands: tiered blocks with seat rows */}
+      <g className="awaSideStands">
+        <polygon points="0,150 214,150 228,246 0,246" style={f("url(#awaStand)", ink, 3)} />
+        <polygon points="1200,150 986,150 972,246 1200,246" style={f("url(#awaStand)", ink, 3)} />
+        {[172, 194, 216].map((y) => (
+          <g key={y}>
+            <rect x="0" y={y} width="220" height="3" style={f("#22375a")} />
+            <rect x="980" y={y} width="220" height="3" style={f("#22375a")} />
+          </g>
+        ))}
+        <rect x="0" y="146" width="216" height="6" style={f("#2c4566", ink, 2)} />
+        <rect x="984" y="146" width="216" height="6" style={f("#2c4566", ink, 2)} />
       </g>
-      <g className="arenaWorldRoof">
-        <path d="M38 164V92Q600 -16 1162 92v72Q600 50 38 164Z" />
+
+      {/* main stand */}
+      <g className="awaMainStand">
+        <polygon points="200,268 238,188 962,188 1000,268" style={f("url(#awaStand)", ink, 3)} />
+        {SEAT_ROWS.map((y) => (
+          <rect key={y} x={238 - (y - 188) * 0.475} y={y} width={724 + (y - 188) * 0.95} height="3" style={f("#21365a")} />
+        ))}
+        {/* aisles */}
+        {[400, 600, 800].map((x) => (
+          <polygon key={x} points={`${x - 6},188 ${x + 6},188 ${x + 10 + (x - 600) * 0.06},268 ${x - 10 + (x - 600) * 0.06},268`} style={f("#0a1324")} />
+        ))}
       </g>
-      <g className="arenaWorldStands">
-        <path d="M200 262 L236 190 H964 L1000 262Z" />
-        <path d="M0 240 V160 H216 V240Z M984 240 V160 H1200 V240Z" />
-        <path d="M200 262 H1000" />
-        <path d="M218 226 H982 M228 208 H972" />
-      </g>
+
       <g className="arenaWorldCrowd">
         <path d="M233.8 218.9q0-12 9.2-12q9.2 0 9.2 12z" style={{ fill: "#3a2a5a" }} /><circle cx="243" cy="202.3" r="5.1" style={{ fill: "#3a2a5a" }} />
         <path d="M255.1 217.0q0-12 7.9-12q7.9 0 7.9 12z" style={{ fill: "#1d3a44" }} /><circle cx="263" cy="202.9" r="4.3" style={{ fill: "#1d3a44" }} />
@@ -189,25 +254,71 @@ export default function ArenaWorldArt({ className = "" }) {
         <path d="M1159.8 218.9q0-12 9.2-12q9.2 0 9.2 12z" style={{ fill: "#3a2a5a" }} /><circle cx="1169" cy="202.3" r="5.1" style={{ fill: "#3a2a5a" }} />
         <path d="M1185 208l-5 -15" style={{ stroke: "#22395c", strokeWidth: 3.9, strokeLinecap: "round", fill: "none" }} /><path d="M1181.4 219.5q0-12 9.6-12q9.6 0 9.6 12z" style={{ fill: "#22395c" }} /><circle cx="1191" cy="202.1" r="5.3" style={{ fill: "#22395c" }} />
       </g>
-      <g className="arenaWorldBanners">
-        <path d="M148 96h44v70l-22 -14l-22 14z" /><path d="M148 96h44v8h-44z" /><path d="M308 70h44v70l-22 -14l-22 14z" /><path d="M308 70h44v8h-44z" /><path d="M848 70h44v70l-22 -14l-22 14z" /><path d="M848 70h44v8h-44z" /><path d="M1008 96h44v70l-22 -14l-22 14z" /><path d="M1008 96h44v8h-44z" />
+
+      {/* LED barrier boards in front of the stands */}
+      <g className="awaBoards">
+        <rect x="196" y="262" width="808" height="22" rx="3" style={f("url(#awaBoard)", ink, 3)} />
+        <rect x="0" y="240" width="230" height="16" rx="2" style={f("url(#awaBoard)", ink, 3)} />
+        <rect x="970" y="240" width="230" height="16" rx="2" style={f("url(#awaBoard)", ink, 3)} />
+        <rect className="awaBoardGlow" x="204" y="266" width="792" height="3" style={f("#ffb547")} />
+        <text className="awaBoardText" x="600" y="280.5" textAnchor="middle">CLICKAWAY ★ PRECISION ARENA ★ SEASON 1 ★ CLICKAWAY</text>
+        <rect x="8" y="245" width="214" height="3" style={f("#4fd8ff")} opacity=".7" />
+        <rect x="978" y="245" width="214" height="3" style={f("#4fd8ff")} opacity=".7" />
       </g>
-      <g className="arenaWorldJumbotron">
-        <rect x="520" y="34" width="160" height="62" rx="6" fill="#071022" stroke="#040912" strokeWidth="4" />
-        <rect x="528" y="42" width="144" height="46" rx="3" fill="#0f2a44" />
-        <path d="M546 66h108" stroke="#4fd8ff" strokeWidth="3" strokeDasharray="10 6" opacity=".7" />
-        <path d="M600 4v30" stroke="#2a4466" strokeWidth="4" />
+
+      {/* team banners hung from the roof */}
+      <g className="awaBanners">
+        {[
+          [150, 96, "#2b8a5a", "#7dffb1"],
+          [310, 74, "#2a6fb8", "#8fd4ff"],
+          [850, 74, "#2a6fb8", "#8fd4ff"],
+          [1010, 96, "#c98a24", "#fff1b0"],
+        ].map(([x, y, body, trim]) => (
+          <g key={x}>
+            <rect x={x + 20} y={y - 24} width="4" height="24" style={f("#1c2c44")} />
+            <path d={`M${x} ${y}h44v66l-22 -14l-22 14z`} style={f(body, ink, 2)} />
+            <rect x={x} y={y} width="44" height="8" style={f(trim, ink, 2)} />
+            <circle cx={x + 22} cy={y + 30} r="9" style={f(trim, ink, 2)} opacity=".85" />
+          </g>
+        ))}
       </g>
-      <g className="arenaWorldTargetRails">
-        <path d="M272 190v38m656-38v38M288 190h64m496 0h64" />
-        <path d="M340 178v12m520-12v12M346 178h42m466 0h-42" />
+
+      {/* roof truss: steel chords with a painted web, columns to the stands */}
+      <g className="awaRoof">
+        <rect x="26" y="88" width="30" height="170" style={f("url(#awaSteel)", ink, 3)} />
+        <rect x="1144" y="88" width="30" height="170" style={f("url(#awaSteel)", ink, 3)} />
+        <path d="M30 92Q600 -24 1170 92v14Q600 -6 30 106Z" style={f("url(#awaSteel)", ink, 3)} />
+        <path d="M30 136Q600 22 1170 136v12Q600 38 30 148Z" style={f("url(#awaSteel)", ink, 3)} />
+        <path d={TRUSS} style={{ fill: "none", stroke: "#2c4566", strokeWidth: 5 }} />
+        <path d="M30 92Q600 -24 1170 92" style={{ fill: "none", stroke: "#6d8db5", strokeWidth: 1.5 }} />
       </g>
-      <g className="arenaWorldLamps">
-        <path d="M112 133v42m976-42v42" />
-        <circle cx="112" cy="132" r="8" />
-        <circle cx="1088" cy="132" r="8" />
-        <circle cx="300" cy="190" r="5" />
-        <circle cx="900" cy="190" r="5" />
+
+      {/* scoreboard: cables, housing, lit screen, bulb trim */}
+      <g className="awaBoard">
+        <path d="M540 0v30M660 0v30" style={{ fill: "none", stroke: "#1c2c44", strokeWidth: 4 }} />
+        <rect x="474" y="26" width="252" height="82" rx="8" style={f("#0b1424", ink, 4)} />
+        <rect x="486" y="34" width="228" height="64" rx="4" style={f("url(#awaScreen)", "#2a4466", 2)} />
+        <rect x="486" y="34" width="228" height="64" rx="4" style={f("url(#awaScan)")} />
+        <text className="awaScreenIdle" x="600" y="74" textAnchor="middle">LIVE</text>
+        {Array.from({ length: 12 }, (_, i) => (
+          <circle key={i} className="awaBulb" cx={490 + i * 20} cy="103" r="2.6" style={f(i % 2 ? "#ffd25c" : "#ff9a3c")} />
+        ))}
+        <rect x="448" y="40" width="22" height="50" rx="3" style={f("#14223a", ink, 3)} />
+        <rect x="730" y="40" width="22" height="50" rx="3" style={f("#14223a", ink, 3)} />
+      </g>
+
+      {/* floodlight banks under the truss */}
+      <g className="awaLights">
+        {[250, 870].map((x) => (
+          <g key={x}>
+            <rect x={x} y="104" width="80" height="18" rx="3" style={f("#14223a", ink, 3)} />
+            {[0, 1, 2, 3].map((i) => (
+              <circle key={i} className="awaLamp" cx={x + 13 + i * 18} cy="113" r="5.5" style={f("#fff4d6")} />
+            ))}
+          </g>
+        ))}
+        <circle className="awaLamp" cx="41" cy="96" r="6" style={f("#fff4d6")} />
+        <circle className="awaLamp" cx="1159" cy="96" r="6" style={f("#fff4d6")} />
       </g>
     </svg>
   )

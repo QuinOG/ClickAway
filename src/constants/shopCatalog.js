@@ -176,8 +176,8 @@ export const SHOP_CATEGORIES = [
         id: "skin_bubble",
         name: "Buuble",
         imageSrc: "/skins/bubble.svg",
-        gameImageScale: 260,
-        shopImageScale: 250,
+        gameImageScale: 120,
+        shopImageScale: 120,
         description: "Try to pop it!",
       }),
       createButtonSkinItem({

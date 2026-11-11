@@ -18,7 +18,7 @@ import HelpListSection from "../features/help/components/HelpListSection.jsx"
 import HelpQuickStartSection from "../features/help/components/HelpQuickStartSection.jsx"
 import HelpRankTiersSection from "../features/help/components/HelpRankTiersSection.jsx"
 import HelpTableSection from "../features/help/components/HelpTableSection.jsx"
-import { HelpModeCards, HelpPowerupCards, HelpRuleCards } from "../features/help/components/HelpVisualGuide.jsx"
+import { HelpModeCards, HelpPowerupCards, HelpRoundStrip, HelpRuleCards } from "../features/help/components/HelpVisualGuide.jsx"
 import {
   ACCOUNT_ROWS,
   ARMORY_DEEP_LINKS,
@@ -116,8 +116,11 @@ export default function HelpPage() {
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">First Round</h2>
           </div>
-          <HelpQuickStartSection cards={QUICKSTART_CARDS} />
-          <HelpFlowSection title="Round Flow" steps={ROUND_FLOW_STEPS} />
+          <HelpRoundStrip />
+          <Rulebook>
+            <HelpQuickStartSection cards={QUICKSTART_CARDS} />
+            <HelpFlowSection title="Round Flow" steps={ROUND_FLOW_STEPS} />
+          </Rulebook>
         </section>
 
         <section id="core" className="helpTopicGroup" aria-label="Core gameplay systems">
