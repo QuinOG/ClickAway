@@ -31,7 +31,9 @@ score_rows = "\n".join(
     for r, vals in scores.items()
 )
 shot_rows = "\n".join(
-    f"| **{s.split('-', 1)[1][:-4]}** | ![]({blob}/i0/{s}?raw=true) | ![]({blob}/{latest}/{s}?raw=true) |"
+    f"| **{s.split('-', 1)[1][:-4]}** | "
+    + (f"![]({blob}/i0/{s}?raw=true)" if os.path.exists(os.path.join(SHOTS_DIR, "i0", s)) else "_not captured in i0_")
+    + f" | ![]({blob}/{latest}/{s}?raw=true) |"
     for s in shots
 )
 

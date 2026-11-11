@@ -27,7 +27,7 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - **Stop:** every judge ≥ 9.0 and Sol ≥ 9.4 (Sol runs ~0.4 above harsher judges), or 6 rounds. Run 2's first council read is the baseline for the new judges: re-check after it whether Gemini or Qwen needs its own offset. Count rounds per run.
 
 ## Files
-- Capture spec: `tests/e2e/zz-app.spec.js` (12 shots: login, every route captured at full content height, settings sheet, live round, results). `.mainContent` is the scroll container, so the spec grows the viewport to fit the content.
+- Capture spec: `tests/e2e/zz-app.spec.js` (13 shots: login, every route captured at full content height, settings sheet, live round, results, rank-up). `.mainContent` is the scroll container, so the spec grows the viewport to fit the content.
 - Judge brief: `docs/ui-polish/game-feel/brief.md` (scale, ≤350-word reply format).
 - Reference bar: `docs/ui-polish/standards/standard-1..4.jpg`
 - Shots: `docs/ui-polish/game-feel/iN/`, change notes `docs/ui-polish/game-feel/iN-changes.md`
@@ -95,6 +95,10 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
 
 - Scores climb ~+0.2 per round once past 7.5, no matter how big the round is. Breadth beats depth after that point: judges average over all 12 screens, so one screen getting great moves the score less than the weakest 3 screens getting decent.
 - Trimming sizes to fix a "too tall" regression can cost presence (Duels r6). Cut padding before cutting the hero elements.
+- **Never `git worktree remove --force` a worktree that holds a `node_modules` junction.** Git followed the junction and deleted files in the main repo's `node_modules`, including `.bin`. Delete the junction first with PowerShell `[System.IO.Directory]::Delete(path, $false)`, then remove the worktree. To repair, stop stray `vite`/`esbuild` processes, then run `npm ci`.
+- To capture old code (for example re-shooting an i0 screen), use a detached worktree at `392a05a^` and **change its Playwright port** (4173 → 4174). `reuseExistingServer` otherwise silently serves the main repo's dev server, which means current code.
+- The settings-sheet shot needs the dialog to be visible plus ~2.5s, or it captures mid-fade (the i0 shot was blurred and was re-shot after run 1).
+- Capture has 13 shots: `13-rankup` (added in run 2) starts a ranked round at `rankMmr: 798` (2 RR under Gold III) and clicks "Reveal Rank". i0 has no rank-up shot; the PR table shows "not captured".
 - Check catalog scale before redrawing an asset: the "lost translucency" bubble was `shopImageScale: 250` cropping its rim, not the art.
 - In the arena, `.arenaFloor` is a perspective plane: at rotateX(62deg) it collapses into a strip at the bottom. Use ~35deg with `top: 20%` so painted floor art is visible.
 - `font: 800 11px var(--x, inherit)` is invalid (inherit can't sit inside a shorthand), so the whole declaration is dropped. Use separate font-weight/font-size.

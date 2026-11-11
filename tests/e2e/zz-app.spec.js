@@ -10,7 +10,7 @@ async function newPage(browser, opts = {}) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173" })
   const page = await context.newPage()
   await page.clock.install({ time: new Date("2026-07-12T16:00:00.000Z") })
-  if (!opts.anon) await installApiMocks(page, {})
+  if (!opts.anon) await installApiMocks(page, { progressOverrides: opts.progress ?? {} })
   await page.addInitScript((prefs) => localStorage.setItem("clickaway.feedback-preferences.v1", JSON.stringify(prefs)), PREFS)
   return page
 }
@@ -58,6 +58,22 @@ test("app capture", async ({ browser }) => {
     await shot(page, "live-round", { fullPage: false })
     await page.keyboard.press("g"); await page.waitForTimeout(2600)
     await shot(page, "results", { fullPage: false })
+    await page.context().close()
+  })
+  // Rank-up: start 2 RR under the next division so a ranked round promotes.
+  await step("rankup", async () => {
+    const page = await newPage(browser, { progress: { rankMmr: 798 } })
+    await gotoRoute(page, AUTHENTICATED_ROUTES[0])
+    await page.waitForTimeout(900)
+    await page.getByRole("button", { name: "Select Ranked" }).click()
+    await page.getByRole("button", { name: /Start Ranked/i }).click()
+    await page.waitForTimeout(3900)
+    for (let i = 0; i < 14; i++) { await page.locator(".arena .bigCircleButton").first().click({ force: true, timeout: 1000 }).catch(() => {}); await page.waitForTimeout(110) }
+    await page.keyboard.press("g"); await page.waitForTimeout(2600)
+    await page.getByRole("button", { name: /Reveal Rank/i }).click({ timeout: 4000 })
+    await page.waitForTimeout(2400)
+    n = 12
+    await shot(page, "rankup", { fullPage: false })
     await page.context().close()
   })
 })
