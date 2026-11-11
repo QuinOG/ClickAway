@@ -9,9 +9,9 @@ Recursive self-improvement loop for ClickAway's UI/UX. **The skill improves itse
 - Bash heredocs choke on CSS that contains single-quoted data URIs. Write the block with the Write tool to the scratchpad, then `cat >>` it.
 - Before overriding a component's `::before`/`::after`, grep for its existing pseudo rules: inherited `top`/`width`/`height`/`overflow:hidden` silently break the new art (the shop shelf took three tries).
 - The world art in `.arenaWorldArt` sits behind a 0.34 opacity layer and a `path { fill: none }` rule. New filled shapes need CSS fills, not SVG attributes.
-- A reusable `post_round.py` in the scratchpad builds the PR comment: `python post_round.py N "scores" iN-changes.md "consensus" shot1,shot2`.
+- Keep helper scripts in the skill folder (`gh.sh`, `post_round.py`, `update_pr_body.py`, `skins.py`), not the scratchpad: the scratchpad is wiped between sessions.
 
-- After ~3 rounds of chrome, the judges converge on **art**: stock or photo assets are the loudest "not a game" tell. The fix that works is a generated SVG set in one hand (`public/skins/`, generator `scratchpad/skins.py`: ink outline, top-left light, flat base, cel crescent, highlight). Render a contact sheet with Playwright and fix clipping before wiring it in.
+- After ~3 rounds of chrome, the judges converge on **art**: stock or photo assets are the loudest "not a game" tell. The fix that works is a generated SVG set in one hand (`public/skins/`, generator `.claude/skills/clickaway-rsi/skins.py`: ink outline, top-left light, flat base, cel crescent, highlight). Render a contact sheet with Playwright and fix clipping before wiring it in.
 - Class-name attribute selectors are case-sensitive: the history tone classes are `isRanked` / `isCasual` / `isPractice`, so `[class*="ranked"]` never matches.
 - In `.arenaWorldArt`, CSS `fill:none` beats SVG fill attributes. Use JSX `style={{ fill }}` for per-shape colours.
 
@@ -40,11 +40,17 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 3. **Pick fixes:** when all 3 are in, take the consensus items with the biggest visual impact (things 2+ judges name first). Prefer structural changes (replace a table or form with a game composition) over decoration. Aim for 4–6 per round.
 4. **Implement:** CSS in `game-feel.css`; JSX when structure has to change. Keep existing tests green.
 5. **Verify:** `npm run build` (plus `npm run lint` and `npm run test` when JSX changed). Recapture into `i(N+1)` and view the screens you touched.
-6. **Commit and publish:** write `i(N+1)-changes.md`, commit code and shots together (`Game feel rN: …`), push, then post a PR comment with the scores, the change list and a Before/After table (raw image URLs `https://github.com/QuinOG/ClickAway/blob/<branch>/docs/ui-polish/game-feel/iN/<file>?raw=true`). Update the score table in the PR body.
+6. **Commit and publish:** write `i(N+1)-changes.md`, commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
+   - add the scores to `docs/ui-polish/game-feel/scores.json`
+   - post the **round comment** (previous round vs this round, for the shots you changed):
+     `python .claude/skills/clickaway-rsi/post_round.py N "Sol x · Terra y · Opus z (prev: …)" docs/ui-polish/game-feel/iN-changes.md "<consensus for next round>" 04-shop.png,06-ladder.png > comment.json` then `sh .claude/skills/clickaway-rsi/gh.sh POST /issues/<PR>/comments comment.json`
+   - rewrite the **PR description**, the always-current summary: the score table plus **baseline i0 vs latest iN for all 12 screens**:
+     `python .claude/skills/clickaway-rsi/update_pr_body.py N docs/ui-polish/game-feel/scores.json > body.json` then `sh .claude/skills/clickaway-rsi/gh.sh PATCH /pulls/<PR> body.json`
+   Put the json files in the scratchpad, not the repo. The user wants both views: the PR description shows the total transformation at a glance, and each round's commit and comment shows the step.
 7. Go to step 2 with the new folder.
 
 ## GitHub without `gh`
-`gh` isn't installed. Use a scratchpad helper:
+`gh` isn't installed. Use `.claude/skills/clickaway-rsi/gh.sh METHOD /path [json-file]`; it takes the token from git's credential manager and never prints it. Equivalent by hand:
 ```sh
 T=$(printf "protocol=https\nhost=github.com\n\n" | git credential fill | sed -n 's/^password=//p')
 curl -s -X POST -H "Authorization: Bearer $T" -H "Accept: application/vnd.github+json" https://api.github.com/repos/QuinOG/ClickAway/issues/<PR>/comments --data-binary @body.json
@@ -63,9 +69,9 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
 - Bash heredocs choke on CSS that contains single-quoted data URIs. Write the block with the Write tool to the scratchpad, then `cat >>` it.
 - Before overriding a component's `::before`/`::after`, grep for its existing pseudo rules: inherited `top`/`width`/`height`/`overflow:hidden` silently break the new art (the shop shelf took three tries).
 - The world art in `.arenaWorldArt` sits behind a 0.34 opacity layer and a `path { fill: none }` rule. New filled shapes need CSS fills, not SVG attributes.
-- A reusable `post_round.py` in the scratchpad builds the PR comment: `python post_round.py N "scores" iN-changes.md "consensus" shot1,shot2`.
+- Keep helper scripts in the skill folder (`gh.sh`, `post_round.py`, `update_pr_body.py`, `skins.py`), not the scratchpad: the scratchpad is wiped between sessions.
 
-- After ~3 rounds of chrome, the judges converge on **art**: stock or photo assets are the loudest "not a game" tell. The fix that works is a generated SVG set in one hand (`public/skins/`, generator `scratchpad/skins.py`: ink outline, top-left light, flat base, cel crescent, highlight). Render a contact sheet with Playwright and fix clipping before wiring it in.
+- After ~3 rounds of chrome, the judges converge on **art**: stock or photo assets are the loudest "not a game" tell. The fix that works is a generated SVG set in one hand (`public/skins/`, generator `.claude/skills/clickaway-rsi/skins.py`: ink outline, top-left light, flat base, cel crescent, highlight). Render a contact sheet with Playwright and fix clipping before wiring it in.
 - Class-name attribute selectors are case-sensitive: the history tone classes are `isRanked` / `isCasual` / `isPractice`, so `[class*="ranked"]` never matches.
 - In `.arenaWorldArt`, CSS `fill:none` beats SVG fill attributes. Use JSX `style={{ fill }}` for per-shape colours.
 
