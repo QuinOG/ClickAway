@@ -1,3 +1,4 @@
+import { LockKey, UserCircle } from "@phosphor-icons/react"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -99,6 +100,7 @@ export default function LoginPage({ onLogin }) {
         <form onSubmit={handleSubmit} className="authForm" noValidate>
           <AuthInputField
             label="Username"
+            icon={<UserCircle weight="fill" />}
             name="username"
             value={username}
             onChange={(event) => {
@@ -121,6 +123,7 @@ export default function LoginPage({ onLogin }) {
 
           <AuthInputField
             label="Password"
+            icon={<LockKey weight="fill" />}
             name="password"
             type="password"
             value={password}

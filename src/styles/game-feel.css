@@ -1467,3 +1467,398 @@
 .profileSheetMain .profileFormTokens { flex: 1; margin: 0; justify-content: flex-end; }
 .profileSheetMain .profileFormToken { flex: none; width: 52px; font-size: 13px; }
 .profileSheetMain .profileSectionKicker { white-space: nowrap; }
+
+/* ======================= Round 7 (run 2, round 1) ======================= */
+/* ---- G. Framed game fields: a recessed slot with a steel icon cap ------- */
+.gfField {
+    position: relative;
+    display: flex !important;
+    align-items: stretch;
+    min-height: 50px;
+    border: 2px solid #040912 !important;
+    border-radius: 10px !important;
+    background: linear-gradient(180deg, #050a14, #0a1426) !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%), 0 1px 0 rgb(160 200 245 / 14%), 0 0 0 1px rgb(201 154 58 / 35%) !important;
+    overflow: hidden;
+}
+.gfField:focus-within { box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%), 0 0 0 2px #e8b54a, 0 0 14px rgb(232 181 74 / 35%) !important; }
+.gfFieldCap {
+    flex: 0 0 46px;
+    display: grid;
+    place-items: center;
+    color: #ffd25c;
+    background: linear-gradient(180deg, #3a4a66, #1c2740 55%, #141c2e);
+    border-right: 2px solid #040912;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%), inset -1px 0 0 rgb(255 255 255 / 6%);
+}
+.gfFieldCap svg { width: 22px; height: 22px; filter: drop-shadow(0 2px 0 #040912); }
+.gfField input,
+.gfField .authInput,
+.duelFightComposer .duelTaunt.gfField input,
+.gfField .leaderboardSearchInput {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 46px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #f2f7ff;
+    font-size: 16px;
+    outline: none;
+}
+.gfField input::placeholder { color: rgb(170 192 220 / 55%); }
+.authInputRow.gfField .authPasswordToggle { align-self: center; margin-right: 8px; }
+.duelFightComposer .duelTaunt.gfField { display: flex !important; border-radius: 26px !important; }
+.leaderboardSearchField { flex: 1 1 auto; }
+
+/* ---- C. Ladder: a real podium under a spotlight ------------------------- */
+.leaderboardTopRow .leaderboardPodium { overflow: hidden; }
+.leaderboardPodiumSignal { display: none !important; }
+.leaderboardTopRow .leaderboardPodiumDeck,
+.leaderboardPodiumDeck {
+    position: relative;
+    max-width: 640px;
+    min-height: 300px !important;
+    margin: 4px auto 0 !important;
+    gap: 0 !important;
+    align-items: end !important;
+}
+.podiumSpotlight {
+    position: absolute;
+    z-index: 0;
+    left: 26%; right: 26%; top: -60px; bottom: 30px;
+    background: linear-gradient(180deg, rgb(255 236 170 / 55%), rgb(255 210 110 / 18%) 60%, rgb(255 200 90 / 0%));
+    clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+    filter: blur(8px);
+    pointer-events: none;
+}
+.leaderboardPodiumDeck .leaderboardPodiumPlayer,
+.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank1,
+.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank3 {
+    z-index: 1;
+    height: auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+.podiumFigure { display: grid; justify-items: center; gap: 2px; padding: 0 6px 10px; }
+.leaderboardPodiumPlayer.isRank1 .podiumFigure .leaderboardPodiumCrest { width: 70px; }
+.podiumFigure > strong { font-family: var(--ca-font-display); font-size: 16px !important; color: #fff; text-shadow: 0 2px 0 #040912; }
+.leaderboardPodiumPlayer.isRank1 .podiumFigure > strong { font-size: 20px !important; color: #ffe08a; }
+.podiumStep {
+    position: relative;
+    display: grid;
+    place-items: center;
+    border: 2px solid #040912;
+    border-bottom-width: 0;
+    background: linear-gradient(180deg, var(--step-face) 0%, var(--step-deep) 100%);
+    box-shadow: inset 0 10px 0 var(--step-top), inset 0 12px 0 rgb(0 0 0 / 35%), inset 2px 0 0 rgb(255 255 255 / 10%), inset -2px 0 0 rgb(0 0 0 / 25%);
+}
+.leaderboardPodiumPlayer.isRank1 .podiumStep { --step-top: #ffe9a6; --step-face: #e2a83a; --step-deep: #7a4f12; height: 132px; margin-inline: -1px; z-index: 2; }
+.leaderboardPodiumPlayer.isRank2 .podiumStep { --step-top: #eef3fb; --step-face: #a9b6c9; --step-deep: #4d5a6e; height: 96px; }
+.leaderboardPodiumPlayer.isRank3 .podiumStep { --step-top: #ffcfa6; --step-face: #c27a43; --step-deep: #5e3218; height: 72px; }
+.podiumStep .leaderboardPodiumRank {
+    position: static !important;
+    margin-top: 10px;
+    color: #fff !important;
+    font-family: var(--ca-font-display) !important;
+    font-size: 46px !important;
+    line-height: 1;
+    text-shadow: 0 3px 0 #040912;
+    -webkit-text-stroke: 2px #040912;
+    paint-order: stroke fill;
+}
+.leaderboardPodiumPlayer.isRank1 .podiumStep .leaderboardPodiumRank { font-size: 62px !important; }
+.podiumStep .leaderboardPodiumRank small { font-size: 0.4em; vertical-align: top; margin-left: 2px; }
+.leaderboardPodiumPlayer.isCurrentUser .podiumStep { outline: 3px solid #4fd8ff; outline-offset: -3px; }
+
+/* "Your standing" is one rank plate: shield + name + a single recessed stat bar */
+.leaderboardTopRow .leaderboardStandingPanel {
+    background:
+        radial-gradient(circle at 8px 8px, #8aa4c8 2px, transparent 3px),
+        radial-gradient(circle at calc(100% - 8px) 8px, #8aa4c8 2px, transparent 3px),
+        linear-gradient(180deg, #1d4f7e 0%, #123659 55%, #0b223b 100%) !important;
+}
+.leaderboardTopRow .standingShield {
+    min-width: 104px !important;
+    height: 120px;
+    padding: 14px 8px 22px !important;
+    display: grid !important;
+    place-items: center;
+    align-content: center;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: linear-gradient(180deg, #9fe6ff, #2a9ad6 55%, #135a8c) !important;
+    clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+    box-shadow: none !important;
+    filter: drop-shadow(0 3px 0 #040912);
+}
+.leaderboardTopRow .standingShield .leaderboardStandingSpotlightLabel { color: #04263f !important; font-size: 10px; letter-spacing: 0.14em; }
+.leaderboardTopRow .standingShield .leaderboardStandingSpotlightValue {
+    color: #fff !important; font-family: var(--ca-font-display); font-size: 40px !important;
+    -webkit-text-stroke: 2px #04263f; paint-order: stroke fill;
+}
+.leaderboardTopRow .leaderboardStandingStats {
+    gap: 0 !important;
+    border: 2px solid #040912;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #060d19;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%);
+}
+.leaderboardTopRow .leaderboardStandingStat {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: inset -1px 0 0 rgb(120 160 210 / 14%), inset 0 -1px 0 rgb(120 160 210 / 14%) !important;
+}
+.leaderboardTopRow .leaderboardStandingStatValue { font-family: var(--ca-font-display); color: #ffe08a !important; }
+
+/* ---- B1. Global nav: a framed game bar ---------------------------------- */
+.topbar {
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 6%), transparent 40%),
+        linear-gradient(180deg, #17243a, #0b1424) !important;
+    border-bottom: 0 !important;
+    box-shadow: 0 2px 0 #040912, 0 4px 0 #a8792a, 0 6px 0 #040912, 0 12px 24px rgb(0 0 0 / 45%) !important;
+}
+.gameHudNav {
+    align-items: center;
+    gap: 14px !important;
+    padding: 5px 10px;
+    border: 2px solid #040912;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #060c17, #0d182b);
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%), 0 1px 0 rgb(255 255 255 / 8%);
+}
+.hudMenuTiles { align-items: center !important; gap: 6px !important; }
+.navItem.hudMenuTile {
+    height: 58px !important;
+    border-radius: 6px 6px 12px 12px !important;
+    color: #e8eef8 !important;
+    background:
+        radial-gradient(circle at 7px 7px, #9db0cc 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 7px) 7px, #9db0cc 1.5px, transparent 2.5px),
+        linear-gradient(180deg, #3b4c68 0%, #24334c 45%, #18243a 100%) !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%), inset 0 -3px 0 rgb(0 0 0 / 35%), 0 3px 0 #040912 !important;
+    text-shadow: 0 1px 0 #040912;
+}
+.navItem.hudMenuTile.active,
+.navItem.hudMenuTile.active:not(.navPlay) {
+    color: #2a1600 !important;
+    text-shadow: 0 1px 0 rgb(255 240 190 / 70%);
+    background:
+        radial-gradient(circle at 7px 7px, #fff3c4 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 7px) 7px, #fff3c4 1.5px, transparent 2.5px),
+        linear-gradient(180deg, #ffe9a0 0%, #f2b844 50%, #b87818 100%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 55%), inset 0 -3px 0 rgb(90 50 0 / 45%), 0 3px 0 #040912, 0 0 16px rgb(255 190 70 / 35%) !important;
+}
+.navItem.hudMenuTile.active::after { display: none !important; }
+.hudUtility { gap: 6px !important; padding: 0 0 0 12px !important; border: 0 !important; border-left: 2px solid rgb(255 255 255 / 7%) !important; border-radius: 0 !important; background: none !important; }
+.navItem.hudUtilityButton.hudMedallion {
+    width: 52px !important; min-width: 52px !important; height: 58px !important;
+    padding: 0 !important;
+    display: grid !important; justify-items: center; align-content: center; gap: 2px;
+    background: none !important; box-shadow: none !important; border: 0 !important;
+}
+.hudMedallion .navItemIcon {
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    border: 2px solid #040912;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #4b5e7e, #1c2a42 70%);
+    box-shadow: inset 0 0 0 2px #a8792a, inset 0 2px 0 rgb(255 255 255 / 25%), 0 2px 0 #040912;
+}
+.hudMedallion.active .navItemIcon { background: radial-gradient(circle at 35% 30%, #ffe9a0, #c98a24 70%); box-shadow: inset 0 0 0 2px #fff1c0, 0 2px 0 #040912, 0 0 12px rgb(255 190 70 / 45%); }
+.hudMedallion .navItemLabel {
+    position: static !important; width: auto !important; height: auto !important; clip: auto !important; overflow: visible !important;
+    margin: 0 !important; white-space: nowrap;
+    color: #b9c8de; font-family: var(--ca-font-display); font-size: 10px; letter-spacing: 0.04em; text-shadow: 0 1px 0 #040912;
+}
+.hudMedallion.active .navItemLabel { color: #ffd25c; }
+.shellIdentityButton {
+    padding: 5px 10px 5px 5px !important;
+    border: 2px solid #040912 !important;
+    border-radius: 12px !important;
+    background:
+        radial-gradient(circle at 6px 6px, #9db0cc 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 6px) 6px, #9db0cc 1.5px, transparent 2.5px),
+        radial-gradient(circle at 6px calc(100% - 6px), #9db0cc 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), #9db0cc 1.5px, transparent 2.5px),
+        linear-gradient(180deg, #2f405c, #172338) !important;
+    box-shadow: inset 0 0 0 2px #a8792a, inset 0 3px 0 rgb(255 255 255 / 14%), 0 3px 0 #040912 !important;
+}
+.shellIdentityButton .shellAvatar { border: 2px solid #040912; box-shadow: 0 0 0 2px #e8b54a; border-radius: 8px; }
+.shellIdentityButton .shellIdentityName { font-family: var(--ca-font-display); color: #fff; }
+.shellIdentityButton .shellIdentityRank { color: #ffd25c !important; font-weight: 800; letter-spacing: 0.08em; }
+.shellIdentityProgress { display: grid !important; gap: 3px !important; }
+.hudResource {
+    padding: 1px 8px 1px 4px;
+    border-radius: 6px;
+    background: #060c17;
+    box-shadow: inset 0 2px 3px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+/* ---- A. Shop storefront: an inspection stage + cabinet shelves ---------- */
+.shopCommandSurface {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) !important;
+    gap: 22px !important;
+    align-items: stretch !important;
+}
+.shopInspectStage.shopCommandLoadoutStage {
+    min-height: 320px !important;
+    height: 100%;
+    border: 2px solid #040912 !important;
+    border-radius: 10px !important;
+    background: linear-gradient(180deg, #070c18 0%, #0e1830 60%, #1a1208 100%) !important;
+    box-shadow: inset 0 0 0 2px #a8792a, inset 0 0 40px rgb(0 0 0 / 70%), 0 4px 0 #040912 !important;
+}
+.shopInspectStage::before, .shopInspectStage::after { display: none !important; }
+.shopInspectStage .shopStageWorld { position: absolute; inset: 0; width: 100%; height: 72%; opacity: 0.38; }
+.shopInspectStage .shopStageWorld .awaBoardText, .shopInspectStage .shopStageWorld .awaScreenIdle { display: none; }
+.shopInspectStage.stageFocus-arena_theme .shopStageWorld { height: 100%; opacity: 0.95; }
+.shopInspectStage.theme-sunset .shopStageWorld { filter: hue-rotate(-25deg) saturate(1.3); }
+.shopInspectStage.theme-forest .shopStageWorld { filter: hue-rotate(70deg) saturate(0.9); }
+.shopInspectStage.theme-arcade .shopStageWorld { filter: hue-rotate(230deg) saturate(1.5); }
+.shopStageSpot {
+    position: absolute; z-index: 1;
+    left: 20%; right: 20%; top: 0; bottom: 30px;
+    background: linear-gradient(180deg, rgb(255 240 190 / 50%), rgb(255 220 140 / 14%) 70%, transparent);
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+    filter: blur(6px);
+    pointer-events: none;
+}
+.shopInspectStage .shopCommandLoadoutPedestal {
+    z-index: 1;
+    bottom: 26px !important;
+    width: min(260px, 70%) !important;
+    height: 52px !important;
+    border: 3px solid #040912;
+    background: radial-gradient(ellipse at 50% 40%, #3a4a68, #151f33 70%) !important;
+    box-shadow: inset 0 0 0 3px #d4a548, inset 0 -6px 0 rgb(0 0 0 / 40%), 0 10px 0 #5a3c12, 0 12px 0 #040912, 0 24px 24px rgb(0 0 0 / 60%) !important;
+    filter: none !important;
+    opacity: 1 !important;
+}
+.shopInspectStage .shopCommandLoadoutButton {
+    z-index: 2;
+    top: auto !important;
+    bottom: 58px;
+    width: 176px !important;
+    height: 176px !important;
+    transform: translateX(-50%) !important;
+    filter: drop-shadow(0 14px 10px rgb(0 0 0 / 55%));
+}
+.shopInspectStage .shopCommandLoadoutAvatarFrame { z-index: 3; top: 14px; right: 14px; }
+.shopInspectStage .shopCommandLoadoutAvatar { border: 2px solid #040912 !important; box-shadow: 0 0 0 2px #e8b54a !important; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatarFrame { top: auto; right: auto; left: 50%; bottom: 58px; transform: translateX(-50%); }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatar { width: 160px; height: 160px; border-radius: 22px; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutButton { width: 60px !important; height: 60px !important; top: 14px !important; bottom: auto; left: 14px; transform: none !important; }
+.shopInspectStage.stageFocus-arena_theme .shopCommandLoadoutButton { width: 110px !important; height: 110px !important; }
+.shopCommandDetails { align-self: center; }
+
+/* physical tabs that sit on a wooden plank */
+.shopTabRail {
+    gap: 6px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-bottom: 8px solid #6a421d !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: 0 2px 0 #040912, 0 4px 0 #3b230e !important;
+    align-items: end;
+}
+.shopTabRail .shopTab {
+    margin-bottom: -2px;
+    border: 2px solid #040912 !important;
+    border-bottom: 0 !important;
+    border-radius: 10px 10px 0 0 !important;
+    background: linear-gradient(180deg, #33445f, #1b273d) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 15%) !important;
+}
+.shopTabRail .shopTab.active {
+    padding-top: 14px !important;
+    background: linear-gradient(180deg, #ffe9a0, #e9a93a 60%, #a8792a) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 55%), 0 -6px 14px rgb(255 190 70 / 25%) !important;
+}
+.shopTabRail .shopTab.active .shopTabLabel { color: #2a1600 !important; }
+.shopTabRail .shopTab.active .shopTabOwned { color: #5a3a08 !important; }
+.shopTabRail .shopTab .shopTabLabel { font-family: var(--ca-font-display); }
+.shopTabRail .shopTabSignal { display: none !important; }
+.shopTabRail .shopTabCount {
+    width: 30px; height: 30px; display: grid; place-items: center;
+    border: 2px solid #040912 !important; border-radius: 50% !important;
+    color: #2a1600 !important; font-family: var(--ca-font-display);
+    background: radial-gradient(circle at 35% 30%, #fff1b0, #f2b844 55%, #a8701a) !important;
+    box-shadow: inset 0 0 0 2px rgb(255 240 190 / 45%) !important;
+}
+/* each category is a display cabinet with a hanging sign */
+.shopInventoryDeck .shopSection {
+    padding: 18px 20px 26px;
+    border: 2px solid #040912;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #0b1424, #081020);
+    box-shadow: inset 0 6px 18px rgb(0 0 0 / 55%), inset 0 0 0 2px rgb(255 255 255 / 4%);
+}
+.shopInventoryDeck .shopSectionHeader { margin-bottom: 18px; }
+.shopInventoryDeck .shopSectionTitleRow {
+    display: inline-flex !important;
+    padding: 6px 26px 8px;
+    border: 2px solid #040912;
+    border-radius: 6px;
+    background:
+        radial-gradient(circle at 11px 50%, #e8c27a 2px, transparent 3px),
+        radial-gradient(circle at calc(100% - 11px) 50%, #e8c27a 2px, transparent 3px),
+        repeating-linear-gradient(180deg, rgb(0 0 0 / 0%) 0 7px, rgb(0 0 0 / 12%) 7px 8px),
+        linear-gradient(180deg, #a06a34, #6a421d);
+    box-shadow: inset 0 2px 0 rgb(255 220 160 / 35%), 0 3px 0 #040912;
+}
+.shopInventoryDeck .shopSectionTitleRow h2 { margin: 0; color: #ffeccc !important; text-shadow: 0 2px 0 #3b230e; }
+.shopInventoryDeck .shopSectionHeader p { margin-top: 6px; }
+
+/* ---- D. Armory: segmented gauges in recessed hardware slots ------------- */
+.armorySegmentGauge {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 2px;
+    width: 100%;
+    height: 10px;
+    padding: 2px;
+    border-radius: 3px;
+    background: #040912;
+    box-shadow: inset 0 1px 2px #000, 0 1px 0 rgb(255 255 255 / 8%);
+}
+.armorySegmentGauge i { border-radius: 1px; background: rgb(120 150 190 / 16%); }
+.armorySegmentGauge i.isOn { background: linear-gradient(180deg, #bfe6ff, #3f9bdc); box-shadow: 0 0 4px rgb(80 180 255 / 45%); }
+.armorySegmentGauge i.isGain { background: linear-gradient(180deg, #c6ffe2, #2fcf86); box-shadow: 0 0 5px rgb(60 230 150 / 55%); }
+.armorySegmentGauge i.isLoss { background: repeating-linear-gradient(135deg, #ff8a78 0 3px, #b73a2c 3px 6px); }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure {
+    border: 2px solid #040912 !important;
+    border-radius: 8px !important;
+    background:
+        radial-gradient(circle at 6px 6px, #6e809c 1.5px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 6px) 6px, #6e809c 1.5px, transparent 2.5px),
+        linear-gradient(180deg, #08101e, #0e1a2e) !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%), 0 1px 0 rgb(255 255 255 / 7%) !important;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armorySegmentGauge { margin-top: 4px; }
+.armorySwapReportRow > .armorySwapReportLabel {
+    flex-direction: column;
+    align-items: flex-start !important;
+    justify-content: center;
+    gap: 5px;
+    padding-block: 7px;
+}
+.armorySwapReportRow > * { background: #08111f !important; }
+.armorySwapReportGauge { width: min(150px, 100%); height: 9px; }
+.shopCommandSurface .shopCommandPreviewTitle { font-family: var(--ca-font-display); font-size: 34px !important; line-height: 1.1; color: #fff; text-shadow: 0 3px 0 #040912; }
+.shopCommandSurface .shopCommandPreviewDescription { font-size: 15px !important; }
+.shopCommandSurface .shopCommandLoadoutMeta span { font-size: 13px; }

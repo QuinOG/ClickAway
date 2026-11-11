@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Crown, Crosshair, Trophy } from "@phosphor-icons/react"
+import { Crown, Crosshair, MagnifyingGlass, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
@@ -287,8 +287,8 @@ function LeaderboardStandingPanel({
           </div>
         </div>
 
-        <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
-          <span className="leaderboardStandingSpotlightLabel">Ladder Spot</span>
+        <div className="leaderboardStandingSpotlight standingShield" aria-label="Visible ladder spot">
+          <span className="leaderboardStandingSpotlightLabel">Spot</span>
           <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
         </div>
       </div>
@@ -364,14 +364,17 @@ function LeaderboardControls({
       </div>
 
       <div className="leaderboardControlRow">
-        <input
-          type="search"
-          className="leaderboardSearchInput"
-          placeholder="Search players"
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          aria-label="Search Ladder players"
-        />
+        <label className="gfField leaderboardSearchField">
+          <span className="gfFieldCap" aria-hidden="true"><MagnifyingGlass weight="bold" /></span>
+          <input
+            type="search"
+            className="leaderboardSearchInput"
+            placeholder="Search players"
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            aria-label="Search Ladder players"
+          />
+        </label>
 
         <div className="leaderboardViewToggle" role="group" aria-label="Ladder view">
           <button
@@ -440,6 +443,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
         <Crown weight="duotone" aria-hidden="true" />
       </div>
       <div className={`leaderboardPodiumDeck count-${podiumRows.length}`}>
+        <span className="podiumSpotlight" aria-hidden="true" />
         {podiumRows.map((player) => {
           const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)
           return (
@@ -447,7 +451,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               key={`podium-${player.userId}-${player.rank}`}
               className={`leaderboardPodiumPlayer isRank${player.rank} ${isCurrentUser ? "isCurrentUser" : ""}`}
             >
-              <span className="leaderboardPodiumRank">#{player.rank}</span>
+              <span className="podiumFigure">
               <span className="leaderboardPodiumIdentity">
                 <PlayerPortrait name={player.username} size={player.rank === 1 ? 58 : 50} />
                 <span className="leaderboardPodiumCrest" role="img" aria-label={`${player.rankLabel} rank`}>
@@ -458,7 +462,10 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               <strong>{player.username}</strong>
               <span className="leaderboardPodiumTier">{player.rankLabel}</span>
               <span className="leaderboardPodiumRating">{formatNumericValue(player.mmr)} <small>RR</small></span>
-              <i aria-hidden="true" />
+              </span>
+              <span className="podiumStep">
+                <span className="leaderboardPodiumRank">{player.rank}<small>{player.rank === 1 ? "st" : player.rank === 2 ? "nd" : "rd"}</small></span>
+              </span>
             </article>
           )
         })}

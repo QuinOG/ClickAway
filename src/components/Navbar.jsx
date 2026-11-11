@@ -269,22 +269,21 @@ export default function Navbar({
                   <ShellNavLink
                     key={route.id}
                     route={route}
-                    className="navItem hudUtilityButton"
+                    className="navItem hudUtilityButton hudMedallion"
                     illustrated
                     iconSize={22}
-                    iconOnly
                   />
                 ))}
                 <button
                   type="button"
-                  className="navItem navSettingsButton hudUtilityButton"
+                  className="navItem navSettingsButton hudUtilityButton hudMedallion"
                   onClick={onOpenSettings}
                   disabled={!onOpenSettings}
                   aria-label="Open feedback settings"
                   title="Settings"
                 >
-                  <GearIcon size={22} />
-                  <span className="navItemLabel uiVisuallyHidden">Settings</span>
+                  <span className="navItemIcon"><GearIcon size={22} /></span>
+                  <span className="navItemLabel" aria-hidden="true">Settings</span>
                 </button>
               </div>
             </nav>

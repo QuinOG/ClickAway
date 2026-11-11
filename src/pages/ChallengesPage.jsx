@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  ChatTeardropText,
   Check,
   Crosshair,
   Ghost,
@@ -437,7 +438,8 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
             </fieldset>
 
             <div className="duelLaunchStep">
-              <label className="duelMessageField duelTaunt">
+              <label className="duelMessageField duelTaunt gfField hasCap">
+                <span className="gfFieldCap" aria-hidden="true"><ChatTeardropText weight="fill" /></span>
                 <span className="uiVisuallyHidden">Message (optional)</span>
                 <input
                   type="text"
