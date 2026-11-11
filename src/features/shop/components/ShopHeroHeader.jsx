@@ -32,7 +32,9 @@ function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPrev
       aria-label={`${isPreviewing ? "Selected" : "Equipped"} preview with ${buttonSkin?.name ?? "button skin"} and ${arenaTheme?.name ?? "arena theme"}`}
     >
       <ArenaWorldArt className="shopStageWorld" />
+      <span className="shopStageAwning" aria-hidden="true" />
       <span className="shopStageSpot" aria-hidden="true" />
+      <span className="shopStageCounter" aria-hidden="true" />
       <span className="shopCommandLoadoutPedestal" aria-hidden="true" />
 
       <div className="shopCommandLoadoutAvatarFrame">

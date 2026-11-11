@@ -111,7 +111,8 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
   - Council changed after r5: Terra dropped, Opus to low effort, stop bar Sol ≥ 9.4 / Opus ≥ 9.
   - r6 (`dc3100a`): hardwood court in the arena and lobby, Profile character sheet, stadium theme previews in the Shop, Help ch.4–5 cards. i6 Sol 8.0 / Opus 8.0 (predicted ~8.1 / ~8.2). **Run 1 ended at the 6-round cap.** Total: i0 avg 6.6 → i6 avg 8.0.
 - 2026-11-11 run 2 (same branch and PR #12): council is Sol (med), Opus 5 (low), Gemini 4 Argon (med) and Qwen3.8 Max (med). It starts with a baseline read of i6 (no PREVIOUS_DIR); rounds continue as i7, i8, …, up to 6 rounds (i12).
-  - Baseline read of i6: Sol 8.0, Opus 7.8 (low), Gemini 8.3, Qwen 8.2. Gemini and Qwen both described real on-screen details, so they are reading the images. **NEXT: implement `i7-decisions.md`** (Shop storefront, nav game bar, Ladder podium and standing plate, Armory rail gauges, framed inputs). Capture to i7, PREVIOUS_DIR=i6.
+  - Baseline read of i6: Sol 8.0, Opus 7.8 (low), Gemini 8.3, Qwen 8.2. Gemini and Qwen both described real on-screen details, so they are reading the images. i7 decisions in `i7-decisions.md`.
+  - r7 (`6a6f418`): stepped Ladder podium + standing rank plate, nav as framed bar (gold plaque tabs, labeled medallions, riveted player plate), Shop inspection stage + folder tabs + cabinet shelves, Armory 10-segment gauges, framed icon-cap inputs. i0/13-rankup copied from i6 (unchanged screen, per user). Judges launched on i7 vs i6. **NEXT: record scores, calibrate, write i8-decisions.md.**
   - Plan carried over from run 1 (merge it with the baseline read): both judges' consensus is the shared shell: "the world stops at the court edge".
     1. Ladder and History on a physical substrate (banner wall or bracket board; a pinned ticket ledger), plus a podium with depth.
     2. A stadium control rail and nav plates instead of nested navy frames and the utility capsule.

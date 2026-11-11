@@ -1849,16 +1849,306 @@
         linear-gradient(180deg, #08101e, #0e1a2e) !important;
     box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%), 0 1px 0 rgb(255 255 255 / 7%) !important;
 }
-.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armorySegmentGauge { margin-top: 4px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armorySegmentGauge { margin-top: 2px; height: 8px; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure { padding-block: 6px 7px !important; gap: 1px !important; }
 .armorySwapReportRow > .armorySwapReportLabel {
-    flex-direction: column;
-    align-items: flex-start !important;
-    justify-content: center;
-    gap: 5px;
-    padding-block: 7px;
+    flex-direction: row;
+    align-items: center !important;
+    justify-content: space-between;
+    gap: 10px;
+    padding-right: 10px;
 }
 .armorySwapReportRow > * { background: #08111f !important; }
-.armorySwapReportGauge { width: min(150px, 100%); height: 9px; }
+.armorySwapReportGauge { flex: 0 1 96px; width: 96px; height: 9px; }
 .shopCommandSurface .shopCommandPreviewTitle { font-family: var(--ca-font-display); font-size: 34px !important; line-height: 1.1; color: #fff; text-shadow: 0 3px 0 #040912; }
 .shopCommandSurface .shopCommandPreviewDescription { font-size: 15px !important; }
 .shopCommandSurface .shopCommandLoadoutMeta span { font-size: 13px; }
+
+/* ======================= Round 8 (run 2, round 2) ======================= */
+/* ---- A. Rank-up: the real tier medal, a ribbon and a ceremony frame ---- */
+.gameOverPromotionCard {
+    border-radius: 14px !important;
+    box-shadow: 0 0 0 3px #040912, 0 0 0 7px #c98a24, inset 0 0 0 2px rgb(255 230 160 / 35%), 0 0 0 9px #040912, 0 10px 0 9px #040912, 0 0 120px rgb(var(--tier) / 25%) !important;
+}
+.gameOverPromotionEyebrow {
+    position: relative;
+    padding: 8px 34px !important;
+    border-radius: 0 !important;
+    border: 2px solid #040912;
+    color: #2a1600 !important;
+    background: linear-gradient(180deg, #ffe9a0, #e9a93a 60%, #a8792a) !important;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+}
+.gameOverPromotionMedal {
+    position: relative;
+    z-index: 2;
+    width: 176px;
+    height: auto;
+    filter: drop-shadow(3px 0 0 #040912) drop-shadow(-3px 0 0 #040912) drop-shadow(0 3px 0 #040912) drop-shadow(0 -3px 0 #040912) drop-shadow(0 16px 14px rgb(0 0 0 / 55%));
+}
+.gameOverPromotionRibbon {
+    position: relative;
+    z-index: 3;
+    margin-top: -26px;
+    display: inline-block;
+    padding: 0 !important;
+    background: none !important;
+}
+.gameOverPromotionRibbon span {
+    position: relative;
+    display: inline-block;
+    padding: 8px 46px 10px;
+    border: 3px solid #040912;
+    color: #fff !important;
+    font-family: var(--ca-font-display);
+    font-size: 34px !important;
+    line-height: 1;
+    text-shadow: 0 3px 0 #040912;
+    background: linear-gradient(180deg, #e2463a, #a8231c 60%, #741410);
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 30%), inset 0 0 0 3px rgb(255 210 120 / 55%), 0 5px 0 #040912;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 50%, 100% 100%, 0 100%, 18px 50%);
+}
+.promotionLadderNode i {
+    width: 34px !important;
+    height: 34px !important;
+    margin-top: 0 !important;
+    display: grid;
+    place-items: center;
+    transform: none !important;
+    border-radius: 50% !important;
+    border: 2px solid #040912;
+    background: radial-gradient(circle at 35% 30%, #2a3a56, #0d1626 70%) !important;
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%) !important;
+}
+.promotionLadderNode i img { width: 24px; height: 24px; object-fit: contain; filter: grayscale(1) brightness(0.55); }
+.promotionLadderNode.isPassed i img, .promotionLadderNode.isFrom i img, .promotionLadderNode.isClimbed i img { filter: none; opacity: 0.85; }
+.promotionLadderNode.isCurrent i {
+    width: 48px !important; height: 48px !important; margin-top: -7px !important;
+    box-shadow: inset 0 0 0 3px var(--node), 0 0 22px var(--node) !important;
+}
+.promotionLadderNode.isCurrent i img { width: 36px; height: 36px; filter: none; }
+.promotionLadderNode::before { top: 15px !important; height: 5px !important; }
+
+/* ---- B. Shop booth: a brighter stadium, a real pedestal, a booth frame -- */
+.shopInspectStage .shopStageWorld { height: 80% !important; opacity: 0.7 !important; filter: brightness(1.15); }
+.shopInspectStage.theme-sunset .shopStageWorld { filter: hue-rotate(-25deg) saturate(1.3) brightness(1.15); }
+.shopInspectStage.theme-forest .shopStageWorld { filter: hue-rotate(70deg) saturate(0.9) brightness(1.15); }
+.shopInspectStage.theme-arcade .shopStageWorld { filter: hue-rotate(230deg) saturate(1.5) brightness(1.15); }
+.shopInspectStage.shopCommandLoadoutStage {
+    background: linear-gradient(180deg, #13213a 0%, #1a2a48 55%, #2a1c0c 100%) !important;
+    padding-top: 30px;
+}
+/* striped booth awning along the top of the stage */
+.shopInspectStage .shopStageAwning {
+    position: absolute; z-index: 4; left: -2px; right: -2px; top: -2px; height: 30px;
+    border-bottom: 2px solid #040912;
+    background: repeating-linear-gradient(90deg, #d8443a 0 34px, #f4ead2 34px 68px);
+    box-shadow: inset 0 -5px 0 rgb(0 0 0 / 22%), 0 5px 8px rgb(0 0 0 / 45%);
+}
+.shopInspectStage .shopStageAwning::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -12px; height: 12px;
+    background: radial-gradient(circle 17px at 17px 0, #d8443a 11px, #040912 12px 13px, transparent 14px) 0 0 / 68px 12px repeat-x,
+                radial-gradient(circle 17px at 51px 0, #f4ead2 11px, #040912 12px 13px, transparent 14px) 0 0 / 68px 12px repeat-x;
+}
+/* the booth counter in front of the pedestal */
+.shopInspectStage .shopStageCounter {
+    position: absolute; z-index: 1; left: -2px; right: -2px; bottom: -2px; height: 46px;
+    border-top: 3px solid #040912;
+    background:
+        linear-gradient(180deg, #c48a4a 0 8px, #040912 8px 10px, transparent 10px),
+        repeating-linear-gradient(90deg, #7a4c26 0 60px, #6a4020 60px 62px, #73471f 62px 120px);
+    box-shadow: inset 0 -8px 12px rgb(0 0 0 / 40%);
+}
+.shopInspectStage .shopCommandLoadoutPedestal {
+    z-index: 2 !important;
+    bottom: 40px !important;
+    height: 56px !important;
+    width: min(270px, 74%) !important;
+    background: radial-gradient(ellipse at 50% 35%, #50648a, #1b2740 70%) !important;
+    box-shadow: inset 0 0 0 4px #e8b54a, inset 0 -8px 0 rgb(0 0 0 / 35%), 0 14px 0 #8a5c1e, 0 16px 0 #040912, 0 28px 22px rgb(0 0 0 / 60%) !important;
+}
+.shopInspectStage .shopCommandLoadoutButton { z-index: 3 !important; bottom: 74px !important; width: 190px !important; height: 190px !important; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatarFrame { bottom: 76px; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutButton { width: 60px !important; height: 60px !important; bottom: auto !important; top: 40px !important; }
+.shopInspectStage .shopCommandLoadoutAvatarFrame { top: 42px !important; }
+.shopInspectStage .shopStageSpot { top: 26px; z-index: 2; }
+.shopCommandSurface { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important; }
+.shopCommandSurface .shopCommandLoadoutMeta { display: grid !important; grid-template-columns: 1fr; gap: 6px !important; }
+.shopCommandSurface .shopCommandLoadoutMeta span > span { white-space: normal !important; overflow: visible !important; }
+/* legendary cards get a raised gold shelf and a slight tilt */
+.shopGrid .shopItemCard.rarity-legendary::after {
+    background: linear-gradient(180deg, #fff1b0, #e9a93a 45%, #8a5c1e) !important;
+}
+
+/* ---- F. Ladder podium depth: side faces and a shared floor ------------- */
+.leaderboardPodiumDeck { perspective: 900px; }
+.leaderboardPodiumDeck::after {
+    left: 2% !important; right: 2% !important; bottom: -4px !important; height: 18px !important;
+    border-radius: 4px !important;
+    background: linear-gradient(180deg, #2a3650, #121a2a) !important;
+    border: 2px solid #040912;
+    z-index: 0 !important;
+}
+.podiumStep::before {
+    content: "";
+    position: absolute;
+    top: -2px; bottom: 0; width: 18px;
+    border: 2px solid #040912;
+    border-bottom: 0;
+    background: linear-gradient(180deg, var(--step-face), var(--step-deep));
+    filter: brightness(0.62);
+}
+.leaderboardPodiumPlayer.isRank2 .podiumStep::before { left: -18px; transform: skewY(-18deg); transform-origin: right top; }
+.leaderboardPodiumPlayer.isRank3 .podiumStep::before { right: -18px; transform: skewY(18deg); transform-origin: left top; }
+.leaderboardPodiumPlayer.isRank1 .podiumStep::before { display: none; }
+.leaderboardPodiumPlayer.isRank2 { margin-left: 18px; }
+.leaderboardPodiumPlayer.isRank3 { margin-right: 18px; }
+.podiumSpotlight { filter: blur(14px) !important; opacity: 0.85; }
+/* players stand on the block: a shadow pool on its top face */
+.podiumFigure { position: relative; padding-bottom: 6px !important; }
+.podiumFigure::after {
+    content: ""; position: absolute; z-index: -1; left: 22%; right: 22%; bottom: -6px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgb(0 0 0 / 55%), transparent 70%);
+}
+
+/* ---- C. History: the trajectory is a broadcast LED scoreboard ---------- */
+.historyTrajectory .historyClimb {
+    position: relative;
+    height: 220px;
+    padding: 34px 26px 0;
+    gap: 18px;
+    border: 4px solid #040912 !important;
+    border-radius: 8px;
+    background:
+        repeating-linear-gradient(0deg, transparent 0 43px, rgb(120 170 230 / 10%) 43px 44px),
+        radial-gradient(circle, rgb(120 170 230 / 9%) 1px, transparent 1.6px) 0 0 / 6px 6px,
+        linear-gradient(180deg, #03070d, #08111d) !important;
+    box-shadow: inset 0 0 0 3px #1d2a40, inset 0 0 30px rgb(0 0 0 / 80%), 0 0 0 3px #2c3c58, 0 0 0 5px #040912, 0 6px 0 5px #040912;
+    margin: 8px 6px 34px !important;
+}
+.historyTrajectory .historyClimb::before {
+    content: "SCORE TREND";
+    position: absolute; top: 8px; left: 12px;
+    color: #ffb84a; font-family: var(--ca-font-display); font-size: 11px; letter-spacing: 0.24em;
+    text-shadow: 0 0 6px rgb(255 160 50 / 70%);
+}
+.historyTrajectory .historyClimb::after {
+    content: "● LIVE";
+    position: absolute; top: 8px; right: 12px;
+    color: #ff5a4a; font-family: var(--ca-font-display); font-size: 11px; letter-spacing: 0.18em;
+    text-shadow: 0 0 6px rgb(255 80 60 / 80%);
+}
+.historyTrajectory .historyClimbPillar {
+    width: 44%;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: repeating-linear-gradient(0deg, var(--tone) 0 9px, transparent 9px 13px) !important;
+    opacity: 0.45;
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--tone) 70%, transparent));
+}
+.historyTrajectory .historyClimbStep.isLatest .historyClimbPillar,
+.historyTrajectory .historyClimbStep.isBest .historyClimbPillar { opacity: 1; box-shadow: none !important; }
+.historyTrajectory .historyClimbMedal {
+    min-width: 64px;
+    padding: 4px 8px;
+    border: 2px solid #1d2a40 !important;
+    border-radius: 3px !important;
+    color: var(--tone) !important;
+    background: #020509 !important;
+    box-shadow: inset 0 0 8px rgb(0 0 0 / 90%), 0 0 0 2px #040912 !important;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 80%, transparent);
+}
+.historyTrajectory .historyClimbStep.isBest .historyClimbMedal { border-color: #ffd25c !important; color: #ffe08a !important; }
+.historyTrajectory .historyClimbLabel {
+    margin-bottom: -28px;
+    color: #ffb84a;
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    text-shadow: 0 0 5px rgb(255 160 50 / 60%);
+}
+.historyTrajectory .historyClimbStep.isLatest .historyClimbLabel { color: #fff; }
+
+/* ---- D. Play lobby: a dispatch console with mode cartridges ------------ */
+.arenaLobby .arenaLobbyKicker {
+    display: inline-block;
+    padding: 4px 22px 5px;
+    border: 2px solid #040912;
+    color: #2a1600 !important;
+    font-family: var(--ca-font-display);
+    letter-spacing: 0.14em;
+    background: linear-gradient(180deg, #ffe9a0, #e9a93a 60%, #a8792a);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%, 10px 50%);
+}
+.lobbyModeRail .lobbyModeChoice {
+    --mode: 79 184 255;
+    position: relative;
+    border: 2px solid #040912 !important;
+    border-radius: 10px !important;
+    background:
+        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
+        linear-gradient(180deg, #2c3c58 0%, #1a263c 55%, #131d30 100%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 16%), inset 0 -4px 0 rgb(0 0 0 / 35%), 0 4px 0 #040912 !important;
+}
+.lobbyModeRail .lobbyModeChoice-practice { --mode: 62 229 154; }
+.lobbyModeRail .lobbyModeChoice-casual { --mode: 79 184 255; }
+.lobbyModeRail .lobbyModeChoice-ranked { --mode: 255 201 74; }
+.lobbyModeRail .lobbyModeChoice.isSelected {
+    transform: translateY(-2px);
+    background:
+        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
+        radial-gradient(ellipse 80% 120% at 0% 50%, rgb(var(--mode) / 26%), transparent 70%),
+        linear-gradient(180deg, #34486a 0%, #1e2e4a 55%, #16233a 100%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 22%), inset 0 -4px 0 rgb(0 0 0 / 35%), 0 6px 0 #040912, 0 0 0 2px rgb(var(--mode)), 0 0 22px rgb(var(--mode) / 40%) !important;
+}
+.lobbyModeRail .lobbyModeName { font-family: var(--ca-font-display); text-shadow: 0 2px 0 #040912; }
+.lobbyModeRail .lobbyModeSelectedMark { color: #040912 !important; background: rgb(var(--mode)) !important; }
+.lobbyModeRail .lobbyModeBriefStat {
+    border: 2px solid #040912 !important;
+    background: #060c17 !important;
+    box-shadow: inset 0 2px 4px rgb(0 0 0 / 65%) !important;
+}
+.arenaLobby .lobbyModeRecord {
+    border: 2px solid #040912 !important;
+    background: linear-gradient(180deg, #050a14, #0a1426) !important;
+    box-shadow: inset 0 3px 8px rgb(0 0 0 / 65%), 0 1px 0 rgb(255 255 255 / 8%) !important;
+}
+
+/* ---- E. Help: each chapter is a bound field-manual page ---------------- */
+.helpDoc .helpTopicGroup {
+    position: relative;
+    margin-top: 34px;
+    padding: 6px 30px 34px 62px;
+    border: 2px solid #040912;
+    border-radius: 4px 12px 12px 4px;
+    background:
+        repeating-linear-gradient(180deg, transparent 0 31px, rgb(150 190 240 / 5%) 31px 32px),
+        linear-gradient(90deg, rgb(0 0 0 / 45%) 0 44px, rgb(255 255 255 / 5%) 44px 46px, transparent 46px),
+        linear-gradient(180deg, #17243a, #111c2f);
+    box-shadow: 5px 5px 0 -1px #1d2a42, 5px 5px 0 1px #040912, 10px 10px 0 -1px #16223a, 10px 10px 0 1px #040912, 0 14px 24px rgb(0 0 0 / 45%);
+}
+/* binder rings down the spine */
+.helpDoc .helpTopicGroup::after {
+    content: "";
+    position: absolute;
+    left: 12px; top: 22px; bottom: 22px; width: 22px;
+    background: radial-gradient(circle at 11px 11px, #040912 0 5px, #c9d4e4 5.5px 8px, #5a6a84 8.5px 10px, transparent 10.5px) 0 0 / 22px 92px repeat-y;
+    pointer-events: none;
+}
+/* huge chapter numeral printed on the page */
+.helpDoc .helpTopicGroup::before {
+    content: counter(gfChapter);
+    position: absolute;
+    right: 22px; top: -8px;
+    font: 400 150px/1 var(--ca-font-display);
+    color: rgb(255 210 92 / 9%);
+    -webkit-text-stroke: 2px rgb(255 210 92 / 16%);
+    pointer-events: none;
+}
+.helpDoc .helpTopicGroup .helpGroupHeader { margin-top: 20px !important; }
+/* page number in the corner */
+.helpDoc .helpTopicGroup > :last-child { position: relative; z-index: 1; }
+.leaderboardTopRow { align-items: start !important; }
+.helpDoc .helpTopicGroup .rankTierGrid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 8px !important; }
