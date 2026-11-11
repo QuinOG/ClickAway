@@ -11,11 +11,11 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 
 ## Defaults (override with whatever the user says)
 - **Goal:** move ClickAway from a SaaS-dashboard feel to a shipped indie-game feel (illustrated icons, game menus, world, juice) across the whole app.
-- **Council:** `delegate_task` ×3, all launched in one message, `role: "review"`:
+- **Council:** `delegate_task` ×2, both launched in one message, `role: "review"`:
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "high"}`
-  - Codex `gpt-6.1-terra`, `{reasoningEffort: "high"}`
-  - Claude `claude-opus-5`, `{effort: "high"}` (it's not in the short list; `orchestrator_capabilities` with `search: "opus-5"` finds it)
-- **Stop:** every judge ≥ 9.0, or 6 rounds. Count rounds per run.
+  - Claude `claude-opus-5`, `{effort: "low"}` (it's not in the short list; `orchestrator_capabilities` with `search: "opus-5"` finds it)
+  - Terra was dropped after r5 at the user's request: it repeated 5 of Sol's 6 requests and scored a steady ~0.4 below Sol. Runs 1–5 used three judges (Sol, Terra, Opus at high effort).
+- **Stop:** Sol ≥ 9.4 and Opus ≥ 9.0, or 6 rounds. Sol's bar is raised 0.4 to stand in for Terra, which was the harshest judge. Count rounds per run.
 
 ## Files
 - Capture spec: `tests/e2e/zz-app.spec.js` (12 shots: login, every route captured at full content height, settings sheet, live round, results). `.mainContent` is the scroll container, so the spec grows the viewport to fit the content.
@@ -27,8 +27,8 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 
 ## Loop (one round)
 1. **Capture:** `SHOT_DIR=docs/ui-polish/game-feel/iN npx playwright test tests/e2e/zz-app.spec.js --workers=1`. Before sending, open 2–3 of the shots yourself to catch broken captures (blurred, empty, cut off).
-2. **Council:** launch all 3 judges with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md . Standards: …/docs/ui-polish/standards/. Read-only; do not edit anything.` End your turn; completions wake you.
-3. **Pick fixes (weighted, see "Decision model" below):** when all 3 replies are in, build `docs/ui-polish/game-feel/i(N+1)-decisions.md` with the value table, picks, skips and predicted gains, then implement the picks.
+2. **Council:** launch both judges with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md . Standards: …/docs/ui-polish/standards/. Read-only; do not edit anything.` End your turn; completions wake you.
+3. **Pick fixes (weighted, see "Decision model" below):** when both replies are in, build `docs/ui-polish/game-feel/i(N+1)-decisions.md` with the value table, picks, skips and predicted gains, then implement the picks.
 4. **Implement:** CSS in `game-feel.css`; JSX when structure has to change. Keep existing tests green.
 5. **Verify and guard:** `npm run build` (plus `npm run lint` and `npm run test` when JSX changed). Recapture into `i(N+1)`, view every screen you touched **and every PROTECT item** next to the previous round, and fix any regression before submitting. The change notes must be factual and measurable ("12px wood plank under each card row"): judges compare claims to pixels and mark down overclaiming.
 6. **Commit and publish:** write `i(N+1)-changes.md`, commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
@@ -47,10 +47,11 @@ Judges reply with OVERALL, MOVE THE NEEDLE (each item `[est +0.X, confidence]`),
 2. **Score each cluster:**
    `value = Σ(est × conf × judgeWeight) × consensus − Σ(0.15 × judgeWeight for each judge listing it in DON'T BOTHER)`
    - conf: high 1.0, med 0.7, low 0.4 (adjust per judge from calibration; see Lessons)
-   - judgeWeight: lowest-scoring judge ×1.3, middle ×1.1, highest ×1.0 (the goal is min ≥ 9, so the weakest judge is the bottleneck)
-   - consensus: ×1 one judge, ×1.3 two, ×1.6 all three
+   - judgeWeight: the judge furthest below its stop bar ×1.2, the other ×1.0 (that judge is the bottleneck). With three judges it was ×1.3 / ×1.1 / ×1.0.
+   - consensus: ×1 one judge, ×1.4 both (with three judges: ×1 / ×1.3 / ×1.6)
+   - realism: after r5 the judges' own estimates over-predicted ~3–10× (predicted +0.8 to +1.1, got +0.1 to +0.3). Use estimates to rank, not to forecast. When writing predicted gains, multiply the summed estimate by 0.3.
 3. **Divide by cost** (S=1, M=2, L=3), rank, and take ~4–6 items.
-4. **Rules:** veto anything 2+ judges put in DON'T BOTHER. Each judge's #1 is always done unless vetoed. PROTECT items are frozen (bug fixes only). Last round's REGRESSIONS come first.
+4. **Rules:** veto anything both judges put in DON'T BOTHER; one judge's DON'T BOTHER only applies the penalty. Each judge's #1 is always done unless vetoed. PROTECT items are frozen (bug fixes only). Last round's REGRESSIONS come first.
 5. **Calibrate** after scores arrive: in `iN-decisions.md`, record predicted vs actual gain per judge. A judge whose estimates keep missing gets a lower confidence multiplier, written into Lessons.
 6. The round's PR comment includes a short "picked / skipped / predicted gain" line.
 

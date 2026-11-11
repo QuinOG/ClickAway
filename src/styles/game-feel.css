@@ -1200,3 +1200,270 @@
 .duelFighterPortrait > * { width: 100% !important; height: 100% !important; border-radius: 50%; clip-path: circle(50%); }
 .arena .arenaFloor { top: 20% !important; bottom: -2% !important; height: auto !important; transform: perspective(600px) rotateX(35deg) !important; }
 .duelFighterPortrait > .duelFighterUnknown { display: grid; place-items: center; clip-path: none; }
+
+/* ======================= Round 6 ======================================== */
+/* ---- Arena: hardwood court (shared with the Play lobby), soft light ---- */
+:root {
+    --gf-court:
+        radial-gradient(ellipse 36% 42% at 50% 46%, rgb(255 190 90 / 42%), rgb(255 150 60 / 14%) 55%, transparent 78%),
+        radial-gradient(ellipse 14% 17% at 50% 46%, transparent 0 90%, rgb(255 214 120 / 80%) 91% 97%, transparent 98%),
+        linear-gradient(90deg, transparent calc(50% - 2px), rgb(255 214 120 / 70%) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)),
+        linear-gradient(0deg, transparent 8%, rgb(255 214 120 / 60%) 8% calc(8% + 3px), transparent calc(8% + 3px)),
+        repeating-linear-gradient(90deg, rgb(28 14 4 / 85%) 0 3px, transparent 3px 96px),
+        repeating-linear-gradient(90deg, transparent 0 17px, rgb(40 20 6 / 30%) 17px 18px, transparent 18px 41px, rgb(255 215 160 / 9%) 41px 42px, transparent 42px 63px, rgb(40 20 6 / 22%) 63px 64px, transparent 64px 96px),
+        repeating-linear-gradient(0deg, transparent 0 311px, rgb(28 14 4 / 70%) 311px 314px),
+        repeating-linear-gradient(90deg, #7a4c26 0 96px, #6a4020 96px 192px, #73471f 192px 288px);
+}
+.arena .arenaFloor { background: var(--gf-court) !important; }
+.lobbyStage .lobbyStageFloor {
+    background: var(--gf-court) !important;
+    transform: perspective(600px) rotateX(40deg) !important;
+    height: 70% !important;
+    mask-image: linear-gradient(0deg, #000 30%, transparent 96%) !important;
+}
+.lobbyStage .lobbyStageOrbit.isOuter { display: none; }
+.lobbyStage .lobbyStageOrbit.isInner { border-style: solid !important; border-color: rgb(255 214 120 / 35%) !important; }
+/* soft light: cones diffuse instead of hard triangles, warm wash restored */
+.arenaWorldArt .awaBeams { filter: blur(10px); }
+.arena .arenaHeatGlow {
+    opacity: max(0.55, var(--heat-strength));
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgb(255 170 70 / 32%), transparent 72%),
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(var(--heat), 0.22), transparent 72%) !important;
+}
+
+/* ---- Regressions: Ladder and Duels back toward i4 height --------------- */
+.ladderPlates { gap: 10px; }
+.ladderPlate { min-height: 64px; padding-block: 5px; }
+.ladderPlate.isRank1 { min-height: 76px; }
+.ladderPlate.isRank2, .ladderPlate.isRank3 { min-height: 70px; }
+.duelFightCard { padding: 22px 36px 20px; }
+.duelFighterPortrait { width: 124px; height: 124px; }
+.duelFightCenter .duelVsMark { font-size: 80px !important; }
+.duelFightComposer .duelReplayCard { width: 112px; height: 112px; }
+.duelFightComposer .duelLaunchForm { gap: 16px !important; padding-bottom: 18px !important; }
+.historyRoundCard::before { border-left-color: rgb(235 244 255 / 75%) !important; }
+
+/* ---- Profile: competitor card + attribute sheet ------------------------- */
+.profileSheet {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    gap: 26px;
+    margin-bottom: 26px;
+}
+.profileCompetitorCard {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 10px;
+    padding: 0 18px 18px;
+    border: 3px solid #040912;
+    border-radius: 16px;
+    background:
+        radial-gradient(ellipse 90% 40% at 50% 22%, rgba(var(--rank-accent-rgb), 0.35), transparent 70%),
+        repeating-linear-gradient(135deg, rgb(255 255 255 / 2.5%) 0 8px, transparent 8px 16px),
+        linear-gradient(180deg, #1f3354, #0c1526);
+    box-shadow: inset 0 0 0 3px #c98a24, inset 0 0 0 5px #040912, inset 0 3px 0 5px rgb(255 255 255 / 12%), 0 8px 0 #040912, 0 18px 30px rgb(0 0 0 / 40%);
+    text-align: center;
+}
+.profileCardBanner {
+    justify-self: stretch;
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 0 -18px 4px;
+    padding: 10px 16px 9px;
+    border-radius: 13px 13px 0 0;
+    border-bottom: 3px solid #040912;
+    background: linear-gradient(180deg, #fff1b0, #ffd04a 50%, #e8941c);
+    color: #2a1500;
+    font: 400 15px var(--ca-font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.profileCardBanner .profileOrbitLevel {
+    position: static !important; transform: none !important;
+    min-width: 0 !important; padding: 2px 10px !important;
+    border: 2px solid #040912 !important; border-radius: 6px !important;
+    background: #040912 !important; color: #ffd25c !important;
+    font: 400 14px var(--ca-font-display) !important;
+}
+.profilePortraitSlab { position: relative; margin: 6px 0 14px; }
+.profileCompetitorCard .profileAvatar {
+    width: 200px !important; height: 200px !important;
+    clip-path: none !important;
+    border: 4px solid #040912 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 0 0 4px rgba(var(--rank-accent-rgb), 0.9), 0 0 0 7px #040912, 0 0 40px rgba(var(--rank-accent-rgb), 0.35) !important;
+}
+.profileCompetitorCard .profileAvatar > * { width: 100% !important; height: 100% !important; }
+.profileCompetitorCard .profileRankCrest {
+    position: absolute !important;
+    right: -34px; bottom: -26px;
+    width: 96px !important; height: 96px !important;
+    border: 3px solid #040912 !important;
+    background: radial-gradient(circle at 50% 30%, #2f4a70, #0b1626 72%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 4px #c98a24, 0 0 0 6px #040912, 0 6px 14px rgb(0 0 0 / 50%) !important;
+}
+.profileCompetitorCard .profilePlayerName { margin: 6px 0 0 !important; font-size: 46px !important; line-height: 1; }
+.profileCompetitorCard .profilePlayerTitle { margin: 0 !important; }
+.profileDivisionPlate {
+    justify-self: stretch;
+    display: grid; justify-items: center; gap: 0;
+    margin-top: 4px;
+    padding: 8px 10px 10px;
+    border: 2px solid #040912; border-radius: 10px;
+    background: linear-gradient(180deg, #070e1a, #0f1a2c);
+    box-shadow: inset 0 3px 8px rgb(0 0 0 / 55%), 0 1px 0 rgb(255 255 255 / 12%);
+}
+.profileDivisionPlate small { font-weight: 800; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(255 255 255 / 55%); }
+.profileDivisionPlate .profileRankTitle { font-size: 38px !important; line-height: 1.05; }
+.profileDivisionPlate span { font-size: 12px; color: #9fb6d3; }
+.profileCompetitorCard .profileRankGoal { margin: 0; display: block !important; border: 0 !important; padding: 0 !important; font-size: 13px; color: #c9d8ea; }
+.profileCompetitorCard .profileRankGoal span { color: rgb(255 255 255 / 55%); text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; }
+.profileCompetitorCard .profileXpReadout { justify-self: stretch; text-align: left; margin: 0; padding: 0; border: 0 !important; }
+.profileCompetitorCard .profileHeaderResources { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 4px; }
+
+.profileSheetMain { display: grid; align-content: start; gap: 18px; min-width: 0; }
+.profileAttributes .profilePanelHeading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 12px; }
+.profileAttributes .profilePanelHeading h2 { margin: 2px 0 0; font: 400 30px var(--ca-font-display); color: #fff; text-shadow: 0 3px 0 #040912; }
+.profileAttributeList { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.profileAttribute {
+    position: relative;
+    display: grid;
+    grid-template-columns: 54px 170px minmax(0, 1fr) 120px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px 10px 12px;
+    border: 3px solid #040912;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 9px 50%, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        radial-gradient(circle at calc(100% - 9px) 50%, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        linear-gradient(180deg, #24395a, #111d31);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 16%), inset 0 -4px 0 rgb(0 0 0 / 30%), 0 4px 0 #040912;
+}
+.profileAttribute.isStrongest {
+    background:
+        radial-gradient(circle at 9px 50%, #ffe8a0 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        radial-gradient(circle at calc(100% - 9px) 50%, #ffe8a0 0 2.5px, #040912 3px 4px, transparent 4.5px),
+        linear-gradient(180deg, #5a3f12, #2a1d08);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), inset 0 0 0 2px #c98a24, inset 0 -4px 0 rgb(0 0 0 / 30%), 0 4px 0 #040912;
+}
+.profileAttributeEmblem {
+    width: 46px; height: 46px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 2px solid #040912;
+    background: radial-gradient(circle at 50% 30%, #3a5a86, #0e1a2c 72%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #c98a24, 0 0 0 5px #040912;
+    color: #ffd25c;
+}
+.profileAttributeLabel { display: grid; gap: 1px; min-width: 0; }
+.profileAttributeLabel strong { font: 400 19px var(--ca-font-display); color: #fff; text-shadow: 0 2px 0 #040912; }
+.profileAttributeLabel small { font-size: 12px; color: #9fb6d3; }
+.profileAttributeGauge {
+    display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px;
+    padding: 6px;
+    border-radius: 8px;
+    background: #050a14;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 12%);
+}
+.profileAttributeGauge i { height: 16px; border-radius: 3px; background: #16243a; }
+.profileAttributeGauge i.isLit { background: linear-gradient(180deg, #a6f3ff, #3cc4ef); box-shadow: 0 0 8px rgb(79 216 255 / 60%); }
+.profileAttribute.isStrongest .profileAttributeGauge i.isLit { background: linear-gradient(180deg, #fff1b0, #ffc94a); box-shadow: 0 0 8px rgb(255 201 74 / 60%); }
+.profileAttributeValue { justify-self: end; font: 400 34px/1 var(--ca-font-display); color: #fff; text-shadow: 0 3px 0 #040912; }
+.profileAttribute .profileInstrumentTag {
+    position: absolute; top: -11px; left: 74px;
+    padding: 1px 8px;
+    border: 2px solid #040912; border-radius: 5px;
+    background: #ffd25c; color: #2a1500;
+    font: 400 11px var(--ca-font-display); text-transform: uppercase;
+}
+
+.profileSheetMain .profileSignalBand { grid-template-columns: 1.3fr 1fr 1fr !important; gap: 12px; border: 0 !important; }
+.profileSheetMain .profileSignalBand > section {
+    min-height: 0 !important;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px !important;
+    border: 3px solid #040912 !important;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #1a2b45, #0e1828) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 12%), 0 4px 0 #040912 !important;
+}
+.profileSheetMain .profileFormPanel { display: grid !important; align-items: start; }
+.profileSheetMain .profileSignalBand h2 { margin: 0; font: 400 17px var(--ca-font-display); color: #fff; }
+.profileSheetMain .profileSignalBand > section > div { min-width: 0; }
+.profileSheetMain .profileMiniHeading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.profileFormTokens { list-style: none; margin: 4px 0 0; padding: 0; display: flex; gap: 6px; }
+.profileFormToken {
+    flex: 1; min-width: 0;
+    aspect-ratio: 1;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 2px solid #040912;
+    background: radial-gradient(circle at 50% 30%, #3a7fc4, #163c66 75%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%), 0 3px 0 #040912;
+    font: 400 11px var(--ca-font-display); color: #fff; text-shadow: 0 1px 0 #040912;
+}
+.profileFormToken.isRanked { background: radial-gradient(circle at 50% 30%, #ffd25c, #a86c10 75%); color: #2a1500; text-shadow: none; }
+.profileFormToken.isLoss { background: radial-gradient(circle at 50% 30%, #e8505a, #7a1420 75%); color: #fff; }
+.profileSheetMain .profilePanelEmblem {
+    flex: none; width: 50px; height: 50px;
+    display: grid; place-items: center;
+    border-radius: 50%; border: 2px solid #040912;
+    background: radial-gradient(circle at 50% 30%, #3a5a86, #0e1a2c 72%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #c98a24, 0 0 0 5px #040912;
+    color: #ffd25c;
+}
+.profileSheetMain .profileBuildMetrics { margin: 2px 0 0; font-size: 12px; color: #9fb6d3; }
+.profileSheetMain .profileGoalTrack { margin: 6px 0 3px; }
+.profileSheetMain .profileGoalProgress { font-size: 12px; color: #9fb6d3; }
+@media (max-width: 1000px) {
+    .profileSheet { grid-template-columns: 1fr; }
+    .profileAttribute { grid-template-columns: 46px minmax(0, 1fr) 90px; }
+    .profileAttributeGauge { grid-column: 1 / -1; }
+    .profileSheetMain .profileSignalBand { grid-template-columns: 1fr !important; }
+}
+
+/* achievement medals: each tier has its own silhouette, not one round disc */
+.achievementMedal.tier-silver .achievementMedalDisc { clip-path: polygon(50% 0, 100% 14%, 100% 60%, 50% 100%, 0 60%, 0 14%); border-radius: 0 !important; }
+.achievementMedal.tier-gold .achievementMedalDisc { clip-path: polygon(50% 0, 62% 30%, 98% 35%, 70% 57%, 79% 92%, 50% 74%, 21% 92%, 30% 57%, 2% 35%, 38% 30%); border-radius: 0 !important; }
+.achievementMedal.tier-platinum .achievementMedalDisc { clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); border-radius: 0 !important; }
+.achievementMedal.tier-diamond .achievementMedalDisc { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border-radius: 0 !important; }
+.achievementMedal.tier-master .achievementMedalDisc { clip-path: polygon(0 30%, 20% 6%, 35% 24%, 50% 0, 65% 24%, 80% 6%, 100% 30%, 88% 100%, 12% 100%); border-radius: 0 !important; }
+.profileAttribute { grid-template-columns: 54px 160px minmax(0, 1fr) 150px; padding-right: 28px; }
+.profileAttributeValue { white-space: nowrap; }
+.profileSheetMain .profileBuildSignature, .profileSheetMain .profileNearestGoal { display: flex !important; flex-direction: row !important; align-items: center !important; }
+.profileSheetMain .profileSignalBand > section::before, .profileSheetMain .profileSignalBand > section::after { display: none !important; }
+.profileSheetMain .profileSignalBand > section > div { flex: 1; }
+.profileFormToken { font-size: 12px; }
+.lobbyStage .lobbyStageFloor { height: 100% !important; transform: perspective(600px) rotateX(30deg) !important; }
+
+/* ---- Shop: arena-theme previews are the same stadium, re-lit per theme -- */
+.shopArenaScene .shopArenaWorld { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 1; }
+.shopArenaScene .shopArenaWorld .awaWall { opacity: 0.35; }
+.shopArenaScene .shopArenaWorld .awaBoardText, .shopArenaScene .shopArenaWorld .awaScreenIdle { display: none; }
+.shopArenaScene .shopArenaSceneCorner { display: none; }
+.shopArenaScene::after { display: none; }
+.shopArenaScene .shopArenaSceneFloor {
+    top: 46%; height: auto; bottom: 0;
+    transform: perspective(120px) rotateX(38deg);
+    background:
+        radial-gradient(ellipse 40% 45% at 50% 50%, rgb(255 190 90 / 40%), transparent 75%),
+        radial-gradient(ellipse 14% 18% at 50% 50%, transparent 0 85%, rgb(255 214 120 / 85%) 86% 96%, transparent 97%),
+        repeating-linear-gradient(90deg, rgb(28 14 4 / 80%) 0 1px, transparent 1px 14px),
+        repeating-linear-gradient(90deg, #7a4c26 0 14px, #6a4020 14px 28px);
+    mask-image: none;
+}
+.shopArenaScene.theme-sunset .shopArenaWorld, .shopArenaScene.theme-sunset .shopArenaSceneFloor { filter: hue-rotate(-25deg) saturate(1.3); }
+.shopArenaScene.theme-forest .shopArenaWorld, .shopArenaScene.theme-forest .shopArenaSceneFloor { filter: hue-rotate(70deg) saturate(0.9); }
+.shopArenaScene.theme-arcade .shopArenaWorld, .shopArenaScene.theme-arcade .shopArenaSceneFloor { filter: hue-rotate(230deg) saturate(1.5); }
+.shopArenaScene .shopArenaSceneTarget { z-index: 2; top: 62% !important; }
+.profileSheetMain .profileSignalBand { grid-template-columns: 1fr 1fr !important; }
+.profileSheetMain .profileFormPanel { grid-column: 1 / -1; display: flex !important; align-items: center !important; gap: 18px; }
+.profileSheetMain .profileFormPanel .profileMiniHeading { flex: none; gap: 16px; }
+.profileSheetMain .profileFormTokens { flex: 1; margin: 0; justify-content: flex-end; }
+.profileSheetMain .profileFormToken { flex: none; width: 52px; font-size: 13px; }
+.profileSheetMain .profileSectionKicker { white-space: nowrap; }

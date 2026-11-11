@@ -18,7 +18,7 @@ import HelpListSection from "../features/help/components/HelpListSection.jsx"
 import HelpQuickStartSection from "../features/help/components/HelpQuickStartSection.jsx"
 import HelpRankTiersSection from "../features/help/components/HelpRankTiersSection.jsx"
 import HelpTableSection from "../features/help/components/HelpTableSection.jsx"
-import { HelpModeCards, HelpPowerupCards, HelpRoundStrip, HelpRuleCards } from "../features/help/components/HelpVisualGuide.jsx"
+import { HelpAccountCards, HelpModeCards, HelpPowerupCards, HelpProgressionCards, HelpRoundStrip, HelpRuleCards } from "../features/help/components/HelpVisualGuide.jsx"
 import {
   ACCOUNT_ROWS,
   ARMORY_DEEP_LINKS,
@@ -194,6 +194,7 @@ export default function HelpPage() {
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">Progression and Economy</h2>
           </div>
+          <HelpProgressionCards />
           <Rulebook>
           <div className="helpGrid">
               <HelpListSection title="Progression Math" items={PROGRESSION_POINTS} />
@@ -210,6 +211,7 @@ export default function HelpPage() {
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">Account, Tracking, and Navigation</h2>
           </div>
+          <HelpAccountCards />
           <Rulebook>
           <div className="helpGrid">
               <HelpTableSection

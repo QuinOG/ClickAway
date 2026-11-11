@@ -1,7 +1,8 @@
 """Rewrite the ClickawayRSI PR description as a live summary.
 
 usage: python update_pr_body.py <latest round N> <scores.json> > body.json
-scores.json: {"i0": [sol, terra, opus], "i1": [...], ...}
+scores.json: {"i0": [sol, terra, opus], ...}; use null for a judge who sat a round out
+(Terra is null from i6 on).
 
 Produces {"body": ...} with: the process blurb, the full score table, and a
 Baseline (i0) vs Latest (iN) table for every captured screen, so the whole
@@ -24,7 +25,8 @@ tree = blob.replace("/blob/", "/tree/")
 shots = sorted(f for f in os.listdir(os.path.join(SHOTS_DIR, latest)) if f.endswith(".png"))
 score_rows = "\n".join(
     f"| {r}{' (baseline)' if r == 'i0' else ''}{' **latest**' if r == latest else ''} | "
-    + " | ".join(str(v) for v in vals) + f" | **{sum(vals) / len(vals):.2f}** |"
+    + " | ".join("—" if v is None else str(v) for v in vals)
+    + f" | **{sum(v for v in vals if v is not None) / len([v for v in vals if v is not None]):.2f}** |"
     for r, vals in scores.items()
 )
 shot_rows = "\n".join(
@@ -34,7 +36,7 @@ shot_rows = "\n".join(
 
 body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a SaaS-dashboard feel to an indie-game feel across the whole app.
 
-**Process:** each round, three judges (GPT-6.1 Sol, GPT-6.1 Terra, Claude Opus 5) rate 12 full-app screenshots against `docs/ui-polish/standards/`. Claude implements the highest-value fixes, recaptures, and repeats until every judge scores ≥ 9 or 6 rounds have run. Each round is its own commit; each round's PR comment has its scores, changes and before/after vs the previous round.
+**Process:** each round, judges rate 12 full-app screenshots against `docs/ui-polish/standards/`. Rounds 0–5 used GPT-6.1 Sol, GPT-6.1 Terra and Claude Opus 5. From round 6 the council is Sol plus Opus 5 at low effort; Terra was dropped because it largely duplicated Sol. Claude implements the highest-value fixes, recaptures, and repeats until the stop bar is met (now Sol ≥ 9.4 and Opus ≥ 9) or 6 rounds have run. Each round is its own commit; each round's PR comment has its scores, changes and before/after vs the previous round.
 
 ## Scores
 | Round | Sol | Terra | Opus 5 | Average |
