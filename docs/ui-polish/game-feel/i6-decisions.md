@@ -38,3 +38,14 @@ Weights: Sol ×1.2 (1.6 below its bar) · Opus ×1.0 (1.0 below). Consensus ×1.
 **Protect:** Armory rig and trade-offs; Duels fight card; Results; History stubs and stamps; the painted court, truss, scoreboard and LED board; the Help strip and chapter plates; the Ladder plates.
 
 **Predicted (estimate sum × 0.3):** Sol +0.3 → ~8.1; Opus +0.2 → ~8.2.
+
+## Calibration of round 6 (actual)
+| Judge | i5 | Predicted | Actual i6 | Note |
+|---|---|---|---|---|
+| Sol | 7.8 | ~8.1 | 8.0 | +0.2, within 0.1 of the scaled prediction: the ×0.3 rule worked for Sol |
+| Opus 5 (low) | 8.0 | ~8.2 | 8.0 | flat; the switch from high to low effort happened this round, so this isn't a clean comparison |
+
+Both judges confirmed the hardwood court, the Profile character sheet, the stadium theme previews and the Help ch.4–5 cards. Neither found a true regression.
+
+- Sol notes: the Duels card lost presence from the downsizing, the form coins compare worse than i5's bars, and the platinum/diamond medal shapes are hard to read when locked.
+- Both now point at the same next step: the shared shell. Ladder and History sit on navy-on-navy panels, and "the world stops at the court edge".
