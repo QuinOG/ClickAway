@@ -30,7 +30,8 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 
 ## Files
 - Capture spec: `tests/e2e/zz-app.spec.js` (13 shots: login, every route captured at full content height, settings sheet, live round, results, rank-up). `.mainContent` is the scroll container, so the spec grows the viewport to fit the content.
-- Judge brief: `docs/ui-polish/game-feel/brief.md` (scale, ≤350-word reply format).
+- Judge brief: `docs/ui-polish/game-feel/brief.md` (v2 from run 3: 13 screen scores, an anchor to the judge's previous scores, items as `screen now → after` plus ACCEPT, written to REPLY_FILE).
+- Scoring tools: `council.py` (parses replies into tables and the next round's anchor), `ab_gate.py` (blind before/after gate), `docs/ui-polish/game-feel/calibration.json` (per-judge realism factor). Replies are saved in `docs/ui-polish/game-feel/replies/iN/`.
 - Reference bar: `docs/ui-polish/standards/standard-1..4.jpg`
 - Shots: `docs/ui-polish/game-feel/iN/`, change notes `docs/ui-polish/game-feel/iN-changes.md`
 - Run `npx playwright test tests/e2e/release-matrix.spec.js` when JSX changed. As of r5, three Armory tests fail on the pre-round code too (laptop clipped actions, armory a11y, armory install); don't chase them as regressions.
@@ -51,7 +52,39 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
    Put the json files in the scratchpad, not the repo. The user wants both views: the PR description shows the total transformation at a glance, and each round's commit and comment shows the step.
 7. Go to step 2 with the new folder.
 
-## Decision model
+## Scoring v2 (from run 3; replaces the loop's steps 2, 3 and 5 where they differ)
+Why: in run 2 every round landed between −0.17 and +0.25 on average, and Sol never left 8.0–8.2. Three causes:
+- **Noise:** each fresh judge re-scored all 13 screens from scratch, so round-to-round drift (about ±0.2) was as big as the real gains.
+- **Unattributable scores:** one overall number can't say which screen moved it.
+- **Overclaims:** claims a judge couldn't see in a 100% crop cost up to 0.4 (Opus in r9 and r11).
+
+The mechanics that answer each:
+1. **Per-screen scores with an anchor.** `brief.md` v2 makes each judge score all 13 screens, and OVERALL is their mean. Unchanged screens keep last round's score unless the judge names a missed defect. That removes the drift, so a gain on a changed screen shows up as a gain.
+   - Prompt each judge with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. JUDGE = <sol|opus|gemini|qwen> ; CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md ; PREVIOUS_SCORES = …/i(N-1)-screens.json ; REPLY_FILE = …/replies/iN/<judge>.md . Standards: …/standards/.`
+   - Add the Opus and Gemini/Qwen extras from Council.
+   - Each judge writes its reply to REPLY_FILE and returns only the OVERALL line, which keeps four long replies out of the session context.
+   - The first council of a run has no PREVIOUS_SCORES. It is the anchor read.
+2. **Arithmetic, not vibes.** `python .claude/skills/clickaway-rsi/council.py N` parses the replies and writes `iN-screens.json`, which becomes the next round's PREVIOUS_SCORES. It prints:
+   - the judge × screen table, with changes since last round;
+   - every MOVE item ranked by expected overall gain: `(after − now) / 13 × conf × calibration[judge] × bottleneck weight`;
+   - the screens that several judges asked about.
+
+   **Rule of thumb:** a whole-point rise on one screen is only +0.08 overall. A round that should gain +0.15 needs about 2 screen-points per judge before calibration, or about 4 after. That means 3–4 screens each rising roughly a point, not 6 screens each nudged.
+3. **Pick to a target.** Choose items until the predicted gain is at least +0.15 for every judge and at least +0.15 for the bottleneck judge (prediction = Σ of that judge's own item gains on the picked screens). Prefer:
+   - (a) a screen that 3–4 judges asked about;
+   - (b) each judge's #1;
+   - (c) items whose ACCEPT line can be met fully.
+
+   If the target can't be reached with S/M work, take an L item rather than padding with small ones.
+4. **ACCEPT checklist.** Copy every picked item's ACCEPT line into `iN-decisions.md`. Before writing the change notes, check each one against a 100% crop and mark it pass or fail. Change notes claim **only** the items that pass, and they state each one in the judge's own ACCEPT wording.
+5. **Blind A/B gate (before committing and before the council).**
+   - `python .claude/skills/clickaway-rsi/ab_gate.py make …/i(N-1) …/iN <scratchpad>/abN/pairs <changed screens>` copies each changed screen's before and after shots in a random X/Y order.
+   - Then send one `delegate_task` to the gate judge (Opus, low): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
+   - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
+6. **Ratchet.** After the council, a changed screen whose mean dropped, or that 2+ judges scored lower, is reverted to the previous round's CSS for that screen at the start of the next round. Undo that screen's section in the round's CSS block, unless the next round rebuilds it anyway. Keep per-round CSS grouped by screen to make this cheap.
+7. **Calibration file.** `docs/ui-polish/game-feel/calibration.json` holds `{judge: factor}`, which is the realized share of that judge's own claimed screen gains (start every judge at 0.5). After each round, set it to the running mean of (actual screen Δ ÷ claimed screen Δ) over the screens that were changed.
+
+## Decision model (run 1–2; the cluster and veto rules still apply under v2)
 Judges reply with OVERALL, MOVE THE NEEDLE (each item `[est +0.X, confidence]`), DON'T BOTHER, PROTECT and REGRESSIONS (see `brief.md`).
 
 1. **Cluster** all items from the three judges by screen + theme.
@@ -133,6 +166,46 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
   - r12 (`a8a5960`): Profile form column chart and screwed sub-plaques, with the trophies on the shelf; Duels illustrated SVG planks and lamp pool; Ladder engraved stat and rating recesses with grain-free nameplates; History full-width chart bezel (placard and switches in the header, a three-label score axis); Play mode plaques with medallions and an LED record. i12: Sol 8.0, Opus 8.4 (+0.5), Gemini 9.1, Qwen 8.6 (avg 8.53, back to the i10 high). Predicted 8.3/8.3/9.1/8.6. **Run 2 ended at the 6-round cap; the stop rule was not met.** Run 2 total: baseline avg 8.08 → i12 avg 8.53.
   - Lesson from r12: replacing a dead zone with real content (a chart) recovered all the r11 losses. Effects judged "faint" again: radial lamp pools, soft directional drop-shadows, contact-shadow ellipses and 1–2px engraving bevels. A small SVG tile (440px) repeats visibly, so use a tile wider than the surface. Sol plateaus around 8.0–8.2 on surface treatment; its asks are now structural: a hero target apparatus, distinct competitor art, and fewer nested frames.
   - Next-run candidates (from the i12 replies): Armory right column as a physical bench (Opus +0.5); Shop storefront structure (Opus +0.4); Play target apparatus (Sol +0.3); distinct competitor illustrations (Sol +0.3); display typeface (Opus +0.3); bolted chassis for the Play loadout bar, Duels filters and Ladder controls (Gemini); a filled Achievement Constellation band (Qwen).
+  - **Run 2 analysis** (user asked, 2026-11-11, that no round go backwards or sideways: each should gain +0.1 to +0.2).
+    - The average by round was 8.08 → 8.33 → 8.40 → 8.38 → 8.53 → 8.35 → 8.53.
+    - **Rounds that gained:**
+      - r7 (+0.25): nav bar on every screen, Ladder podium, Shop stage.
+      - r10 (+0.15): the Settings console rebuilt end to end, the #1 for three judges.
+      - r12 (+0.18): a dead zone replaced with a real chart.
+      - Each one was a **whole-composition rebuild, or a change visible on every screen**.
+    - **Rounds that lost:**
+      - r9 (−0.03): overclaims, and the S1 stamp clipped.
+      - r11 (−0.17): turbulence wood read as a smear, and a stretched empty panel.
+      - Each one shipped **one visible regression plus overclaims**.
+    - Predictions ran 0.1–0.3 high every round, because nothing tied an estimate to a screen.
+    - Sol's score drifted ±0.1 with no relation to the work done.
+    - Scoring v2 (above) is the response: anchored per-screen scores, arithmetic picks to a +0.15 target, an ACCEPT checklist, a blind A/B gate and a per-screen ratchet.
+  - **Gap map from i12 (where the judges overlap; use it to seed run 3's picks after the anchor read):**
+    - **Duels (all four):**
+      - Sol: a counter in perspective with a back edge and a lamp fixture.
+      - Opus: the incoming challenge as a ticket pinned on that counter.
+      - Gemini: the filter pills in a recessed track, and "1 INCOMING" as a lamp.
+      - Qwen: no visible tiling (one tile wider than the counter) and a real falloff to dark.
+      - All four are one rebuild of the screen as a single tabletop scene.
+    - **Profile (three):**
+      - Sol: fewer nested frames, and distinct trophy silhouettes and materials.
+      - Opus: fold the four gauges into the competitor card so the page is one object.
+      - Qwen: fill or shrink the dead Achievement Constellation band, and thicker form bars.
+      - All three are one "competitor dossier" rebuild.
+    - **Play (two, both a #1):**
+      - Sol: an illustrated target apparatus with a stand, mounting and floor shadow, replacing the floating ring.
+      - Gemini: a bolted chassis for the loadout bar.
+      - Sol is the bottleneck, so this is the first pick.
+    - **Armory (three):**
+      - Opus #1: the right column as a physical bench.
+      - Gemini: the Unlock Wall and Workshop help as a hatch and tab.
+      - Qwen: a real bug, "No runs yet" colliding with Compare in bays 2/3. Fix it regardless.
+    - **Asks across both runs that were never fully built:**
+      - a display typeface (Opus, every run);
+      - distinct illustrated competitors (Sol);
+      - the Shop storefront (Opus).
+      - Sol only ever moved on **new illustration**: r4's SVG item set gave +0.3. Use the `skins.py` approach for competitor portraits and the target apparatus, not CSS effects.
+  - **NEXT = run 3.** Start with an anchor read of i12 under brief v2 (no PREVIOUS_SCORES), then round 13 from that anchor, using the gap map above.
   - Earlier plan, done in r12: **NEXT = round 12, the final round (cap).** Gemini and Qwen stay at medium but open trimmed images (see Council). Picks by consensus:
     - (1) Profile: rebuild the scouting report as a tight instrument panel (recessed tray for the form coins, framed sub-plaques for Top Build and Nearest Achievement) at natural height, and fill the column another way; trophies stand on the shelf with contact shadows (all four).
     - (2) Duels: replace the turbulence wood with illustrated planks (joints, restrained grain), a visible lamp falloff and directional token shadows (Sol, Opus, Qwen).
