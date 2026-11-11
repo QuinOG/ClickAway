@@ -24,7 +24,7 @@ tree = blob.replace("/blob/", "/tree/")
 shots = sorted(f for f in os.listdir(os.path.join(SHOTS_DIR, latest)) if f.endswith(".png"))
 score_rows = "\n".join(
     f"| {r}{' (baseline)' if r == 'i0' else ''}{' **latest**' if r == latest else ''} | "
-    + " | ".join(str(v) for v in vals) + " |"
+    + " | ".join(str(v) for v in vals) + f" | **{sum(vals) / len(vals):.2f}** |"
     for r, vals in scores.items()
 )
 shot_rows = "\n".join(
@@ -37,8 +37,8 @@ body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a Saa
 **Process:** each round, three judges (GPT-6.1 Sol, GPT-6.1 Terra, Claude Opus 5) rate 12 full-app screenshots against `docs/ui-polish/standards/`. Claude implements the highest-value fixes, recaptures, and repeats until every judge scores ≥ 9 or 6 rounds have run. Each round is its own commit; each round's PR comment has its scores, changes and before/after vs the previous round.
 
 ## Scores
-| Round | Sol | Terra | Opus 5 |
-|---|---|---|---|
+| Round | Sol | Terra | Opus 5 | Average |
+|---|---|---|---|---|
 {score_rows}
 
 ## Total change: baseline (i0) → latest ({latest})
