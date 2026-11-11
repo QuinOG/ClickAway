@@ -14,8 +14,10 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - **Council (from run 2):** `delegate_task` ×4, all launched in one message, `role: "review"`, **all at medium reasoning** (user's rule):
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "medium"}`
   - Claude `claude-opus-5`, `{effort: "low"}`. This is the one exception to medium, at the user's request, because Claude session usage is limited. (Not in the short list; `orchestrator_capabilities` with `search: "opus-5"` finds it)
-  - OpenCode `opencode-go/gemini-4-argon`, `{variant: "medium"}` (providerInstanceId `opencode`)
-  - OpenCode `opencode-go/qwen3.8-max`, `{variant: "medium"}`
+  - OpenCode `opencode-go/gemini-4-argon`, `{variant: "low"}` (providerInstanceId `opencode`)
+  - OpenCode `opencode-go/qwen3.8-max`, `{variant: "low"}`
+  - Gemini and Qwen moved from medium to **low** for round 12 onward, at the user's request (2026-11-11), to save usage. Expect some scoring drift from i12; note it in the calibration.
+  - Token budget (user, 2026-11-11): Gemini and Qwen were burning tokens fast, mostly on images (13 current + 13 previous PNGs, some 4600px tall). For them, add to the prompt: "Open all 13 CURRENT_DIR images, but open PREVIOUS_DIR images only for the screens named in CHANGES_FILE." Sol and Opus keep the full set.
   - Judges must read PNGs, so only image-input models qualify. Check `models.dev/api.json` → `modalities.input`.
   - Reserve: `opencode-go/grok-4.7` `{variant: "medium"}`. It takes images and supports medium, but has no public vision or design results yet.
   - Excluded because they lack a medium variant: Kimi K3.1 Pro (low/high/max) and Hy4 (none/high).
@@ -126,15 +128,15 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
   - r8 (`411f8ce`): fixed the Armory clipping; rank-up gets the real tier medal, a ribbon and medal sockets on the ladder; Shop booth (awning, counter, brighter stadium, wooden pedestal); History LED scoreboard; lobby mode cartridges; Help binder pages; podium side faces. i8: Sol 8.1, Opus 8.2, Gemini 8.8, Qwen 8.5 (avg 8.40). Every judge moved about +0.1; the remaining gap is below-the-fold grids.
   - r9 (`ae89232`): Shop items as boxed products (rarity-material frame, lid band, cellophane window, paper price tag); Help on paper with ink type; Login with the stadium behind and a competitor pass; Duels fight ticket; Profile trophy path; History placard and fixes. The capture cap was raised to 4600px. i9: Sol 8.2, Opus 7.9 (−0.3, because several effects were too faint to see), Gemini 8.8, Qwen 8.6 (avg 8.38).
   - r10 (`77c1912`, comment for i9 posted): Settings hardware console (rockers, faders, key caps, speaker-grille test button); Profile 4-dial gauge plates and a SCOUTING REPORT housing; Shop boxes with a printed rarity body, a 9px side face and stronger glare; Duels ticket print and wooden counter; History brass plaques; Help contents page on paper with mounted plates; fixed the S1 stamp clip, the double price and the locked-trophy bars. i10: Sol 8.2, Opus 8.3, Gemini **9.1** (first judge over its bar), Qwen 8.5 (avg 8.53). The comment is posted and the PR body updated.
-  - **NEXT = round 11 (2 rounds left: i11, i12).** Write i11-decisions.md (calibration: Sol 0, Opus +0.4, Gemini +0.3, Qwen −0.1 vs predictions 8.45/8.25/8.95/8.8). Picks by consensus:
-    - **Fix first:** move the Login S1 stamp off the headline period into the pass's bottom-right corner (all four judges).
-    - (1) Armory right column: swap report as an instrument readout, part tiles as plug-in cartridges in sockets (Opus +0.4, Gemini +0.2).
-    - (2) Ladder: search, view toggle and tabs merged into one recessed control rail; rows as engraved nameplates with portraits in bezels (Sol +0.2, Opus +0.3, Gemini +0.1).
-    - (3) Duels counter: real wood (visible grain, top plane, bevelled front edge, contact shadows), a lamplight pool and props, or drop it (all four).
-    - (4) History plaques with a strong bevel, engraved text shadow and an emblem; trend chart as a plotted line with a baseline and grid (Sol, Opus, Qwen).
-    - (5) Profile: fill the dead zone below the scouting report and make the trophy shelf more prominent (Sol, Qwen).
-    - Optional: Settings chassis (Sol, Qwen); a second typeface (Opus).
-    - Effects must be strong: Sol and Opus still read the plaque grain, counter wood and key caps as flat.
+  - r11 (`a6d501d`): Login seal on the pass header; Armory green instrument readout and cartridge cards; Ladder single control rail and brushed nameplates; Duels turbulence-grain wood counter; History plotted trend line and bevelled brass plaques; Profile stretched scouting report and continuous trophy shelf. i11: Sol 8.1, Opus 7.9 (−0.4; it could not see the lamp pool, token shadows or trophy spotlights, and the shelf sits ~170px below the trophies), Gemini 9.0, Qwen 8.4 (avg 8.35, down from 8.53). Predicted 8.35/8.5/9.2/8.7.
+  - Lesson from r11: SVG turbulence "wood" at baseFrequency 0.0035×0.11 reads as smeared motion blur to 3 of 4 judges. Illustrated planks with joints beat procedural noise. Stretching a container to fill a dead zone only moves the empty space inside it.
+  - **NEXT = round 12, the final round (cap).** Gemini and Qwen run at low effort with trimmed images (see Council). Picks by consensus:
+    - (1) Profile: rebuild the scouting report as a tight instrument panel (recessed tray for the form coins, framed sub-plaques for Top Build and Nearest Achievement) at natural height, and fill the column another way; trophies stand on the shelf with contact shadows (all four).
+    - (2) Duels: replace the turbulence wood with illustrated planks (joints, restrained grain), a visible lamp falloff and directional token shadows (Sol, Opus, Qwen).
+    - (3) Ladder: engrave the four stat cells and the rating into the row plate; quieter nameplate grain for legibility (Sol, Opus, Qwen, Gemini).
+    - (4) History: integrate the trajectory placard and mode filters into the chart bezel, add score-axis labels; quieter plaque grain behind small text (all four).
+    - (5) Play right panel: mode cards as illustrated plaques and the record as a scoreboard (Opus +0.4).
+    - Optional: Armory cartridges with larger part art and casing depth (Sol); Armory bays and toolbar as physical tabs (Gemini).
   - Plan carried over from run 1 (merge it with the baseline read): both judges' consensus is the shared shell: "the world stops at the court edge".
     1. Ladder and History on a physical substrate (banner wall or bracket board; a pinned ticket ledger), plus a podium with depth.
     2. A stadium control rail and nav plates instead of nested navy frames and the utility capsule.
