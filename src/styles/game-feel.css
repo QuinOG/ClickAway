@@ -1,0 +1,167 @@
+/*
+ * Game feel (council run, 2026-11). Loaded last.
+ * 1. A visible arena world behind every menu page.
+ * 2. One 9-slice metal frame (gold corner brackets + rivets) on every panel.
+ * 3. Display-face headings with a hard drop shadow; section titles become ribbons.
+ * 4. Ladder rows become plaques; settings get chunky console switches.
+ */
+:root {
+    --gf-frame: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2748%27 height=%2748%27 viewBox=%270 0 48 48%27%3E%0A%3Cdefs%3E%3ClinearGradient id=%27b%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%234d6a92%27/%3E%3Cstop offset=%27.5%27 stop-color=%27%2322344f%27/%3E%3Cstop offset=%271%27 stop-color=%27%230d1626%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Cpath d=%27M7 1H41L47 7V41L41 47H7L1 41V7Z%27 fill=%27%23040912%27/%3E%0A%3Cpath d=%27M8 3H40L45 8V40L40 45H8L3 40V8Z%27 fill=%27url%28%23b%29%27/%3E%0A%3Cpath d=%27M10 7H38L41 10V38L38 41H10L7 38V10Z%27 fill=%27%23040912%27/%3E%0A%3Cpath d=%27M10.5 7.5H37.5L40.5 10.5%27 fill=%27none%27 stroke=%27%237fb4ff%27 stroke-opacity=%27.35%27/%3E%0A%3Cpath d=%27M3 15V8L8 3H15%27 fill=%27none%27 stroke=%27%23ffc94a%27 stroke-width=%272%27/%3E%0A%3Cpath d=%27M33 3H40L45 8V15%27 fill=%27none%27 stroke=%27%23ffc94a%27 stroke-width=%272%27/%3E%0A%3Cpath d=%27M45 33V40L40 45H33%27 fill=%27none%27 stroke=%27%23c98a24%27 stroke-width=%272%27/%3E%0A%3Cpath d=%27M15 45H8L3 40V33%27 fill=%27none%27 stroke=%27%23c98a24%27 stroke-width=%272%27/%3E%0A%3Ccircle cx=%279.5%27 cy=%279.5%27 r=%271.3%27 fill=%27%23ffd97a%27/%3E%3Ccircle cx=%2738.5%27 cy=%279.5%27 r=%271.3%27 fill=%27%23ffd97a%27/%3E%3Ccircle cx=%279.5%27 cy=%2738.5%27 r=%271.3%27 fill=%27%23b98030%27/%3E%3Ccircle cx=%2738.5%27 cy=%2738.5%27 r=%271.3%27 fill=%27%23b98030%27/%3E%0A%3C/svg%3E");
+    --gf-world: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 1600 900%27 preserveAspectRatio=%27xMidYMax slice%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient id=%27beam%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%239fd8ff%27 stop-opacity=%27.16%27/%3E%3Cstop offset=%271%27 stop-color=%27%239fd8ff%27 stop-opacity=%270%27/%3E%3C/linearGradient%3E%0A%3ClinearGradient id=%27floor%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%231aa6d6%27 stop-opacity=%270%27/%3E%3Cstop offset=%271%27 stop-color=%27%231aa6d6%27 stop-opacity=%27.22%27/%3E%3C/linearGradient%3E%0A%3CradialGradient id=%27glow%27 cx=%27.5%27 cy=%271%27 r=%27.6%27%3E%3Cstop offset=%270%27 stop-color=%27%23ff7a3c%27 stop-opacity=%27.10%27/%3E%3Cstop offset=%271%27 stop-color=%27%23ff7a3c%27 stop-opacity=%270%27/%3E%3C/radialGradient%3E%0A%3C/defs%3E%0A%3Crect width=%271600%27 height=%27900%27 fill=%27url%28%23glow%29%27/%3E%0A%3Cpath d=%27M120 120 L560 1000 M1480 120 L1040 1000%27 stroke=%27none%27/%3E%0A%3Cpolygon points=%27170,130 230,130 520,900 -120,900%27 fill=%27url%28%23beam%29%27/%3E%0A%3Cpolygon points=%271370,130 1430,130 1720,900 1080,900%27 fill=%27url%28%23beam%29%27/%3E%0A%3Cpolygon points=%27770,90 830,90 980,900 620,900%27 fill=%27url%28%23beam%29%27 opacity=%27.6%27/%3E%0A%3Cg fill=%27none%27 stroke=%27%235d8cc4%27 stroke-opacity=%27.22%27 stroke-width=%273%27%3E%0A%3Cpath d=%27M0 300 Q800 150 1600 300%27/%3E%3Cpath d=%27M0 340 Q800 200 1600 340%27/%3E%0A%3Cpath d=%27M80 300 V560 M240 270 V560 M1360 270 V560 M1520 300 V560%27/%3E%0A%3Cpath d=%27M80 330 L240 300 M80 400 L240 370 M80 470 L240 440 M1360 300 L1520 330 M1360 370 L1520 400 M1360 440 L1520 470%27/%3E%0A%3C/g%3E%0A%3Cg fill=%27%230a1424%27 fill-opacity=%27.85%27%3E%3Cpath d=%27M0 560 Q400 520 800 530 Q1200 520 1600 560 V640 H0Z%27/%3E%3C/g%3E%0A%3Cg fill=%27%23ffe6b0%27%3E%3Ccircle cx=%27200%27 cy=%27128%27 r=%277%27/%3E%3Ccircle cx=%271400%27 cy=%27128%27 r=%277%27/%3E%3Ccircle cx=%27800%27 cy=%2788%27 r=%276%27/%3E%3C/g%3E%0A%3Cg fill=%27%23ffe6b0%27 fill-opacity=%27.25%27%3E%3Ccircle cx=%27200%27 cy=%27128%27 r=%2722%27/%3E%3Ccircle cx=%271400%27 cy=%27128%27 r=%2722%27/%3E%3Ccircle cx=%27800%27 cy=%2788%27 r=%2718%27/%3E%3C/g%3E%0A%3Crect y=%27640%27 width=%271600%27 height=%27260%27 fill=%27url%28%23floor%29%27/%3E%0A%3Cg stroke=%27%233fc8f0%27 stroke-opacity=%27.18%27 stroke-width=%271.5%27%3E%0A%3Cpath d=%27M800 640 L-400 900 M800 640 L0 900 M800 640 L400 900 M800 640 L800 900 M800 640 L1200 900 M800 640 L1600 900 M800 640 L2000 900%27/%3E%0A%3Cpath d=%27M0 660 H1600 M0 690 H1600 M0 735 H1600 M0 800 H1600 M0 885 H1600%27/%3E%0A%3C/g%3E%0A%3C/svg%3E");
+}
+
+/* ---- 1. World ---------------------------------------------------------- */
+.appShell { position: relative; isolation: isolate; }
+.appShell:has(.mainContent:not(.gameMain):not(.armoryMain))::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--gf-world) center bottom / cover no-repeat;
+}
+
+/* ---- 2. Frames --------------------------------------------------------- */
+.card, .cardWide,
+.shopCommandSurface, .shopItemCard,
+.profileCockpit, .profileCommandHeader, .achievementTile,
+.leaderboardPodium, .leaderboardStandingPanel,
+.challengeCard, .duelComposer,
+.historyTrajectory, .historyHighlightCard, .historyRoundCard,
+.helpMissionMap, .helpBlock,
+.uiDialogSurface {
+    border-style: solid !important;
+    border-width: 12px !important;
+    border-color: transparent !important;
+    border-image-source: var(--gf-frame) !important;
+    border-image-slice: 16 !important;
+    border-image-width: 12px !important;
+    border-image-repeat: stretch !important;
+    border-radius: 6px !important;
+    background-clip: padding-box !important;
+    box-shadow: 0 14px 30px rgb(0 0 0 / 42%) !important;
+}
+/* nested panels inside a framed panel get a plain inked inset instead */
+:is(.helpBlock, .card, .cardWide) :is(.helpBlock, .card) {
+    border-width: 2px !important;
+    border-image: none !important;
+    border-color: #040912 !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 12%), inset 0 -3px 0 rgb(0 0 0 / 25%) !important;
+}
+
+/* ---- 3. Type ----------------------------------------------------------- */
+.commandHeaderTitle, .uiSceneTitle, .authTitle {
+    font-family: var(--ca-font-display) !important;
+    font-weight: 400 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.03em !important;
+    background: linear-gradient(180deg, #fff6d6 0%, #ffd25c 48%, #e89a24 52%, #ffc24a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none !important;
+    filter: drop-shadow(0 3px 0 #040912) drop-shadow(0 0 14px rgb(255 180 60 / 22%));
+}
+.commandHeaderGlyph {
+    border: 2px solid #040912 !important;
+    background: radial-gradient(circle at 50% 35%, #2f4a70, #0e1a2c 70%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 16%), 0 0 0 3px #c98a24, 0 0 0 5px #040912 !important;
+    border-radius: 50% !important;
+}
+.mainContent h2, .mainContent h3, .uiDialogSurface h2 {
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    text-shadow: 0 2px 0 #040912;
+}
+.historySectionTitle, .profileStatsSectionTitle {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 6px 30px 7px 18px;
+    color: #1a0f02 !important;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 45%) !important;
+    text-transform: uppercase;
+    font-size: 16px !important;
+    letter-spacing: 0.06em;
+    background: linear-gradient(180deg, #ffe08a, #f2a93a);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%);
+    filter: drop-shadow(0 3px 0 #040912);
+}
+
+/* ---- 4a. Ladder plaques ------------------------------------------------ */
+.leaderboardTable:not(.leaderboardSkeletonTable) {
+    border-collapse: separate !important;
+    border-spacing: 0 8px !important;
+    background: transparent !important;
+}
+.leaderboardTable thead th {
+    background: transparent !important;
+    border: 0 !important;
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    color: #8fb3dd !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.leaderboardTable tbody td {
+    background: linear-gradient(180deg, #1d2f4a, #111d31) !important;
+    border-top: 2px solid #040912 !important;
+    border-bottom: 2px solid #040912 !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 14%), inset 0 -3px 0 rgb(0 0 0 / 30%);
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+}
+.leaderboardTable tbody td:first-child { border-left: 2px solid #040912 !important; border-radius: 10px 0 0 10px; box-shadow: inset 6px 0 0 #2e6fd0, inset 0 1px 0 rgb(160 200 245 / 14%); }
+.leaderboardTable tbody td:last-child { border-right: 2px solid #040912 !important; border-radius: 0 10px 10px 0; }
+.leaderboardTable tbody tr:nth-child(1) td { background: linear-gradient(180deg, #5a4214, #2b1f0a) !important; }
+.leaderboardTable tbody tr:nth-child(2) td { background: linear-gradient(180deg, #3a4656, #1d2532) !important; }
+.leaderboardTable tbody tr:nth-child(3) td { background: linear-gradient(180deg, #4a2f1e, #24170e) !important; }
+.leaderboardTable tbody tr:nth-child(1) td:first-child { box-shadow: inset 6px 0 0 #ffc94a; }
+.leaderboardTable tbody tr:nth-child(2) td:first-child { box-shadow: inset 6px 0 0 #cfd8e6; }
+.leaderboardTable tbody tr:nth-child(3) td:first-child { box-shadow: inset 6px 0 0 #d08a4a; }
+
+/* ---- 4b. Console switches & sliders ----------------------------------- */
+.feedbackToggleControl > span {
+    width: 64px !important;
+    height: 32px !important;
+    border: 2px solid #040912 !important;
+    border-radius: 8px !important;
+    background: linear-gradient(180deg, #0a1220, #1a2840) !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 55%), 0 1px 0 rgb(160 200 245 / 14%);
+}
+.feedbackToggleControl > span::after {
+    width: 26px !important;
+    height: 24px !important;
+    top: 2px !important;
+    left: 2px !important;
+    border-radius: 5px !important;
+    background: linear-gradient(180deg, #d6e2f2, #8a9bb3) !important;
+    box-shadow: inset 0 2px 0 #fff, 0 2px 0 #040912 !important;
+}
+.feedbackToggleControl input:checked + span {
+    background: linear-gradient(180deg, #0f6b3a, #22b765) !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 45%), 0 0 12px rgb(60 230 130 / 35%);
+}
+.feedbackToggleControl input:checked + span::after {
+    transform: translateX(32px) !important;
+    background: linear-gradient(180deg, #fff3c4, #ffc94a) !important;
+}
+.feedbackRangeSetting input[type="range"] { appearance: none; height: 30px; background: transparent; }
+.feedbackRangeSetting input[type="range"]::-webkit-slider-runnable-track {
+    height: 12px;
+    border: 2px solid #040912;
+    border-radius: 4px;
+    background: repeating-linear-gradient(90deg, #1f8fd0 0 10px, #1677b0 10px 12px);
+    box-shadow: inset 0 2px 3px rgb(0 0 0 / 45%);
+}
+.feedbackRangeSetting input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 22px;
+    height: 30px;
+    margin-top: -11px;
+    border: 2px solid #040912;
+    border-radius: 5px;
+    background: linear-gradient(180deg, #fff3c4, #ffc94a 55%, #c98a24);
+    box-shadow: 0 3px 0 #040912;
+}

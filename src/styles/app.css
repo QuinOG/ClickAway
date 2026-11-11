@@ -29,6 +29,7 @@
 
 /* Shared animations */
 @import "./animations.css";
+@import "./game-feel.css";
 
 /*
  * Fontsource variable packages expose `* Variable` family names. These aliases
