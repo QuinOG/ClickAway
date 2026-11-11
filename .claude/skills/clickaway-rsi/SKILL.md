@@ -37,9 +37,9 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 ## Loop (one round)
 1. **Capture:** `SHOT_DIR=docs/ui-polish/game-feel/iN npx playwright test tests/e2e/zz-app.spec.js --workers=1`. Before sending, open 2–3 of the shots yourself to catch broken captures (blurred, empty, cut off).
 2. **Council:** launch all 3 judges with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md . Standards: …/docs/ui-polish/standards/. Read-only; do not edit anything.` End your turn; completions wake you.
-3. **Pick fixes:** when all 3 are in, take the consensus items with the biggest visual impact (things 2+ judges name first). Prefer structural changes (replace a table or form with a game composition) over decoration. Aim for 4–6 per round.
+3. **Pick fixes (weighted, see "Decision model" below):** when all 3 replies are in, build `docs/ui-polish/game-feel/i(N+1)-decisions.md` with the value table, picks, skips and predicted gains, then implement the picks.
 4. **Implement:** CSS in `game-feel.css`; JSX when structure has to change. Keep existing tests green.
-5. **Verify:** `npm run build` (plus `npm run lint` and `npm run test` when JSX changed). Recapture into `i(N+1)` and view the screens you touched.
+5. **Verify and guard:** `npm run build` (plus `npm run lint` and `npm run test` when JSX changed). Recapture into `i(N+1)`, view every screen you touched **and every PROTECT item** next to the previous round, and fix any regression before submitting. The change notes must be factual and measurable ("12px wood plank under each card row"): judges compare claims to pixels and mark down overclaiming.
 6. **Commit and publish:** write `i(N+1)-changes.md`, commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
    - add the scores to `docs/ui-polish/game-feel/scores.json`
    - post the **round comment** (previous round vs this round, for the shots you changed):
@@ -48,6 +48,20 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
      `python .claude/skills/clickaway-rsi/update_pr_body.py N docs/ui-polish/game-feel/scores.json > body.json` then `sh .claude/skills/clickaway-rsi/gh.sh PATCH /pulls/<PR> body.json`
    Put the json files in the scratchpad, not the repo. The user wants both views: the PR description shows the total transformation at a glance, and each round's commit and comment shows the step.
 7. Go to step 2 with the new folder.
+
+## Decision model
+Judges reply with OVERALL, MOVE THE NEEDLE (each item `[est +0.X, confidence]`), DON'T BOTHER, PROTECT and REGRESSIONS (see `brief.md`).
+
+1. **Cluster** all items from the three judges by screen + theme.
+2. **Score each cluster:**
+   `value = Σ(est × conf × judgeWeight) × consensus − Σ(0.15 × judgeWeight for each judge listing it in DON'T BOTHER)`
+   - conf: high 1.0, med 0.7, low 0.4 (adjust per judge from calibration; see Lessons)
+   - judgeWeight: lowest-scoring judge ×1.3, middle ×1.1, highest ×1.0 (the goal is min ≥ 9, so the weakest judge is the bottleneck)
+   - consensus: ×1 one judge, ×1.3 two, ×1.6 all three
+3. **Divide by cost** (S=1, M=2, L=3), rank, and take ~4–6 items.
+4. **Rules:** veto anything 2+ judges put in DON'T BOTHER. Each judge's #1 is always done unless vetoed. PROTECT items are frozen (bug fixes only). Last round's REGRESSIONS come first.
+5. **Calibrate** after scores arrive: in `iN-decisions.md`, record predicted vs actual gain per judge. A judge whose estimates keep missing gets a lower confidence multiplier, written into Lessons.
+6. The round's PR comment includes a short "picked / skipped / predicted gain" line.
 
 ## GitHub without `gh`
 `gh` isn't installed. Use `.claude/skills/clickaway-rsi/gh.sh METHOD /path [json-file]`; it takes the token from git's credential manager and never prints it. Equivalent by hand:
@@ -62,7 +76,8 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
 - Run the live round on a fresh browser context. Reusing the page after the settings sheet leaves the round blurred/paused and produces an empty results screen.
 - Gold gradient titles need `-webkit-text-fill-color: transparent` **and** `text-shadow: none`, or older dark text-shadows show through the transparent fill. Use `filter: drop-shadow` for the outline.
 - Judges punish structure more than paint: tables with column headers, axis charts, numbered form wizards, and formula text read as SaaS no matter how they're framed. A global CSS re-skin (r1) moved scores only ~+0.2; replacing compositions is what moves them.
-- Opus 5 is the harshest judge (≈0.5 below Sol). Plan for its list.
+- Opus 5 is the harshest judge (≈0.5 below Sol). Terra is the slowest to move (flat r1→r3).
+- Round 3 stalled (Opus −0.1, Terra flat) because the picks were mid-list for two judges, one change regressed (a brown APPLY that read as disabled), and the change notes overclaimed. That's why the decision model, the PROTECT/REGRESSIONS guard and factual notes exist.
 - The user wants every round committed with before/after shots and visible in a PR. Open the PR in round 1, not at the end.
 
 - On Windows, `python open()` without `encoding='utf-8'` writes cp1252: always pass the encoding when editing JSX/CSS, or non-ASCII characters like `·` get corrupted and render as missing-glyph boxes.
@@ -77,4 +92,5 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
 
 ## Run log
 - 2026-11-11 run 1 (branch `game-feel-council`, PR #12): i0 Sol 6.6 / Terra 6.8 / Opus 6.4 → i1 7.1 / 6.8 / 6.5 (global frames, world, titles, ladder plaques, console switches). i2 7.3 / 7.0 / 7.2 (login title screen, illustrated Help, results ceremony, history climb, duels VS, ladder tabs). i3 7.4 / 7.0 / 7.1 (shop storefront, profile trophy cabinet, settings console, arena crowd). i4 7.7 / 7.2 / 7.5 (illustrated SVG item set, painted arena crowd, history tickets, settings ribbon/gold apply, fewer brackets).
-  - **NEXT = round 5 (2 rounds left in run 1).** Consensus plan: (1) Help → illustrated field manual: side chapter tabs, paper/metal pages, FAQ as pages, fewer small cards — biggest drag per Opus; (2) Ladder → dimensional winners' podium (stepped platforms, big portraits, tier crests) + rank plaques of varying weight, own row distinct, drop header row; (3) Arena → paint floor/rails/trusses (no cyan wireframe), add foreground element + haze; (4) Shop → featured legendary on a big pedestal above compact trays, rarity-specific card presentation; (5) Global display numeral face for hero numbers + condensed micro-label face (self-host via @fontsource; check package availability offline first); (6) Duels confrontation layout if time. Capture to i5, PREVIOUS_DIR=i4.
+  - Decision model added after i4. **Re-ran the council on i4 with the new brief** (DON'T BOTHER / PROTECT / estimates) before round 5. Build `i5-decisions.md` from those replies; it supersedes the plan below.
+  - Earlier plan: **NEXT = round 5 (2 rounds left in run 1).** Consensus plan: (1) Help → illustrated field manual: side chapter tabs, paper/metal pages, FAQ as pages, fewer small cards — biggest drag per Opus; (2) Ladder → dimensional winners' podium (stepped platforms, big portraits, tier crests) + rank plaques of varying weight, own row distinct, drop header row; (3) Arena → paint floor/rails/trusses (no cyan wireframe), add foreground element + haze; (4) Shop → featured legendary on a big pedestal above compact trays, rarity-specific card presentation; (5) Global display numeral face for hero numbers + condensed micro-label face (self-host via @fontsource; check package availability offline first); (6) Duels confrontation layout if time. Capture to i5, PREVIOUS_DIR=i4.
