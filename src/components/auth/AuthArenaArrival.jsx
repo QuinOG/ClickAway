@@ -3,6 +3,13 @@ export default function AuthArenaArrival({ mode = "login", children }) {
 
   return (
     <div className="authArrival">
+      <div className="authTitleScreen" aria-hidden="true">
+        <span className="authTitleMark">
+          <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
+        </span>
+        <span className="authWordmark">ClickAway</span>
+        <span className="authTagline">Precision arena · Season 1</span>
+      </div>
       <section className="authPanel" aria-labelledby="auth-page-title">
         <div className="authPanelHeader">
           <span className="authEyebrow">

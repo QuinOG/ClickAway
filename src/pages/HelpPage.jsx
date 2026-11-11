@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 import {
   ArrowDown,
@@ -18,6 +18,7 @@ import HelpListSection from "../features/help/components/HelpListSection.jsx"
 import HelpQuickStartSection from "../features/help/components/HelpQuickStartSection.jsx"
 import HelpRankTiersSection from "../features/help/components/HelpRankTiersSection.jsx"
 import HelpTableSection from "../features/help/components/HelpTableSection.jsx"
+import { HelpModeCards, HelpPowerupCards, HelpRuleCards } from "../features/help/components/HelpVisualGuide.jsx"
 import {
   ACCOUNT_ROWS,
   ARMORY_DEEP_LINKS,
@@ -61,6 +62,15 @@ function GuideGlyph({ glyph }) {
     case "record": return <ClockCountdown weight="duotone" />
     default: return <Question weight="duotone" />
   }
+}
+
+function Rulebook({ children }) {
+  return (
+    <details className="helpRulebook">
+      <summary>Full rulebook</summary>
+      <div className="helpRulebookBody">{children}</div>
+    </details>
+  )
 }
 
 function HelpMissionMap() {
@@ -114,95 +124,107 @@ export default function HelpPage() {
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">Core Gameplay</h2>
           </div>
+          <HelpRuleCards />
+          <h3 className="helpSubhead">Power keys 1 · 2 · 3</h3>
+          <HelpPowerupCards />
+          <Rulebook>
           <div className="helpGrid">
-            <HelpTableSection title="Controls" columns={["Action", "Input"]} rows={CONTROLS_ROWS} />
-            <div>
-              <HelpListSection title="Buildcraft Loadouts" items={LOADOUT_POINTS} />
-              <nav className="helpArmoryLinks" aria-label="Jump to Armory">
-                {ARMORY_DEEP_LINKS.map((link) => (
-                  <Link key={link.to} className="helpArmoryLink" to={link.to}>
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
+              <HelpTableSection title="Controls" columns={["Action", "Input"]} rows={CONTROLS_ROWS} />
+              <div>
+                <HelpListSection title="Buildcraft Loadouts" items={LOADOUT_POINTS} />
+                <nav className="helpArmoryLinks" aria-label="Jump to Armory">
+                  {ARMORY_DEEP_LINKS.map((link) => (
+                    <Link key={link.to} className="helpArmoryLink" to={link.to}>
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
             </div>
-          </div>
-
-          <HelpTableSection
-            title="Scoring and Combo"
-            columns={["Scoring Rule", "How It Works"]}
-            rows={SCORING_ROWS}
-          />
-
-          <div className="helpGrid">
+  
             <HelpTableSection
-              title="Power-Ups"
-              columns={["Power-Up", "Unlock", "Charge Rate", "Effect"]}
-              rows={POWERUP_ROWS}
-              note="Power-ups only work during live rounds and require charges."
+              title="Scoring and Combo"
+              columns={["Scoring Rule", "How It Works"]}
+              rows={SCORING_ROWS}
             />
-            <HelpListSection title="Power-Up Rules" items={POWERUP_RULES_POINTS} />
-          </div>
+  
+            <div className="helpGrid">
+              <HelpTableSection
+                title="Power-Ups"
+                columns={["Power-Up", "Unlock", "Charge Rate", "Effect"]}
+                rows={POWERUP_ROWS}
+                note="Power-ups only work during live rounds and require charges."
+              />
+              <HelpListSection title="Power-Up Rules" items={POWERUP_RULES_POINTS} />
+            </div>
+          </Rulebook>
         </section>
 
         <section id="modes" className="helpTopicGroup" aria-label="Modes and ranked rules">
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">Modes and Ranked</h2>
           </div>
+          <HelpModeCards />
+          <HelpRankTiersSection tiers={RANK_TIER_ROWS} />
+          <Rulebook>
           <div className="helpGrid">
-            <HelpListSection title="Modes Explained" items={MODE_EXPLANATION_POINTS} />
+              <HelpListSection title="Modes Explained" items={MODE_EXPLANATION_POINTS} />
+              <HelpTableSection
+                title="Mode Rules"
+                columns={["Mode", "Timer", "Miss Penalty", "Coin Rate", "XP", "Rank"]}
+                rows={DIFFICULTY_ROWS}
+              />
+            </div>
+            <div className="helpGrid">
+              <HelpListSection title="Rank and Rating Rules" items={RANK_RULES_POINTS} />
+            </div>
             <HelpTableSection
-              title="Mode Rules"
-              columns={["Mode", "Timer", "Miss Penalty", "Coin Rate", "XP", "Rank"]}
-              rows={DIFFICULTY_ROWS}
+              title="Mode Tuning"
+              columns={["Mode", "Initial Size", "Min Size", "Shrink Factor", "Combo Step", "Max Time Buffer"]}
+              rows={MODE_TUNING_ROWS}
+              note="Advanced reference: these values explain why each mode feels different once you already know the basics."
             />
-          </div>
-          <div className="helpGrid">
-            <HelpRankTiersSection tiers={RANK_TIER_ROWS} />
-            <HelpListSection title="Rank and Rating Rules" items={RANK_RULES_POINTS} />
-          </div>
-          <HelpTableSection
-            title="Mode Tuning"
-            columns={["Mode", "Initial Size", "Min Size", "Shrink Factor", "Combo Step", "Max Time Buffer"]}
-            rows={MODE_TUNING_ROWS}
-            note="Advanced reference: these values explain why each mode feels different once you already know the basics."
-          />
+          </Rulebook>
         </section>
 
         <section id="progression" className="helpTopicGroup" aria-label="Progression and economy">
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">Progression and Economy</h2>
           </div>
+          <Rulebook>
           <div className="helpGrid">
-            <HelpListSection title="Progression Math" items={PROGRESSION_POINTS} />
-            <HelpListSection title="Shop and Cosmetics" items={SHOP_POINTS} />
-          </div>
-          <div className="helpGrid">
-            <HelpListSection title="Performance Tips" items={PERFORMANCE_TIPS} />
-            <HelpListSection title="Data and Storage" items={DATA_SYSTEM_POINTS} />
-          </div>
+              <HelpListSection title="Progression Math" items={PROGRESSION_POINTS} />
+              <HelpListSection title="Shop and Cosmetics" items={SHOP_POINTS} />
+            </div>
+            <div className="helpGrid">
+              <HelpListSection title="Performance Tips" items={PERFORMANCE_TIPS} />
+              <HelpListSection title="Data and Storage" items={DATA_SYSTEM_POINTS} />
+            </div>
+          </Rulebook>
         </section>
 
         <section id="account" className="helpTopicGroup" aria-label="Account, tracking, and navigation">
           <div className="helpGroupHeader">
             <h2 className="helpGroupTitle">Account, Tracking, and Navigation</h2>
           </div>
+          <Rulebook>
           <div className="helpGrid">
-            <HelpTableSection
-              title="Account Access"
-              columns={["Task", "How It Works"]}
-              rows={ACCOUNT_ROWS}
-            />
-            <HelpTableSection
-              title="Navigation"
-              columns={["Page", "What You Use It For"]}
-              rows={NAVIGATION_ROWS}
-            />
-          </div>
-          <div className="helpGrid">
-            <HelpListSection title="Profile and Achievements" items={PROFILE_POINTS} />
-            <HelpListSection title="History and Ladder" items={TRACKING_POINTS} />
-          </div>
+              <HelpTableSection
+                title="Account Access"
+                columns={["Task", "How It Works"]}
+                rows={ACCOUNT_ROWS}
+              />
+              <HelpTableSection
+                title="Navigation"
+                columns={["Page", "What You Use It For"]}
+                rows={NAVIGATION_ROWS}
+              />
+            </div>
+            <div className="helpGrid">
+              <HelpListSection title="Profile and Achievements" items={PROFILE_POINTS} />
+              <HelpListSection title="History and Ladder" items={TRACKING_POINTS} />
+            </div>
+          </Rulebook>
         </section>
 
         <section id="faq" className="helpTopicGroup" aria-label="Frequently asked questions">

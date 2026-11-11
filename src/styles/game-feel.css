@@ -165,3 +165,398 @@
     background: linear-gradient(180deg, #fff3c4, #ffc94a 55%, #c98a24);
     box-shadow: 0 3px 0 #040912;
 }
+
+/* ---- Round 2: Login as a title screen ---------------------------------- */
+.authArrival {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    grid-template-columns: none !important;
+    max-width: 560px !important;
+    margin: 0 auto !important;
+    padding: 12px 0 30px !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+.authArenaPreview { display: none !important; }
+.authTitleScreen { display: grid; justify-items: center; gap: 4px; }
+.authTitleMark {
+    width: 108px; height: 108px; display: grid; place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #2f4a70, #0b1626 70%);
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 18%), 0 0 0 4px #c98a24, 0 0 0 7px #040912, 0 0 60px rgb(255 190 70 / 35%);
+    animation: gfFloat 4s ease-in-out infinite;
+}
+.authTitleMark img { width: 72px; height: 72px; }
+.authWordmark {
+    font-family: var(--ca-font-display);
+    font-size: clamp(54px, 7vw, 88px);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    background: linear-gradient(180deg, #ffffff 0%, #fff0b8 30%, #ffc94a 55%, #e2861c 56%, #ffb53a 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    filter: drop-shadow(0 4px 0 #040912) drop-shadow(0 6px 0 #7a3d08) drop-shadow(0 0 30px rgb(255 170 50 / 35%));
+}
+.authTagline {
+    font-family: var(--ca-font-display); font-size: 14px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: #8fe3ff; text-shadow: 0 2px 0 #040912, 0 0 12px rgb(80 210 255 / 50%);
+}
+.authPanel {
+    width: 100%;
+    padding: 26px 30px !important;
+    border-style: solid !important;
+    border-width: 14px !important;
+    border-color: transparent !important;
+    border-image: var(--gf-frame) 16 / 14px stretch !important;
+    background: linear-gradient(180deg, #17283f, #0c1626) padding-box !important;
+    box-shadow: 0 24px 50px rgb(0 0 0 / 55%) !important;
+    border-radius: 6px !important;
+}
+.authTitle { font-size: 30px !important; text-align: center; }
+.authEyebrow, .authSubtitle { text-align: center; display: block; }
+.authMobilePreview { display: none !important; }
+.authPanel input {
+    border: 2px solid #040912 !important;
+    background: #070e1a !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 55%), 0 1px 0 rgb(160 200 245 / 12%) !important;
+    border-radius: 8px !important;
+}
+.authButton {
+    min-height: 58px !important;
+    border: 2px solid #040912 !important;
+    border-radius: 10px !important;
+    font-family: var(--ca-font-display) !important;
+    font-size: 22px !important;
+    font-weight: 400 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #2a1500 !important;
+    background: linear-gradient(180deg, #fff1b0 0%, #ffd04a 45%, #f2a020 100%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 60%), inset 0 -4px 0 rgb(0 0 0 / 15%), 0 5px 0 #a8620e, 0 5px 0 2px #040912, 0 14px 24px rgb(0 0 0 / 40%) !important;
+}
+.authButton:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #a8620e, 0 1px 0 2px #040912 !important; }
+@keyframes gfFloat { 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .authTitleMark { animation: none; } }
+
+/* ---- Round 2: Help as an illustrated manual ---------------------------- */
+.helpMissionGlyph {
+    width: 54px !important; height: 54px !important;
+    border-radius: 50% !important;
+    border: 2px solid #040912 !important;
+    background: radial-gradient(circle at 50% 30%, #3a5a86, #0e1a2c 72%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #c98a24, 0 0 0 5px #040912 !important;
+    color: #ffd25c !important;
+    font-size: 28px;
+}
+.helpMissionGlyph svg { width: 28px; height: 28px; filter: drop-shadow(0 2px 0 #040912); }
+.helpSubhead { margin: 22px 0 10px; font-size: 18px; color: #ffd25c; }
+.helpRuleCards, .helpModeCards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 6px 0 4px; }
+.helpRuleCard, .helpModeCard, .helpPowerupCard {
+    position: relative;
+    border: 2px solid #040912;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #1c2e49, #0e1828);
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 16%), inset 0 -4px 0 rgb(0 0 0 / 28%), 0 6px 0 -1px rgb(0 0 0 / 35%);
+}
+.helpRuleCard { padding: 0 18px 16px; overflow: hidden; }
+.helpRuleArt {
+    margin: 0 -18px 10px;
+    height: 128px;
+    display: grid; place-items: center;
+    border-bottom: 2px solid #040912;
+    background: radial-gradient(ellipse at 50% 100%, rgb(80 200 255 / 22%), transparent 70%), linear-gradient(180deg, #0b1424, #13233a);
+}
+.helpRuleCard[data-tone="combo"] .helpRuleArt { background: radial-gradient(ellipse at 50% 100%, rgb(255 190 70 / 25%), transparent 70%), linear-gradient(180deg, #0b1424, #13233a); }
+.helpRuleCard[data-tone="miss"] .helpRuleArt { background: radial-gradient(ellipse at 50% 100%, rgb(255 80 110 / 22%), transparent 70%), linear-gradient(180deg, #0b1424, #13233a); }
+.helpRuleArt svg { width: 200px; height: 120px; }
+.helpRuleCard h3, .helpModeCard h3 { margin: 0 0 4px; font-size: 22px; text-transform: uppercase; color: #fff; }
+.helpRuleCard p, .helpModeCard p, .helpPowerupCard p { margin: 0; font-size: 14px; line-height: 1.45; color: #b9cbe2; }
+.helpModeCard { padding: 16px 18px; border-top: 6px solid var(--mode, #4fd8ff); }
+.helpModeCard[data-mode="practice"] { --mode: #3ee59a; }
+.helpModeCard[data-mode="casual"] { --mode: #4fb8ff; }
+.helpModeCard[data-mode="ranked"] { --mode: #ffc94a; }
+.helpModeCard h3 { color: var(--mode); }
+.helpModeStats { display: flex; gap: 10px; margin: 8px 0; }
+.helpModeStats span { flex: 1; display: grid; justify-items: center; padding: 6px; border: 2px solid #040912; border-radius: 8px; background: #08111e; box-shadow: inset 0 3px 6px rgb(0 0 0 / 45%); }
+.helpModeStats b { font-family: var(--ca-font-display); font-weight: 400; font-size: 30px; color: #fff; }
+.helpModeStats small { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fb3dd; }
+.helpModeStakes { display: inline-block; margin-bottom: 6px; padding: 2px 10px; border-radius: 4px; background: var(--mode); color: #061220; font-family: var(--ca-font-display); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.helpPowerupCards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.helpPowerupCard { display: flex; gap: 14px; align-items: flex-start; padding: 14px; }
+.helpPowerupCard h3 { margin: 0 0 2px; font-size: 16px; color: #fff; }
+.helpPowerupEmblem {
+    flex: 0 0 52px; height: 52px; display: grid; place-items: center;
+    border-radius: 50%; border: 2px solid #040912;
+    background: radial-gradient(circle at 50% 30%, #3a5a86, #0e1a2c 72%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #c98a24, 0 0 0 5px #040912;
+    color: #ffd25c;
+}
+.helpPowerupEmblem svg { width: 28px; height: 28px; }
+.helpPowerupMeta { display: inline-block; margin-top: 6px; font-size: 12px; color: #ffd25c; font-weight: 700; }
+.helpRulebook { margin-top: 16px; border: 2px solid #040912; border-radius: 10px; background: rgb(6 12 22 / 70%); }
+.helpRulebook > summary {
+    cursor: pointer; padding: 12px 16px; list-style: none;
+    font-family: var(--ca-font-display); text-transform: uppercase; letter-spacing: 0.06em; color: #8fb3dd;
+}
+.helpRulebook > summary::before { content: "▸ "; color: #ffd25c; }
+.helpRulebook[open] > summary::before { content: "▾ "; }
+.helpRulebookBody { padding: 0 14px 14px; }
+@media (max-width: 900px) {
+    .helpRuleCards, .helpModeCards, .helpPowerupCards { grid-template-columns: 1fr; }
+}
+
+/* ---- Round 2: Results is a ceremony ------------------------------------ */
+.gameOverCard {
+    border-style: solid !important;
+    border-width: 14px !important;
+    border-color: transparent !important;
+    border-image: var(--gf-frame) 16 / 14px stretch !important;
+    background-clip: padding-box !important;
+    background:
+        radial-gradient(ellipse 55% 45% at 30% 38%, rgb(255 190 70 / 16%), transparent 70%),
+        linear-gradient(180deg, #15253c, #0b1524) padding-box !important;
+    border-radius: 6px !important;
+    box-shadow: 0 30px 70px rgb(0 0 0 / 60%) !important;
+}
+.gameOverHeader { position: relative; display: grid; justify-items: center; }
+.gameOverTitle {
+    position: relative;
+    margin: 4px auto 0 !important;
+    padding: 8px 64px 10px !important;
+    font-family: var(--ca-font-display) !important;
+    font-weight: 400 !important;
+    font-size: 38px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2a1500 !important;
+    text-shadow: 0 2px 0 rgb(255 255 255 / 45%) !important;
+    background: linear-gradient(180deg, #fff1b0 0%, #ffd04a 50%, #e8941c 100%);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 26px) 50%, 100% 100%, 0 100%, 26px 50%);
+    filter: drop-shadow(0 4px 0 #040912);
+    animation: gfBannerStrike 520ms cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.gameOverEyebrow { color: #ffd25c !important; text-shadow: 0 2px 0 #040912; }
+.gameOverScorePanel {
+    position: relative;
+    isolation: isolate;
+    border: 2px solid #040912 !important;
+    background: radial-gradient(circle at 50% 42%, #24406a 0%, #0c182b 62%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 12%), inset 0 0 0 6px rgb(255 201 74 / 18%), 0 0 0 3px #c98a24, 0 0 0 5px #040912 !important;
+}
+.gameOverScorePanel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: repeating-conic-gradient(from var(--gf-ray, 0deg) at 50% 42%, rgb(255 210 92 / 13%) 0deg 9deg, transparent 9deg 22deg);
+    animation: gfRays 24s linear infinite;
+}
+.gameOverScoreValue {
+    font-family: var(--ca-font-display) !important;
+    font-weight: 400 !important;
+    background: linear-gradient(180deg, #ffffff 0%, #fff0b8 40%, #ffc94a 62%, #e2861c 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent !important;
+    text-shadow: none !important;
+    filter: drop-shadow(0 5px 0 #040912) drop-shadow(0 0 26px rgb(255 180 60 / 40%));
+}
+.gameOverScoreLabel { font-family: var(--ca-font-display); letter-spacing: 0.2em; color: #ffd25c !important; }
+.outcomeRatingGrade {
+    border: 3px solid #040912 !important;
+    background: radial-gradient(circle at 50% 35%, #1d6a45, #0a2a1c 75%) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #3ee59a, 0 0 0 6px #040912, 0 0 24px rgb(62 229 154 / 35%) !important;
+    transform: rotate(-6deg);
+    animation: gfStamp 420ms 900ms cubic-bezier(.3, 1.8, .5, 1) both;
+}
+.gameOverReward {
+    border: 2px solid #040912 !important;
+    background: linear-gradient(180deg, #1d2f4a, #0f1a2c) !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 16%), inset 0 -3px 0 rgb(0 0 0 / 30%) !important;
+}
+.gameOverReward strong { font-family: var(--ca-font-display); font-weight: 400; }
+.gameOverReward.isCoins strong { color: #ffd25c; }
+.gameOverReward.isXp strong { color: #8fe3ff; }
+@keyframes gfBannerStrike { from { transform: scale(1.8); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes gfStamp { from { transform: rotate(-30deg) scale(2.4); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
+@property --gf-ray { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes gfRays { to { --gf-ray: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+    .gameOverTitle, .outcomeRatingGrade, .gameOverScorePanel::before { animation: none; }
+}
+
+/* ---- Round 2: History climb track replaces the axis chart -------------- */
+.historyClimb {
+    list-style: none; margin: 0; padding: 0 8px;
+    display: flex; align-items: flex-end; gap: 10px;
+    height: 190px;
+    flex: 1;
+    border-bottom: 4px solid #040912;
+    background: linear-gradient(0deg, rgb(63 200 240 / 10%), transparent 40%);
+}
+.historyClimbEmpty { margin: auto; color: #8fb3dd; }
+.historyClimbStep { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; --tone: #4fb8ff; }
+.historyClimbStep.tone-ranked, .historyClimbStep[class*="ranked"] { --tone: #ffc94a; }
+.historyClimbStep[class*="practice"] { --tone: #3ee59a; }
+.historyClimbMedal {
+    position: relative;
+    min-width: 58px; padding: 6px 8px;
+    text-align: center;
+    font-family: var(--ca-font-display); font-size: 16px; color: #fff;
+    border: 2px solid #040912; border-radius: 999px;
+    background: radial-gradient(circle at 50% 30%, #2f4a70, #0e1a2c 75%);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 18%), 0 0 0 2px var(--tone), 0 3px 0 2px #040912;
+}
+.historyClimbPillar {
+    width: 70%;
+    height: calc(var(--climb) - 46px);
+    min-height: 10px;
+    border: 2px solid #040912; border-bottom: 0;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 30%, rgb(255 255 255 / 10%) 50%, transparent 70%), linear-gradient(180deg, var(--tone), color-mix(in srgb, var(--tone) 35%, #0b1424));
+    opacity: 0.55;
+}
+.historyClimbLabel { order: 3; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8fb3dd; margin-bottom: -24px; }
+.historyClimb { margin-bottom: 22px; }
+.historyClimbStep.isLatest .historyClimbPillar, .historyClimbStep.isBest .historyClimbPillar { opacity: 1; box-shadow: 0 0 22px color-mix(in srgb, var(--tone) 45%, transparent); }
+.historyClimbStep.isBest .historyClimbMedal { background: radial-gradient(circle at 50% 30%, #fff1b0, #e8941c 75%); color: #2a1500; box-shadow: inset 0 2px 0 rgb(255 255 255 / 55%), 0 0 0 2px #040912, 0 0 20px rgb(255 190 70 / 55%); }
+.historyClimbCrown {
+    position: absolute; left: 50%; top: -18px; width: 26px; height: 16px; translate: -50% 0;
+    background: #ffd25c;
+    clip-path: polygon(0 100%, 0 20%, 25% 60%, 50% 0, 75% 60%, 100% 20%, 100% 100%);
+    filter: drop-shadow(0 2px 0 #040912);
+}
+.historyClimbStep.isLatest .historyClimbLabel { color: #fff; }
+
+/* ---- Round 2: Duels is a VS challenge board ---------------------------- */
+.duelVersusStage {
+    background:
+        radial-gradient(ellipse 60% 40% at 50% 38%, rgb(255 80 110 / 18%), transparent 70%),
+        linear-gradient(180deg, #13223a, #0a1322) !important;
+}
+.duelCombatantCrest {
+    width: 80px !important; height: 80px !important;
+    display: grid !important; place-items: center;
+    border-radius: 50% !important;
+    border: 3px solid #040912 !important;
+    background: radial-gradient(circle at 50% 30%, #2f4a70, #0b1626 72%) !important;
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 18%), 0 0 0 4px #4fb8ff, 0 0 0 7px #040912, 0 0 30px rgb(80 180 255 / 35%) !important;
+}
+.duelCombatant.is-rival .duelCombatantCrest { box-shadow: inset 0 3px 0 rgb(255 255 255 / 18%), 0 0 0 4px #ff5470, 0 0 0 7px #040912, 0 0 30px rgb(255 84 112 / 35%) !important; color: #ff8095; font-size: 46px; }
+.duelCombatantCrest > * { transform: scale(1.2); }
+.duelCombatant small { font-family: var(--ca-font-display); font-size: 15px !important; letter-spacing: 0.1em; color: #fff !important; text-shadow: 0 2px 0 #040912; }
+.duelVsMark {
+    font-family: var(--ca-font-display);
+    font-weight: 400;
+    font-size: 38px;
+    font-style: italic;
+    line-height: 1;
+    background: linear-gradient(180deg, #fff1b0, #ffc94a 50%, #e2501c);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    filter: drop-shadow(0 3px 0 #040912) drop-shadow(0 0 16px rgb(255 120 60 / 50%));
+    transform: rotate(-8deg);
+}
+.duelSignalLine span { background: linear-gradient(90deg, transparent, #ffc94a, transparent) !important; height: 3px !important; }
+.duelReplayLock {
+    border: 3px solid #040912 !important;
+    border-radius: 10px !important;
+    background: linear-gradient(180deg, #2a1d08, #120c04) !important;
+    box-shadow: inset 0 0 0 2px #c98a24, inset 0 2px 10px rgb(0 0 0 / 50%) !important;
+}
+.duelReplayLock strong { font-family: var(--ca-font-display); font-weight: 400; font-size: 42px !important; color: #ffd25c !important; text-shadow: 0 3px 0 #040912; }
+.duelStepNumber {
+    display: grid !important; place-items: center;
+    width: 34px; height: 34px;
+    font-family: var(--ca-font-display); font-size: 14px !important; color: #2a1500 !important;
+    background: linear-gradient(180deg, #fff1b0, #ffc94a 55%, #e8941c);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.duelStep {
+    border: 2px solid #040912 !important;
+    background: rgb(6 12 22 / 55%) !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 10%) !important;
+}
+.duelStepCopy strong { font-family: var(--ca-font-display); font-weight: 400; font-size: 18px; text-transform: uppercase; letter-spacing: 0.04em; color: #ffd25c; }
+.duelInputWrap, .duelMessageField input, .duelLaunchForm input {
+    border: 2px solid #040912 !important;
+    border-radius: 8px !important;
+    background: #070e1a !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 55%), 0 1px 0 rgb(160 200 245 / 12%) !important;
+}
+.duelReplayCard {
+    --tone: #4fb8ff;
+    position: relative;
+    border: 2px solid #040912 !important;
+    border-radius: 10px !important;
+    border-left: 8px solid var(--tone) !important;
+    background:
+        radial-gradient(circle at 0 50%, #0a1322 0 8px, transparent 9px) right center / 100% 100% no-repeat,
+        repeating-linear-gradient(90deg, transparent 0 6px, rgb(255 255 255 / 0%) 6px 12px),
+        linear-gradient(180deg, #1f3250, #101c30) !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 18%), inset 0 -4px 0 rgb(0 0 0 / 30%), 0 4px 0 #040912 !important;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.duelReplayCard[data-mode="hard"] { --tone: #ffc94a; }
+.duelReplayCard[data-mode="easy"] { --tone: #3ee59a; }
+.duelReplayCard::after {
+    content: "";
+    position: absolute; top: 8px; bottom: 8px; right: 34%;
+    border-right: 2px dashed rgb(160 200 245 / 22%);
+}
+.duelReplayCard:hover { transform: translateY(-2px); }
+.duelReplayCard.isSelected { transform: translateY(-3px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 25%), 0 0 0 3px var(--tone), 0 4px 0 3px #040912, 0 0 24px color-mix(in srgb, var(--tone) 45%, transparent) !important; }
+.duelReplayCard strong, .duelReplayScore { font-family: var(--ca-font-display); font-weight: 400; }
+.duelReplayMode { color: var(--tone) !important; font-family: var(--ca-font-display); letter-spacing: 0.08em; }
+.duelLaunchButton {
+    min-width: 150px; min-height: 64px;
+    border: 3px solid #040912 !important;
+    border-radius: 999px !important;
+    font-family: var(--ca-font-display) !important;
+    font-weight: 400 !important;
+    font-size: 18px !important;
+    text-transform: uppercase;
+    color: #fff4e6 !important;
+    text-shadow: 0 2px 0 #4a0d12;
+    background: radial-gradient(circle at 45% 35%, #ff7a6a, #c42a3a 55%, #7a1420) !important;
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 35%), inset 0 -5px 0 rgb(0 0 0 / 25%), 0 0 0 3px #c98a24, 0 0 0 5px #040912, 0 6px 0 5px #040912 !important;
+}
+.duelLaunchButton:disabled { filter: saturate(0.35) brightness(0.75); }
+
+/* ---- Round 2: Ladder controls are carved tab plates --------------------- */
+.leaderboardBoardTabs { gap: 0 !important; border-bottom: 4px solid #040912; }
+.leaderboardBoardTab {
+    margin-right: -2px;
+    padding: 10px 22px !important;
+    border: 2px solid #040912 !important;
+    border-bottom: 0 !important;
+    border-radius: 10px 10px 0 0 !important;
+    font-family: var(--ca-font-display) !important;
+    font-weight: 400 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8fb3dd !important;
+    background: linear-gradient(180deg, #1a2a42, #0f1a2c) !important;
+    box-shadow: inset 0 1px 0 rgb(160 200 245 / 14%) !important;
+}
+.leaderboardBoardTab.isActive {
+    color: #2a1500 !important;
+    background: linear-gradient(180deg, #fff1b0, #ffc94a 55%, #e8941c) !important;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 55%), 0 -4px 14px rgb(255 190 70 / 25%) !important;
+    transform: translateY(-3px);
+}
+.leaderboardSearchInput {
+    border: 2px solid #040912 !important;
+    border-radius: 8px !important;
+    background: #070e1a !important;
+    box-shadow: inset 0 3px 6px rgb(0 0 0 / 55%), 0 1px 0 rgb(160 200 245 / 12%) !important;
+}
+.leaderboardViewToggle { padding: 4px; border: 2px solid #040912; border-radius: 10px; background: #070e1a; box-shadow: inset 0 3px 6px rgb(0 0 0 / 55%); }
+.leaderboardViewToggle .secondaryButton { border-color: transparent !important; background: transparent !important; box-shadow: none !important; font-family: var(--ca-font-display); font-weight: 400; }
+.leaderboardViewToggle .secondaryButton.isActive { color: #061220 !important; background: linear-gradient(180deg, #8ee9ff, #25a9e0) !important; box-shadow: inset 0 2px 0 rgb(255 255 255 / 50%) !important; }
+.leaderboardTableIntro { display: none !important; }

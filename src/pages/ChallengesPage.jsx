@@ -5,7 +5,6 @@ import {
   Ghost,
   PaperPlaneTilt,
   Play,
-  Sword,
   UserFocus,
   X,
 } from "@phosphor-icons/react"
@@ -364,7 +363,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
             </div>
             <div className="duelSignalLine">
               <span />
-              <Sword weight="fill" />
+              <b className="duelVsMark">VS</b>
               <span />
             </div>
             <div className={`duelCombatant is-rival ${sendForm.opponentUsername.trim() ? "isLocked" : ""}`}>
@@ -420,6 +419,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                         role="radio"
                         aria-checked={isSelected}
                         className={`duelReplayCard ${isSelected ? "isSelected" : ""}`}
+                        data-mode={String(replay.modeId || "").toLowerCase()}
                         onClick={(event) => {
                           setSendSuccess("")
                           setSendForm((current) => ({ ...current, replayId: String(replay.id) }))

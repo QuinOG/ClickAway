@@ -116,12 +116,12 @@ export const RANK_RULES_POINTS = [
 ]
 
 export const SCORING_ROWS = [
-  ["Points Per Hit", "points = basePointsPerHit x comboMultiplier (basePointsPerHit = 1)."],
-  ["Combo Multiplier", "comboMultiplier = 1 + floor(streak / comboStep)."],
-  ["Combo Step by Mode", "Practice: 6, Casual: 5, Ranked: 4."],
-  ["Miss Penalty", "Practice: 0, Casual: -1, Ranked: -2 (score never drops below 0)."],
-  ["Accuracy", "accuracy% = round(hits / (hits + misses) x 100)."],
-  ["Target Shrink", "Each successful hit shrinks size by mode shrinkFactor until minButtonSize."],
+  ["Points Per Hit", "Each hit is worth 1 point times your current multiplier — a hit at x3 scores 3."],
+  ["Combo Multiplier", "Your multiplier goes up by 1 every few hits in a row: x2, x3, x4 and onward."],
+  ["Hits Per Step", "Practice: every 6 hits. Casual: every 5. Ranked: every 4."],
+  ["Miss Penalty", "Practice: nothing. Casual: -1 point. Ranked: -2. Your score never drops below 0."],
+  ["Accuracy", "Hits out of every click you made, as a percentage."],
+  ["Target Shrink", "Each hit makes the target a little smaller, down to a minimum size for the mode."],
 ]
 
 // Generated from the live catalog so every Armory tool is listed with its
