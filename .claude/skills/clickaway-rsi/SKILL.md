@@ -13,7 +13,7 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - **Goal:** move ClickAway from a SaaS-dashboard feel to a shipped indie-game feel (illustrated icons, game menus, world, juice) across the whole app.
 - **Council (from run 2):** `delegate_task` ×4, all launched in one message, `role: "review"`, **all at medium reasoning** (user's rule):
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "medium"}`
-  - Claude `claude-opus-5`, `{effort: "medium"}` (not in the short list; `orchestrator_capabilities` with `search: "opus-5"` finds it)
+  - Claude `claude-opus-5`, `{effort: "low"}`. This is the one exception to medium, at the user's request, because Claude session usage is limited. (Not in the short list; `orchestrator_capabilities` with `search: "opus-5"` finds it)
   - OpenCode `opencode-go/gemini-4-argon`, `{variant: "medium"}` (providerInstanceId `opencode`)
   - OpenCode `opencode-go/qwen3.8-max`, `{variant: "medium"}`
   - Judges must read PNGs, so only image-input models qualify. Check `models.dev/api.json` → `modalities.input`.
@@ -106,7 +106,8 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
   - r5 (`07a487f`): painted arena stadium, Help 4-panel round strip and chapters, Duels fight card, Ladder metal plates, plus fixes for the bubble scale and the ticket notch. i5 Sol 7.8 / Terra 7.4 / Opus 8.0 (predicted 8.8 / 7.9 / 8.9).
   - Council changed after r5: Terra dropped, Opus to low effort, stop bar Sol ≥ 9.4 / Opus ≥ 9.
   - r6 (`dc3100a`): hardwood court in the arena and lobby, Profile character sheet, stadium theme previews in the Shop, Help ch.4–5 cards. i6 Sol 8.0 / Opus 8.0 (predicted ~8.1 / ~8.2). **Run 1 ended at the 6-round cap.** Total: i0 avg 6.6 → i6 avg 8.0.
-  - **NEXT RUN (start here):** both judges' consensus is the shared shell: "the world stops at the court edge".
+- 2026-11-11 run 2 (same branch and PR #12): council is Sol (med), Opus 5 (low), Gemini 4 Argon (med) and Qwen3.8 Max (med). It starts with a baseline read of i6 (no PREVIOUS_DIR); rounds continue as i7, i8, …, up to 6 rounds (i12).
+  - Plan carried over from run 1 (merge it with the baseline read): both judges' consensus is the shared shell: "the world stops at the court edge".
     1. Ladder and History on a physical substrate (banner wall or bracket board; a pinned ticket ledger), plus a podium with depth.
     2. A stadium control rail and nav plates instead of nested navy frames and the utility capsule.
     3. A characterful display face for titles and numerals.
