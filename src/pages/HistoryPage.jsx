@@ -125,6 +125,8 @@ const TRAJECTORY_MODES = [
 // Modes have different timers and scoring pressure, so the trend compares one
 // mode at a time (defaulting to the latest round's mode) instead of drawing a
 // single line through Practice, Casual and Ranked scores.
+const LINE_TONES = { ranked: "#ffc94a", casual: "#4fb8ff", practice: "#3ee59a" }
+
 function HistoryTrajectory({ rounds = [] }) {
   const [modeFilter, setModeFilter] = useState(() => (rounds[0] ? getModeTone(rounds[0]) : "casual"))
   const modeLabel = TRAJECTORY_MODES.find((mode) => mode.id === modeFilter)?.label ?? "Casual"
@@ -135,6 +137,10 @@ function HistoryTrajectory({ rounds = [] }) {
   // Start the scale just under the lowest run so real movement is visible.
   const lowestScore = Math.max(0, Math.floor((minimumScore - (highestScore - minimumScore) * 0.35) / 10) * 10)
   const scoreRange = Math.max(1, highestScore - lowestScore)
+  const plotPoints = scores.map((value, index) => ({
+    x: ((index + 0.5) / scores.length) * 100,
+    y: 100 - (34 + ((value - lowestScore) / scoreRange) * 66),
+  }))
   const scoreChange = scores.length > 1 ? scores.at(-1) - scores[0] : 0
   const trendIcon = scoreChange >= 0
     ? <TrendUp weight="bold" />
@@ -156,6 +162,14 @@ function HistoryTrajectory({ rounds = [] }) {
 
       <ol className="historyClimb" aria-hidden="true">
         {plottedRounds.length === 0 ? <li className="historyClimbEmpty">No {modeLabel.toLowerCase()} rounds yet</li> : null}
+        {plottedRounds.length > 1 ? (
+          <li className="historyClimbLine" style={{ "--line-tone": LINE_TONES[modeFilter] ?? "#4fb8ff" }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+              <polygon points={`${plotPoints[0].x},100 ${plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} ${plotPoints.at(-1).x},100`} />
+              <polyline points={plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} />
+            </svg>
+          </li>
+        ) : null}
         {plottedRounds.map((round, index) => {
           const value = Number(round.score) || 0
           const height = 34 + ((value - lowestScore) / scoreRange) * 66

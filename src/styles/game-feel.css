@@ -2835,3 +2835,337 @@
 .feedbackSettingsSheet .feedbackToggleControl > span { height: 36px !important; }
 .feedbackSettingsSheet .feedbackToggleControl > span::after { height: 28px !important; }
 .historyHighlightCard *:not(.historyHighlightStat) { background: none !important; filter: none !important; }
+
+/* ======================= Round 11 (run 2, round 5) ====================== */
+:root {
+    --gf-wood-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='260'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0035 0.11' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.08 0 0 0 0 0.02 0 0 0 2.4 -0.95'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+    --gf-brushed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='200'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.9' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.8 0 0 0 1.6 -0.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E");
+}
+
+/* ---- Fix: the S1 seal is stamped across the pass header, clear of the headline */
+.authPanel.authPass .authPassSeal {
+    top: -14px !important;
+    right: auto !important;
+    left: 50% !important;
+    translate: -50% 0;
+    width: 64px; height: 64px;
+    font-size: 22px;
+    background: radial-gradient(circle, rgb(255 236 200 / 30%), transparent 72%);
+}
+@media (max-width: 560px) {
+    .authPanel.authPass .authPassSeal { display: none; }
+}
+
+/* ---- A. Armory: the swap report is an instrument readout ---------------- */
+.armorySwapReport {
+    position: relative;
+    padding: 30px 16px 12px !important;
+    border: 3px solid #040912 !important;
+    border-radius: 10px !important;
+    background:
+        radial-gradient(circle at 12px 12px, #9fb3cc 0 3px, #040912 3.5px 4.5px, transparent 5px),
+        radial-gradient(circle at calc(100% - 12px) 12px, #9fb3cc 0 3px, #040912 3.5px 4.5px, transparent 5px),
+        radial-gradient(circle at 12px calc(100% - 12px), #9fb3cc 0 3px, #040912 3.5px 4.5px, transparent 5px),
+        radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), #9fb3cc 0 3px, #040912 3.5px 4.5px, transparent 5px),
+        repeating-linear-gradient(180deg, rgb(110 255 170 / 0%) 0 2px, rgb(110 255 170 / 4%) 2px 3px),
+        radial-gradient(ellipse at 50% 40%, #0b1f1a, #030a0a 80%) !important;
+    box-shadow: inset 0 0 0 3px #2b3a52, inset 0 0 0 5px #040912, inset 0 0 28px rgb(0 0 0 / 85%), 0 0 0 4px #1d2738, 0 0 0 6px #040912, 0 6px 0 5px #040912 !important;
+}
+.armorySwapReport .armorySwapReportHead { color: #6dff9c !important; text-shadow: 0 0 6px rgb(109 255 156 / 60%); }
+.armorySwapReport .armorySwapReportHead * { color: inherit !important; }
+.armorySwapReport .armorySwapReportRow {
+    border: 0 !important;
+    border-bottom: 1px dashed rgb(109 255 156 / 22%) !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+.armorySwapReport .armorySwapReportRow:last-child { border-bottom: 0 !important; }
+.armorySwapReport .armorySwapReportName { color: #c8ffd9 !important; font-family: var(--ca-font-display); font-weight: 400 !important; letter-spacing: 0.04em; }
+.armorySwapReport .armorySwapReportFrom { color: rgb(109 255 156 / 55%) !important; font-family: var(--ca-font-display); }
+.armorySwapReport .armorySwapReportTo {
+    min-width: 92px;
+    padding: 2px 8px;
+    text-align: right;
+    border: 2px solid #12251c;
+    border-radius: 3px;
+    background: #010504;
+    box-shadow: inset 0 0 8px rgb(0 0 0 / 90%);
+    font-family: var(--ca-font-display);
+    font-weight: 400 !important;
+    color: #6dff9c !important;
+    text-shadow: 0 0 8px rgb(109 255 156 / 75%);
+}
+.armorySwapReport .armorySwapReportRow:is(.isLoss, .isWorse, .isNegative, .is-loss, .is-worse) .armorySwapReportTo { color: #ff6b5a !important; text-shadow: 0 0 8px rgb(255 90 70 / 75%); }
+.armorySwapReport .armorySwapReportPreview { background: #6dff9c !important; color: #03140a !important; }
+
+/* ---- A. Armory: part cards are cartridges plugged into a socket tray ---- */
+.armoryPartsShelf {
+    isolation: isolate;
+    padding: 12px !important;
+    border: 3px solid #040912 !important;
+    border-radius: 10px !important;
+    background:
+        repeating-linear-gradient(90deg, rgb(255 255 255 / 3%) 0 1px, transparent 1px 6px),
+        linear-gradient(180deg, #0a111d, #050a12) !important;
+    box-shadow: inset 0 6px 14px rgb(0 0 0 / 70%), inset 0 0 0 2px #1b2638 !important;
+}
+.armoryPartsShelf .armoryPartCard {
+    position: relative;
+    padding-bottom: 20px !important;
+    border-radius: 12px 12px 4px 4px !important;
+    background:
+        repeating-linear-gradient(180deg, rgb(255 255 255 / 10%) 0 2px, transparent 2px 6px) top / 100% 18px no-repeat,
+        linear-gradient(180deg, #34425a, #1d2638 70%, #151c2a) !important;
+}
+.armoryPartsShelf .armoryPartCard::after {
+    content: "";
+    position: absolute; z-index: 2;
+    left: 22%; right: 22%; bottom: 4px; height: 11px;
+    border: 2px solid #040912;
+    border-radius: 2px;
+    background: repeating-linear-gradient(90deg, #ffd56a 0 5px, #8a5a14 5px 6px, #2a1a06 6px 9px);
+    box-shadow: 0 0 0 3px #0b111b;
+    pointer-events: none;
+}
+.armoryPartsShelf .armoryPartCard .armoryPartLabel {
+    display: inline-block;
+    padding: 2px 10px;
+    border: 2px solid #040912;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #fbf2da, #e6d3a6);
+    color: #1a1208 !important;
+    -webkit-text-fill-color: #1a1208;
+    text-shadow: none !important;
+    box-shadow: 0 2px 0 #040912;
+}
+.armoryPartsShelf .armoryPartCard.isLocked .armoryPartLabel { background: linear-gradient(180deg, #b8bec8, #8d95a3); opacity: 0.8; }
+.armoryPartsShelf .armoryPartCard.isInstalled { box-shadow: 0 0 0 3px #6dff9c, 0 0 18px rgb(109 255 156 / 35%) !important; }
+
+/* ---- B. Ladder: one recessed control rail; rows are engraved nameplates - */
+.leaderboardControls {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+    border: 3px solid #040912;
+    border-radius: 12px;
+    background:
+        repeating-linear-gradient(90deg, rgb(255 255 255 / 2.5%) 0 2px, transparent 2px 6px),
+        linear-gradient(180deg, #050a13, #0b1424);
+    box-shadow: inset 0 6px 12px rgb(0 0 0 / 70%), inset 0 -2px 0 rgb(255 255 255 / 6%), 0 0 0 3px #1d2a40, 0 0 0 5px #040912;
+    margin-bottom: 14px;
+}
+.leaderboardControls .leaderboardControlRow { display: contents !important; }
+.leaderboardControls .leaderboardBoardTabs { flex: none; border-bottom: 0 !important; gap: 4px !important; }
+.leaderboardControls .leaderboardBoardTab {
+    border-radius: 6px !important;
+    padding-inline: 12px !important;
+    min-height: 44px;
+}
+.leaderboardControls .leaderboardSearchField { flex: 1 1 200px; min-width: 180px; margin: 0 !important; }
+.leaderboardControls .leaderboardViewToggle { flex: none; margin: 0 !important; }
+.leaderboardControls .leaderboardPagination { flex-basis: 100%; }
+
+.ladderPlate .ladderPlateIdentity {
+    justify-self: start;
+    max-width: 100%;
+    padding: 5px 16px 5px 5px;
+    border: 2px solid #040912;
+    border-radius: 999px 10px 10px 999px;
+    background:
+        var(--gf-brushed),
+        linear-gradient(180deg, color-mix(in srgb, var(--plate-trim) 55%, #fff) 0%, var(--plate-trim) 45%, color-mix(in srgb, var(--plate-trim) 60%, #040912) 100%);
+    background-size: 600px 200px, auto;
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 55%), inset 0 -3px 0 rgb(0 0 0 / 30%), 0 3px 0 #040912;
+}
+.ladderPlate .ladderPlateIdentity .leaderboardPlayerName {
+    color: #1a1208 !important;
+    -webkit-text-fill-color: #1a1208;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 55%), 0 -1px 0 rgb(0 0 0 / 35%) !important;
+}
+.ladderPlate .ladderPlateIdentity .leaderboardPlayerPortrait {
+    box-shadow: 0 0 0 3px #040912, 0 0 0 7px #2b3447, 0 0 0 8px rgb(255 255 255 / 35%), 0 0 0 10px #040912 !important;
+}
+.ladderPlate .ladderPlateIdentity .leaderboardTierBadge { background: rgb(4 9 18 / 80%) !important; }
+.ladderPlate.isCurrentUser { --plate-trim: #7fe0ff; }
+
+/* ---- C. Duels: a real wooden counter under a lamp ---------------------- */
+.duelFightComposer .duelRunTokens {
+    padding: 30px 18px 34px !important;
+    border-top: 0 !important;
+    background:
+        radial-gradient(ellipse 42% 85% at 50% 0%, rgb(255 214 140 / 42%), rgb(255 190 110 / 12%) 55%, transparent 75%),
+        linear-gradient(180deg, transparent 0 18px, rgb(0 0 0 / 0%) 18px, transparent 100%),
+        var(--gf-wood-grain),
+        linear-gradient(180deg, #a86b34 0%, #8c5526 50%, #6e3f1a 100%) !important;
+    background-size: auto, auto, 600px 240px, auto !important;
+    box-shadow: inset 0 -14px 20px rgb(0 0 0 / 45%), inset 0 3px 0 rgb(255 220 170 / 25%) !important;
+}
+/* the counter's front edge: a bevelled lip with a dark underside */
+.duelFightComposer .duelRunTokens::after {
+    content: "";
+    position: absolute; left: 0; right: 0; bottom: 0; height: 18px;
+    background:
+        var(--gf-wood-grain),
+        linear-gradient(180deg, #d79a5a 0 3px, #8a5226 3px 12px, #4a2a10 12px 15px, #040912 15px);
+    background-size: 600px 240px, auto;
+    pointer-events: none;
+}
+/* the run tokens cast contact shadows on the counter */
+.duelFightComposer .duelRunTokens .duelReplayCard {
+    filter: drop-shadow(0 18px 8px rgb(30 12 0 / 70%));
+}
+.duelFightComposer .duelLaunchStep {
+    background:
+        var(--gf-wood-grain),
+        linear-gradient(180deg, #5a3416, #3a200c 60%, #24130a) !important;
+    background-size: 600px 240px, auto !important;
+    box-shadow: inset 0 10px 14px rgb(0 0 0 / 55%) !important;
+}
+
+/* ---- D. History: plaques with a bevel and an emblem; trend is a plot ---- */
+.historyHighlightCard {
+    position: relative;
+    padding-left: 104px !important;
+    background:
+        var(--gf-brushed),
+        linear-gradient(180deg, #f3d382 0%, #d9a843 40%, #b07f2c 75%, #8a5e1c 100%) !important;
+    background-size: 600px 200px, auto !important;
+    box-shadow:
+        inset 3px 3px 0 rgb(255 245 205 / 85%),
+        inset -3px -3px 0 rgb(80 50 10 / 75%),
+        inset 0 0 0 6px #9a6a22,
+        inset 0 0 0 8px #5a3a0e,
+        inset 0 0 0 9px rgb(255 235 180 / 60%),
+        0 6px 0 #040912 !important;
+}
+.historyHighlightCard::before {
+    content: "★";
+    position: absolute; left: 22px; top: 50%; translate: 0 -50%;
+    width: 64px; height: 64px;
+    display: grid; place-items: center;
+    border: 3px solid #5a3a0e;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 30%, #fff1c0, #e2b04a 55%, #9a6a22);
+    box-shadow: inset 0 3px 0 rgb(255 255 255 / 60%), inset 0 -4px 0 rgb(80 50 10 / 50%), 0 3px 0 #5a3a0e;
+    color: #6a440e;
+    font-size: 34px;
+    line-height: 1;
+    text-shadow: 0 1px 0 rgb(255 245 205 / 80%), 0 -1px 0 rgb(60 35 5 / 60%);
+}
+.historyHighlightCard + .historyHighlightCard::before,
+.historyHighlightCard:nth-child(2)::before { content: "▲"; font-size: 28px; }
+.historyHighlightCard * {
+    color: #3a2306 !important;
+    -webkit-text-fill-color: #3a2306 !important;
+    text-shadow: 0 1px 0 rgb(255 245 205 / 85%), 0 -1px 0 rgb(60 35 5 / 55%) !important;
+}
+
+.historyTrajectory .historyClimb {
+    height: 250px !important;
+    padding: 70px 26px 30px !important;
+    gap: 0 !important;
+    background:
+        linear-gradient(180deg, transparent calc(100% - 32px), #3a5a86 calc(100% - 32px) calc(100% - 30px), transparent calc(100% - 30px)),
+        repeating-linear-gradient(180deg, transparent 0 29px, rgb(120 170 230 / 16%) 29px 30px),
+        repeating-linear-gradient(90deg, transparent 0 59px, rgb(120 170 230 / 8%) 59px 60px),
+        linear-gradient(180deg, #03070d, #08111d) !important;
+}
+.historyTrajectory .historyClimbLine {
+    position: absolute;
+    top: 70px; bottom: 30px; left: 26px; right: 26px;
+    list-style: none;
+    pointer-events: none;
+}
+.historyTrajectory .historyClimbLine svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.historyTrajectory .historyClimbLine polyline {
+    fill: none;
+    stroke: var(--line-tone, #ffc94a);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    filter: drop-shadow(0 0 4px rgb(255 200 80 / 70%));
+}
+.historyTrajectory .historyClimbLine polygon { fill: var(--line-tone, #ffc94a); opacity: 0.14; }
+.historyTrajectory .historyClimbStep { position: relative; }
+.historyTrajectory .historyClimbStep::before {
+    content: "";
+    position: absolute; left: 50%; bottom: 0;
+    height: var(--climb);
+    border-left: 2px dashed color-mix(in srgb, var(--tone) 40%, transparent);
+}
+.historyTrajectory .historyClimbPillar {
+    position: absolute !important;
+    left: 50%; bottom: var(--climb);
+    width: 16px !important; height: 16px !important;
+    translate: -50% 50%;
+    border: 3px solid #040912 !important;
+    border-radius: 50% !important;
+    background: var(--tone) !important;
+    opacity: 1 !important;
+    box-shadow: 0 0 0 2px var(--tone), 0 0 12px var(--tone) !important;
+    filter: none !important;
+    z-index: 2;
+}
+.historyTrajectory .historyClimbMedal {
+    position: absolute !important;
+    left: 50%; bottom: calc(var(--climb) + 16px);
+    translate: -50% 0;
+    z-index: 2;
+}
+
+/* ---- E. Profile: the scouting report fills the column; a real trophy shelf */
+.profileSheetMain { display: flex !important; flex-direction: column; }
+.profileSheetMain .profileSignalBand { flex: 1; align-content: center; }
+.profileSheetMain .profileSignalBand .profileFormTokens > li,
+.profileSheetMain .profileSignalBand [class*="FormCoin"] { transform: scale(1.18); }
+
+.achievementsViewport .achievementTile::after { display: none !important; }
+.profileAchievementsSection .achievementsViewport {
+    padding-bottom: 34px !important;
+    background:
+        radial-gradient(ellipse 9% 55% at 10% 18%, rgb(255 220 150 / 22%), transparent 70%),
+        radial-gradient(ellipse 9% 55% at 30% 18%, rgb(255 220 150 / 22%), transparent 70%),
+        radial-gradient(ellipse 9% 55% at 50% 18%, rgb(255 220 150 / 30%), transparent 70%),
+        radial-gradient(ellipse 9% 55% at 70% 18%, rgb(255 220 150 / 14%), transparent 70%),
+        radial-gradient(ellipse 9% 55% at 90% 18%, rgb(255 220 150 / 14%), transparent 70%),
+        linear-gradient(180deg, #2a1420, #170a12) !important;
+}
+.profileAchievementsSection .achievementsRow { padding-bottom: 30px; }
+.profileAchievementsSection .achievementsRow::after {
+    content: "";
+    position: absolute; left: -10px; right: -10px; bottom: 0; height: 26px;
+    border: 3px solid #040912;
+    border-radius: 3px;
+    background:
+        var(--gf-wood-grain),
+        linear-gradient(180deg, #d7a066 0 5px, #9a6232 5px 16px, #5a3416 16px);
+    background-size: 600px 240px, auto;
+    box-shadow: 0 8px 12px rgb(0 0 0 / 55%);
+}
+.profileAchievementsSection .achievementMedalDisc { transform: scale(1.4) !important; }
+.profileAchievementsSection .achievementTile .achievementTileHeader { margin-bottom: 16px; }
+/* fit: the readout and cartridge tray stay above the fold */
+.armorySwapReport { padding: 12px 14px 6px !important; }
+.armorySwapReport .armorySwapReportRow { padding-block: 3px !important; min-height: 0 !important; }
+.armoryPartsShelf { padding: 6px !important; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard { padding-top: 6px !important; padding-bottom: 18px !important; min-height: 0 !important; gap: 4px !important; }
+.armoryPartsShelf .armoryPartCard::after { bottom: 3px; height: 9px; }
+.ladderPlate .ladderPlateIdentity { gap: 22px !important; }
+.authPanel.authPass .authPassSeal { left: calc(50% + 26px) !important; }
+/* one wide texture tile so no seam shows across a counter or shelf */
+.duelFightComposer .duelRunTokens { background-size: auto, auto, 1500px 260px, auto !important; }
+.duelFightComposer .duelRunTokens::after,
+.duelFightComposer .duelLaunchStep,
+.profileAchievementsSection .achievementsRow::after { background-size: 1500px 260px, auto !important; }
+.historyHighlightCard, .ladderPlate .ladderPlateIdentity { background-size: 1500px 200px, auto !important; }
+.profileSheetMain .profileSignalBand { align-content: space-evenly !important; }
+.profileAchievementsSection .achievementsViewport { padding-bottom: 16px !important; }
+.historyTrajectory .historyClimbStep .historyClimbPillar { width: 16px !important; height: 16px !important; }
+.armoryPartsGallery { row-gap: 10px !important; gap: 10px !important; }
+.armoryPartsGallery > .armoryPartsShelf { margin-top: 0 !important; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph { width: 30px !important; height: 30px !important; }
+.profileSheetMain .profileSignalBand { align-content: center !important; row-gap: 34px !important; }
+.profileSheetMain .profileSignalBand .profileFormTokens > li { transform: scale(1.32) !important; margin-inline: 4px; }
