@@ -46,3 +46,10 @@ Picks came from `i12-decisions.md`. Every claim below was checked in a 100% crop
 - History plot line and log tickets.
 
 Any differences in those captures are from animated backgrounds. Settings also shows the changed Play lobby behind the sheet.
+
+## Corrections after judging
+- **Profile height:** the scouting report did not shrink. It grew, and the competitor card stretched down to meet it (Sol).
+- **Duels planks:** the counter shows four horizontal plank courses, not two (Sol). The texture visibly repeats its knots across the counter (Qwen).
+- **Duels lamp and shadows:** the lamp pool is mild and the counter reads nearly evenly lit (Opus, Qwen). The token shadows read as soft drops (Opus).
+- **Profile shelf:** the per-trophy contact shadows are not visible at 100%, and the shelf crosses the locked trophies' ribbons (Opus).
+- **Ladder engraving:** the engraved stat recess is near-invisible at 100% to Opus. Qwen and Gemini saw it.
