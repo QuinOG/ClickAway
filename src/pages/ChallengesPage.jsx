@@ -76,6 +76,11 @@ function ChallengeCard({
         <span className="challengeVersusBadge">VS</span>
         <span className="challengeVersusSide isRival"><PlayerPortrait name={opponentLabel || "Rival"} size={52} /></span>
       </div>
+      <span className="challengeTicketPrint" aria-hidden="true">
+        <b>Ghost duel · admit two</b>
+        <i>No. {String(challenge.id ?? "0").replace(/\D/g, "").padStart(6, "0").slice(-6)}</i>
+        <em>{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })} rules</em>
+      </span>
       <div className="challengeCardHeader">
         <div className="challengeRivalIdentity">
           <span className="challengeRivalCrest" aria-hidden="true">

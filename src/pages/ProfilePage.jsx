@@ -123,9 +123,15 @@ function AttributeRow({ icon, label, detail, value, fill, isStrongest = false })
         <strong>{label}</strong>
         <small>{detail}</small>
       </span>
-      <span className="profileAttributeGauge" aria-hidden="true">
-        {Array.from({ length: GAUGE_PIPS }, (_, index) => <i key={index} className={index < lit ? "isLit" : ""} />)}
-      </span>
+      <svg className="profileAttributeDial" viewBox="0 0 100 58" aria-hidden="true">
+        <path className="profileDialTrack" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" />
+        <path className="profileDialFill" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" strokeDasharray={`${(lit / GAUGE_PIPS) * 100} 100`} />
+        {Array.from({ length: 11 }, (_, index) => (
+          <line key={index} className="profileDialTick" x1="50" y1="5" x2="50" y2={index % 5 === 0 ? 13 : 10} transform={`rotate(${-90 + index * 18} 50 52)`} />
+        ))}
+        <line className="profileDialNeedle" x1="50" y1="52" x2="50" y2="18" transform={`rotate(${-90 + (lit / GAUGE_PIPS) * 180} 50 52)`} />
+        <circle className="profileDialHub" cx="50" cy="52" r="5" />
+      </svg>
       <strong className="profileAttributeValue">{value}</strong>
       {isStrongest ? <span className="profileInstrumentTag">Signature</span> : null}
     </li>
