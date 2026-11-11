@@ -5,17 +5,7 @@ description: ClickawayRSI — the recursive self-improvement loop for ClickAway'
 
 # ClickawayRSI
 
-Recursive self-improvement loop for ClickAway's UI/UX. **The skill improves itself too:** the last step of every run is updating `## Lessons` and `- On Windows, `python open()` without `encoding='utf-8'` writes cp1252: always pass the encoding when editing JSX/CSS, or non-ASCII characters like `·` get corrupted and render as missing-glyph boxes.
-- Bash heredocs choke on CSS that contains single-quoted data URIs. Write the block with the Write tool to the scratchpad, then `cat >>` it.
-- Before overriding a component's `::before`/`::after`, grep for its existing pseudo rules: inherited `top`/`width`/`height`/`overflow:hidden` silently break the new art (the shop shelf took three tries).
-- The world art in `.arenaWorldArt` sits behind a 0.34 opacity layer and a `path { fill: none }` rule. New filled shapes need CSS fills, not SVG attributes.
-- Keep helper scripts in the skill folder (`gh.sh`, `post_round.py`, `update_pr_body.py`, `skins.py`), not the scratchpad: the scratchpad is wiped between sessions.
-
-- After ~3 rounds of chrome, the judges converge on **art**: stock or photo assets are the loudest "not a game" tell. The fix that works is a generated SVG set in one hand (`public/skins/`, generator `.claude/skills/clickaway-rsi/skins.py`: ink outline, top-left light, flat base, cel crescent, highlight). Render a contact sheet with Playwright and fix clipping before wiring it in.
-- Class-name attribute selectors are case-sensitive: the history tone classes are `isRanked` / `isCasual` / `isPractice`, so `[class*="ranked"]` never matches.
-- In `.arenaWorldArt`, CSS `fill:none` beats SVG fill attributes. Use JSX `style={{ fill }}` for per-shape colours.
-
-## Run log` below.
+Recursive self-improvement loop for ClickAway's UI/UX. **The skill improves itself too:** the last step of every run is updating `## Lessons` and `## Run log` below.
 
 Before starting, restate the task to the user in 3–4 lines: who's on the council, the stop rule, and what this run is focusing on.
 
@@ -32,6 +22,7 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - Judge brief: `docs/ui-polish/game-feel/brief.md` (scale, ≤350-word reply format).
 - Reference bar: `docs/ui-polish/standards/standard-1..4.jpg`
 - Shots: `docs/ui-polish/game-feel/iN/`, change notes `docs/ui-polish/game-feel/iN-changes.md`
+- Run `npx playwright test tests/e2e/release-matrix.spec.js` when JSX changed. As of r5, three Armory tests fail on the pre-round code too (laptop clipped actions, armory a11y, armory install); don't chase them as regressions.
 - Main stylesheet for this work: `src/styles/game-feel.css` (imported last in `src/styles/app.css`). Shared frame/world SVGs live there as `--gf-frame` / `--gf-world` data URIs; `#` must be written as `%23`.
 
 ## Loop (one round)
@@ -84,13 +75,20 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
 - Bash heredocs choke on CSS that contains single-quoted data URIs. Write the block with the Write tool to the scratchpad, then `cat >>` it.
 - Before overriding a component's `::before`/`::after`, grep for its existing pseudo rules: inherited `top`/`width`/`height`/`overflow:hidden` silently break the new art (the shop shelf took three tries).
 - The world art in `.arenaWorldArt` sits behind a 0.34 opacity layer and a `path { fill: none }` rule. New filled shapes need CSS fills, not SVG attributes.
+- Edit this file with the Edit tool, not a script. The words "## Run log" also appear in the intro sentence, and a script matching them corrupted the header twice.
 - Keep helper scripts in the skill folder (`gh.sh`, `post_round.py`, `update_pr_body.py`, `skins.py`), not the scratchpad: the scratchpad is wiped between sessions.
 
 - After ~3 rounds of chrome, the judges converge on **art**: stock or photo assets are the loudest "not a game" tell. The fix that works is a generated SVG set in one hand (`public/skins/`, generator `.claude/skills/clickaway-rsi/skins.py`: ink outline, top-left light, flat base, cel crescent, highlight). Render a contact sheet with Playwright and fix clipping before wiring it in.
 - Class-name attribute selectors are case-sensitive: the history tone classes are `isRanked` / `isCasual` / `isPractice`, so `[class*="ranked"]` never matches.
 - In `.arenaWorldArt`, CSS `fill:none` beats SVG fill attributes. Use JSX `style={{ fill }}` for per-shape colours.
 
+- Check catalog scale before redrawing an asset: the "lost translucency" bubble was `shopImageScale: 250` cropping its rim, not the art.
+- In the arena, `.arenaFloor` is a perspective plane: at rotateX(62deg) it collapses into a strip at the bottom. Use ~35deg with `top: 20%` so painted floor art is visible.
+- `font: 800 11px var(--x, inherit)` is invalid (inherit can't sit inside a shorthand), so the whole declaration is dropped. Use separate font-weight/font-size.
+
+
 ## Run log
 - 2026-11-11 run 1 (branch `game-feel-council`, PR #12): i0 Sol 6.6 / Terra 6.8 / Opus 6.4 → i1 7.1 / 6.8 / 6.5 (global frames, world, titles, ladder plaques, console switches). i2 7.3 / 7.0 / 7.2 (login title screen, illustrated Help, results ceremony, history climb, duels VS, ladder tabs). i3 7.4 / 7.0 / 7.1 (shop storefront, profile trophy cabinet, settings console, arena crowd). i4 7.7 / 7.2 / 7.5 (illustrated SVG item set, painted arena crowd, history tickets, settings ribbon/gold apply, fewer brackets).
   - Decision model added after i4. **Re-ran the council on i4 with the new brief** (DON'T BOTHER / PROTECT / estimates) before round 5. Build `i5-decisions.md` from those replies; it supersedes the plan below.
-  - Earlier plan: **NEXT = round 5 (2 rounds left in run 1).** Consensus plan: (1) Help → illustrated field manual: side chapter tabs, paper/metal pages, FAQ as pages, fewer small cards — biggest drag per Opus; (2) Ladder → dimensional winners' podium (stepped platforms, big portraits, tier crests) + rank plaques of varying weight, own row distinct, drop header row; (3) Arena → paint floor/rails/trusses (no cyan wireframe), add foreground element + haze; (4) Shop → featured legendary on a big pedestal above compact trays, rarity-specific card presentation; (5) Global display numeral face for hero numbers + condensed micro-label face (self-host via @fontsource; check package availability offline first); (6) Duels confrontation layout if time. Capture to i5, PREVIOUS_DIR=i4.
+  - r5 shipped (`07a487f`): painted arena stadium, Help 4-panel round strip and chapters, Duels fight card, Ladder metal plates, plus fixes for the bubble scale and the ticket notch. Council on i5 is running; record its scores against the predictions in `i5-decisions.md`.
+  - Earlier plan (superseded): **NEXT = round 5 (2 rounds left in run 1).** Consensus plan: (1) Help → illustrated field manual: side chapter tabs, paper/metal pages, FAQ as pages, fewer small cards — biggest drag per Opus; (2) Ladder → dimensional winners' podium (stepped platforms, big portraits, tier crests) + rank plaques of varying weight, own row distinct, drop header row; (3) Arena → paint floor/rails/trusses (no cyan wireframe), add foreground element + haze; (4) Shop → featured legendary on a big pedestal above compact trays, rarity-specific card presentation; (5) Global display numeral face for hero numbers + condensed micro-label face (self-host via @fontsource; check package availability offline first); (6) Duels confrontation layout if time. Capture to i5, PREVIOUS_DIR=i4.
