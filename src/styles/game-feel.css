@@ -5033,3 +5033,14 @@
 .helpDoc .helpPowerupCards .helpPowerupCard { align-items: flex-start !important; }
 .helpDoc .helpPowerupCards .helpPowerupCard > .helpPowerupEmblem { margin-top: 0 !important; align-self: flex-start !important; }
 .faqList .faqItem { align-content: start; row-gap: 8px; }
+
+/* Round 46: Spec sheet - Performance profile as a bare section like the others */
+.armorySpecSheet .armorySpecSheetPanel.armorySpecProfile { padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; }
+.armorySpecSheet .armorySpecProfile > .armorySpecSheetPanelTitle { margin-bottom: 6px; }
+
+/* Round 46: Compare - room for its full bottom padding */
+.armoryCompareBench.armoryCompareWorkshop { top: 96px; max-height: calc(100dvh - 104px); }
+
+/* Round 46: More menu - icons and labels on one line per row */
+.mobileMoreTile.mobileMoreTile-shop, .mobileMoreTile.mobileMoreTile-duels { padding: 22px 8px 18px !important; }
+.mobileMoreTile .mobileMoreHistoryClock { margin-block: 5px; }
