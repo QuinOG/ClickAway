@@ -1,7 +1,7 @@
 # Security Interpretation And Realization For ClickAway
 
 ## Scope
-This document interprets the required secure-programming topics for the ClickAway project and connects them to the current React + Express + SQLite/MySQL implementation. The goal is not only to name the security ideas, but to show how they should be realized in this codebase.
+This document interprets the required secure-programming topics for the ClickAway project and connects them to the current React + Express + Supabase Postgres implementation. The goal is not only to name the security ideas, but to show how they should be realized in this codebase.
 
 ## Security Requirements
 For this project, the main security requirements are:
@@ -27,11 +27,11 @@ Realization in this project:
 
 Current examples:
 - [server/index.js](server/index.js) validates usernames and passwords before account creation.
-- [server/db.js](server/db.js) normalizes progress data and falls back to default values.
+- [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js) normalizes progress input and falls back to default values in `normalizeProgressInput`.
 - [server/playerStateStore.js](server/playerStateStore.js) checks item ownership and coin balance before purchase/equip actions.
 
 Recommended next realization steps:
-- Add schema-level validation for every request body, especially `/api/progress`.
+- Add schema-level validation for the remaining request bodies, especially challenge and round-completion payloads.
 - Cap numeric ranges such as coins, XP, MMR, and history lengths to prevent unrealistic or malicious payloads.
 
 ### Robust Programming
@@ -44,12 +44,12 @@ Realization in this project:
 - Make route handlers return controlled responses instead of crashing the process.
 
 Current examples:
-- `parseJsonArray` in [server/db.js](server/db.js) returns an empty array on malformed JSON.
-- `toNonNegativeNumber` in [server/db.js](server/db.js) prevents negative persisted counters.
-- `normalizePlayerState` in [server/playerStateStore.js](server/playerStateStore.js) sanitizes response data before returning it.
+- `toNonNegativeNumber` and `normalizeProgressInput` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js) coerce missing or malformed numeric progress fields to safe defaults.
+- `normalizeOwnedItemIds` and `resolveEquippedItemId` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js) discard unknown or unowned cosmetic ids and fall back to the defaults.
+- `normalizeProgressPayload` and `clampProgressBounds` in [server/index.js](server/index.js) limit `PUT /api/progress` to client-controlled fields and clamp coins, XP, and MMR.
 
 Gap:
-- The progress update endpoint currently merges client-provided progress too broadly. It normalizes shape, but it does not fully verify whether each field is semantically valid.
+- `PUT /api/progress` accepts only the client-controlled fields listed in `normalizeProgressPayload`; coins, XP, MMR, history, and unlocked achievements are server-owned and recomputed. Client-controlled identifiers such as `selectedModeId` are normalized but not checked against the mode catalog at this endpoint.
 
 ### Defensive Programming
 Interpretation:
@@ -64,7 +64,7 @@ Realization in this project:
 Current examples:
 - `resolveMappedItemOrThrow` in [server/playerStateStore.js](server/playerStateStore.js) rejects invalid item IDs.
 - `requireAuth` in [server/index.js](server/index.js) blocks unauthenticated access.
-- MySQL purchase/equip flows use transactions in [server/playerStateStore.js](server/playerStateStore.js).
+- Purchase and equip flows use transactions through the mysql2-compatible Postgres shim in [server/playerStateStore.js](server/playerStateStore.js).
 
 ## Security Best Practices
 
@@ -78,11 +78,11 @@ Realization:
 - Reject values outside allowed ranges rather than silently accepting everything.
 
 Current examples:
-- `validateUsername` and `validatePassword` in [server/index.js](server/index.js).
-- `normalizeProgressRecord` and `serializeProgress` in [server/db.js](server/db.js).
+- `validateUsername` and `validatePassword` in [server/validation.js](server/validation.js).
+- `normalizeProgressInput` and `saveUserProgress` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js).
 
 Recommended improvement:
-- Add whitelist validation for `selectedModeId`, `ownedItemIds`, `unlockedAchievementIds`, and each `roundHistory` entry before saving.
+- Validate `selectedModeId` against the mode catalog before saving; the endpoint currently accepts any string.
 
 ### Cover all cases - use defaults to handle cases not explicitly covered
 Interpretation:
@@ -93,9 +93,9 @@ Realization:
 - Handle missing auth headers, missing records, and invalid JSON cleanly.
 
 Current examples:
-- `DEFAULT_PROGRESS` in [server/db.js](server/db.js).
-- Default equipped IDs and normalized state in [server/playerStateStore.js](server/playerStateStore.js).
-- Fallback API messages in [src/services/api.js](src/services/api.js).
+- `DEFAULT_PROGRESS` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js).
+- Default equipped ids and catalog-backed state in [server/serverShopCatalogIdMappings.js](server/serverShopCatalogIdMappings.js).
+- Fallback API messages in [src/services/clickAwayHttpApiClient.js](src/services/clickAwayHttpApiClient.js).
 
 ### Catch and handle exceptions at the lowest level possible
 Interpretation:
@@ -107,9 +107,9 @@ Realization:
 - Unexpected errors should be logged server-side and returned as generic failures.
 
 Current examples:
-- `parseJsonArray` catches malformed JSON inside [server/db.js](server/db.js).
+- `normalizeProgressInput` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js) defaults malformed numeric and list fields instead of throwing.
 - `handleRouteError` in [server/index.js](server/index.js) maps known errors to safe responses.
-- API wrappers in [src/services/api.js](src/services/api.js) convert transport errors into user-facing messages.
+- API wrappers in [src/services/clickAwayHttpApiClient.js](src/services/clickAwayHttpApiClient.js) convert transport errors into user-facing messages.
 
 ### Avoidance of risky coding constructs
 Interpretation:
@@ -120,7 +120,7 @@ Realization:
 - Prefer parameterized SQL queries and controlled data mapping.
 
 Current examples:
-- Database access uses prepared statements in SQLite and parameterized queries in MySQL.
+- Database access uses parameterized Postgres queries through the pool shim in [server/db/pgPool.js](server/db/pgPool.js).
 - The frontend does not use `dangerouslySetInnerHTML` in the main app flow.
 
 ### Avoid information leakage through error messages
@@ -158,8 +158,8 @@ Realization:
 - Clone arrays when saving or deriving state.
 
 Current examples:
-- [server/db.js](server/db.js) serializes arrays through `JSON.stringify`, which breaks external references before persistence.
-- [server/playerStateStore.js](server/playerStateStore.js) rebuilds owned item arrays with `Array.from(new Set(...))`.
+- [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js) deduplicates and filters owned item ids with `normalizeStringList` and `normalizeOwnedItemIds`, and serializes JSON columns with `JSON.stringify` before persistence.
+- [server/playerStateStore.js](server/playerStateStore.js) builds response objects from database reads instead of reusing request-body references.
 
 Recommended improvement:
 - Continue avoiding direct mutation of request bodies and shared state objects.
@@ -187,10 +187,10 @@ Realization:
 
 Current examples:
 - Purchase and equip verification in [server/playerStateStore.js](server/playerStateStore.js).
-- MySQL transactions around shop mutations in [server/playerStateStore.js](server/playerStateStore.js).
+- Postgres transactions around shop mutations in [server/playerStateStore.js](server/playerStateStore.js), using `beginTransaction()` backed by `BEGIN`/`COMMIT` in [server/db/pgPool.js](server/db/pgPool.js).
 
 Recommended improvement:
-- Treat `/api/progress` as a high-risk endpoint and verify server-owned fields more strictly instead of accepting full client authority over progression values.
+- Keep the `/api/progress` allowlist narrow and add explicit catalog checks for client-controlled identifiers.
 
 ### Authenticate
 Interpretation:
@@ -215,7 +215,7 @@ Project-relevant examples:
 - Forgetting to bound numeric values.
 - Returning detailed backend errors to the UI.
 - Failing to test invalid and adversarial inputs.
-- Inconsistent validation between SQLite and MySQL flows.
+- Inconsistent validation between the round-completion and progress-update paths.
 
 ## Buffer Overflows
 Interpretation:
@@ -224,7 +224,7 @@ Classic memory buffer overflows are less common in JavaScript because the runtim
 Realization in this project:
 - Bound input lengths such as usernames, passwords, and history payload sizes.
 - Be careful with large JSON request bodies and database-backed arrays.
-- Treat native modules such as `better-sqlite3` as trusted dependencies that still require cautious input handling.
+- Treat native modules and dependencies such as the `pg` client as trusted code that still requires cautious input handling.
 
 Practical note:
 - In this codebase, "buffer overflow" risk is more about oversized payloads and dependency/native-module risk than manual memory writes.
@@ -239,11 +239,11 @@ Realization in this project:
 - Reject `NaN`, `Infinity`, and nonsensical values.
 
 Current examples:
-- `toNonNegativeNumber` in [server/db.js](server/db.js).
-- `Math.max(0, ...)` coin normalization in [server/playerStateStore.js](server/playerStateStore.js).
+- `toNonNegativeNumber` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js).
+- `Math.max(0, ...)` coin, XP, and MMR clamping in [server/index.js](server/index.js).
 
 Gap:
-- The current code prevents negatives, but it does not yet impose strict upper bounds on all client-influenced numbers.
+- The server now clamps coins, XP, and MMR to fixed ceilings, but client-controlled ids and loadout content are normalized rather than checked against an allowlist.
 
 ## Static Analysis
 Interpretation:
@@ -345,4 +345,4 @@ Before submission, the team should verify:
 7. Team documentation records who implemented, tested, and reviewed each security-sensitive area.
 
 ## Conclusion
-In ClickAway, secure programming means more than adding authentication. It requires validating all external input, keeping authorization on the server, normalizing persisted state, returning safe error messages, and making TDD, pair programming, and code review part of the normal workflow. The project already includes good foundations such as password hashing, JWT authentication, normalized defaults, parameterized queries, and transactional updates in MySQL. The main remaining security focus should be stricter validation and verification of client-submitted progress data.
+In ClickAway, secure programming means more than adding authentication. It requires validating all external input, keeping authorization on the server, normalizing persisted state, returning safe error messages, and making TDD, pair programming, and code review part of the normal workflow. The project already includes good foundations such as password hashing, JWT authentication, normalized defaults, parameterized queries, and transactional updates in Postgres. The main remaining security focus should be stricter validation and verification of client-submitted progress data.
