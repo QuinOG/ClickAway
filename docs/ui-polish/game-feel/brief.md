@@ -6,10 +6,13 @@ Do NOT read source code. Judge from screenshots only. Edit nothing except REPLY_
 
 ## Steps
 1. View the reference standards in docs/ui-polish/standards/ (standard-1..4.jpg). They set the bar.
-2. View the PNGs in CURRENT_DIR. These are full-page captures at 1440px wide, so tall images include scrolled content.
+2. Open the screenshots. They are full-page captures at 1440px wide, so tall images include scrolled content.
+   - **No PREVIOUS_SCORES, or FULL_READ = yes:** open all 13 PNGs in CURRENT_DIR.
+   - **Otherwise:** open only the screens named in CHANGES_FILE, both the CURRENT_DIR and the PREVIOUS_DIR version. Do not open the other screens: they are byte-for-byte copies of last round's files, so there is nothing new to see.
 3. If PREVIOUS_SCORES is given, open it and find your own entry (JUDGE). It holds the screen scores you gave last round.
-   - **Screens not named in CHANGES_FILE:** keep your previous score. Change it only if you can name a specific defect you missed before, and write "re-scored:" with the reason.
+   - **Screens not named in CHANGES_FILE:** copy your previous score and blocker. On a FULL_READ, change a score only if you can name a specific defect you missed before, and write "re-scored:" with the reason.
    - **Screens named in CHANGES_FILE:** compare them with the same file in PREVIOUS_DIR, then re-score them.
+   - MOVE THE NEEDLE may still name an unchanged screen. Use your previous blocker for it.
 4. Verify every claim in CHANGES_FILE against the pixels. A claimed change that isn't visible at 100% goes in REGRESSIONS.
 
 ## Scale (per screen and overall)

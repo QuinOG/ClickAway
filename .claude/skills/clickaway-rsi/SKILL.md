@@ -27,7 +27,10 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
     - Claude usage was running ahead of schedule.
     Gemini's scores moved with Opus's (0.75 correlation over run 2), so its direction stays covered. Opus's strictness about overclaims is now covered by the ACCEPT crop checklist and Qwen's gate. If Claude usage allows, Opus (`claude-opus-5`, `{effort: "low"}`; `orchestrator_capabilities` with `search: "opus-5"` finds it) can be run once to audit a run's final round.
   - Gemini and Qwen stay at **medium** (user, 2026-11-11): the image trim below is enough, since they are only slightly over pace.
-  - Token budget (user, 2026-11-11): Gemini and Qwen were burning tokens fast, mostly on images (13 current + 13 previous PNGs, some 4600px tall). For them, add to the prompt: "Open all 13 CURRENT_DIR images, but open PREVIOUS_DIR images only for the screens named in CHANGES_FILE." Sol keeps the full set.
+  - **Image budget (user, 2026-11-11: cut only redundant work, never anything that costs judging signal):**
+    - `reuse_unchanged.py` makes every unchanged screen a byte-for-byte copy of last round's file. So under brief v2, judges open only the screens named in CHANGES_FILE (current plus previous, about 10 images instead of 26), and copy their previous scores for the rest.
+    - **Full read:** at a run's anchor read and on every third round after it (r16, r19, …), add `FULL_READ = yes` to the prompt. Judges then open all 13 and may re-score with a reason, which catches drift.
+    - **Kept on purpose:** full-resolution images (downscaling would hide fine detail) and the four reference standards each round (fresh judges need the bar). Gemini also runs every round; skipping it would lose signal.
   - Judges must read PNGs, so only image-input models qualify. Check `models.dev/api.json` → `modalities.input`.
   - Reserve: `opencode-go/grok-4.7` `{variant: "medium"}`. It takes images and supports medium, but has no public vision or design results yet.
   - Excluded because they lack a medium variant: Kimi K3.1 Pro (low/high/max) and Hy4 (none/high).
@@ -48,6 +51,9 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - Main stylesheet for this work: `src/styles/game-feel.css` (imported last in `src/styles/app.css`). Shared frame/world SVGs live there as `--gf-frame` / `--gf-world` data URIs; `#` must be written as `%23`.
 
 ## Loop (one round)
+0. **Usage hygiene (no effect on ratings):**
+   - **Usage limits:** if a judge or builder fails with a usage limit (for example "OpenCode Go 5 hour usage limit reached"), don't wait for the user. Schedule the resume with `schedule_task` (load it via ToolSearch) for just after the reset: the time the user gives, or 5h10m after the failure. Use a prompt such as "continue the ClickawayRSI test: rerun <judges> for iN", and tell the user when it will fire.
+   - **Viewing screenshots myself:** crop to the region in question with PIL into the scratchpad. Open whole full-page shots only for the first look at a newly built screen. Terra's ACCEPT check reports crop paths, so open those.
 1. **Capture:** `SHOT_DIR=docs/ui-polish/game-feel/iN npx playwright test tests/e2e/zz-app.spec.js --workers=1`. Before sending, open 2–3 of the shots yourself to catch broken captures (blurred, empty, cut off).
 2. **Council:** launch all judges with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md . Standards: …/docs/ui-polish/standards/. Read-only; do not edit anything.` End your turn; completions wake you.
 3. **Pick fixes (weighted, see "Decision model" below):** when all replies are in, build `docs/ui-polish/game-feel/i(N+1)-decisions.md` with the value table, picks, skips and predicted gains, then implement the picks.
@@ -75,7 +81,7 @@ Why: in run 2 every round landed between −0.17 and +0.25 on average, and Sol n
 The mechanics that answer each:
 1. **Per-screen scores with an anchor.** `brief.md` v2 makes each judge score all 13 screens, and OVERALL is their mean. Unchanged screens keep last round's score unless the judge names a missed defect. That removes the drift, so a gain on a changed screen shows up as a gain.
    - Prompt each judge with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. JUDGE = <sol|opus|gemini|qwen> ; CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md ; PREVIOUS_SCORES = …/i(N-1)-screens.json ; REPLY_FILE = …/replies/iN/<judge>.md . Standards: …/standards/.`
-   - Add the Gemini/Qwen extras from Council.
+   - For Gemini and Qwen, add: "Open every image the brief tells you to open with your file-read tool; do not judge from file names." Do **not** tell them to open every PNG, or they will reopen the unchanged copies.
    - Each judge writes its reply to REPLY_FILE and returns only the OVERALL line, which keeps four long replies out of the session context.
    - The first council of a run has no PREVIOUS_SCORES. It is the anchor read.
 2. **Arithmetic, not vibes.** `python .claude/skills/clickaway-rsi/council.py N` parses the replies and writes `iN-screens.json`, which becomes the next round's PREVIOUS_SCORES. It prints:
@@ -94,7 +100,7 @@ The mechanics that answer each:
 5. **Blind A/B gate (before committing and before the council).**
    - `python .claude/skills/clickaway-rsi/ab_gate.py make …/i(N-1) …/iN <scratchpad>/abN/pairs <changed screens>` copies each changed screen's before and after shots in a random X/Y order.
    - Then send one `delegate_task` to the gate judge (Sol, medium): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
-   - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
+   - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. **Do not launch the council until the gate passes.** Re-gate only the screens that were fixed. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
 6. **Ratchet.** After the council, a changed screen whose mean dropped, or that 2+ judges scored lower, is reverted to the previous round's CSS for that screen at the start of the next round. Undo that screen's section in the round's CSS block, unless the next round rebuilds it anyway. Keep per-round CSS grouped by screen to make this cheap.
 7. **Calibration file.** `docs/ui-polish/game-feel/calibration.json` holds `{judge: factor}`, which is the realized share of that judge's own claimed screen gains (start every judge at 0.5). After each round, set it to the running mean of (actual screen Δ ÷ claimed screen Δ) over the screens that were changed.
 
