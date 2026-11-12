@@ -137,7 +137,7 @@ function HistoryTrajectory({ rounds = [] }) {
   const range = highestScore - minScore
   const points = scores.map((value, index) => ({
     x: scores.length === 1 ? 50 : 5 + index * 90 / (scores.length - 1),
-    y: 88 - (range ? (value - minScore) / range * 36 : 18),
+    y: 80 - (range ? (value - minScore) / range * 30 : 15),
   }))
   const bestIndex = scores.lastIndexOf(highestScore)
   const scoreChange = scores.length > 1 ? scores.at(-1) - scores[0] : 0
@@ -162,7 +162,7 @@ function HistoryTrajectory({ rounds = [] }) {
       <div className="historyScoreboardTrack">
         {scores.length === 0 && <p className="historyScoreEmpty">No {modeLabel.toLowerCase()} rounds yet</p>}
         {scores.length > 1 && <svg className="historyScoreWire" viewBox="0 0 1000 108" preserveAspectRatio="none" aria-hidden="true"><path d={points.map((point, index) => index === 0 ? `M ${point.x * 10} ${point.y}` : `H ${point.x * 10} V ${point.y}`).join(" ")} /></svg>}
-        {plottedRounds.map((round, index) => <div key={round.id} className="historyScoreSocket" style={{ left: `${points[index].x}%`, top: `${points[index].y}px`, "--lamp": LINE_TONES[modeFilter], "--socket-y": `${points[index].y}px` }}>
+        {plottedRounds.map((round, index) => <div key={round.id} className={`historyScoreSocket ${index === scores.length - 1 ? "isLatest" : ""}`} style={{ left: `${points[index].x}%`, top: `${points[index].y}px`, "--lamp": LINE_TONES[modeFilter], "--socket-y": `${points[index].y}px` }}>
           {index === bestIndex && <i className="historyClimbCrown" aria-hidden="true" />}
           <strong>{formatNumber(scores[index])}</strong><span className="historyBulb" aria-hidden="true" />
           <small>{index === scores.length - 1 ? "Latest" : `#${index + 1}`}</small>
@@ -320,7 +320,7 @@ export default function HistoryPage({
     )
 
     if (isLatestAlsoPeak && cards[0]) {
-      cards[0].eyebrow = "Latest run · Personal best"
+      cards[0].eyebrow = "Latest run Â· Personal best"
     }
 
     if (historySnapshot.bestScoreRound && !isLatestAlsoPeak) {
@@ -480,8 +480,8 @@ export default function HistoryPage({
                           <td className="historyNumericCell historyAccuracyCell">
                             {formatPercent(round.accuracyPercent)}
                           </td>
-                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.coinsEarned)}</td>
-                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.xpEarned ?? 0)}</td>
+                          <td className="historyNumericCell">{isPracticeRound(round) ? "â€”" : formatNumber(round.coinsEarned)}</td>
+                          <td className="historyNumericCell">{isPracticeRound(round) ? "â€”" : formatNumber(round.xpEarned ?? 0)}</td>
                           <td className="historyNumericCell">
                             <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>
                               {getRankResultText(round)}
