@@ -3668,3 +3668,37 @@
 .historyPageScene .historyHighlightStats { grid-area:4 / 1 / 5 / 3; align-items:center; gap:8px; overflow:visible; }
 .historyPageScene .historyHighlightCard .historyHighlightStat { display:inline-flex; align-items:center; padding:3px 8px !important; border:1px solid #825b1f !important; border-radius:12px; background:rgb(107 69 16 / 17%) !important; box-shadow:inset 0 1px rgb(255 239 190 / 45%); line-height:14px; text-shadow:none !important; }
 @media(max-width:640px) { .historyPageScene .historyHighlightCard { height:auto; min-height:120px; } .historyPageScene .historyHighlightStats { flex-wrap:wrap; white-space:normal; } }
+
+/* Round 14: Ladder hover card */
+.ladderPlate:hover, .ladderPlate:focus-within { position:relative; z-index:var(--ca-z-tooltip, 100); }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard {
+  box-sizing:border-box; width:360px; min-width:0; padding:16px; border:0; border-radius:4px;
+  outline:2px solid #050912; z-index:var(--ca-z-tooltip, 100); transform:none !important;
+  background:radial-gradient(circle at 7px 7px,#c4cedb 2px,transparent 2.5px), radial-gradient(circle at calc(100% - 7px) 7px,#c4cedb 2px,transparent 2.5px), linear-gradient(#142338,#0f1b2a);
+  box-shadow:inset 0 1px rgb(196 206 219 / 45%), 0 4px 0 #050912, 0 8px 18px #050912aa;
+  gap:12px; transition:opacity 120ms ease;
+}
+.ladderPlate .leaderboardEntryHoverWrap:hover .ladderPlayerHoverCard, .ladderPlate .leaderboardEntryHoverWrap:focus-within .ladderPlayerHoverCard { opacity:1; pointer-events:auto; }
+.ladderPlate .leaderboardPlayerName:focus-visible { outline:2px solid #55d9ff; outline-offset:4px; }
+.leaderboardEntryHoverCard .ladderPlayerHoverCard::before { content:''; position:absolute; left:-12px; top:0; width:12px; height:100%; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentity { min-height:52px; padding:0; gap:12px; align-items:center; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar { width:52px; height:52px; display:flex; align-items:center; justify-content:center; overflow:visible; border:2px solid #55d9ff; border-radius:4px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width:48px; height:48px; display:block; flex:none; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityText { min-width:0; gap:0; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityLabel, .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankLabel { font:700 11px/14px var(--ca-font-ui, sans-serif); letter-spacing:.06em; color:#a8b6c8; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityName { overflow:visible; white-space:normal; text-overflow:clip; overflow-wrap:anywhere; font:22px/26px var(--ca-font-display, sans-serif); color:#f3efe6; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankBlock { min-height:64px; padding:8px; grid-template-columns:40px minmax(0,1fr); gap:10px; background:#08111e; border:1px solid #050912; box-shadow:inset 0 1px 4px #000; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankIconSlot { width:40px; height:40px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankIcon { width:100%; height:100%; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankText { gap:0; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankValue { font:18px/20px var(--ca-font-display, sans-serif); color:#f3efe6; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankMeta { font-size:12px; line-height:14px; overflow-wrap:anywhere; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 8px; background:#08111e; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat { min-height:48px; padding:2px 12px; background:transparent; box-shadow:inset 0 1px #ffffff18, inset 0 -1px #000; align-content:center; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStatLabel { overflow:visible; white-space:normal; text-overflow:clip; font:600 11px/14px var(--ca-font-ui, sans-serif); letter-spacing:.02em; text-transform:uppercase; color:#a8b6c8; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStatValue { overflow-wrap:anywhere; font:18px/22px var(--ca-font-display, sans-serif); font-variant-numeric:tabular-nums; color:#f3efe6; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .tone-coins .profileHoverStatValue { color:#f3c45a; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .tone-level .profileHoverStatValue { color:#4eddb8; }
+@media (max-width:420px) { .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard { width:min(360px, calc(100vw - 24px)); } }
+@media (max-width:320px) { .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStats { grid-template-columns:1fr; } }
+@media (prefers-reduced-motion:reduce) { .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard { transition:none; } }

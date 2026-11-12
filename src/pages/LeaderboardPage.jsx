@@ -25,6 +25,23 @@ import {
   getRankProgressWithPlacement,
 } from "../utils/rankUtils.js"
 
+function positionLadderCard(wrap) {
+  const card = wrap.querySelector(".ladderPlayerHoverCard")
+  if (!card) return
+  const anchor = wrap.getBoundingClientRect()
+  const row = wrap.closest(".ladderPlate").getBoundingClientRect()
+  const width = card.offsetWidth
+  const height = card.offsetHeight
+  let left = anchor.right + 12
+  if (left + width > window.innerWidth - 12) left = anchor.left - width - 12
+  left = Math.max(12, Math.min(left, window.innerWidth - width - 12))
+  let top = row.top + (row.height - height) / 2
+  if (top + height > window.innerHeight - 12) top = row.top - height - 12
+  top = Math.max(12, Math.min(top, window.innerHeight - height - 12))
+  card.style.left = `${left - anchor.left}px`
+  card.style.top = `${top - anchor.top}px`
+}
+
 const BOARD_OPTIONS = [
   { key: "mmr", label: "Rating" },
   { key: "bestScore", label: "Best Score" },
@@ -509,6 +526,17 @@ export default function LeaderboardPage({
   currentRankProgress = null,
   roundHistory = [],
 }) {
+  useEffect(() => {
+    const update = () => {
+      document.querySelectorAll(".ladderPlate .leaderboardEntryHoverWrap:hover, .ladderPlate .leaderboardEntryHoverWrap:focus-within").forEach(positionLadderCard)
+    }
+    window.addEventListener("scroll", update, true)
+    window.addEventListener("resize", update)
+    return () => {
+      window.removeEventListener("scroll", update, true)
+      window.removeEventListener("resize", update)
+    }
+  }, [])
   const navigate = useNavigate()
   const { signalAction } = useActionFeedback()
   const [sortConfig, setSortConfig] = useState(DEFAULT_SORT)
@@ -774,7 +802,7 @@ export default function LeaderboardPage({
                 return (
                   <li key={`${player.userId}-${player.rank}`} className={plateClassName}>
                     <span className="ladderPlateRank"><RankDisplay rank={player.rank} /></span>
-                    <div className="leaderboardEntryHoverWrap ladderPlateIdentity">
+                    <div className="leaderboardEntryHoverWrap ladderPlateIdentity" onMouseEnter={(event) => positionLadderCard(event.currentTarget)} onFocus={(event) => positionLadderCard(event.currentTarget)}>
                       {isCurrentUser ? (
                         <button
                           type="button"
@@ -787,7 +815,7 @@ export default function LeaderboardPage({
                           <span className="leaderboardYouBadge">YOU</span>
                         </button>
                       ) : (
-                        <span className="leaderboardPlayerName">
+                        <span className="leaderboardPlayerName" tabIndex={0} aria-label={`${player.username} player details`}>
                           <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
                           {player.username}
                         </span>
@@ -795,6 +823,8 @@ export default function LeaderboardPage({
                       <TierBadge tierLabel={player.rankLabel} className="leaderboardTierBadge" />
                       <div className="leaderboardEntryHoverCard">
                         <PlayerHoverCard
+                          username={player.username}
+                          className="ladderPlayerHoverCard"
                           rankProgress={player.rankProgress}
                           rankLabel={player.rankLabel}
                           rankMmr={player.mmr}
