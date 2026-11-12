@@ -3971,3 +3971,45 @@
 .armoryUnlockWall.unlockWallRebuild .armoryUnlockWallHeader > .secondaryButton::before {
   content: "\2715"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff4ec; font: 700 20px/1 sans-serif; text-shadow: 0 2px 0 #4d0d0d;
 }
+
+/* Round 16: Settings console */
+.settingsConsole .feedbackSettingsForm {
+    padding: 14px;
+    border: 2px solid #4b2a13;
+    border-radius: 5px;
+    background: repeating-linear-gradient(2deg, transparent 0 18px, rgb(39 15 5 / 17%) 19px 21px, transparent 22px 45px), linear-gradient(90deg, #75401f, #aa6b36 30%, #81451f 65%, #b4763e);
+    box-shadow: inset 0 2px 3px #dfaa70, inset 0 -4px 8px #3a1a0c;
+}
+.settingsConsole .feedbackSettingsSection {
+    position: relative;
+    padding: 16px !important;
+    border: 2px solid #07101b;
+    border-radius: 5px;
+    background: linear-gradient(135deg, #526078, #25354c 12%, #17253a 85%, #465570);
+    box-shadow: inset 0 0 0 2px #718099, inset 0 0 0 4px #172336, 0 4px 5px #32180e;
+}
+.settingsConsole .feedbackSettingsSection::before, .settingsConsole .feedbackSettingsSection::after {
+    content: '?'; position: absolute; top: 4px; color: #b6c4d2; font: 13px sans-serif; text-shadow: 0 1px #000;
+}
+.settingsConsole .feedbackSettingsSection::before { left: 6px; }
+.settingsConsole .feedbackSettingsSection::after { right: 6px; }
+.settingsConsole .feedbackSettingsEyebrow { letter-spacing: .16em; text-shadow: 0 1px #000; }
+.settingsConsole .feedbackSettingsSection h3 { text-shadow: 0 2px #060b13; }
+.settingsConsole .settingsConsoleMixer {
+    display: grid; gap: 0; padding: 8px 10px; border: 2px solid #080d14; border-radius: 4px;
+    background: linear-gradient(120deg, #677587, #394a5e 25%, #526276 60%, #29394d);
+    box-shadow: inset 0 1px #a6b2bd, 0 2px 3px #080c14;
+}
+.settingsConsole .feedbackRangeSetting {
+    padding: 5px 4px 4px !important; border: 0; border-radius: 0; background: none; box-shadow: none; gap: 1px;
+}
+.settingsConsole .feedbackRangeSetting + .feedbackRangeSetting { border-top: 1px solid #1c2b3a; }
+.settingsConsole .settingsConsoleScale { display: flex; justify-content: space-between; color: #d1d9df; font: 10px monospace; padding: 0 2px; }
+.settingsConsole .feedbackToggleSetting { border-color: #0a101a; background: linear-gradient(#26364b, #162235); box-shadow: inset 0 1px #607087, 0 2px 2px #111; }
+.settingsConsole .feedbackSettingsStatus { color: #fff2dc; text-shadow: 0 1px #32180e; }
+.settingsConsole .feedbackSettingsActions { background: #573019; box-shadow: 0 -1px #c6905d; padding-inline: 6px; }
+@media (max-width: 520px) { .settingsConsole .feedbackSettingsForm { padding: 10px; } .settingsConsole .uiSegmentedOption .uiSegmentedLabel { min-width: 0; padding-inline: 7px !important; } }
+.settingsConsole .feedbackSettingsSection:first-of-type .uiAction { min-height: 54px; }
+.settingsConsole .settingsConsoleScale { padding-top: 5px; background: repeating-linear-gradient(90deg, #aab8c8 0 1px, transparent 1px 25%) top left / 100% 4px no-repeat; }
+.settingsConsole .feedbackToggleSetting { min-height: 48px; padding-block: 3px !important; }
+.settingsConsole .feedbackToggleCopy > span { line-height: 1.2; }

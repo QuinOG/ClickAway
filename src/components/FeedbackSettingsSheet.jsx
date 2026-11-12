@@ -41,6 +41,7 @@ function RangeSetting({ id, label, value, disabled, onChange }) {
         disabled={disabled}
         onChange={(event) => onChange(Number(event.target.value) / 100)}
       />
+      <span className="settingsConsoleScale" aria-hidden="true"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></span>
     </label>
   )
 }
@@ -158,6 +159,7 @@ function FeedbackSettingsForm({ onRequestClose }) {
           checked={draft.muted}
           onChange={(checked) => updateDraft("muted", checked)}
         />
+        <div className="settingsConsoleMixer" aria-label="Volume mixer">
         <RangeSetting
           id="feedback-master-volume"
           label="Master volume"
@@ -172,6 +174,7 @@ function FeedbackSettingsForm({ onRequestClose }) {
           disabled={draft.muted}
           onChange={(value) => updateDraft("sfxVolume", value)}
         />
+        </div>
         <ActionButton
           intent="secondary"
           size="sm"
@@ -261,7 +264,7 @@ export default function FeedbackSettingsSheet({
       description="Tune sound, motion, flashes, shake, and optional touch cues independently."
       size="sm"
       mobilePresentation="sheet"
-      surfaceClassName="feedbackSettingsSheet"
+      surfaceClassName="feedbackSettingsSheet settingsConsole"
     >
       {open ? <FeedbackSettingsForm onRequestClose={() => onOpenChange(false)} /> : null}
     </Modal>
