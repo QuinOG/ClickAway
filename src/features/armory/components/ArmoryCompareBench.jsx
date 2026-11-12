@@ -1,40 +1,27 @@
 import {
   BuildIdentityGlyph,
-  ModuleSlotGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+import { PartEmblem } from "../../../components/art/GameIcons.jsx"
 import { getExactMetric } from "../armoryExactMetrics.js"
 import ArmoryModeManifest from "./ArmoryModeManifest.jsx"
 import { useOverlayDismiss } from "../useOverlayDismiss.js"
 
-// Ghost machines read at bay-wall scale so both silhouettes fit side by side
-// without the bench dwarfing the actual center-stage hero object.
-const GHOST_TARGET_SCALE = 0.42
-
 function GhostMachine({ label, loadout, presentation, isGhost = false }) {
-  const identity = (presentation.identity.label || "Balanced").toLowerCase()
-  const targetSize = Math.round(presentation.roundRules.initialButtonSize * GHOST_TARGET_SCALE)
-
+  const targetSize = Math.max(56, Math.min(80, Math.round(presentation.roundRules.initialButtonSize * 0.66)))
   return (
-    <div
-      className={`armoryCompareMachine ${isGhost ? "isGhost" : ""}`}
-      data-identity={identity}
-    >
+    <div className={`armoryCompareMachine ${isGhost ? "isGhost" : ""}`} data-lead={label}>
       <span className="armoryCompareMachineLabel">{label}</span>
-      <span className="armoryCompareMachineTarget" style={{ width: `${targetSize}px`, height: `${targetSize}px` }} aria-hidden="true" />
-      <span className="armoryCompareMachineModules" aria-hidden="true">
-        {presentation.moduleStack.map((module) => (
-          <span key={module.slotId} className={`armoryCompareMachineModule tone-${module.slotId}`}>
-            <ModuleSlotGlyph slotId={module.slotId} />
-          </span>
-        ))}
-      </span>
+      <div className="armoryCompareRig">
+        <div className="armoryCompareRigMechanics" aria-hidden="true">
+          <span className="armoryCompareRigConnector left" /><span className="armoryCompareRigConnector right" /><span className="armoryCompareRigConnector top" />
+          <span className="armoryCompareRigBase" />
+          <span className="armoryCompareRigHub"><span className="armoryCompareRigCore" style={{ width: targetSize, height: targetSize }}>+</span></span>
+          {presentation.moduleStack.map((module) => <span key={module.slotId} className={`armoryCompareRigModule slot-${module.slotId}`}><PartEmblem partId={module.moduleId} slotId={module.slotId} size={32} /></span>)}
+        </div>
+        <div className="armoryCompareRigLabels">{presentation.moduleStack.map((module) => <span key={module.slotId} className={`armoryCompareRigModuleLabel slot-${module.slotId}`}><b>{module.slotLabel}</b><br />{module.label}</span>)}</div>
+      </div>
       <strong className="armoryCompareMachineName">{loadout.name}</strong>
-      <span className="armoryCompareMachineIdentity">
-        <span className="armoryCompareMachineIdentityGlyph" aria-hidden="true">
-          <BuildIdentityGlyph identity={presentation.identity.label} />
-        </span>
-        {presentation.titleLine}
-      </span>
+      <span className="armoryCompareMachineIdentity"><span className="armoryCompareMachineIdentityGlyph" aria-hidden="true"><BuildIdentityGlyph identity={presentation.identity.label} /></span>{presentation.titleLine}</span>
     </div>
   )
 }
@@ -61,36 +48,28 @@ const COMPARE_ROWS = [
   },
 ]
 
-function CompareNumbers({ activeName, ghostName, activeRules, ghostRules }) {
-  return (
-    <div className="armoryCompareNumbers" role="table" aria-label="Exact rules, active versus ghost">
-      <div className="armoryCompareNumbersRow isHead" role="row">
-        <span role="columnheader">Rule</span>
-        <span role="columnheader">{activeName}</span>
-        <span role="columnheader">{ghostName}</span>
-        <span role="columnheader">Ghost vs active</span>
-      </div>
-      {COMPARE_ROWS.map((row) => {
-        const read = row.metric ?? ((rules) => getExactMetric(row.label, rules))
-        const active = read(activeRules ?? {})
-        const ghost = read(ghostRules ?? {})
-        const diff = Number((ghost.value - active.value).toFixed(active.digits))
-        const isBetter = row.better === "higher" ? diff > 0 : diff < 0
-        const tone = diff === 0 ? "is-same" : isBetter ? "is-gain" : "is-cost"
-        const sign = diff > 0 ? "+" : diff < 0 ? "−" : "±"
-        return (
-          <div key={row.label} className="armoryCompareNumbersRow" role="row">
-            <span role="cell" className="armoryCompareNumbersLabel">{row.label}</span>
-            <span role="cell">{active.text}</span>
-            <span role="cell">{ghost.text}</span>
-            <span role="cell" className={`armoryCompareNumbersDelta ${tone}`}>
-              {diff === 0 ? "Same" : `${sign}${Math.abs(diff).toFixed(active.digits)}${active.suffix}`}
-            </span>
-          </div>
-        )
-      })}
-    </div>
-  )
+function CompareNumbers({ activeRules, ghostRules }) {
+  return <div className="armoryCompareInstrumentGrid" aria-label="Exact rules, active versus ghost">
+    {COMPARE_ROWS.map((row) => {
+      const read = row.metric ?? ((rules) => getExactMetric(row.label, rules))
+      const active = read(activeRules ?? {})
+      const ghost = read(ghostRules ?? {})
+      const diff = Number((ghost.value - active.value).toFixed(active.digits))
+      const tone = diff === 0 ? "is-same" : (row.better === "higher" ? diff > 0 : diff < 0) ? "is-gain" : "is-cost"
+      const sign = diff > 0 ? "+" : "−"
+      const max = Math.max(Math.abs(active.value), Math.abs(ghost.value))
+      const counts = [active, ghost].map((item) => max ? Math.round(10 * Math.abs(item.value) / max) : 0)
+      return <section key={row.label} className="armoryCompareInstrument">
+        <div className="armoryCompareInstrumentLead" aria-hidden="true" />
+        <div className="armoryCompareInstrumentLabel">{row.label}</div>
+        <span className={`armoryCompareInstrumentDelta ${tone}`}>{diff === 0 ? "Same" : `${sign}${Math.abs(diff).toFixed(active.digits)}${active.suffix}`}</span>
+        <dl className="armoryCompareInstrumentValues">{[active, ghost].map((item, index) => <div key={index}>
+          <dt>{index ? "Ghost" : "Active"}</dt><dd>{item.text}</dd>
+          <span className="armoryCompareInstrumentGauge" aria-label="Bars relative to this pair">{Array.from({ length: 10 }, (_, i) => <i key={i} aria-hidden="true" className={`${i < counts[index] ? "filled" : ""} ${i >= counts[1-index] ? tone : ""}`} />)}</span>
+        </div>)}</dl>
+      </section>
+    })}
+  </div>
 }
 
 function BayCompareView({ activeLoadout, activePresentation, ghostLoadout, ghostPresentation }) {
@@ -150,7 +129,7 @@ function BayCompareView({ activeLoadout, activePresentation, ghostLoadout, ghost
 
 /**
  * The Compare Bench (Phase 8): reads which build wins for which mode without
- * ever rendering a KPI table. Presentation derivation stays pure here — the
+ * ever rendering a KPI table. Presentation derivation stays pure here â€” the
  * bench holds no state of its own beyond which view/ghost the controller
  * points it at, so nothing about a comparison is ever persisted.
  */
@@ -172,7 +151,7 @@ export default function ArmoryCompareBench({
   return (
     <>
       <div className="armoryCompareScrim" onClick={onClose} aria-hidden="true" />
-      <section className="armoryCompareBench" role="dialog" aria-label="Compare bench">
+      <section className="armoryCompareBench armoryCompareWorkshop" role="dialog" aria-label="Compare bench">
         <header className="armoryCompareHeader">
           <div>
             <p className="armoryCompareEyebrow">Compare Bench · {modeLabel}</p>
@@ -218,3 +197,4 @@ export default function ArmoryCompareBench({
     </>
   )
 }
+

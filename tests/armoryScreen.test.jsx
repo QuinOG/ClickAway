@@ -674,7 +674,7 @@ describe("Armory compare bench (Phase 8)", () => {
     expect(within(bench).getAllByText("Loadout 1").length).toBeGreaterThan(0)
     expect(within(bench).getAllByText(otherLoadout.name).length).toBeGreaterThan(0)
     expect(bench.querySelectorAll(".armoryCompareMachine")).toHaveLength(2)
-    expect(within(bench).getByLabelText("Exact rules, active versus ghost").querySelectorAll(".armoryCompareNumbersRow").length).toBe(8)
+    expect(within(bench).getByLabelText("Exact rules, active versus ghost").querySelectorAll(".armoryCompareInstrument").length).toBe(7)
 
     // Purely derived: no persistence, no history writes.
     expect(screen.queryByText("Loadout")).toBeNull()

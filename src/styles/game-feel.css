@@ -3817,3 +3817,81 @@
 .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile > .navItemIcon { width: 54px; height: 54px; flex-basis: 54px; }
 .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile > .navItemIcon svg { width: 42px !important; height: 42px !important; }
+
+/* Round 14: Armory compare */
+.armoryCompareBench.armoryCompareWorkshop { top:108px; left:50%; transform:translateX(-50%); width:960px; max-height:calc(100dvh - 124px); box-sizing:border-box; padding:18px; gap:12px; border:2px solid #f3c45a; border-radius:3px; background:#0f1b2a; box-shadow:0 6px 0 #050912, inset 0 1px #8d98a3; animation:none; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareHeader { min-height:48px; margin-bottom:-2px; align-items:center; border-bottom:2px solid #f3c45a; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareEyebrow { font-size:11px; line-height:16px; color:#a8b6c8; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareTitle { font-family:'Russo One',sans-serif; font-size:22px; line-height:28px; }
+.armoryCompareBench.armoryCompareWorkshop .secondaryButton { min-width:80px; min-height:44px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareTabs { gap:8px; padding:0; border:0; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareTab { width:144px; height:36px; border-radius:2px; border:1px solid #748396; background:#24364a; box-shadow:inset 0 2px #ffffff40,inset 0 -3px #050912aa; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareTab.isActive { background:#755a22; border-color:#f3c45a; color:#fff3c3; }
+.armoryCompareBench.armoryCompareWorkshop :focus-visible { outline:2px solid #55d9ff; outline-offset:3px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachines { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachine { min-height:212px; box-sizing:border-box; display:block; position:relative; padding:6px 10px; border:1px solid #66798b; border-radius:2px; background:linear-gradient(#142338,#0a1421); text-align:center; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachine.isGhost { opacity:1; border-style:solid; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachineLabel { display:block; text-align:left; line-height:16px; color:#f3c45a; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRig { position:relative; height:140px; max-width:430px; margin:auto; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigMechanics, .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigLabels { position:absolute; inset:0; pointer-events:none; }
+.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigMechanics { opacity:.5; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigHub { position:absolute; width:94px; height:94px; top:37px; left:50%; transform:translateX(-50%); border:6px solid #78899a; border-radius:50%; box-sizing:border-box; background:#172536; box-shadow:0 0 0 3px #050912,inset 0 0 0 3px #354c60; display:grid; place-items:center; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigCore { border-radius:50%; display:grid; place-items:center; background:radial-gradient(circle,#28485a 0 18%,#0a1421 20% 57%,#597181 60%,#0a1421 65%); border:2px solid #a2b1bc; color:#55d9ff; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigBase { position:absolute; width:112px; height:10px; top:126px; left:50%; transform:translateX(-50%); background:#718291; border:2px solid #050912; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector { position:absolute; top:82px; height:5px; background:#55d9ff; border:2px solid #050912; z-index:0; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector.left { left:23%; width:17%; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector.right { right:23%; width:17%; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector.top { width:5px; height:18px; left:50%; top:32px; background:#c69bff; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule { position:absolute; width:52px; height:44px; box-sizing:border-box; display:grid; place-items:center; background:#243c50; border:2px solid #9baab5; box-shadow:0 3px #050912; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(6) { left:14%; top:62px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(7) { left:50%; top:5px; transform:translateX(-50%); }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(8) { right:14%; top:62px; }
+.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigModule, .armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigHub { border-style:dashed; }
+.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigConnector { background:repeating-linear-gradient(90deg,#55d9ff 0 4px,transparent 4px 7px); }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel { position:absolute; top:107px; width:120px; font-size:10px; line-height:12px; color:#f3efe6; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(1) { left:6%; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(2) { top:5px; left:calc(50% + 30px); text-align:left; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(3) { right:6%; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachineName { display:block; font-size:16px; line-height:20px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachineIdentity { justify-content:center; font-size:12px; line-height:16px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGrid { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:12px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument { position:relative; grid-column:span 3; min-width:0; min-height:76px; padding:6px 8px; box-sizing:border-box; background:#091421; border:1px solid #536a7c; box-shadow:inset 0 2px #050912; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument:nth-child(n+5) { grid-column:span 4; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentLabel { color:#f3efe6; font-size:12px; line-height:16px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentDelta { position:absolute; right:8px; top:6px; font-size:12px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentDelta.is-gain { color:#4eddb8; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentDelta.is-cost { color:#ff665d; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues { margin:2px 0 0; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues div { display:flex; align-items:center; gap:4px; font-size:11px; line-height:17px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues dt { color:#a8b6c8; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues dd { margin:0; color:#f3efe6; white-space:nowrap; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge { display:flex; gap:2px; margin-left:auto; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge i { width:5px; height:6px; background:#26394b; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge i.filled { background:#55d9ff; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge i.filled.is-gain { background:#4eddb8; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge i.filled.is-cost { background:#ff665d; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumn { min-height:130px; padding:10px; border:1px solid #647789; border-radius:2px; background:#142338; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnTitle { font-size:13px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnBody { gap:4px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryChipRow { display:flex; flex-wrap:wrap; gap:2px 8px; }
+.armoryCompareBench.armoryCompareWorkshop .armorySnapshotChip { padding:0; border:0; border-radius:0; background:none; font-size:12px; line-height:17px; }
+.armoryCompareBench.armoryCompareWorkshop .armorySnapshotChip::before { content:'\25aa '; color:#f3c45a; }
+@media (max-width:999px) { .armoryCompareBench.armoryCompareWorkshop { width:calc(100vw - 24px); top:12px; max-height:calc(100dvh - 24px); } }
+@media (max-width:719px) { .armoryCompareBench.armoryCompareWorkshop .armoryCompareMachines, .armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumns { grid-template-columns:1fr; } .armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument, .armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument:nth-child(n+5) { grid-column:span 6; } }
+@media (max-width:399px) { .armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument, .armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument:nth-child(n+5) { grid-column:span 12; } }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachines { position:relative; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachine::after { content:'\25bc  ' attr(data-lead); position:absolute; bottom:-12px; left:12px; z-index:1; color:#55d9ff; font-size:10px; line-height:10px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector.left::after, .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector.right::after { content:'\25b6'; position:absolute; right:-5px; top:-7px; color:#55d9ff; font-size:10px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigConnector.right::after { content:'\25c0'; right:auto; left:-5px; }
+
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(6) { left:50%; right:auto; top:5px; transform:translateX(-50%); }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(7) { left:14%; right:auto; top:62px; transform:none; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(8) { left:auto; right:14%; top:62px; transform:none; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(1) { left:calc(50% + 30px); top:5px; text-align:left; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(2) { left:6%; top:107px; text-align:center; }
+
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareMachines::after { content:''; position:absolute; left:12px; right:12px; bottom:-7px; height:1px; background:#55d9ff; opacity:.65; pointer-events:none; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentLead { position:absolute; top:-7px; left:50%; height:6px; border-left:1px solid #55d9ff; }
+
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRig { width:100%; }
