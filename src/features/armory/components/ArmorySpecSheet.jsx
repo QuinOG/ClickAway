@@ -1,3 +1,4 @@
+import { PartEmblem } from "../../../components/art/GameIcons.jsx"
 import { PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { getProfileStats } from "../armorySpecRatings.js"
 import { useOverlayDismiss } from "../useOverlayDismiss.js"
@@ -17,11 +18,7 @@ function ArmorySpecSheetProfile({ roundRules }) {
           className={`armorySpecStat ${stat.rating >= 7 ? "isHigh" : stat.rating <= 3 ? "isLow" : ""}`}
         >
           <span className="armorySpecStatLabel">{stat.label}</span>
-          <span className="armorySpecStatBar" aria-hidden="true">
-            {Array.from({ length: 10 }, (_, index) => (
-              <i key={index} className={index < stat.rating ? "isOn" : ""} />
-            ))}
-          </span>
+          <span className="specSheetDial" style={{ "--rating": stat.rating }} aria-hidden="true"><i /></span>
           <span className="armorySpecStatValue">{stat.value}</span>
         </div>
       ))}
@@ -87,17 +84,23 @@ export default function ArmorySpecSheet({
   return (
     <>
       <div className="armorySpecSheetScrim" onClick={onClose} aria-hidden="true" />
-      <aside className="armorySpecSheet" role="dialog" aria-label="Build spec sheet">
+      <aside className="armorySpecSheet specSheetClipboard" role="dialog" aria-label="Build spec sheet">
+        <div className="specSheetClip" aria-hidden="true" />
         <header className="armorySpecSheetHeader">
           <div>
             <p className="armorySpecSheetEyebrow">Spec sheet · {modeLabel}</p>
             <h2 className="armorySpecSheetTitle">{loadoutName}</h2>
           </div>
-          <button type="button" className="secondaryButton" onClick={onClose}>
-            Close
+          <button type="button" className="specSheetClose" onClick={onClose} aria-label="Close">
+            X
           </button>
         </header>
 
+        <div className="specSheetAssembly" aria-label="Assembly thumbnail">
+          <span className="specSheetAssemblyHub">+</span>
+          {presentation.moduleStack.map((module) => <span key={module.slotId} className={`specSheetAssemblyPart slot-${module.slotId}`}><PartEmblem partId={module.moduleId} slotId={module.slotId} size={26} /></span>)}
+          <small>ASSEMBLY / {modeLabel}</small>
+        </div>
         <p className="armorySpecSheetLead">{presentation.glanceText}</p>
         <p className="armorySpecSheetNote">{presentation.bestFor}</p>
 
