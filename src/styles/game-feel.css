@@ -3853,37 +3853,12 @@
   border-image: var(--gf-frame) 16 / 12px stretch !important; background-clip: padding-box !important;
 }
 
-.armoryMachineActions .secondaryButton,
-.armoryMachineOptions > summary,
-.armoryRailActions > .secondaryButton {
-  position: relative; border: 2px solid #050912 !important; border-radius: 6px !important; color: #f3efe6 !important;
-  background:
-    radial-gradient(circle at 8px 8px, #e8eef8 0 1.5px, #5b6b84 2px 3px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 8px) 8px, #e8eef8 0 1.5px, #5b6b84 2px 3px, transparent 3.5px),
-    radial-gradient(circle at 8px calc(100% - 8px), #e8eef8 0 1.5px, #5b6b84 2px 3px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #e8eef8 0 1.5px, #5b6b84 2px 3px, transparent 3.5px),
-    linear-gradient(180deg, #4a5d7c 0, #2c3b55 46%, #1d2940 100%) !important;
-  box-shadow: inset 0 2px 0 rgb(255 255 255 / 22%), inset 0 0 0 3px rgb(10 19 34 / 50%), 0 3px 0 #050912 !important;
-}
-.armoryMachineOptions[open] > summary {
-  color: #2a1600 !important;
-  background:
-    radial-gradient(circle at 8px 8px, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 8px) 8px, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
-    linear-gradient(180deg, #ffe9a0, #e9a93a 60%, #a8792a) !important;
-}
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentLead { display: none !important; }
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument {
   border: 2px solid #050912 !important; border-radius: 5px;
   background: linear-gradient(180deg, #16263d, #0b1626) !important;
   box-shadow: inset 0 1px 0 rgb(196 206 219 / 35%), inset 0 0 0 3px rgb(83 106 124 / 35%), 0 3px 0 #050912 !important;
 }
-.armoryMachineActions .secondaryButton,
-.armoryMachineOptions > summary,
-.armoryRailActions > .secondaryButton { padding: 7px 14px !important; font-size: 12.5px !important; }
-.armoryMachineActionStack, .armoryMachineActions { gap: 6px !important; }
-.armoryMachineActions .secondaryButton { padding: 7px 11px !important; }
-.armoryMachineOptions > summary { padding: 7px 11px !important; }
 /* Round 15: Armory spec sheet */
 .specSheetClipboard.armorySpecSheet {
   width: min(460px, 100%); padding: 33px 22px 24px; gap: 10px;
