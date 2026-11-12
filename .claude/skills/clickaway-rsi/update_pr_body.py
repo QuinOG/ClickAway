@@ -50,6 +50,34 @@ shot_rows = "\n".join(
     for s in shots
 )
 
+def set_tables():
+    # Run sets (docs/ui-polish/game-feel/sets.json): each compares the shot before the set's first round with its
+    # last round (or the latest round while "last" is null), listing only the screens that changed.
+    path = os.path.join(SHOTS_DIR, "sets.json")
+    if not os.path.exists(path):
+        return ""
+    out = []
+    for st in json.load(open(path, encoding="utf-8")):
+        before = f"i{st['first'] - 1}"
+        last_n = min(st["last"] or n, n)
+        after = f"i{last_n}"
+        if last_n < st["first"] or not os.path.isdir(os.path.join(SHOTS_DIR, after)):
+            continue
+        changed = [f for f in sorted(os.listdir(os.path.join(SHOTS_DIR, after))) if f.endswith(".png")
+                   and open(os.path.join(SHOTS_DIR, after, f), "rb").read() != open(os.path.join(SHOTS_DIR, before, f), "rb").read()]
+        span = f"rounds {st['first']}–{last_n}" if last_n > st["first"] else f"round {st['first']}"
+        live = " · _after updates every round_" if st["last"] is None else ""
+        rows = "\n".join(f"| **{f.split('-', 1)[1][:-4]}** | ![]({blob}/{before}/{f}?raw=true) | ![]({blob}/{after}/{f}?raw=true) |" for f in changed)
+        out.append(f"""### {st['name']} ({span})
+Before ({before}) → after ({after}){live} · {len(changed)} screens changed · notes in `{SHOTS_DIR}/i{st['first']}-changes.md` onward
+
+| Screen | Before ({before}) | After ({after}) |
+|---|---|---|
+{rows}
+""")
+    return "## Run sets\n" + "\n".join(out) + "\n" if out else ""
+
+
 PROCESS = os.environ.get("RSI_PROCESS") or "each round, judges rate the full-app screenshots against `docs/ui-polish/standards/`; Claude implements the highest-value fixes, recaptures, and repeats. Each round is its own commit, and each round's PR comment has its changes and before/after vs the previous round."
 
 body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a SaaS-dashboard feel to an indie-game feel across the whole app.
@@ -61,7 +89,7 @@ body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a Saa
 |---|{"---|" * len(used)}---|
 {score_rows}
 
-## Total change: baseline ({base}) → latest ({latest})
+{set_tables()}## Total change: baseline ({base}) → latest ({latest})
 _This table is regenerated on every round, so it always compares the app as this PR started with the current one._
 
 | Screen | Baseline ({base}) | Latest ({latest}) |

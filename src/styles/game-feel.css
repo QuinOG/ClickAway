@@ -4934,3 +4934,51 @@
 .shopItemInfo { padding: 0; gap: 8px; }
 .shopItemFooter { padding-top: 8px; }
 .shopItemFooter { justify-content: flex-start; }
+/* Round 40: Ladder on the 8px rhythm */
+.leaderboardSeasonBanner { padding: 16px 24px; margin-bottom: 24px; gap: 32px; }
+.leaderboardTopRow { gap: 24px; margin-bottom: 24px; }
+.leaderboardTopRow .leaderboardPodium, .leaderboardTopRow .leaderboardStandingPanel { margin: 0; padding: 24px; }
+.leaderboardTopRow .leaderboardStandingPanel { gap: 16px !important; }
+.leaderboardTopRow .leaderboardStandingMain { gap: 16px; }
+.leaderboardTopRow .standingShield { padding: 16px 8px 24px !important; }
+.leaderboardTopRow .leaderboardStandingHeading { gap: 8px; }
+.leaderboardTopRow .leaderboardStandingStat { padding: 8px; }
+.leaderboardTopRow .leaderboardStandingPanel .leaderboardStandingScope { margin: 0 0 -8px !important; }
+.leaderboardPodiumDeck { gap: 16px; }
+.leaderboardPodium .podiumFigure { justify-items: center; text-align: center; padding-inline: 8px; gap: 4px; }
+.leaderboardControls { padding: 16px !important; gap: 16px !important; margin: 0 0 24px; }
+.leaderboardControls .leaderboardBoardTabs { gap: 8px !important; }
+.leaderboardControls .leaderboardControlRow { gap: 16px; }
+.ladderPlates { margin: 0; gap: 16px; }
+.ladderPlate { gap: 16px; padding: 8px 16px; }
+.ladderPlate.isCurrentUser { margin: 0 -10px; }
+.leaderboardTopRow { gap: 16px; }
+.leaderboardTopRow .leaderboardStandingPanel { padding: 24px 16px; }
+
+/* Round 40: Duels on the 8px rhythm */
+.duelCommandSurface > .commandHeader { margin-bottom: 16px !important; }
+.duelCommandSurface > .duelInbox { margin-bottom: 24px !important; }
+.duelLaunchForm > .duelRunTokens, .duelLaunchForm > .duelLaunchStep { margin-left: 0 !important; margin-right: 0 !important; width: auto !important; }
+.duelLaunchForm > .duelLaunchHint { margin-top: -8px !important; }
+.duelLaunchForm { padding-bottom: 24px !important; }
+.duelInbox .challengeCard { padding: 16px 24px !important; }
+/* Round 40: History on the 8px rhythm */
+.historyContent { row-gap: 32px !important; column-gap: 16px !important; }
+.historyHighlightsSection, .historyLogSection { gap: 16px !important; }
+.historyHighlightsGrid, .historyContent > .historyHighlightsSection .historyHighlightsGrid { gap: 16px !important; }
+.historyContent .historyHighlightCard { padding: 16px 16px 16px 104px !important; }
+.historyHighlightCard > * { margin: 0 !important; }
+.historyHighlightCard > * + * { margin-top: 8px !important; }
+.historyHighlightCard > .historyHighlightStats { margin-top: 16px !important; gap: 8px; }
+.historyRoundDeck { gap: 16px !important; }
+.historyRoundDeck .historyRoundCard { padding: 16px !important; gap: 16px !important; }
+.historyRoundCardTopline { gap: 8px; }
+.historyRoundCardScore { margin-top: 8px; }
+.historyRoundCardScoreLabel { margin-left: 8px; }
+.historyRoundCardMeters { margin-top: 16px; gap: 8px 16px; }
+.historyRoundDeck .historyRoundCardOutcome { gap: 8px !important; }
+.historyPagination { margin-top: 16px; }
+.historyTrendStrip { padding: 16px; gap: 16px; }
+.historyTrajectory { padding: 16px !important; gap: 8px 24px; }
+.historyContent > .historyHighlightsSection .historyHighlightCard { padding-block: 16px !important; }
+.historyRoundDeck .historyRoundCard { padding-left: 96px !important; }
