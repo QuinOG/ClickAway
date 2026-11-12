@@ -246,7 +246,7 @@ A common path looks like this:
 - backend sets the session cookie and returns the user's saved progress in the response body
 - frontend hydrates coins, XP, MMR, inventory, and history from that response (no token bookkeeping on the client)
 - completing rounds updates local state
-- the frontend persists that state back to the backend through `PUT /api/progress`
+- the frontend syncs editable progress fields such as saved loadouts, active loadout, build walkthrough, and seen unlock parts through `PUT /api/progress`; coins, XP, MMR, and round history are server-owned and are derived and updated by the server when a round completes, not accepted from the client
 
 ## Common Files To Edit
 

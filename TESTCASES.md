@@ -1,6 +1,6 @@
 # ClickAway — Test Cases
 
-> **Stack context:** React 19 + Vite frontend, Express backend with JWT auth (7-day tokens), bcrypt password hashing, and a MySQL database. All game progress is synced to the server via `PUT /api/progress`.
+> **Stack context:** React 19 + Vite frontend, Express backend with JWT auth (7-day tokens in an httpOnly cookie), bcrypt password hashing, and a Supabase Postgres database. Casual and Ranked round results are submitted to `POST /api/round/complete`; `PUT /api/progress` syncs client-controlled settings and loadout fields.
 
 ---
 
@@ -31,15 +31,15 @@
 
 | ID | Test Case | Steps | Expected Result |
 |----|-----------|-------|-----------------|
-| F-A01 | Successful signup | POST `/api/auth/signup` with a unique username (≥3 chars) and password (≥8 chars) | Returns `201` with a JWT token, user object, and initial progress |
+| F-A01 | Successful signup | POST `/api/auth/signup` with a unique username (≥3 chars) and password (≥8 chars) | Returns `201` with the user object and initial progress, plus a `Set-Cookie` containing the session JWT |
 | F-A02 | Duplicate username rejected | Sign up with a username that already exists | Returns `409` with `"That username is already taken."` |
 | F-A03 | Short username rejected | Submit username `"ab"` (2 chars) | Returns `400` with `"Username must be at least 3 characters."` |
 | F-A04 | Short password rejected | Submit password `"pass"` (4 chars) | Returns `400` with `"Password must be at least 8 characters."` |
-| F-A05 | Successful login | POST `/api/auth/login` with valid credentials | Returns `200` with JWT token and synced progress |
+| F-A05 | Successful login | POST `/api/auth/login` with valid credentials | Returns `200` with the user object and synced progress, plus a `Set-Cookie` containing the session JWT |
 | F-A06 | Wrong password rejected | POST `/api/auth/login` with correct username, wrong password | Returns `401` with `"Invalid username or password."` |
 | F-A07 | Unknown username rejected | POST `/api/auth/login` with a username that does not exist | Returns `401` (same generic error — no username enumeration) |
-| F-A08 | Session restore (`/me`) | GET `/api/auth/me` with a valid Bearer token | Returns current user object and latest progress |
-| F-A09 | Frontend redirect on logout | Log out from the UI | Clears token, redirects to `/login`, protected routes become inaccessible |
+| F-A08 | Session restore (`/me`) | GET `/api/auth/me` with a valid session cookie | Returns current user object and latest progress |
+| F-A09 | Frontend redirect on logout | Log out from the UI | Server clears the session cookie; UI redirects to `/login`, protected routes become inaccessible |
 | F-A10 | Empty body handled | POST `/api/auth/login` with `{}` | Returns `400` — does not crash server |
 
 ---
@@ -99,9 +99,9 @@
 
 | ID | Test Case | Steps | Expected Result |
 |----|-----------|-------|-----------------|
-| F-PR01 | Progress syncs to server after round | Complete any Casual or Ranked round | `PUT /api/progress` is called; server-side progress updated |
-| F-PR02 | Progress loads on login | Log in from a fresh browser tab | Frontend state hydrates from the server response; only the auth token is read from `localStorage` |
-| F-PR03 | Partial progress update preserves other fields | Send `PUT /api/progress` with only `coins` in the body | Other fields (XP, MMR, etc.) remain unchanged on the server |
+| F-PR01 | Progress persists after round | Complete any Casual or Ranked round | `POST /api/round/complete` persists the round and rewards; server-side progress updated |
+| F-PR02 | Progress loads on login | Log in from a fresh browser tab | Frontend state hydrates from the server response; the session cookie is sent automatically and no token is stored in page JS |
+| F-PR03 | Partial progress update preserves other fields | Send `PUT /api/progress` with only `buildWalkthrough: "completed"` in the body | Build walkthrough status updates; coins, XP, MMR, and history remain unchanged on the server |
 | F-PR04 | Level XP accumulates correctly | Complete multiple Casual rounds | `levelXp` accumulates; level display increases at correct thresholds |
 | F-PR05 | Ranked MMR increases on good round | Score well in a Ranked round | `rankMmr` increases; rank badge may upgrade |
 | F-PR06 | Reaction metrics persist with round history | Complete a Casual or Ranked round with at least one hit, then log out and back in | `avgReactionMs` and `bestReactionMs` are still present in saved history and derived profile stats |
@@ -123,7 +123,7 @@
 
 | ID | Test Case | Steps | Expected Result |
 |----|-----------|-------|-----------------|
-| F-LB01 | Leaderboard loads for authed user | Navigate to `/leaderboard` while logged in | `GET /api/leaderboard` returns up to 25 rows sorted by rank |
+| F-LB01 | Leaderboard loads for authed user | Navigate to `/leaderboard` while logged in | `GET /api/leaderboard` returns the default page of 25 rows for the requested board |
 | F-LB02 | Leaderboard blocked for guests | Access `/leaderboard` without a token | Redirected to `/login` via `ProtectedRoute` |
 | F-LB03 | Player's own row is highlighted | View leaderboard as a logged-in user who has played | Current user's row is visually distinguished |
 
@@ -192,12 +192,12 @@
 
 | ID | Test Case | Steps | Expected Result |
 |----|-----------|-------|-----------------|
-| S-JWT01 | Missing token rejected | Call any protected endpoint without `Authorization` header | `401` — `"Missing authentication token."` |
-| S-JWT02 | Expired token rejected | Use a JWT signed with `exp` in the past | `401` — `"Invalid or expired authentication token."` |
-| S-JWT03 | Tampered token rejected | Modify the payload of a valid JWT (e.g. change `sub`) and send it | `401` — signature mismatch detected by `jsonwebtoken` |
+| S-JWT01 | Missing token rejected | Call any protected endpoint without a session cookie | `401` — `"Missing authentication token."` |
+| S-JWT02 | Expired token rejected | Send a session cookie containing a JWT signed with `exp` in the past | `401` — `"Invalid or expired authentication token."` |
+| S-JWT03 | Tampered token rejected | Modify the payload of a valid JWT (e.g. change `sub`) and send it in the session cookie | `401` — signature mismatch detected by `jsonwebtoken` |
 | S-JWT04 | Weak/missing `JWT_SECRET` blocks startup | Start the server with `JWT_SECRET=""` | Server throws and exits — does not start insecurely |
-| S-JWT05 | Token not accepted by wrong secret | Sign a token with a different secret and send it | `401` — rejected |
-| S-JWT06 | Role field is not user-controlled | Create a normal account; send a JWT with `role: "admin"` crafted client-side | Server re-derives role from the database, not the token payload |
+| S-JWT05 | Token not accepted by wrong secret | Sign a token with a different secret and send it in the session cookie | `401` — rejected |
+| S-JWT06 | Role claim does not authorize requests | Sign in as a normal account and compare the token's `role` claim with the role returned by `GET /api/auth/me` | Protected routes authorize by user id, not by the token role claim; `/api/auth/me` returns the database role |
 
 #### Input Validation & Injection
 
@@ -207,15 +207,15 @@
 | S-INJ02 | Oversized username truncated/rejected | Submit a username of 500 characters | Returns `400` — `"Username must be 32 characters or less."` |
 | S-INJ03 | Null/missing body fields handled | POST `/api/auth/login` with `{}` or `null` body | Returns `400`; server does not throw |
 | S-INJ04 | `itemId` of unknown shop item rejected | POST `/api/shop/purchase` with a fabricated `itemId` | Returns an error — item not found in catalog |
-| S-INJ05 | Progress fields with wrong types | PUT `/api/progress` with `coins: "drop table users"` | Field is ignored or cast safely; no server error |
+| S-INJ05 | Progress fields with wrong types | PUT `/api/progress` with `coins: "drop table users"` | `coins` is server-owned and ignored; no server error |
 
 #### Access Control
 
 | ID | Test Case | Steps | Expected Result |
 |----|-----------|-------|-----------------|
-| S-AC01 | Player cannot read another player's state | GET `/api/player/state` with a valid token belonging to user A | Returns only user A's data — no cross-user leakage |
-| S-AC02 | Player cannot write another player's progress | PUT `/api/progress` using user A's token | Only user A's row is updated; user B's data is untouched |
-| S-AC03 | CORS blocks unexpected origins | Send a request from an origin not listed in `CLIENT_ORIGIN` | Browser CORS policy blocks the response |
+| S-AC01 | Player cannot read another player's state | GET `/api/player/state` with user A's session cookie | Returns only user A's data — no cross-user leakage |
+| S-AC02 | Player cannot write another player's progress | PUT `/api/progress` using user A's session cookie | Only user A's row is updated; user B's data is untouched |
+| S-AC03 | CORS blocks unexpected origins | Send a request with an `Origin` other than `CLIENT_ORIGIN` | Browser CORS policy blocks the response |
 
 #### Password & Credential Security
 
@@ -229,8 +229,8 @@
 
 | ID | Test Case | Steps | Expected Result |
 |----|-----------|-------|-----------------|
-| S-FE01 | No secrets stored in `localStorage` | Inspect `localStorage` in DevTools after login | Only the JWT token is stored; no raw passwords or persisted progress blobs |
-| S-FE02 | Token is cleared on logout | Log out | `localStorage` entry for the token is removed; subsequent API calls fail with `401` |
+| S-FE01 | No secrets stored in `localStorage` | Inspect `localStorage` in DevTools after login | No auth token or persisted progress blob is stored; the session lives in an httpOnly cookie |
+| S-FE02 | Cookie is cleared on logout | Log out | `POST /api/auth/logout` clears the session cookie; subsequent protected API calls fail with `401` |
 | S-FE03 | No sensitive data in page source | View page source of a rendered page | No user credentials, secrets, or internal API keys visible |
 
 ---
