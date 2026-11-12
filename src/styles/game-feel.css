@@ -3668,3 +3668,34 @@
 .historyPageScene .historyHighlightStats { grid-area:4 / 1 / 5 / 3; align-items:center; gap:8px; overflow:visible; }
 .historyPageScene .historyHighlightCard .historyHighlightStat { display:inline-flex; align-items:center; padding:3px 8px !important; border:1px solid #825b1f !important; border-radius:12px; background:rgb(107 69 16 / 17%) !important; box-shadow:inset 0 1px rgb(255 239 190 / 45%); line-height:14px; text-shadow:none !important; }
 @media(max-width:640px) { .historyPageScene .historyHighlightCard { height:auto; min-height:120px; } .historyPageScene .historyHighlightStats { flex-wrap:wrap; white-space:normal; } }
+
+/* Round 14: identity popover */
+.shellIdentityPopover.shellIdentityPass { box-sizing: border-box; width: min(320px, calc(100vw - 24px)); min-height: 350px; padding: 0; overflow: visible; border: 2px solid var(--ca-color-env-void); border-radius: 12px; color: var(--ca-color-ink-strong); background: linear-gradient(145deg, var(--ca-color-env-high), var(--ca-color-env-raised)); box-shadow: inset 0 0 0 2px var(--ca-color-warning), inset 0 1px 0 var(--ca-color-ink-strong), 0 6px 0 #050912, 0 16px 30px #050912bb; }
+.shellIdentityPopover.shellIdentityPass * { box-sizing: border-box; }
+.shellIdentityPopover.shellIdentityPass .shellPassBanner { position: relative; min-height: 36px; padding: 9px 12px; border-radius: 9px 9px 0 0; color: var(--ca-color-env-void); background: linear-gradient(color-mix(in srgb, var(--ca-color-warning), var(--ca-color-ink-strong) 35%), color-mix(in srgb, var(--ca-color-warning), var(--ca-color-env-void) 25%)); box-shadow: inset 0 1px 0 #fff9, inset 0 -3px 0 #8d6929; font: 13px/18px var(--ca-font-display); letter-spacing: .06em; text-transform: uppercase; }
+.shellIdentityPopover.shellIdentityPass .shellPassBanner::after { content: ''; position: absolute; top: 13px; right: 12px; width: 10px; height: 10px; border: 1px solid #735420; border-radius: 50%; background: linear-gradient(135deg, transparent 43%, #735420 44% 55%, transparent 56%), #e8bd62; box-shadow: -20px 0 0 -1px #e8bd62, -20px 0 0 0 #735420; }
+.shellIdentityPopover.shellIdentityPass .shellPassHero { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; min-height: 104px; margin: 14px 14px 12px; background: linear-gradient(90deg, transparent 38%, var(--ca-color-env-raised) 54%), repeating-linear-gradient(135deg, #f3efe610 0 8px, transparent 8px 16px); }
+.shellIdentityPopover.shellIdentityPass .shellPassPortraitMount { width: 96px; height: 96px; padding: 2px; border: 2px solid var(--ca-color-env-void); border-radius: 10px; background: var(--ca-color-warning); }
+.shellIdentityPopover.shellIdentityPass .shellPassPortrait { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 6px; }
+.shellIdentityPopover.shellIdentityPass .shellPassPortrait img, .shellIdentityPopover.shellIdentityPass .shellPassPortrait svg { display: block; width: 100%; height: 100%; object-fit: cover; }
+.shellIdentityPopover.shellIdentityPass .shellPassIdentity { min-width: 0; display: grid; gap: 3px; line-height: 16px; overflow-wrap: anywhere; }
+.shellIdentityPopover.shellIdentityPass .shellPassIdentity > span:first-child { color: var(--ca-color-ink-muted); font-size: 11px; text-transform: uppercase; }
+.shellIdentityPopover.shellIdentityPass .shellPassName { font: 24px/28px var(--ca-font-display); }
+.shellIdentityPopover.shellIdentityPass .shellPassRank { display: flex; align-items: center; gap: 10px; min-height: 82px; margin: 0 14px; padding: 10px; border: 1px solid #050912; border-radius: 4px; background: #05091280; box-shadow: inset 0 1px 3px #050912, 0 1px 0 #ffffff20; }
+.shellIdentityPopover.shellIdentityPass .shellPassCrest { width: 44px; height: 44px; object-fit: contain; }
+.shellIdentityPopover.shellIdentityPass .shellPassRankText { min-width: 0; flex: 1; display: grid; overflow-wrap: anywhere; font-size: 12px; line-height: 16px; color: var(--ca-color-ink-muted); }
+.shellIdentityPopover.shellIdentityPass .shellPassRankText > span:first-child { font-size: 11px; line-height: 14px; text-transform: uppercase; }
+.shellIdentityPopover.shellIdentityPass .shellPassRankText strong { color: var(--ca-color-ink-strong); font: 17px/21px var(--ca-font-display); }
+.shellIdentityPopover.shellIdentityPass .shellPassRrTrack { position: relative; height: 8px; margin-top: 2px; padding: 2px; background: #050912; border-radius: 2px; }
+.shellIdentityPopover.shellIdentityPass .shellPassRrTrack i { display: block; height: 4px; background: var(--ca-color-warning); }
+.shellIdentityPopover.shellIdentityPass .shellPassRrTrack::after { content: ''; position: absolute; inset: 2px; pointer-events: none; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), #76561c calc(10% - 1px) 10%); }
+.shellIdentityPopover.shellIdentityPass .shellPassStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 12px 14px; }
+.shellIdentityPopover.shellIdentityPass .shellPassStat { min-width: 0; min-height: 54px; padding: 6px; border: 1px solid #050912; border-radius: 4px; background: #05091280; box-shadow: inset 0 1px 3px #050912, 0 1px 0 #ffffff20; }
+.shellIdentityPopover.shellIdentityPass .shellPassStat dt { overflow: visible; white-space: normal; text-overflow: clip; min-width: 0; color: var(--ca-color-ink-muted); font: 700 11px/16px Sora, sans-serif; overflow-wrap: anywhere; }
+.shellIdentityPopover.shellIdentityPass .shellPassStat dd { margin: 0; overflow-wrap: anywhere; font: 17px/22px var(--ca-font-display); }
+.shellIdentityPopover.shellIdentityPass .shellPassStat:first-child dd { color: var(--ca-color-warning); }
+.shellIdentityPopover.shellIdentityPass .shellPassStat:nth-child(2) dd { color: var(--ca-color-accent); }
+.shellIdentityPopover.shellIdentityPass .shellPassProfileLink { display: flex; align-items: center; justify-content: center; min-height: 44px; margin: 0 14px 14px; border: 1px solid #050912; border-radius: 6px; color: #050912; background: linear-gradient(#ffe19a, #dca63c); box-shadow: inset 0 1px 0 #fffbd5, inset 0 -3px 0 #93691f, 0 3px 0 #050912; font: 13px/18px var(--ca-font-display); text-decoration: none; }
+.shellIdentityPopover.shellIdentityPass .shellPassProfileLink:hover { filter: brightness(1.1); }
+.shellIdentityPopover.shellIdentityPass .shellPassProfileLink:active { transform: translateY(1px); }
+.shellIdentityPopover.shellIdentityPass .shellPassProfileLink:focus-visible { outline: 2px solid var(--ca-color-accent); outline-offset: 3px; }

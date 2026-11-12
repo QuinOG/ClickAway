@@ -28,7 +28,7 @@ import { prefetchRouteModule } from "../app/routeModules.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
 import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import PlayerPortrait from "./art/PlayerPortrait.jsx"
-import PlayerHoverCard from "./PlayerHoverCard.jsx"
+import ShellIdentityPass from "./ShellIdentityPass.jsx"
 import { MobileSheet } from "./ui/index.js"
 import { InterpolatedNumber } from "./ui/status/InterpolatedNumber.jsx"
 import { CoinIcon, GemIcon, GearIcon, RouteEmblem } from "./art/GameIcons.jsx"
@@ -336,7 +336,7 @@ export default function Navbar({
               </button>
 
               {isIdentityOpen ? (
-                <PlayerHoverCard
+                <ShellIdentityPass
                   id={identityPopoverId}
                   className="shellIdentityPopover"
                   role="dialog"
