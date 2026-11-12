@@ -180,7 +180,26 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
       <span className="lobbyStageBeam" aria-hidden="true" />
       <span className="lobbyStageOrbit isOuter" aria-hidden="true" />
       <span className="lobbyStageOrbit isInner" aria-hidden="true" />
-      <span className="lobbyStagePedestal" aria-hidden="true" />
+      <svg className="lobbyStageRig" viewBox="0 0 300 340" aria-hidden="true">
+        <ellipse cx="150" cy="315" rx="133" ry="20" fill="#040912" opacity=".55" />
+        <g stroke="#040912" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round">
+          <path d="M165 247 C215 245 205 308 265 312" fill="none" strokeWidth="7" />
+          <path d="M165 247 C215 245 205 308 265 312" fill="none" stroke="#71808b" strokeWidth="2" />
+          <path d="M137 140 L163 140 L170 285 L130 285 Z" fill="#52616d" />
+          <path d="M155 145 L163 145 L170 285 L155 285 Z" fill="#273440" stroke="none" />
+          <path d="M140 158 L136 268" fill="none" stroke="#aab8bd" strokeWidth="3" />
+          <path d="M44 112 L60 112 Q63 220 150 229 Q237 220 240 112 L256 112 Q256 235 150 247 Q44 235 44 112 Z" fill="#586974" />
+          <path d="M54 164 Q67 225 150 237 Q233 225 246 164" fill="none" stroke="#283743" strokeWidth="7" />
+          <path d="M36 99 h24 v27 H36 Z M240 99 h24 v27 h-24 Z" fill="#b28b43" />
+          <circle cx="48" cy="112" r="5" fill="#dbe3df" /><circle cx="252" cy="112" r="5" fill="#dbe3df" />
+          <path d="M111 272 H189 L205 294 H95 Z" fill="#687985" />
+          <path d="M70 291 L230 291 L252 305 L245 316 L55 316 L48 305 Z" fill="#354550" />
+          <path d="M48 305 H252 L245 316 H55 Z" fill="#1b2934" />
+          <path d="M70 295 H229" fill="none" stroke="#b6c6c9" strokeWidth="3" />
+          <path d="M98 306 H202" fill="none" stroke="#c49a4b" strokeWidth="3" />
+          <circle cx="72" cy="306" r="3" fill="#c6d1d1" /><circle cx="228" cy="306" r="3" fill="#c6d1d1" />
+        </g>
+      </svg>
       <span
         aria-hidden="true"
         className={`lobbyStageTarget bigCircleButton ${hasImage ? "hasImage" : targetPreview?.skinClass ?? "skin-default"}`}
