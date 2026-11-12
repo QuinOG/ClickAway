@@ -4808,3 +4808,10 @@
 .feedbackSettingsSheet .uiSegmentedOption .uiSegmentedInput:checked + .uiSegmentedLabel { color: #ffd76a !important; background: transparent !important; box-shadow: none !important; transform: none !important; text-shadow: 0 0 8px rgb(255 201 74 / 55%), 0 1px 0 #040912; }
 .feedbackSettingsSheet .uiSegmentedOption .uiSegmentedInput:checked + .uiSegmentedLabel::before { top: 2px; width: 34px; height: 34px; background: repeating-linear-gradient(90deg, transparent 0 3px, rgb(80 50 10 / 35%) 3px 4px) 50% 50% / 14px 16px no-repeat, radial-gradient(circle at 40% 30%, #fff1b0, #f0b84a 55%, #9a6418); box-shadow: 0 0 0 3px #040912, 0 4px 0 #040912, 0 0 16px rgb(255 190 70 / 55%), inset 0 2px 0 rgb(255 255 255 / 60%); }
 .feedbackSettingsSheet .uiSegmentedOption .uiSegmentedInput:focus-visible + .uiSegmentedLabel { outline: 2px solid #55d9ff; outline-offset: 2px; }
+/* Round 33: Competitor pass - the arena seal is struck gold metal with raised relief, not printed ink */
+.shellIdentityPopover.shellIdentityPass .shellPassSeal { opacity: 1; filter: drop-shadow(0 2px 0 #050912) drop-shadow(0 4px 6px rgb(0 0 0 / 55%)); }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal circle:first-of-type { fill: #b8862e; stroke: #ffe39a; stroke-width: 2.5; stroke-dasharray: none; }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal circle:nth-of-type(2) { fill: #e0ad48; stroke: #7a5418; stroke-width: 2; }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal text { fill: #4a3008; font-weight: 900; }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal path:not([id]) { fill: #fff0b8; stroke: #7a5418; stroke-width: 1.4; }
+
