@@ -5,7 +5,7 @@ import { getProfileStats } from "../armorySpecRatings.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 import ArmorySegmentGauge from "./ArmorySegmentGauge.jsx"
 
-// The parts gallery (Phases 5â€“6): a lane's modules â€” or the tool rack's powers â€”
+// The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
 // laid out as machined parts. Clicking an unlocked card equips it immediately.
 
 function getPartStateLabel({ part, isLocked, isInstalled }) {
@@ -44,7 +44,7 @@ const REPORT_LABELS = {
   shrink: "Shrink pace",
   combo: "Combo ramp",
   miss: "Miss cost",
-  charge: "Power tempo",
+  charge: "Charge rate",
   payout: "Score payout",
 }
 
@@ -79,32 +79,6 @@ function SwapImpact({ rows, title = "Swap report", fromLabel = "Current", toLabe
   )
 }
 
-function ModCartridgePlate({ part, installed, rules, nextRules, confirmed, renderPartGlyph, install }) {
-  const current = rules ? getProfileStats(rules) : []
-  const next = nextRules ? getProfileStats(nextRules) : current
-  const changes = Object.fromEntries((confirmed?.rows ?? []).map((row) => [row.key, row]))
-  const order = ["size", "floor", "shrink", "combo", "miss", "charge", "payout"]
-  return <section className="armoryCartridgePlate" aria-label="Mod cartridge">
-    <div className="armoryCartridgePlateHeader">
-      <span className="armoryCartridgePlateEmblem">{part && renderPartGlyph?.(part, 64)}</span>
-      <div><small>{confirmed || !nextRules ? "Installed in this build" : `Swap in for ${installed?.label ?? "current mod"}`}</small><strong>{part?.label ?? "No mod selected"}</strong><p>{part?.description}</p></div>
-      {!confirmed && nextRules && part ? <button type="button" className="primaryButton" onClick={() => install(part.id)}>Install {part.label}</button> : null}
-    </div>
-    <div className="armoryCartridgePlateChannels">
-      {order.map((key) => {
-        const base = current.find((stat) => stat.key === key)
-        const change = changes[key]
-        const from = change?.from ?? base
-        const to = change?.to ?? next.find((stat) => stat.key === key) ?? base
-        const different = from && to && from.value !== to.value
-        return <div className="armoryCartridgePlateChannel" key={key}><span>{REPORT_LABELS[key]}</span><div>{from ? formatReportValue(key, from.value) : "\u2014"}{different ? <> <i>{"\u2192"}</i> <b>{formatReportValue(key, to.value)}</b></> : null}</div><ArmorySegmentGauge rating={from?.rating} next={to?.rating} /></div>
-      })}
-      <div className="armoryCartridgePlateLegend"><b>{confirmed ? "BEFORE \u2192 NOW" : "CURRENT \u2192 PREVIEW"}</b><span><i /> Gain <i /> Cost</span></div>
-    </div>
-    <div className="armoryCartridgePlateStatus">{confirmed || !nextRules ? `\u2713 Installed ${part?.label ?? ""}` : "Preview \u00b7 not fitted"}</div>
-  </section>
-}
-
 const RHYTHM_STREAKS = 20
 
 // Powerup swap as two streak rulers (1-20): where the installed tool charges
@@ -120,7 +94,7 @@ function ChargeRhythm({ candidate, installed, multiplier }) {
 
   return (
     <div className={`armoryChargeRhythm ${tone}`} aria-label="Charge rhythm">
-      <span className="armoryChargeRhythmTitle">Charge rhythm Â· streak 1â€“{RHYTHM_STREAKS}</span>
+      <span className="armoryChargeRhythmTitle">Charge rhythm · streak 1–{RHYTHM_STREAKS}</span>
       {rows.map((row, rowIndex) => (
         <div key={row.key} className={`armoryChargeRhythmRow ${row.isCandidate ? "isCandidate" : "isInstalled"}`}>
           <span className="armoryChargeRhythmLabel">{row.label}</span>
@@ -238,7 +212,7 @@ export default function ArmoryPartsGallery({
       aria-label={galleryLabel}
       onKeyDown={handleGalleryKeyDown}
     >
-      {currentRules ? <ModCartridgePlate part={confirmedPart ?? featuredPart ?? installedPart} installed={installedPart} rules={currentRules} nextRules={!confirmedPart && featuredPart && getCandidateRules ? getCandidateRules(featuredPart.id) : null} confirmed={confirmedPart ? confirmed : null} renderPartGlyph={renderPartGlyph} install={installPart} /> : confirmedPart ? (
+      {confirmedPart ? (
         <div className={`armoryPartFeature tone-${tone} isConfirmed`} aria-label={`Installed: ${confirmedPart.label}`}>
           <span className={`armoryPartFeatureGlyph tone-${tone}`} aria-hidden="true">
             {renderPartGlyph?.(confirmedPart)}
@@ -249,7 +223,7 @@ export default function ArmoryPartsGallery({
             <span className="armoryPartFeatureFeel">{confirmedPart.description}</span>
           </div>
           {confirmed.rows.length ? <SwapImpact rows={confirmed.rows} title="Applied changes" fromLabel="Before" toLabel="Now" /> : null}
-          <span className="armoryPartFeatureInstalled" role="status">Installed {"âœ“"}</span>
+          <span className="armoryPartFeatureInstalled" role="status">Installed {"✓"}</span>
         </div>
       ) : featuredPart ? (
         <div className={`armoryPartFeature tone-${tone}`} aria-label={`Featured: ${featuredPart.label}`}>

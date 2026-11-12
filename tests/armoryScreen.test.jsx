@@ -376,14 +376,17 @@ describe("Armory parts gallery (Phase 5)", () => {
       .find((button) => button.className.includes("armoryPartCard"))
   }
 
-  test("cartridge plate shows all build measurements", () => {
+  test("instrument dials replace the review metric-card grid", () => {
     renderArmory()
-    const plate = screen.getByLabelText("Mod cartridge")
-    expect(plate.querySelectorAll(".armoryCartridgePlateChannel")).toHaveLength(7)
-    expect(within(plate).getByText("Aim window")).not.toBeNull()
-    expect(within(plate).getByText(/100px/)).not.toBeNull()
-    expect(within(plate).getByText(/4.0% \/ hit/)).not.toBeNull()
-    expect(document.querySelector(".armorySwapReport")).toBeNull()
+
+    const instruments = screen.getByLabelText("Build instruments")
+    expect(instruments.querySelectorAll(".armoryInstrument")).toHaveLength(5)
+    expect(within(instruments).getByText("Aim Window")).not.toBeNull()
+    expect(document.querySelector(".armoryMetricCard")).toBeNull()
+    expect(within(instruments).getByText("100px")).not.toBeNull()
+    // The featured candidate is previewed beside the current value, so the
+    // shrink pace can appear twice (current and "→ candidate").
+    expect(within(instruments).getAllByText(/% \/ hit/).length).toBeGreaterThan(0)
   })
 
   test("part cards expose available, installed, and locked states", async () => {

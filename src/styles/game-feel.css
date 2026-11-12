@@ -3947,48 +3947,6 @@
   content: "\2715"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff4ec; font: 700 20px/1 sans-serif; text-shadow: 0 2px 0 #4d0d0d;
 }
 
-/* Round 16: Settings console */
-.settingsConsole .feedbackSettingsForm {
-    padding: 14px;
-    border: 2px solid #4b2a13;
-    border-radius: 5px;
-    background: repeating-linear-gradient(2deg, transparent 0 18px, rgb(39 15 5 / 17%) 19px 21px, transparent 22px 45px), linear-gradient(90deg, #75401f, #aa6b36 30%, #81451f 65%, #b4763e);
-    box-shadow: inset 0 2px 3px #dfaa70, inset 0 -4px 8px #3a1a0c;
-}
-.settingsConsole .feedbackSettingsSection {
-    position: relative;
-    padding: 16px !important;
-    border: 2px solid #07101b;
-    border-radius: 5px;
-    background: linear-gradient(135deg, #526078, #25354c 12%, #17253a 85%, #465570);
-    box-shadow: inset 0 0 0 2px #718099, inset 0 0 0 4px #172336, 0 4px 5px #32180e;
-}
-.settingsConsole .feedbackSettingsSection::before, .settingsConsole .feedbackSettingsSection::after {
-    content: '?'; position: absolute; top: 4px; color: #b6c4d2; font: 13px sans-serif; text-shadow: 0 1px #000;
-}
-.settingsConsole .feedbackSettingsSection::before { left: 6px; }
-.settingsConsole .feedbackSettingsSection::after { right: 6px; }
-.settingsConsole .feedbackSettingsEyebrow { letter-spacing: .16em; text-shadow: 0 1px #000; }
-.settingsConsole .feedbackSettingsSection h3 { text-shadow: 0 2px #060b13; }
-.settingsConsole .settingsConsoleMixer {
-    display: grid; gap: 0; padding: 8px 10px; border: 2px solid #080d14; border-radius: 4px;
-    background: linear-gradient(120deg, #677587, #394a5e 25%, #526276 60%, #29394d);
-    box-shadow: inset 0 1px #a6b2bd, 0 2px 3px #080c14;
-}
-.settingsConsole .feedbackRangeSetting {
-    padding: 5px 4px 4px !important; border: 0; border-radius: 0; background: none; box-shadow: none; gap: 1px;
-}
-.settingsConsole .feedbackRangeSetting + .feedbackRangeSetting { border-top: 1px solid #1c2b3a; }
-.settingsConsole .settingsConsoleScale { display: flex; justify-content: space-between; color: #d1d9df; font: 10px monospace; padding: 0 2px; }
-.settingsConsole .feedbackToggleSetting { border-color: #0a101a; background: linear-gradient(#26364b, #162235); box-shadow: inset 0 1px #607087, 0 2px 2px #111; }
-.settingsConsole .feedbackSettingsStatus { color: #fff2dc; text-shadow: 0 1px #32180e; }
-.settingsConsole .feedbackSettingsActions { background: #573019; box-shadow: 0 -1px #c6905d; padding-inline: 6px; }
-@media (max-width: 520px) { .settingsConsole .feedbackSettingsForm { padding: 10px; } .settingsConsole .uiSegmentedOption .uiSegmentedLabel { min-width: 0; padding-inline: 7px !important; } }
-.settingsConsole .feedbackSettingsSection:first-of-type .uiAction { min-height: 54px; }
-.settingsConsole .settingsConsoleScale { padding-top: 5px; background: repeating-linear-gradient(90deg, #aab8c8 0 1px, transparent 1px 25%) top left / 100% 4px no-repeat; }
-.settingsConsole .feedbackToggleSetting { min-height: 48px; padding-block: 3px !important; }
-.settingsConsole .feedbackToggleCopy > span { line-height: 1.2; }
-
 /* Round 16: auth cards (login, sign-up): no grey helper lines, keycap Show toggle, metal auth tabs */
 .authForm .authHint.authHint-neutral {
   position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -4066,37 +4024,60 @@
 .rankCeremony .rankCeremonyCannon i { left: 25px; } .rankCeremony .rankCeremonyCannon b { left: 90px; }
 @media (max-width: 1000px) { .rankCeremony .rankCeremonyCannon { display: none; } }
 @media (max-width: 600px) { .rankCeremony .rankCeremonyPrevious { left: -30px; } .rankCeremony .rankCeremonyPrevious img { width: 48px; height: 48px; } .rankCeremony .gameOverPromotionTitle { font-size: clamp(27px, 7vw, 40px); } }
-/* Round 16: Armory cartridge plate */
-.armoryPage .armoryCartridgePlate { box-sizing:border-box; min-width:0; min-height:432px; padding:16px; border:10px solid #3e5267; outline:4px solid #050912; background:linear-gradient(135deg,#1b3045,#101e30 60%,#08111e); box-shadow:inset 1px 1px #8495a3, 0 6px #050912; color:#f3efe6; }
-.armoryPage .armoryCartridgePlateHeader { display:grid; grid-template-columns:96px minmax(0,1fr) 132px; gap:14px; align-items:center; min-height:100px; }
-.armoryPage .armoryCartridgePlateEmblem { width:96px; height:96px; display:grid; place-items:center; border:4px solid #050912; border-radius:50%; background:#08111e; box-shadow:inset 0 0 0 3px #52687b,0 1px #708597; }
-.armoryPage .armoryCartridgePlateHeader small { display:block; color:#a8b6c8; font-size:11px; }
-.armoryPage .armoryCartridgePlateHeader strong { display:block; font-size:25px; line-height:1.1; }
-.armoryPage .armoryCartridgePlateHeader p { margin:4px 0 0; font-size:13px; line-height:18px; }
-.armoryPage .armoryCartridgePlateHeader button { min-width:0; padding:7px; font-size:13px; }
-.armoryPage .armoryCartridgePlateChannels { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 12px; margin-top:16px; }
-.armoryPage .armoryCartridgePlateChannel, .armoryPage .armoryCartridgePlateLegend { min-width:0; height:56px; }
-.armoryPage .armoryCartridgePlateChannel > span:first-child { display:block; color:#a8b6c8; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
-.armoryPage .armoryCartridgePlateChannel div { font-size:13px; white-space:nowrap; line-height:20px; }
-.armoryPage .armoryCartridgePlateChannel div b { font-size:17px; color:#f3efe6; }
-.armoryPage .armoryCartridgePlateChannel div i { color:#a8b6c8; font-style:normal; }
-.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge { display:flex; width:156px; height:10px; gap:4px; margin-top:3px; }
-.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i { flex:0 0 12px; height:10px; background:#050912; }
-.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i.isOn { background:#55d9ff; }
-.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i.isGain { background:#4eddb8; }
-.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i.isLoss { background:#ff665d; }
-.armoryPage .armoryCartridgePlateLegend { display:flex; flex-direction:column; justify-content:center; gap:8px; font-size:12px; color:#a8b6c8; }
-.armoryPage .armoryCartridgePlateLegend i { display:inline-block; width:10px; height:10px; background:#4eddb8; }.armoryPage .armoryCartridgePlateLegend i + i, .armoryPage .armoryCartridgePlateLegend i:last-child { background:#ff665d; }
-.armoryPage .armoryCartridgePlateStatus { margin-top:8px; border-top:1px solid #52687b; padding-top:8px; color:#a8b6c8; font-size:12px; }
-.armoryPage .armoryCartFooter { display:grid; grid-template-rows:16px 28px; gap:4px; padding:0 8px 6px 34px; }
-.armoryPage .armoryCart .armoryCartStats, .armoryPage .armoryCart:not(.isActive) .armoryCartStats { position:static; margin:0; padding:0; width:auto; font-size:11px; font-style:normal; }
-.armoryPage .armoryCart .armoryCartCompare { position:static; justify-self:end; width:76px; height:28px; padding:0; }
-@media (max-width:640px) { .armoryPage .armoryCartridgePlateChannels { grid-template-columns:1fr; } .armoryPage .armoryCartridgePlateHeader { grid-template-columns:64px 1fr; } .armoryPage .armoryCartridgePlateEmblem { width:64px; height:64px; } }
-.armoryPage .armoryBayWall .armoryCart .armoryCartBody, .armoryPage .armoryBayWall .armoryCart:not(.isActive) .armoryCartBody { height:calc(100% - 54px); grid-template-rows:44px minmax(0,1fr); }
-.armoryPage .armoryCart .armoryCartStats { min-height:0; }
-.armoryPage .armoryCartridgePlate { position:relative; }
-.armoryPage .armoryCartridgePlate::before, .armoryPage .armoryCartridgePlate::after { content:""; position:absolute; top:-7px; width:5px; height:5px; border-radius:50%; background:#07111d; box-shadow:0 1px #a8b6c8; }
-.armoryPage .armoryCartridgePlate::before { left:4px; }.armoryPage .armoryCartridgePlate::after { right:4px; }
-.armoryPage .armoryCartridgePlateChannel > span:first-child { display:table; padding:0 5px; color:#d6bf83; background:#263849; box-shadow:inset 0 1px #607387, 0 1px #050912; }
-.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge { outline:2px solid #050912; background:#050912; }
-.armoryPage .armoryCart .armoryCartStats.isEmpty { justify-self:start; }
+/* Round 17: Help FAQ as index cards, rulebook bars as brass plates */
+#faq .helpBlock { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; padding: 0 !important; }
+#faq .faqList { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; counter-reset: faq; }
+#faq .faqItem {
+  position: relative; counter-increment: faq; margin: 0 !important; padding: 16px 18px 16px 70px !important;
+  border: 2px solid #3b2a14 !important; border-radius: 4px;
+  background:
+    linear-gradient(90deg, transparent 56px, rgb(214 69 65 / 55%) 56px 58px, transparent 58px),
+    repeating-linear-gradient(180deg, transparent 0 23px, rgb(90 120 170 / 18%) 23px 24px),
+    linear-gradient(180deg, #fffaf0, #f5ead2) !important;
+  box-shadow: 0 3px 0 #3b2a14, 0 6px 12px rgb(0 0 0 / 18%) !important;
+}
+#faq .faqItem:nth-child(odd) { transform: rotate(-.4deg); }
+#faq .faqItem:nth-child(even) { transform: rotate(.35deg); }
+#faq .faqItem::before {
+  content: "Q" counter(faq); position: absolute; left: 10px; top: 14px; width: 38px; height: 38px; display: grid; place-items: center;
+  border: 2px solid #8a2a1e; border-radius: 50%; color: #8a2a1e; font: 400 14px/1 var(--ca-font-display);
+  background: radial-gradient(circle, rgb(214 69 65 / 12%), transparent 70%); transform: rotate(-12deg);
+  box-shadow: inset 0 0 0 2px rgb(138 42 30 / 30%);
+}
+#faq .faqItem::after {
+  content: ""; position: absolute; top: -7px; left: 50%; width: 46px; height: 14px; transform: translateX(-50%) rotate(-2deg);
+  background: rgb(243 196 90 / 70%); box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+}
+#faq .faqQuestion { margin: 0 0 6px !important; color: #2a1a08 !important; font-family: var(--ca-font-display); font-size: 15px; letter-spacing: .01em; }
+#faq .faqAnswer { margin: 0 !important; color: #3d3020 !important; font-size: 13px; line-height: 1.5; }
+
+.helpDoc .helpTopicGroup .helpRulebook > summary, .helpRulebook > summary {
+  border: 2px solid #3b2a14 !important; border-radius: 6px !important; color: #2a1600 !important;
+  background:
+    radial-gradient(circle at 12px 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 12px) 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
+    linear-gradient(180deg, #f6d27a, #d9a441 55%, #a8792a) !important;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 45%), 0 3px 0 #3b2a14 !important;
+}
+.helpRulebook > summary * , .helpRulebook > summary::marker { color: #2a1600 !important; }
+@media (max-width: 720px) { #faq .faqList { grid-template-columns: 1fr; } }
+
+/* Round 17: History load-more as a brass plate; recent averages as an LED strip */
+.historyPagination { display: flex; justify-content: center; }
+.historyPagination > .secondaryButton {
+  min-width: 320px; padding: 12px 28px !important; border: 2px solid #3b2a14 !important; border-radius: 6px !important;
+  color: #2a1600 !important; font-family: var(--ca-font-display); letter-spacing: .04em; text-transform: uppercase;
+  background:
+    radial-gradient(circle at 12px 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 12px) 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
+    linear-gradient(180deg, #f6d27a, #d9a441 55%, #a8792a) !important;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 45%), 0 4px 0 #3b2a14 !important;
+}
+.historyTrendStrip {
+  border: 2px solid #050912 !important; border-radius: 6px !important;
+  background: repeating-linear-gradient(90deg, rgb(255 255 255 / 3%) 0 2px, transparent 2px 4px), linear-gradient(180deg, #050b14, #0a1424) !important;
+  box-shadow: inset 0 3px 8px #000, 0 1px 0 #53647a !important;
+}
+.historyTrendStrip strong, .historyTrendStrip b { color: #ffcf55 !important; text-shadow: 0 0 6px rgb(255 190 70 / 55%); font-family: var(--ca-font-display); }
+.historyTrendStrip .historyTrendStatValue { color: #ffcf55 !important; text-shadow: 0 0 6px rgb(255 190 70 / 55%); font-family: var(--ca-font-display); }
+.helpDoc .helpTopicGroup .helpRulebook > summary::before { color: #5a3a08 !important; }
