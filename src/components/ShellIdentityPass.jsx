@@ -55,7 +55,7 @@ export default function ShellIdentityPass({ id, className = "", role, username =
     <header className="shellPassBanner">Competitor Pass</header>
     <div className="shellPassHero">
       <span className="shellPassPortraitMount"><span className={["shellPassPortrait", profileImage?.effectClass, hasImage ? "hasImage" : ""].filter(Boolean).join(" ")} style={hasImage ? undefined : getProfileAvatarStyle(username)} aria-hidden="true">{hasImage ? <img src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" /> : <PlayerPortrait name={username} size={88} />}</span></span>
-      <ArenaSeal /><div className="shellPassIdentity"><span>Competitor</span><strong className="shellPassName">{username}</strong><span>{label}</span></div>
+      <ArenaSeal /><div className="shellPassIdentity"><strong className="shellPassName">{username}</strong><span>{label}</span></div>
     </div>
     <section className="shellPassRank" aria-label={`Ranked rating ${label}`}>
       {crest && <img className="shellPassCrest" src={crest} alt="" width="128" height="128" decoding="async" />}

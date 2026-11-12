@@ -413,7 +413,7 @@ export default function Navbar({
         open={isMoreOpen}
         onOpenChange={(nextOpen) => (nextOpen ? setMoreOpenPath(pathname) : closeMore())}
         triggerRef={moreTriggerRef}
-        title="More destinations"
+        title="More"
         description="Collection, competition, support, and arena settings."
         className="mobileMoreBackdrop"
         surfaceClassName="mobileMoreSheet mobileMorePlaqueBoard"
