@@ -49,7 +49,7 @@ Current examples:
 - `normalizeProgressPayload` and `clampProgressBounds` in [server/index.js](server/index.js) limit `PUT /api/progress` to client-controlled fields and clamp coins, XP, and MMR.
 
 Gap:
-- `PUT /api/progress` accepts only the client-controlled fields listed in `normalizeProgressPayload`; coins, XP, MMR, history, and unlocked achievements are server-owned and recomputed. Client-controlled identifiers such as `selectedModeId` are normalized but not checked against the mode catalog at this endpoint.
+- `PUT /api/progress` accepts only the client-controlled fields listed in `normalizeProgressPayload` (equipped cosmetic ids, `activeLoadoutId`, `savedLoadouts`, `selectedModeId`, `buildWalkthrough`, and `seenUnlockPartIds`). Request coins, XP, MMR, and history are not taken from the client: they are merged onto the stored progress and kept from it (then clamped by `clampProgressBounds`). Unlocked achievements are the one server-owned field that is recomputed, via `resolveUnlockedAchievementIds`. `selectedModeId` is accepted by the endpoint but never persisted: `saveUserProgress` does not write it, and reads return `DEFAULT_PROGRESS.selectedModeId` (`"normal"`), so the submitted value is silently ignored. Client-controlled identifiers are normalized but not checked against their catalogs at this endpoint.
 
 ### Defensive Programming
 Interpretation:
@@ -82,7 +82,7 @@ Current examples:
 - `normalizeProgressInput` and `saveUserProgress` in [server/playerMysqlDatabase.js](server/playerMysqlDatabase.js).
 
 Recommended improvement:
-- Validate `selectedModeId` against the mode catalog before saving; the endpoint currently accepts any string.
+- Validate client-controlled cosmetic and loadout identifiers against their catalogs before saving. `selectedModeId` needs no such validation today because it is never persisted: the endpoint accepts it and silently ignores it, and reads always return the default. It should either be persisted with catalog validation or dropped from the allowlist.
 
 ### Cover all cases - use defaults to handle cases not explicitly covered
 Interpretation:
