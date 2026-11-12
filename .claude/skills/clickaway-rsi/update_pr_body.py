@@ -37,7 +37,7 @@ def baseline_cell(s):
     first = next((r for r in rounds if os.path.exists(os.path.join(SHOTS_DIR, r, s))), None)
     if first is None:
         return "_not captured_"
-    return f"![]({blob}/{first}/{s}?raw=true)" + ("" if first == "i0" else f"<br>_first captured in {first}_")
+    return f"![]({blob}/{first}/{s}?raw=true)"
 
 
 shot_rows = "\n".join(
