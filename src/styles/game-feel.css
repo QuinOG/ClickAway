@@ -4994,3 +4994,7 @@
 .gameOverAchievementHint { padding: 8px 16px !important; }
 .gameOverCardWithDifficulty > .gameOverActions { padding-top: 8px !important; gap: 16px !important; }
 .gameOverCardWithDifficulty > .gameOverBody > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+
+/* Round 42: Help chapter rulebooks as labelled compact toggles */
+.helpDoc .helpTopicGroup .helpRulebook:not([open]) { width: fit-content; min-width: 280px; }
+.helpDoc .helpTopicGroup .helpRulebook > summary { white-space: nowrap; }

@@ -64,10 +64,10 @@ function GuideGlyph({ glyph }) {
   }
 }
 
-function Rulebook({ children }) {
+function Rulebook({ label, children }) {
   return (
     <details className="helpRulebook">
-      <summary>Full rulebook</summary>
+      <summary>{label ? `${label} rules` : "Full rulebook"}</summary>
       <div className="helpRulebookBody">{children}</div>
     </details>
   )
@@ -117,7 +117,7 @@ export default function HelpPage() {
             <h2 className="helpGroupTitle">First Round</h2>
           </div>
           <HelpRoundStrip />
-          <Rulebook>
+          <Rulebook label="Round flow">
             <HelpQuickStartSection cards={QUICKSTART_CARDS} />
             <HelpFlowSection title="Round Flow" steps={ROUND_FLOW_STEPS} />
           </Rulebook>
@@ -130,7 +130,7 @@ export default function HelpPage() {
           <HelpRuleCards />
           <h3 className="helpSubhead">Power keys 1 · 2 · 3</h3>
           <HelpPowerupCards />
-          <Rulebook>
+          <Rulebook label="Gameplay">
           <div className="helpGrid">
               <HelpTableSection title="Controls" columns={["Action", "Input"]} rows={CONTROLS_ROWS} />
               <div>
@@ -169,7 +169,7 @@ export default function HelpPage() {
           </div>
           <HelpModeCards />
           <HelpRankTiersSection tiers={RANK_TIER_ROWS} />
-          <Rulebook>
+          <Rulebook label="Mode and rank">
           <div className="helpGrid">
               <HelpListSection title="Modes Explained" items={MODE_EXPLANATION_POINTS} />
               <HelpTableSection
@@ -195,7 +195,7 @@ export default function HelpPage() {
             <h2 className="helpGroupTitle">Progression and Economy</h2>
           </div>
           <HelpProgressionCards />
-          <Rulebook>
+          <Rulebook label="Progression">
           <div className="helpGrid">
               <HelpListSection title="Progression Math" items={PROGRESSION_POINTS} />
               <HelpListSection title="Shop and Cosmetics" items={SHOP_POINTS} />
@@ -212,7 +212,7 @@ export default function HelpPage() {
             <h2 className="helpGroupTitle">Account, Tracking, and Navigation</h2>
           </div>
           <HelpAccountCards />
-          <Rulebook>
+          <Rulebook label="Account and tracking">
           <div className="helpGrid">
               <HelpTableSection
                 title="Account Access"

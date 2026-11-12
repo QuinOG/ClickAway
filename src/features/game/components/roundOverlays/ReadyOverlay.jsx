@@ -213,7 +213,6 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
         )}
       </span>
       <div className="lobbyStageLoadout" aria-label="Current active build">
-        <small>Build ready</small>
         <Tooltip content={loadoutDetail} placement="top">
           <strong tabIndex="0">{loadoutName || "Loadout"}</strong>
         </Tooltip>
@@ -597,7 +596,6 @@ export function ReadyOverlay({
               disabled={!selectedMode}
             >
               <span>{startButtonLabel}</span>
-              <small>{selectedMode?.roundLabel} · {selectedMode?.rewardLabel}</small>
             </button>
           </div>
         </footer>
