@@ -15,7 +15,13 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "medium"}`
   - OpenCode `opencode-go/gemini-4-argon`, `{variant: "medium"}` (providerInstanceId `opencode`)
   - OpenCode `opencode-go/qwen3.8-max`, `{variant: "medium"}`
-  - **Gate judge** for the blind A/B check (Scoring v2, step 5): Qwen at medium, on the changed screens only.
+  - **Gate judge** for the blind A/B check (Scoring v2, step 5): Sol (`gpt-6.1-sol`, medium) on the changed screens only. Sol is the bottleneck judge, so a round it doesn't prefer won't move the score that matters. This also keeps OpenCode usage for the council (user, 2026-11-11).
+  - **Division of labour** (user, 2026-11-11: Claude usage runs ahead of schedule, Codex under):
+    - **Claude (builder session):** reads the replies, runs `council.py`, picks, writes specs, does the CSS/JSX integration, reviews every Codex result, and writes the change notes.
+    - **Codex `gpt-6.1-terra`, medium (`providerInstanceId: "codex"`):**
+      - Builds every illustration item (SVG art via `skins.py` or new generators in `.claude/skills/clickaway-rsi/`), as a `delegate_task` with `role: "implementation"` and `isolation: "worktree"`. The spec gives the target screen, the judges' ACCEPT lines, the house art style (ink outline, top-left light, flat base, cel crescent, highlight), output paths, and "render a contact sheet with Playwright and fix clipping".
+      - Also runs the ACCEPT check (`role: "review"`): it crops each changed screen at 100% and reports pass or fail for each ACCEPT line, with the crop paths. Claude looks only at the failures and the borderline cases.
+    - **Never build with Sol:** a judge that builds what it scores is the same bias Opus was dropped for. Terra no longer judges (dropped after run 1).
   - Opus was dropped after run 2 (user, 2026-11-11), for two reasons:
     - The builder is Opus 5.5, so a Claude judge risks sharing its blind spots.
     - Claude usage was running ahead of schedule.
@@ -83,7 +89,7 @@ The mechanics that answer each:
 4. **ACCEPT checklist.** Copy every picked item's ACCEPT line into `iN-decisions.md`. Before writing the change notes, check each one against a 100% crop and mark it pass or fail. Change notes claim **only** the items that pass, and they state each one in the judge's own ACCEPT wording.
 5. **Blind A/B gate (before committing and before the council).**
    - `python .claude/skills/clickaway-rsi/ab_gate.py make …/i(N-1) …/iN <scratchpad>/abN/pairs <changed screens>` copies each changed screen's before and after shots in a random X/Y order.
-   - Then send one `delegate_task` to the gate judge (Qwen, medium): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
+   - Then send one `delegate_task` to the gate judge (Sol, medium): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
    - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
 6. **Ratchet.** After the council, a changed screen whose mean dropped, or that 2+ judges scored lower, is reverted to the previous round's CSS for that screen at the start of the next round. Undo that screen's section in the round's CSS block, unless the next round rebuilds it anyway. Keep per-round CSS grouped by screen to make this cheap.
 7. **Calibration file.** `docs/ui-polish/game-feel/calibration.json` holds `{judge: factor}`, which is the realized share of that judge's own claimed screen gains (start every judge at 0.5). After each round, set it to the running mean of (actual screen Δ ÷ claimed screen Δ) over the screens that were changed.
