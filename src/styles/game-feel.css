@@ -4898,3 +4898,39 @@
 @media (max-width: 720px) {
   .authPanel.authPass { grid-template-rows: auto; }
 }
+
+/* Round 39: Profile card and Help on the 8px rhythm */
+.profileCompetitorCard { gap: 0 !important; padding: 0 24px 24px !important; }
+.profileCompetitorCard > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+.profileCompetitorCard > .profilePortraitSlab { margin-top: 24px !important; }
+.profileCompetitorCard > .profilePlayerName { margin-top: 32px !important; }
+.profileCompetitorCard > .profilePlayerTitle { margin-top: 8px !important; align-self: center; }
+.profileCompetitorCard > .profileDivisionPlate { margin-top: 16px !important; }
+.profileCompetitorCard > .profileRankGoal { margin-top: 8px !important; }
+.profileCompetitorCard > .profileXpReadout { margin-top: 16px !important; }
+.profileCompetitorCard > .profileHeaderResources { margin-top: 16px !important; }
+.helpDoc.card { padding: 32px !important; }
+.helpDoc > .commandHeader { margin: 0 0 16px !important; }
+.helpDoc > .helpTopicGroup { margin-top: 32px !important; padding: 8px 32px 32px 64px !important; }
+.helpTopicGroup > * { margin-bottom: 0 !important; }
+.helpTopicGroup > * + * { margin-top: 24px !important; }
+.helpTopicGroup > .helpGroupHeader + * { margin-top: 0 !important; }
+.helpTopicGroup > .helpSubhead + * { margin-top: 0 !important; }
+.helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
+.helpTopicGroup > .helpSubhead { margin: 24px 0 8px !important; }
+.helpTopicGroup > .helpRulebook { margin-top: 24px !important; }
+.profileCompetitorCard > .profilePlayerTitle { justify-self: center; }
+.profileCompetitorCard > .profileCardBanner { margin-left: -24px !important; margin-right: -24px !important; }
+.helpDoc .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
+/* Round 39: Shop on the 8px rhythm */
+.shopCard { width: min(1140px, 100%); }
+.shopInventoryDeck { gap: 32px; }
+.shopSection { padding-top: 0; }
+.shopSectionHeader p { margin: 8px 0 0; }
+.shopSection .shopGrid { gap: 16px; margin-top: 16px; }
+.shopSection[data-shop-family] .shopGrid .shopItemCard { margin-top: 0; padding: 16px; gap: 8px; }
+.shopSection[data-shop-family="arena_themes"] .shopGrid,
+.shopSection[data-shop-family="profile_images"] .shopGrid { padding-top: 32px; }
+.shopItemInfo { padding: 0; gap: 8px; }
+.shopItemFooter { padding-top: 8px; }
+.shopItemFooter { justify-content: flex-start; }
