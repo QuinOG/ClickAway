@@ -146,7 +146,6 @@ function AttributeRow({ icon, label, detail, value, fill, isStrongest = false })
 export default function ProfilePage({
   onLogout,
   playerName = "Player",
-  coins = 0,
   levelProgress = {},
   rankProgress = {},
   roundHistory = [],
@@ -303,7 +302,6 @@ export default function ProfilePage({
               </span>
             </div>
             <div className="profileHeaderResources" aria-label="Player resources and actions">
-              <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
               <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
               <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
             </div>

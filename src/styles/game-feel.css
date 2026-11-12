@@ -4998,3 +4998,18 @@
 /* Round 42: Help chapter rulebooks as labelled compact toggles */
 .helpDoc .helpTopicGroup .helpRulebook:not([open]) { width: fit-content; min-width: 280px; }
 .helpDoc .helpTopicGroup .helpRulebook > summary { white-space: nowrap; }
+
+/* Round 43: Profile - achievement progress centred under its medal; card actions on one row */
+.profileAchievementsSection .achievementsRow .achievementProgressMeta { justify-content: center; }
+.profileAchievementsSection .achievementsRow .achievementProgress { margin-top: 6px; }
+.profileCompetitorCard > .profileHeaderResources { gap: 8px; flex-wrap: nowrap; }
+
+/* Round 43: Duels - mirrored challenger/rival halves */
+.duelFightCard > .duelFighter > .duelFighterPlate { min-height: 104px; box-sizing: border-box; align-content: center; }
+
+/* Round 43: History - trajectory points spread across the whole plot */
+.historyTrajectory .historyClimb { padding-right: 0 !important; }
+.historyTrajectory .historyClimbLine { right: 0 !important; }
+.historyTrajectory .historyClimbAxis { right: 0; }
+.historyRoundDeck .historyRoundCard > .historyRoundCardMain { grid-column: 1 / -1 !important; justify-self: stretch !important; width: auto !important; margin-right: 126px !important; }
+.historyRoundCard .historyRoundCardTopline { justify-content: space-between; }
