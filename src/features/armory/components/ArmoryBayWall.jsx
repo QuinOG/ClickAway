@@ -71,9 +71,9 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNum
           </span>
         </span>
 
-        <ArmoryBayServicePlate stats={bayApi.loadoutStatsById?.[loadout.id]} />
       </button>
-
+      <div className="armoryCartFooter">
+        <ArmoryBayServicePlate stats={bayApi.loadoutStatsById?.[loadout.id]} />
       {isActive ? null : (
         <button
           type="button"
@@ -85,6 +85,7 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNum
           Compare
         </button>
       )}
+      </div>
     </div>
   )
 }
