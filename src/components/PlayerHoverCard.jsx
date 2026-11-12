@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom"
 import PlayerPortrait from "./art/PlayerPortrait.jsx"
+import { CrestIcon } from "./art/GameIcons.jsx"
 
 import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import { formatPercent } from "../utils/gameMath.js"
 import { PLACEMENT_MATCH_COUNT, getRankImageSrc } from "../utils/rankUtils.js"
 
-function QuickStat({ label, value, tone = "default" }) {
+function QuickStat({ label, value, tone = "default", style }) {
   return (
-    <div className={`profileHoverStat tone-${tone}`}>
+    <div className={`profileHoverStat tone-${tone}`} style={style}>
       <dt className="profileHoverStatLabel">{label}</dt>
       <dd className="profileHoverStatValue">{value}</dd>
     </div>
@@ -61,15 +62,21 @@ function PlayerAvatar({ username, profileImage }) {
   )
 }
 
-function RankedIdentity({ rankProgress = null, rankLabel, rankMmr }) {
+function RankedIdentity({ rankProgress = null, rankLabel, rankMmr, ladder = false, tierTone = "unranked" }) {
   const displayLabel = rankProgress?.tierLabel || rankLabel || "Unranked"
   const displayMmr = Number.isFinite(rankMmr) ? Math.max(0, rankMmr) : 0
   const rankImageSrc = getRankImageSrc(rankProgress ?? displayLabel)
   const metaText = getRankMetaText(rankProgress, displayLabel, displayMmr)
+  const hasProgress = Number.isFinite(rankProgress?.rr) && Number.isFinite(rankProgress?.rrMax) && rankProgress.rrMax > 0
+  const progressPercent = hasProgress ? Math.max(0, Math.min(100, rankProgress.rr / rankProgress.rrMax * 100)) : 0
 
   return (
     <section className="profileHoverRankBlock" aria-label={`Ranked rating ${displayLabel}`}>
-      {rankImageSrc ? (
+      {ladder ? (
+        <span className="profileHoverRankIconSlot" aria-hidden="true">
+          <CrestIcon tone={tierTone} className="profileHoverRankIcon" />
+        </span>
+      ) : rankImageSrc ? (
         <span className="profileHoverRankIconSlot" aria-hidden="true">
           <img className="profileHoverRankIcon" src={rankImageSrc} alt="" width="128" height="128" decoding="async" />
         </span>
@@ -78,6 +85,9 @@ function RankedIdentity({ rankProgress = null, rankLabel, rankMmr }) {
         <span className="profileHoverRankLabel">Ranked</span>
         <strong className="profileHoverRankValue">{displayLabel}</strong>
         <span className="profileHoverRankMeta">{metaText}</span>
+        {ladder && hasProgress ? (
+          <span className="ladderRankGauge" aria-hidden="true" style={{ "--rank-progress": `${progressPercent}%` }}><span /></span>
+        ) : null}
       </div>
     </section>
   )
@@ -86,6 +96,7 @@ function RankedIdentity({ rankProgress = null, rankLabel, rankMmr }) {
 export default function PlayerHoverCard({
   id,
   className = "",
+  ladder = false,
   role,
   username = "Player",
   profileImage = null,
@@ -101,6 +112,8 @@ export default function PlayerHoverCard({
   bestStreak = null,
   rankedRounds = null,
 }) {
+  const tierName = String(rankProgress?.tierLabel || rankLabel).split(" ")[0].toLowerCase()
+  const tierTone = ["gold", "silver", "bronze", "platinum", "diamond"].includes(tierName) ? tierName : "unranked"
   const formattedCoins = Number.isFinite(coins) ? coins.toLocaleString() : "0"
   const normalizedLevel = Number.isFinite(level) ? Math.max(1, level) : 1
   const formattedAccuracy = formatPercent(accuracyPercent)
@@ -108,7 +121,7 @@ export default function PlayerHoverCard({
   return (
     <div
       id={id}
-      className={`profileHoverCard ${className}`.trim()}
+      className={`profileHoverCard ${className} ${ladder ? `ladderTier-${tierTone}` : ""}`.trim()}
       role={role}
       aria-label={role ? `${username} player details` : undefined}
     >
@@ -120,27 +133,35 @@ export default function PlayerHoverCard({
         </div>
       </header>
 
-      <RankedIdentity rankProgress={rankProgress} rankLabel={rankLabel} rankMmr={rankMmr} />
+      <RankedIdentity rankProgress={rankProgress} rankLabel={rankLabel} rankMmr={rankMmr} ladder={ladder} tierTone={tierTone} />
 
       <dl className="profileHoverStats" aria-label="Player quick stats">
         <QuickStat label="Coins" value={formattedCoins} tone="coins" />
         <QuickStat label="Level" value={normalizedLevel.toLocaleString()} tone="level" />
-        <QuickStat label="Accuracy" value={formattedAccuracy} tone="accuracy" />
+        <QuickStat
+          label="Accuracy"
+          value={formattedAccuracy}
+          tone="accuracy"
+          style={{ "--stat-pct": `${Math.max(0, Math.min(100, Number(accuracyPercent) || 0))}%` }}
+        />
         {bestScore !== null ? (
           <QuickStat
             label="Best score"
+            tone="score"
             value={Number.isFinite(bestScore) ? Math.max(0, bestScore).toLocaleString() : "0"}
           />
         ) : null}
         {bestStreak !== null ? (
           <QuickStat
             label="Best streak"
+            tone="streak"
             value={Number.isFinite(bestStreak) ? Math.max(0, bestStreak).toLocaleString() : "0"}
           />
         ) : null}
         {rankedRounds !== null ? (
           <QuickStat
             label="Ranked rounds"
+            tone="rounds"
             value={Number.isFinite(rankedRounds) ? Math.max(0, rankedRounds).toLocaleString() : "0"}
           />
         ) : null}

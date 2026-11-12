@@ -5,14 +5,18 @@ import json, re, sys
 from pathlib import Path
 
 ROOT = Path("docs/ui-polish/game-feel")
-SCREENS = ["01-login", "02-play", "03-armory", "04-shop", "05-profile", "06-ladder", "07-duels",
-           "08-history", "09-help", "10-settings-sheet", "11-live-round", "12-results", "13-rankup"]
+SCREENS = []  # filled from the round's screenshot folder, so new captures (14+) are picked up automatically
 BARS = {"sol": 9.4}            # everyone else: 9.0
 CONF = {"high": 1.0, "med": 0.7, "low": 0.4}
 
 
 def screen_key(token):
     t = token.strip().lower()
+    if t in SCREENS:
+        return t
+    for s in SCREENS:  # same two-digit number (e.g. "15-hovercard" -> "15-ladder-hovercard")
+        if t[:2].isdigit() and t[:2] == s[:2]:
+            return s
     for s in SCREENS:
         if t.startswith(s[:2]) or s.split("-", 1)[1].split("-")[0] in t:
             return s
@@ -39,6 +43,7 @@ def parse(path):
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     n = int(sys.argv[1])
+    SCREENS[:] = sorted(p.stem for p in (ROOT / f"i{n}").glob("*.png"))
     replies = sorted((ROOT / "replies" / f"i{n}").glob("*.md"))
     cal = json.loads((ROOT / "calibration.json").read_text()) if (ROOT / "calibration.json").exists() else {}
     prev_file = ROOT / f"i{n-1}-screens.json"
@@ -66,6 +71,14 @@ def main():
         vals = [v for v in out[j].values() if v is not None]
         overall[j] = sum(vals) / len(vals) if vals else 0
     print("| **OVERALL** | " + " | ".join(f"**{overall[j]:.2f}**" for j in judges) + " | |\n")
+    # New captures change the mean, so also compare like with like on the screens scored last round.
+    shared = [s for s in SCREENS if prev and all(prev.get(j, {}).get(s) is not None for j in judges)]
+    if prev and len(shared) < len(SCREENS):
+        def mean_on(src, j):
+            vals = [src[j][s] for s in shared if src[j].get(s) is not None]
+            return sum(vals) / len(vals) if vals else 0
+        print(f"Like-for-like on the {len(shared)} screens scored last round: "
+              + ", ".join(f"{j} {mean_on(prev, j):.2f}→{mean_on(out, j):.2f}" for j in judges) + "\n")
 
     gaps = sorted(judges, key=lambda j: overall[j] - BARS.get(j, 9.0))
     weight = {j: (1.3 if i == 0 else 1.15 if i == 1 else 1.0) for i, j in enumerate(gaps)}

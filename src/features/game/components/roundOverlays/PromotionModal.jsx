@@ -197,7 +197,7 @@ export default function PromotionModal({
 
   return (
     <MotionSection
-      className="gameOverPromotionCard"
+      className="gameOverPromotionCard rankCeremony"
       data-tier={getCrestToneFromLabel(projectedRankLabel)}
       aria-labelledby="promotion-modal-title"
       aria-live="polite"
@@ -206,6 +206,8 @@ export default function PromotionModal({
       animate="visible"
       exit="exit"
     >
+      <div className="rankCeremonyCannon isLeft" aria-hidden="true"><i /><b /></div>
+      <div className="rankCeremonyCannon isRight" aria-hidden="true"><i /><b /></div>
       <MotionDiv variants={itemVariants}>
         <p className="gameOverPromotionEyebrow">
           {isPlacementReveal ? "Placement Complete" : "Rank Promotion"}
@@ -221,6 +223,9 @@ export default function PromotionModal({
       <MotionDiv className="gameOverPromotionEmblem" aria-hidden="true" variants={newBadgeVariants}>
         <span className="gameOverPromotionRays" />
         <span className="gameOverPromotionPedestal" />
+        {!isPlacementReveal && getRankImageSrc(currentRankLabel) && (
+          <div className="rankCeremonyPrevious"><img src={getRankImageSrc(currentRankLabel)} alt="" /><span>{currentRankLabel}</span></div>
+        )}
         {getRankImageSrc(projectedRankLabel) ? (
           <img className="gameOverPromotionMedal" src={getRankImageSrc(projectedRankLabel)} alt="" width="220" height="220" decoding="async" />
         ) : (

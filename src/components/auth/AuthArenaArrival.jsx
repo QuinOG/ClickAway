@@ -1,6 +1,6 @@
 import ArenaWorldArt from "../art/ArenaWorldArt.jsx"
 
-export default function AuthArenaArrival({ mode = "login", children }) {
+export default function AuthArenaArrival({ mode = "login", name = "", children }) {
   const isSignup = mode === "signup"
 
   return (
@@ -19,6 +19,10 @@ export default function AuthArenaArrival({ mode = "login", children }) {
       <section className="authPanel authPass" aria-labelledby="auth-page-title">
         <span className="authPassStub" aria-hidden="true"><b>Competitor pass</b><i>Admit one · Season 1</i></span>
         <span className="authPassSeal" aria-hidden="true">S1</span>
+        <div className="authIdentity" aria-label="Competitor pass preview">
+          <div className="authPortrait"><img src="/skins/racoon.svg" alt="" /></div>
+          <div className="authIdentityCopy"><small>Season 01 / Competitor</small><strong>{name.trim() || (isSignup ? "NEW COMPETITOR" : "RETURNING PLAYER")}</strong><span>OFFICIAL ARENA PASS / ADMIT ONE</span></div>
+        </div>
         <div className="authPanelHeader">
           <span className="authEyebrow">
             {isSignup ? "New competitor" : "Competitor access"}

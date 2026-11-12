@@ -367,10 +367,10 @@ export default function ProfilePage({
                     <li
                       key={bar.id}
                       className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
-                      style={{ "--rise": bar.rise.toFixed(3) }}
                       title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
                     >
-                      {formatNumber(bar.score)}
+                      <span className="profileStampScore">{formatNumber(bar.score)}</span>
+                      <span className="profileStampOutcome">{bar.isRanked ? `${formatSignedValue(bar.rankDelta)} RR` : "ROUND"}</span>
                     </li>
                   )) : <li className="profileEmptySignal">Play a round to establish form</li>}
                 </ol>

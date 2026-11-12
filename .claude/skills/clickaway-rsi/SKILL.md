@@ -14,20 +14,27 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - **Council (from run 3):** `delegate_task` ×3, all launched in one message, `role: "review"`, **all at medium reasoning** (user's rule):
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "medium"}`
   - OpenCode `opencode-go/gemini-4-argon`, `{variant: "medium"}` (providerInstanceId `opencode`)
-  - OpenCode `opencode-go/qwen3.8-max`, `{variant: "medium"}`
+  - OpenCode `opencode-go/grok-4.7`, `{variant: "medium"}`, JUDGE = `grok` (from r18; user, 2026-11-12). It replaced Qwen3.8 Max, which was the slowest to return and pushed OpenCode ~10% ahead of pace. Grok has no entry in PREVIOUS_SCORES at first, so under brief v2 it opens and scores every screen fresh in its first round (its anchor read); treat its first-round overall as a baseline, not a gain. Drop it after a round or two if its asks are generic or its scores swing.
   - **Gate judge** for the blind A/B check (Scoring v2, step 5): Sol (`gpt-6.1-sol`, medium) on the changed screens only. Sol is the bottleneck judge, so a round it doesn't prefer won't move the score that matters. This also keeps OpenCode usage for the council (user, 2026-11-11).
   - **Division of labour** (user, 2026-11-11: Claude usage runs ahead of schedule, Codex under):
     - **Claude (builder session):** reads the replies, runs `council.py`, picks, writes specs, does the CSS/JSX integration, reviews every Codex result, and writes the change notes.
     - **Codex `gpt-6.1-terra`, medium (`providerInstanceId: "codex"`):**
       - Builds every illustration item (SVG art via `skins.py` or new generators in `.claude/skills/clickaway-rsi/`), as a `delegate_task` with `role: "implementation"` and `isolation: "worktree"`. The spec gives the target screen, the judges' ACCEPT lines, the house art style (ink outline, top-left light, flat base, cel crescent, highlight), output paths, and "render a contact sheet with Playwright and fix clipping".
       - Also runs the ACCEPT check (`role: "review"`): it crops each changed screen at 100% and reports pass or fail for each ACCEPT line, with the crop paths. Claude looks only at the failures and the borderline cases.
+    - **Run Terra builds one at a time** (r13). Each worktree starts without `node_modules`, and three parallel `npm ci` runs stalled two of them. Every spec says: run `npm ci` with a long timeout (else `npm install`), never junction node_modules, and capture on its own port (4175+, through an uncommitted config copy), because `reuseExistingServer` silently screenshots whichever dev server is already on 4173. If a build stalls on install, apply its diff in the main checkout and run it there.
+    - **Check every merge yourself:** parallel builds append to the end of `game-feel.css` and conflict, and both blocks usually need keeping. After merging, recapture and crop. In r13, Terra's trophies came out ~35% smaller than the medals they replaced, so they were scaled from the base before committing.
     - **Never build with Sol:** a judge that builds what it scores is the same bias Opus was dropped for. Terra no longer judges (dropped after run 1).
   - Opus was dropped after run 2 (user, 2026-11-11), for two reasons:
     - The builder is Opus 5.5, so a Claude judge risks sharing its blind spots.
     - Claude usage was running ahead of schedule.
     Gemini's scores moved with Opus's (0.75 correlation over run 2), so its direction stays covered. Opus's strictness about overclaims is now covered by the ACCEPT crop checklist and Qwen's gate. If Claude usage allows, Opus (`claude-opus-5`, `{effort: "low"}`; `orchestrator_capabilities` with `search: "opus-5"` finds it) can be run once to audit a run's final round.
   - Gemini and Qwen stay at **medium** (user, 2026-11-11): the image trim below is enough, since they are only slightly over pace.
-  - Token budget (user, 2026-11-11): Gemini and Qwen were burning tokens fast, mostly on images (13 current + 13 previous PNGs, some 4600px tall). For them, add to the prompt: "Open all 13 CURRENT_DIR images, but open PREVIOUS_DIR images only for the screens named in CHANGES_FILE." Sol keeps the full set.
+  - **Image budget (user, 2026-11-11: cut only redundant work, never anything that costs judging signal):**
+    - `reuse_unchanged.py` makes every unchanged screen a byte-for-byte copy of last round's file. So under brief v2, judges open only the screens named in CHANGES_FILE (current plus previous, about 10 images instead of 26), and copy their previous scores for the rest.
+    - **Full read:** at a run's anchor read and on every third round after it (r16, r19, …), add `FULL_READ = yes` to the prompt. Judges then open all 13 and may re-score with a reason, which catches drift.
+    - **Standards only on full reads** (user, 2026-11-11, OpenCode ~10% ahead of pace): the four reference standards are viewed on the anchor read and on FULL_READ rounds only. On other rounds each judge is anchored by its own previous scores, so the standards are redundant there.
+    - **Keep global changes out of ordinary rounds.** A change that touches every screen (nav avatar, shared icons, nav chrome) forces a full read, because every screen differs and nothing can be reused. Batch such changes into the FULL_READ rounds (r16, r19, …). Round 13 had one (icons and nav portrait), so all 20 screens plus 13 previous plus 4 standards were opened.
+    - **Kept on purpose:** full-resolution images (downscaling would hide fine detail). Gemini also runs every round; skipping it would lose signal.
   - Judges must read PNGs, so only image-input models qualify. Check `models.dev/api.json` → `modalities.input`.
   - Reserve: `opencode-go/grok-4.7` `{variant: "medium"}`. It takes images and supports medium, but has no public vision or design results yet.
   - Excluded because they lack a medium variant: Kimi K3.1 Pro (low/high/max) and Hy4 (none/high).
@@ -48,6 +55,9 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - Main stylesheet for this work: `src/styles/game-feel.css` (imported last in `src/styles/app.css`). Shared frame/world SVGs live there as `--gf-frame` / `--gf-world` data URIs; `#` must be written as `%23`.
 
 ## Loop (one round)
+0. **Usage hygiene (no effect on ratings):**
+   - **Usage limits:** if a judge or builder fails with a usage limit (for example "OpenCode Go 5 hour usage limit reached"), don't wait for the user. Schedule the resume with `schedule_task` (load it via ToolSearch) for just after the reset: the time the user gives, or 5h10m after the failure. Use a prompt such as "continue the ClickawayRSI test: rerun <judges> for iN", and tell the user when it will fire.
+   - **Viewing screenshots myself:** crop to the region in question with PIL into the scratchpad. Open whole full-page shots only for the first look at a newly built screen. Terra's ACCEPT check reports crop paths, so open those.
 1. **Capture:** `SHOT_DIR=docs/ui-polish/game-feel/iN npx playwright test tests/e2e/zz-app.spec.js --workers=1`. Before sending, open 2–3 of the shots yourself to catch broken captures (blurred, empty, cut off).
 2. **Council:** launch all judges with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md . Standards: …/docs/ui-polish/standards/. Read-only; do not edit anything.` End your turn; completions wake you.
 3. **Pick fixes (weighted, see "Decision model" below):** when all replies are in, build `docs/ui-polish/game-feel/i(N+1)-decisions.md` with the value table, picks, skips and predicted gains, then implement the picks.
@@ -57,6 +67,10 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
    - For every screen the round didn't change, it copies the previous round's PNG over the new capture, byte for byte, when no more than 2% of pixels differ (animation noise). Git then stores nothing new for those screens: about 14MB a round was going into history, mostly re-encoded animation noise.
    - A FLAGGED screen differs by more than that. Look at it: a shared-CSS change may have leaked, so either fix the leak or add the screen to the changed list.
    - The folder stays complete for the judges and for `update_pr_body.py`.
+   - **Before/after on every visual commit (user, 2026-11-11).** Every commit that changes how a screen looks gets its own PR comment, not only the round comment. This includes merged Terra builds and fixes between rounds.
+     - **One commit holds the change and its after shots** (user, 2026-11-11). Capture before committing, copy just the affected screens to `docs/ui-polish/game-feel/steps/NN-<slug>/`, and commit them together with the code. For a Terra branch: `git merge --no-commit --no-ff <branch>`, capture, add the shots, then `git commit`, so the merge commit carries both.
+     - Then run `python .claude/skills/clickaway-rsi/step_comment.py "<title>" "<summary>" <sha> <before.png>::<after.png> … > cN.json` and `gh.sh POST /issues/<PR>/comments cN.json`.
+     - "Before" is the latest committed shot of that screen: the last round folder, or the previous step.
    - Then write `i(N+1)-changes.md` and commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
    - add the scores to `docs/ui-polish/game-feel/scores.json`
    - post the **round comment** (previous round vs this round, for the shots you changed):
@@ -75,7 +89,7 @@ Why: in run 2 every round landed between −0.17 and +0.25 on average, and Sol n
 The mechanics that answer each:
 1. **Per-screen scores with an anchor.** `brief.md` v2 makes each judge score all 13 screens, and OVERALL is their mean. Unchanged screens keep last round's score unless the judge names a missed defect. That removes the drift, so a gain on a changed screen shows up as a gain.
    - Prompt each judge with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. JUDGE = <sol|opus|gemini|qwen> ; CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md ; PREVIOUS_SCORES = …/i(N-1)-screens.json ; REPLY_FILE = …/replies/iN/<judge>.md . Standards: …/standards/.`
-   - Add the Gemini/Qwen extras from Council.
+   - For Gemini and Qwen, add: "Open every image the brief tells you to open with your file-read tool; do not judge from file names." Do **not** tell them to open every PNG, or they will reopen the unchanged copies.
    - Each judge writes its reply to REPLY_FILE and returns only the OVERALL line, which keeps four long replies out of the session context.
    - The first council of a run has no PREVIOUS_SCORES. It is the anchor read.
 2. **Arithmetic, not vibes.** `python .claude/skills/clickaway-rsi/council.py N` parses the replies and writes `iN-screens.json`, which becomes the next round's PREVIOUS_SCORES. It prints:
@@ -94,7 +108,7 @@ The mechanics that answer each:
 5. **Blind A/B gate (before committing and before the council).**
    - `python .claude/skills/clickaway-rsi/ab_gate.py make …/i(N-1) …/iN <scratchpad>/abN/pairs <changed screens>` copies each changed screen's before and after shots in a random X/Y order.
    - Then send one `delegate_task` to the gate judge (Sol, medium): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
-   - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
+   - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. **Do not launch the council until the gate passes.** Re-gate only the screens that were fixed. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
 6. **Ratchet.** After the council, a changed screen whose mean dropped, or that 2+ judges scored lower, is reverted to the previous round's CSS for that screen at the start of the next round. Undo that screen's section in the round's CSS block, unless the next round rebuilds it anyway. Keep per-round CSS grouped by screen to make this cheap.
 7. **Calibration file.** `docs/ui-polish/game-feel/calibration.json` holds `{judge: factor}`, which is the realized share of that judge's own claimed screen gains (start every judge at 0.5). After each round, set it to the running mean of (actual screen Δ ÷ claimed screen Δ) over the screens that were changed.
 
@@ -219,6 +233,7 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
       - distinct illustrated competitors (Sol);
       - the Shop storefront (Opus).
       - Sol only ever moved on **new illustration**: r4's SVG item set gave +0.3. Use the `skins.py` approach for competitor portraits and the target apparatus, not CSS effects.
+- 2026-11-11 run 3 (branch `game-feel-run3`, cut from main after PR #12 merged). Open a new PR when round 13 is committed. `post_round.py` and `update_pr_body.py` read the current git branch (override with `RSI_BRANCH`). Council is Sol, Gemini and Qwen; Sol gates; Terra builds the art. The user asked for a two-round test (r13, r14) of scoring v2 before it is adopted for good.
   - **NEXT = run 3.** Start with an anchor read of i12 under brief v2 (no PREVIOUS_SCORES), then round 13 from that anchor, using the gap map above.
   - Earlier plan, done in r12: **NEXT = round 12, the final round (cap).** Gemini and Qwen stay at medium but open trimmed images (see Council). Picks by consensus:
     - (1) Profile: rebuild the scouting report as a tight instrument panel (recessed tray for the form coins, framed sub-plaques for Top Build and Nearest Achievement) at natural height, and fill the column another way; trophies stand on the shelf with contact shadows (all four).
@@ -236,3 +251,8 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
     6. Restore Duels portrait presence, and add a trend cue to the Profile form coins.
     Opus asked for the Armory right rail as workbench parts, but Sol protects the Armory trade-offs: do it only as a material change and keep the trade-off readout.
   - Earlier plan (superseded): **NEXT = round 5 (2 rounds left in run 1).** Consensus plan: (1) Help → illustrated field manual: side chapter tabs, paper/metal pages, FAQ as pages, fewer small cards — biggest drag per Opus; (2) Ladder → dimensional winners' podium (stepped platforms, big portraits, tier crests) + rank plaques of varying weight, own row distinct, drop header row; (3) Arena → paint floor/rails/trusses (no cyan wireframe), add foreground element + haze; (4) Shop → featured legendary on a big pedestal above compact trays, rarity-specific card presentation; (5) Global display numeral face for hero numbers + condensed micro-label face (self-host via @fontsource; check package availability offline first); (6) Duels confrontation layout if time. Capture to i5, PREVIOUS_DIR=i4.
+
+- 2026-11-11 r14 lessons:
+  - **Conflict markers and CRLF:** game-feel.css has CRLF line endings, so `grep '^=======$'` and `sed '/^=======$/'` miss the separator. Match `^=======\?$` (or `grep -n '^=======' `), and run `npx vite build` after every conflict resolution: a stray marker breaks the whole stylesheet, and the capture spec swallows errors, so the run "passes" with only 2 of 20 shots.
+  - **Merge order of Terra builds:** every build appends to the end of game-feel.css, so every merge after the first conflicts. Keep both blocks.
+  - **The gate overrules the asking judge:** Sol asked for the compact History scoreboard (i13 sol#6), then blind-preferred the old big chart by 2. Build what a judge asks, but let the blind gate decide.

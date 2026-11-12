@@ -156,7 +156,7 @@ export default function SignupPage({ onSignup }) {
   }
 
   return (
-    <AuthArenaArrival mode="signup">
+    <AuthArenaArrival mode="signup" name={username}>
       <div className="authCard">
         <form onSubmit={handleSubmit} className="authForm" noValidate>
           <AuthInputField
@@ -233,7 +233,7 @@ export default function SignupPage({ onSignup }) {
             isLoading={isSubmitting}
             loadingLabel="Creating competitor…"
           >
-            Create competitor
+            Issue pass
           </ActionButton>
 
           {submitError ? (

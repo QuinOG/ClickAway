@@ -10,10 +10,11 @@ transformation is visible without comparing intermediate rounds.
 """
 import json
 import os
+import subprocess
 import sys
 
 REPO = "QuinOG/ClickAway"
-BRANCH = os.environ.get("RSI_BRANCH", "game-feel-council")
+BRANCH = os.environ.get("RSI_BRANCH") or subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True).stdout.strip()
 SHOTS_DIR = "docs/ui-polish/game-feel"
 
 n = int(sys.argv[1])
@@ -23,17 +24,24 @@ blob = f"https://github.com/{REPO}/blob/{BRANCH}/{SHOTS_DIR}"
 tree = blob.replace("/blob/", "/tree/")
 
 shots = sorted(f for f in os.listdir(os.path.join(SHOTS_DIR, latest)) if f.endswith(".png"))
-JUDGES = ["Sol", "Terra", "Opus 5", "Gemini 4 Argon", "Qwen3.8 Max"]
+JUDGES = ["Sol", "Terra", "Opus 5", "Gemini 4 Argon", "Qwen3.8 Max", "Grok 4.7"]  # scores.json lists follow this order
 score_rows = "\n".join(
     f"| {r}{' (baseline)' if r == 'i0' else ''}{' **latest**' if r == latest else ''} | "
     + " | ".join("—" if v is None else str(v) for v in (vals + [None] * len(JUDGES))[:len(JUDGES)])
     + f" | **{sum(v for v in vals if v is not None) / len([v for v in vals if v is not None]):.2f}** |"
     for r, vals in scores.items()
 )
+def baseline_cell(s):
+    # Screens added after i0 (e.g. 14-20 from i13) show their first capture as the baseline, used as the baseline.
+    rounds = sorted((d for d in os.listdir(SHOTS_DIR) if d[:1] == "i" and d[1:].isdigit()), key=lambda d: int(d[1:]))
+    first = next((r for r in rounds if os.path.exists(os.path.join(SHOTS_DIR, r, s))), None)
+    if first is None:
+        return "_not captured_"
+    return f"![]({blob}/{first}/{s}?raw=true)"
+
+
 shot_rows = "\n".join(
-    f"| **{s.split('-', 1)[1][:-4]}** | "
-    + (f"![]({blob}/i0/{s}?raw=true)" if os.path.exists(os.path.join(SHOTS_DIR, "i0", s)) else "_not captured in i0_")
-    + f" | ![]({blob}/{latest}/{s}?raw=true) |"
+    f"| **{s.split('-', 1)[1][:-4]}** | " + baseline_cell(s) + f" | ![]({blob}/{latest}/{s}?raw=true) |"
     for s in shots
 )
 

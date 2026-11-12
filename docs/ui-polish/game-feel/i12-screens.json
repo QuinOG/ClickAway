@@ -1,0 +1,47 @@
+{
+ "gemini": {
+  "01-login": 8.3,
+  "02-play": 8.4,
+  "03-armory": 8.1,
+  "04-shop": 8.2,
+  "05-profile": 8.4,
+  "06-ladder": 8.4,
+  "07-duels": 8.5,
+  "08-history": 8.4,
+  "09-help": 8.3,
+  "10-settings-sheet": 8.4,
+  "11-live-round": 8.5,
+  "12-results": 8.4,
+  "13-rankup": 8.3
+ },
+ "qwen": {
+  "01-login": 8.5,
+  "02-play": 8.5,
+  "03-armory": 8.0,
+  "04-shop": 8.0,
+  "05-profile": 8.5,
+  "06-ladder": 8.0,
+  "07-duels": 8.5,
+  "08-history": 8.0,
+  "09-help": 8.0,
+  "10-settings-sheet": 8.0,
+  "11-live-round": 8.5,
+  "12-results": 8.5,
+  "13-rankup": 8.5
+ },
+ "sol": {
+  "01-login": 8.0,
+  "02-play": 8.3,
+  "03-armory": 8.1,
+  "04-shop": 8.2,
+  "05-profile": 8.0,
+  "06-ladder": 8.2,
+  "07-duels": 8.3,
+  "08-history": 7.9,
+  "09-help": 8.3,
+  "10-settings-sheet": 8.0,
+  "11-live-round": 8.1,
+  "12-results": 8.0,
+  "13-rankup": 8.5
+ }
+}
