@@ -4624,3 +4624,50 @@
 .specSheetClipboard .armorySpecProfile { padding: 4px 6px 5px; gap: 2px 10px; }
 .specSheetClipboard .armorySpecProfile::before { content: ''; position: absolute; left: 28px; top: -93px; height: 93px; border-left: 1px dashed #80c9d36b; pointer-events: none; }
 .specSheetClipboard .armorySpecStatLabel { text-transform: none; letter-spacing: .02em; }
+/* Round 26: Competitor pass - engraved credential: guilloche field, embossed arena seal, serial strip */
+.shellIdentityPopover.shellIdentityPass {
+  background:
+    radial-gradient(ellipse 80% 40% at 30% 30%, rgb(255 201 74 / 10%), transparent 70%),
+    repeating-radial-gradient(circle at 115% -10%, rgb(255 215 120 / 6%) 0 1px, transparent 1px 6px),
+    repeating-radial-gradient(circle at -15% 110%, rgb(160 200 255 / 5%) 0 1px, transparent 1px 7px),
+    linear-gradient(170deg, #1c2d47, #0e192b 70%) !important;
+}
+.shellIdentityPopover.shellIdentityPass .shellPassHero { position: relative; }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal { position: absolute; right: -2px; top: 50%; width: 74px; height: 74px; transform: translateY(-58%) rotate(-12deg); pointer-events: none; opacity: .9; filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 14%)) drop-shadow(0 2px 0 #050912); }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal circle { fill: none; stroke: rgb(255 215 120 / 42%); stroke-width: 2; }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal circle:first-of-type { stroke-dasharray: 2 2.4; stroke-width: 3; fill: rgb(255 201 74 / 6%); }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal text { fill: rgb(255 215 120 / 62%); font: 800 7.4px var(--ca-font-display); letter-spacing: .14em; }
+.shellIdentityPopover.shellIdentityPass .shellPassSeal path:not([id]) { fill: rgb(255 215 120 / 34%); stroke: rgb(255 230 160 / 50%); stroke-width: 1.2; }
+.shellIdentityPopover.shellIdentityPass .shellPassIdentity { position: relative; z-index: 1; }
+.shellIdentityPopover.shellIdentityPass .shellPassSerial { display: flex; align-items: center; gap: 8px; margin: -2px 14px 12px; padding: 6px 10px; border: 1px dashed rgb(255 215 120 / 35%); border-radius: 3px; background: rgb(5 9 18 / 45%); box-shadow: inset 0 1px 3px #000; font: 800 10px/1 var(--ca-font-display); letter-spacing: .14em; color: #8ea4bf; text-transform: uppercase; }
+.shellIdentityPopover.shellIdentityPass .shellPassSerial b { color: #ffd76a; letter-spacing: .18em; font-weight: 800; }
+.shellIdentityPopover.shellIdentityPass .shellPassSerial i { flex: 1; height: 14px; background: repeating-linear-gradient(90deg, #c9d4e1 0 1px, transparent 1px 3px, #c9d4e1 3px 5px, transparent 5px 6px, #c9d4e1 6px 7px, transparent 7px 10px); opacity: .55; }
+
+/* Round 26: Unlock wall module identities */
+.unlockWallRebuild .armoryUnlockWallItem.tone-tempoCore > .armoryPartGlyph {
+  border-radius: 8px 8px 18px 18px !important;
+  background: linear-gradient(90deg, #743c32 0 12%, #202b34 12% 88%, #743c32 88%) !important;
+  box-shadow: inset 0 0 0 2px #cc8061, inset 0 0 0 5px #22232b, 0 3px #080e16 !important;
+  color: #ffa680;
+}
+.unlockWallRebuild .armoryUnlockWallItem.tone-streakLens > .armoryPartGlyph {
+  border-radius: 50% !important;
+  background: radial-gradient(circle, #295873 0 36%, #142936 38% 52%, #6c9caf 54% 58%, #182832 60%) !important;
+  box-shadow: inset 0 0 0 2px #87b8c9, 0 3px #080e16 !important;
+  color: #a4e8ff;
+}
+.unlockWallRebuild .armoryUnlockWallItem.tone-powerRig > .armoryPartGlyph {
+  border-radius: 4px !important;
+  background: repeating-linear-gradient(90deg, #263d35 0 6px, #37594a 6px 9px) !important;
+  box-shadow: inset 0 0 0 2px #87a98e, inset 0 0 0 5px #1b302b, 0 3px #080e16 !important;
+  color: #a5efb9;
+}
+.unlockWallRebuild .armoryUnlockWallItem.tone-power > .armoryPartGlyph {
+  width: 46px !important;
+  border-radius: 5px 5px 12px 12px !important;
+  background: linear-gradient(180deg, #d5a64c 0 10%, #4d3b22 10% 22%, #80632f 22% 78%, #302b24 78% 90%, #c59a4d 90%) !important;
+  box-shadow: inset 0 0 0 2px #d9b76d, inset 0 0 0 5px #493a25, 0 3px #080e16 !important;
+  color: #ffe29a;
+}
+
+.unlockWallRebuild .armoryUnlockWallItem.isLocked::after { content: '\1F512'; font-size: 10px; line-height: 15px; background: #1b2937; }
