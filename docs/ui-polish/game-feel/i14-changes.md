@@ -1,11 +1,6 @@
 # Round 14 changes (i13 → i14)
 
-Picks came from `i14-decisions.md`. Every claim below passed its ACCEPT line in a 100% crop and a blind before/after check. Only screens 08, 14, 15, 16 and 20 changed; every other file in i14 is a byte-for-byte copy of i13.
-
-## A. History (08)
-- **Scoreboard:** the large line chart is now a compact arena scoreboard. Each run's score sits in a framed window on a wired rail with a socket per run; the latest window glows and carries the crown. No axis, grid or area fill.
-- **Plaques:** the two Highlights plaques sit below the scoreboard at full height (eyebrow, title, a large number, separated chips).
-- **Ticket rail:** the log is a chronological rail of match tickets. Each ticket has a mode-coloured stub with the mode emblem, the score in display type, the stats line, and a perforated right stub with a stamped result (+14 RR / LATEST / PB, NO CHANGE, NO STAKES, −8 RR). Three tickets appear within the first 900px; the latest shows the PB stamp, score, and RR change.
+Picks came from `i14-decisions.md`. Every claim below passed its ACCEPT line in a 100% crop and a blind before/after check. Only screens 14, 15, 16 and 20 changed; every other file in i14 is a byte-for-byte copy of i13.
 
 ## B. Ladder hover card (15)
 - **Card:** a rival scouting card with a steel frame and corner screws. A teal (Platinum) header band carries "Nova" in the display face and a framed portrait medallion with her green visor helmet.
@@ -27,3 +22,6 @@ Picks came from `i14-decisions.md`. Every claim below passed its ACCEPT line in 
 - **Gauges:** the 7-row text table is replaced by seven framed instruments (Aim Window, Shrink Pace, Combo Ramp, Miss Cost, Power Tempo, Min Target, Score Mult). Each shows Active and Ghost values with segmented bars and the delta in the corner, coloured green or red.
 - **Header and tabs:** "COMPARE BENCH · CASUAL" eyebrow over the title; "Bay vs. Bay" and "Mode Matrix" are beveled tabs, the active one in gold.
 - Not claimed: arrows from each rig to every value (the leads join modules to the hub, not to the gauges).
+
+## Not shipped
+- **History rebuild (08):** built, then reverted after the blind check judged the i13 History better (by 2). 08-history is a byte-for-byte copy of i13.
