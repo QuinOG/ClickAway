@@ -63,6 +63,10 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
    - For every screen the round didn't change, it copies the previous round's PNG over the new capture, byte for byte, when no more than 2% of pixels differ (animation noise). Git then stores nothing new for those screens: about 14MB a round was going into history, mostly re-encoded animation noise.
    - A FLAGGED screen differs by more than that. Look at it: a shared-CSS change may have leaked, so either fix the leak or add the screen to the changed list.
    - The folder stays complete for the judges and for `update_pr_body.py`.
+   - **Before/after on every visual commit (user, 2026-11-11).** Every commit that changes how a screen looks gets its own PR comment, not only the round comment. This includes merged Terra builds and fixes between rounds.
+     - Capture, then copy just the affected screens to `docs/ui-polish/game-feel/steps/NN-<slug>/`. Commit and push them with the change.
+     - Then run `python .claude/skills/clickaway-rsi/step_comment.py "<title>" "<summary>" <sha> <before.png>::<after.png> … > cN.json` and `gh.sh POST /issues/<PR>/comments cN.json`.
+     - "Before" is the latest committed shot of that screen: the last round folder, or the previous step.
    - Then write `i(N+1)-changes.md` and commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
    - add the scores to `docs/ui-polish/game-feel/scores.json`
    - post the **round comment** (previous round vs this round, for the shots you changed):
