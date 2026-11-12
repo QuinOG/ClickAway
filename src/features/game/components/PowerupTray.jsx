@@ -83,11 +83,6 @@ export default function PowerupTray({
             aria-keyshortcuts={powerup.slotKey}
             disabled={!canUse}
           >
-            {canUse && !isTimedActive ? (
-              <span className="powerupReadyFlag" aria-hidden="true">
-                Ready · press <kbd>{powerup.slotKey}</kbd>
-              </span>
-            ) : null}
             {isTimedActive ? (
               <span key={activatedPowerup.sequence} className="powerupActiveFlag" aria-hidden="true">
                 <i className="powerupActiveRing" />
