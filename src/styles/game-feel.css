@@ -4982,3 +4982,15 @@
 .historyTrajectory { padding: 16px !important; gap: 8px 24px; }
 .historyContent > .historyHighlightsSection .historyHighlightCard { padding-block: 16px !important; }
 .historyRoundDeck .historyRoundCard { padding-left: 96px !important; }
+
+/* Round 41: Results on the 8px rhythm */
+.gameOverCardWithDifficulty { padding: 24px !important; row-gap: 16px !important; column-gap: 24px !important; }
+.gameOverCardWithDifficulty > .gameOverScorePanel { justify-self: stretch !important; width: auto !important; margin-inline: 0 !important; padding: 24px !important; }
+.gameOverCardWithDifficulty > .gameOverRewards { gap: 8px !important; }
+.gameOverRewards .gameOverReward { padding: 8px 12px !important; }
+.gameOverRewards .gameOverXpTally { padding: 8px 16px !important; }
+.gameOverCardWithDifficulty > .gameOverBody { gap: 16px !important; }
+.gameOverBody .outcomeContinuityBoard { gap: 8px !important; }
+.gameOverAchievementHint { padding: 8px 16px !important; }
+.gameOverCardWithDifficulty > .gameOverActions { padding-top: 8px !important; gap: 16px !important; }
+.gameOverCardWithDifficulty > .gameOverBody > * { margin-top: 0 !important; margin-bottom: 0 !important; }
