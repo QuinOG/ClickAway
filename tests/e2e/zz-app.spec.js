@@ -84,7 +84,11 @@ test("app capture", async ({ browser }) => {
     await page.locator(".shellIdentityPopover").waitFor({ timeout: 4000 }); n = 13; await shot(page, "identity-popover", { fullPage: false })
   })
   await step("ladder-hovercard", async () => {
-    await gotoRoute(page, route("ladder")); await page.locator(".ladderPlate:not(.isCurrentUser) .leaderboardEntryHoverWrap").first().hover({ timeout: 4000 })
+    await gotoRoute(page, route("ladder"))
+    const wrap = page.locator(".ladderPlate:not(.isCurrentUser) .leaderboardEntryHoverWrap").first()
+    // the first row sits at the bottom of the viewport, so centre it or its card runs off the shot
+    await wrap.evaluate((el) => el.scrollIntoView({ block: "center" })); await page.waitForTimeout(300)
+    await wrap.hover({ timeout: 4000 })
     await page.waitForTimeout(500); n = 14; await shot(page, "ladder-hovercard", { fullPage: false })
   })
   for (const [number, name, trigger] of [[16, "armory-compare", "Compare with active"], [17, "armory-unlock-wall", "Unlock Wall"], [18, "armory-spec-sheet", "Spec Sheet"]]) {
