@@ -4815,3 +4815,5 @@
 .shellIdentityPopover.shellIdentityPass .shellPassSeal text { fill: #4a3008; font-weight: 900; }
 .shellIdentityPopover.shellIdentityPass .shellPassSeal path:not([id]) { fill: #fff0b8; stroke: #7a5418; stroke-width: 1.4; }
 
+/* Round 34: Profile - locked trophies read as embossed silhouettes on the shelf (edge highlight + recessed shadow), still dimmer than unlocked */
+.profileAchievementsSection .achievementTile.isLocked:not(.isUnlocked + .isLocked) .achievementMedal { filter: grayscale(1) brightness(.78) contrast(1.25) drop-shadow(0 -1px 0 rgb(220 232 245 / 55%)) drop-shadow(0 2px 0 #02050b) drop-shadow(0 4px 4px rgb(0 0 0 / 55%)); }
