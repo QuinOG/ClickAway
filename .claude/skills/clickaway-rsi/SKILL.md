@@ -53,7 +53,11 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 3. **Pick fixes (weighted, see "Decision model" below):** when all replies are in, build `docs/ui-polish/game-feel/i(N+1)-decisions.md` with the value table, picks, skips and predicted gains, then implement the picks.
 4. **Implement:** CSS in `game-feel.css`; JSX when structure has to change. Keep existing tests green.
 5. **Verify and guard:** `npm run build` (plus `npm run lint` and `npm run test` when JSX changed). Recapture into `i(N+1)`, view every screen you touched **and every PROTECT item** next to the previous round, and fix any regression before submitting. The change notes must be factual and measurable ("12px wood plank under each card row"): judges compare claims to pixels and mark down overclaiming.
-6. **Commit and publish:** write `i(N+1)-changes.md`, commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
+6. **Reuse unchanged shots, then commit and publish.** Run `python .claude/skills/clickaway-rsi/reuse_unchanged.py …/iN …/i(N+1) <changed screens>` first.
+   - For every screen the round didn't change, it copies the previous round's PNG over the new capture, byte for byte, when no more than 2% of pixels differ (animation noise). Git then stores nothing new for those screens: about 14MB a round was going into history, mostly re-encoded animation noise.
+   - A FLAGGED screen differs by more than that. Look at it: a shared-CSS change may have leaked, so either fix the leak or add the screen to the changed list.
+   - The folder stays complete for the judges and for `update_pr_body.py`.
+   - Then write `i(N+1)-changes.md` and commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
    - add the scores to `docs/ui-polish/game-feel/scores.json`
    - post the **round comment** (previous round vs this round, for the shots you changed):
      `python .claude/skills/clickaway-rsi/post_round.py N "Sol x · Terra y · Opus z (prev: …)" docs/ui-polish/game-feel/iN-changes.md "<consensus for next round>" 04-shop.png,06-ladder.png > comment.json` then `sh .claude/skills/clickaway-rsi/gh.sh POST /issues/<PR>/comments comment.json`
