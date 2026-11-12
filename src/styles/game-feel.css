@@ -3988,3 +3988,38 @@
 .settingsConsole .settingsConsoleScale { padding-top: 5px; background: repeating-linear-gradient(90deg, #aab8c8 0 1px, transparent 1px 25%) top left / 100% 4px no-repeat; }
 .settingsConsole .feedbackToggleSetting { min-height: 48px; padding-block: 3px !important; }
 .settingsConsole .feedbackToggleCopy > span { line-height: 1.2; }
+
+/* Round 16: Armory cartridge plate */
+.armoryPage .armoryCartridgePlate { box-sizing:border-box; min-width:0; min-height:432px; padding:16px; border:10px solid #3e5267; outline:4px solid #050912; background:linear-gradient(135deg,#1b3045,#101e30 60%,#08111e); box-shadow:inset 1px 1px #8495a3, 0 6px #050912; color:#f3efe6; }
+.armoryPage .armoryCartridgePlateHeader { display:grid; grid-template-columns:96px minmax(0,1fr) 132px; gap:14px; align-items:center; min-height:100px; }
+.armoryPage .armoryCartridgePlateEmblem { width:96px; height:96px; display:grid; place-items:center; border:4px solid #050912; border-radius:50%; background:#08111e; box-shadow:inset 0 0 0 3px #52687b,0 1px #708597; }
+.armoryPage .armoryCartridgePlateHeader small { display:block; color:#a8b6c8; font-size:11px; }
+.armoryPage .armoryCartridgePlateHeader strong { display:block; font-size:25px; line-height:1.1; }
+.armoryPage .armoryCartridgePlateHeader p { margin:4px 0 0; font-size:13px; line-height:18px; }
+.armoryPage .armoryCartridgePlateHeader button { min-width:0; padding:7px; font-size:13px; }
+.armoryPage .armoryCartridgePlateChannels { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 12px; margin-top:16px; }
+.armoryPage .armoryCartridgePlateChannel, .armoryPage .armoryCartridgePlateLegend { min-width:0; height:56px; }
+.armoryPage .armoryCartridgePlateChannel > span:first-child { display:block; color:#a8b6c8; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+.armoryPage .armoryCartridgePlateChannel div { font-size:13px; white-space:nowrap; line-height:20px; }
+.armoryPage .armoryCartridgePlateChannel div b { font-size:17px; color:#f3efe6; }
+.armoryPage .armoryCartridgePlateChannel div i { color:#a8b6c8; font-style:normal; }
+.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge { display:flex; width:156px; height:10px; gap:4px; margin-top:3px; }
+.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i { flex:0 0 12px; height:10px; background:#050912; }
+.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i.isOn { background:#55d9ff; }
+.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i.isGain { background:#4eddb8; }
+.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge i.isLoss { background:#ff665d; }
+.armoryPage .armoryCartridgePlateLegend { display:flex; flex-direction:column; justify-content:center; gap:8px; font-size:12px; color:#a8b6c8; }
+.armoryPage .armoryCartridgePlateLegend i { display:inline-block; width:10px; height:10px; background:#4eddb8; }.armoryPage .armoryCartridgePlateLegend i + i, .armoryPage .armoryCartridgePlateLegend i:last-child { background:#ff665d; }
+.armoryPage .armoryCartridgePlateStatus { margin-top:8px; border-top:1px solid #52687b; padding-top:8px; color:#a8b6c8; font-size:12px; }
+.armoryPage .armoryCartFooter { display:grid; grid-template-rows:16px 28px; gap:4px; padding:0 8px 6px 34px; }
+.armoryPage .armoryCart .armoryCartStats, .armoryPage .armoryCart:not(.isActive) .armoryCartStats { position:static; margin:0; padding:0; width:auto; font-size:11px; font-style:normal; }
+.armoryPage .armoryCart .armoryCartCompare { position:static; justify-self:end; width:76px; height:28px; padding:0; }
+@media (max-width:640px) { .armoryPage .armoryCartridgePlateChannels { grid-template-columns:1fr; } .armoryPage .armoryCartridgePlateHeader { grid-template-columns:64px 1fr; } .armoryPage .armoryCartridgePlateEmblem { width:64px; height:64px; } }
+.armoryPage .armoryBayWall .armoryCart .armoryCartBody, .armoryPage .armoryBayWall .armoryCart:not(.isActive) .armoryCartBody { height:calc(100% - 54px); grid-template-rows:44px minmax(0,1fr); }
+.armoryPage .armoryCart .armoryCartStats { min-height:0; }
+.armoryPage .armoryCartridgePlate { position:relative; }
+.armoryPage .armoryCartridgePlate::before, .armoryPage .armoryCartridgePlate::after { content:""; position:absolute; top:-7px; width:5px; height:5px; border-radius:50%; background:#07111d; box-shadow:0 1px #a8b6c8; }
+.armoryPage .armoryCartridgePlate::before { left:4px; }.armoryPage .armoryCartridgePlate::after { right:4px; }
+.armoryPage .armoryCartridgePlateChannel > span:first-child { display:table; padding:0 5px; color:#d6bf83; background:#263849; box-shadow:inset 0 1px #607387, 0 1px #050912; }
+.armoryPage .armoryCartridgePlateChannel .armorySegmentGauge { outline:2px solid #050912; background:#050912; }
+.armoryPage .armoryCart .armoryCartStats.isEmpty { justify-self:start; }

@@ -175,10 +175,10 @@ export default function ArmoryScreen({
       />
 
       <div className="armoryWorkspace" ref={workspaceRef}>
-        <ArmoryInstruments
+        {activeStepId !== "passives" ? <ArmoryInstruments
           presentation={activePresentation}
           previewRules={previewRules}
-        />
+        /> : null}
 
         <div className="armoryStepStack">
           {activeStepId === "passives" ? (
@@ -227,7 +227,7 @@ export default function ArmoryScreen({
                 parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
                 playerLevel={playerLevel}
                 installedPartId={installedModuleId}
-                renderPartGlyph={(part) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} size={30} />}
+                renderPartGlyph={(part, size = 30) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} size={size} />}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 currentRules={activePresentation.roundRules}
