@@ -7,7 +7,7 @@ const PREFS = { masterVolume: 0.7, sfxVolume: 0.75, muted: true, reduceMotion: f
 let n = 0
 
 async function newPage(browser, opts = {}) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173" })
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", baseURL: process.env.SHOT_BASE_URL || "http://127.0.0.1:4173" })
   const page = await context.newPage()
   await page.clock.install({ time: new Date("2026-07-12T16:00:00.000Z") })
   if (!opts.anon) await installApiMocks(page, { progressOverrides: opts.progress ?? {} })
@@ -31,7 +31,7 @@ async function shot(page, name, opts = {}) {
 async function step(label, fn) { try { await fn() } catch (e) { console.log(`SKIPPED ${label}: ${e.message.split("\n")[0]}`) } }
 
 test("app capture", async ({ browser }) => {
-  test.setTimeout(300_000)
+  test.setTimeout(600_000)
   await step("login", async () => {
     const p = await newPage(browser, { anon: true })
     await p.goto("/login"); await p.waitForTimeout(1200); await shot(p, "login")
@@ -44,7 +44,9 @@ test("app capture", async ({ browser }) => {
   await step("settings", async () => {
     await gotoRoute(page, AUTHENTICATED_ROUTES[0])
     await page.getByRole("button", { name: /settings/i }).first().click({ timeout: 3000 })
-    await page.waitForTimeout(500); await shot(page, "settings-sheet", { fullPage: false })
+    await page.getByRole("dialog").waitFor({ state: "visible", timeout: 5000 })
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('[role="dialog"]')).opacity === "1", null, { timeout: 5000 }).catch(() => {})
+    await shot(page, "settings-sheet", { fullPage: false })
     await page.keyboard.press("Escape")
   })
   await step("live", async () => {
@@ -76,4 +78,29 @@ test("app capture", async ({ browser }) => {
     await shot(page, "rankup", { fullPage: false })
     await page.context().close()
   })
+  const route = (id) => AUTHENTICATED_ROUTES.find((r) => r.id === id)
+  await step("identity-popover", async () => {
+    await gotoRoute(page, route("play")); await page.locator(".shellIdentityButton").click({ timeout: 4000 })
+    await page.locator(".shellIdentityPopover").waitFor({ timeout: 4000 }); n = 13; await shot(page, "identity-popover", { fullPage: false })
+  })
+  await step("ladder-hovercard", async () => {
+    await gotoRoute(page, route("ladder")); await page.locator(".ladderPlate:not(.isCurrentUser) .leaderboardEntryHoverWrap").first().hover({ timeout: 4000 })
+    await page.waitForTimeout(500); n = 14; await shot(page, "ladder-hovercard", { fullPage: false })
+  })
+  for (const [number, name, trigger] of [[16, "armory-compare", "Compare with active"], [17, "armory-unlock-wall", "Unlock Wall"], [18, "armory-spec-sheet", "Spec Sheet"]]) {
+    await step(name, async () => {
+      await gotoRoute(page, route("armory")); await page.getByRole("button", { name: trigger }).first().click({ timeout: 5000 })
+      await page.waitForTimeout(700); n = number - 1; await shot(page, name, { fullPage: false }); await page.keyboard.press("Escape")
+    })
+  }
+  await step("signup", async () => {
+    const p = await newPage(browser, { anon: true }); await p.goto("/signup"); await p.waitForTimeout(1200)
+    n = 18; await shot(p, "signup"); await p.context().close()
+  })
+  await step("nav-more", async () => {
+    await page.setViewportSize({ width: 390, height: 844 }); await gotoRoute(page, route("play"))
+    await page.locator(".mobileMoreTrigger").click({ timeout: 4000 }); await page.waitForTimeout(500)
+    n = 19; await shot(page, "nav-more", { fullPage: false })
+  })
+
 })
