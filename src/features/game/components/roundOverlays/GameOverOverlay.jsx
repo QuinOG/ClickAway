@@ -179,7 +179,7 @@ function NextUnlock({ level, xpIntoLevel, xpToNextLevel, earned }) {
       aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
     >
       <span className="gameOverNextUnlockIcon" aria-hidden="true">
-        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={96} /> : <PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={96} />}
+        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={96} /> : <><img className="gameOverUnlockRig" src="/art/results/unlock-rig.png" alt="" width="384" height="384" decoding="async" /><PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={72} /></>}
         <i className="gameOverNextUnlockBadge">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</i>
       </span>
       <span className="gameOverNextUnlockCopy">

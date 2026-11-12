@@ -87,16 +87,33 @@ export function HelpModeCards() {
   )
 }
 
+// Illustrated power pictures (generated art in public/art/powers).
+const POWERUP_ART = {
+  time_boost: "time",
+  size_boost: "grow",
+  freeze_movement: "freeze",
+  magnet_center: "magnet",
+  combo_surge: "combo",
+  guard_charge: "guard",
+  second_wind: "second-wind",
+  size_lock: "steady",
+  overclock: "overclock",
+}
+
 export function HelpPowerupCards() {
   return (
     <div className="helpPowerupCards">
       {LOADOUT_POWERUPS.map((powerup) => (
         <article key={powerup.id} className="helpPowerupCard">
-          <span className="helpPowerupEmblem" aria-hidden="true"><PowerupGlyph powerupId={powerup.id} /></span>
+          <span className="helpPowerupEmblem" aria-hidden="true">
+            {POWERUP_ART[powerup.id]
+              ? <img className="helpPowerupArt" src={`/art/powers/${POWERUP_ART[powerup.id]}.png`} alt="" width="256" height="256" decoding="async" />
+              : <PowerupGlyph powerupId={powerup.id} />}
+          </span>
           <div>
             <h3>{powerup.label}</h3>
             <p>{powerup.description}</p>
-            <span className="helpPowerupMeta">Charges every {powerup.awardEvery} streak · Lv {powerup.unlockLevel}</span>
+            <span className="helpPowerupMeta">Charges every {powerup.awardEvery} streak <span className="helpPowerupMetaLevel">· Lv {powerup.unlockLevel}</span></span>
           </div>
         </article>
       ))}

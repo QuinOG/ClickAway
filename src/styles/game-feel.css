@@ -5099,3 +5099,24 @@
     radial-gradient(circle at 50% 35%, #406581, #172a40 55%, #0a1423) !important;
   box-shadow: inset 0 0 0 5px #101c2a, inset 0 0 0 7px #596a70, inset 0 0 36px 8px rgb(3 8 16 / 55%), inset 0 2px 0 9px rgb(255 255 255 / 4%), 0 5px 0 #050a12 !important;
 }
+
+/* Round 50: Results - the unlocked part sits in the socket of an illustrated workshop rig (generated image) */
+.gameOverSpotlight .gameOverNextUnlockIcon { overflow: visible; }
+.gameOverSpotlight .gameOverNextUnlockIcon .gameOverUnlockRig { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); z-index: 0; filter: drop-shadow(0 3px 2px rgb(5 9 18 / 70%)); }
+.gameOverSpotlight .gameOverNextUnlockIcon > svg { position: relative; z-index: 1; width: 52px; height: 52px; transform: translateY(-9px); }
+.gameOverSpotlight .gameOverNextUnlockIcon .gameOverNextUnlockBadge { z-index: 2; }
+
+/* Round 50: History highlights - illustrated medals (target and laurel for the best, rising chevrons for the RR surge) */
+.historyHighlightCard::before {
+  content: "" !important; width: 76px !important; height: 76px !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  background: url("/art/history/best-score-medal.png") center / contain no-repeat !important;
+  filter: drop-shadow(0 4px 4px rgb(40 22 4 / 45%));
+}
+.historyHighlightCard + .historyHighlightCard::before, .historyHighlightCard:nth-child(2)::before {
+  content: "" !important; background: url("/art/history/rank-surge-medal.png") center / contain no-repeat !important;
+}
+/* Round 50: Help - power keys shown as larger illustrated pictures (generated art) */
+.helpDoc .helpPowerupCards .helpPowerupCard > .helpPowerupEmblem:has(.helpPowerupArt) { width: 66px !important; height: 66px !important; flex: none; border: 0 !important; background: none !important; box-shadow: none !important; }
+.helpPowerupEmblem .helpPowerupArt { width: 66px; height: 66px; display: block; filter: drop-shadow(0 3px 2px rgb(40 22 4 / 35%)); }
+.helpPowerupMeta .helpPowerupMetaLevel { white-space: nowrap; }
+.helpDoc .helpPowerupCards .helpPowerupCard:has(.helpPowerupArt) { gap: 10px !important; }
