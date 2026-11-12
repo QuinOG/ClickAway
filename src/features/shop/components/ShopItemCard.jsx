@@ -4,12 +4,13 @@ import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
-// Each button skin rests on its own illustrated support (generated art in public/art/shop).
-const CRADLES = ["ring", "cushion", "dish", "claw"]
-function getCradle(id = "") {
-  let hash = 0
-  for (const char of String(id)) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
-  return CRADLES[hash % CRADLES.length]
+// Pedestals communicate rarity consistently across the button catalog.
+const RARITY_CRADLES = {
+  core: "dish",
+  common: "dish",
+  rare: "ring",
+  epic: "claw",
+  legendary: "cushion",
 }
 
 function getActionState({ isOwned, isEquipped, canAfford }) {
@@ -128,13 +129,13 @@ export default function ShopItemCard({
   }
 
   const hasImage = Boolean(item.imageSrc)
-  const cradle = getCradle(item.id)
   const itemTypeClass = getTypeClass(item.type)
   const previewClassName = `shopPreview is-${itemTypeClass} ${
     hasImage ? "hasImage" : item.effectClass
   }`
   const previewFrameClassName = `shopItemPreviewFrame is-${itemTypeClass}`
   const rarity = getRarity(item)
+  const cradle = RARITY_CRADLES[rarity.id]
   const cardClassName = `shopItemCard shopItemCard-${visualState} rarity-${rarity.id}${isSelected ? " shopItemCard-selected" : ""}`
   const actionButtonClassName = `primaryButton shopActionButton ${
     isEquipped ? "isEquipped" : isOwned ? "isEquip" : canAfford ? "isBuy" : "isLocked"

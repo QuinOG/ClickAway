@@ -867,53 +867,22 @@
 .profilePageCenter .achievementMedalDisc { z-index: 2; }
 .profilePageCenter .achievementMedalLock { z-index: 3; }
 
-.profilePageCenter .achievementMedal.tier-silver::before,
-.profilePageCenter .achievementMedal.tier-gold::before,
-.profilePageCenter .achievementMedal.tier-platinum::before,
-.profilePageCenter .achievementMedal.tier-diamond::before {
+/* Illustrated mounts surround the data-driven progress ring. */
+.profilePageCenter .achievementMedal:is(.tier-silver, .tier-gold, .tier-platinum, .tier-diamond, .tier-master)::before {
     content: "";
     position: absolute;
     z-index: -1;
-    left: 50%;
-    bottom: -18px;
-    width: 52%;
-    height: 42%;
-    transform: translateX(-50%);
-    background:
-        linear-gradient(90deg, var(--medal-lo) 0 48%, transparent 48% 52%, var(--medal-lo) 52%),
-        linear-gradient(180deg, var(--medal-hi), var(--medal-lo));
-    background-blend-mode: multiply;
-    clip-path: polygon(0 0, 46% 0, 46% 100%, 23% 78%, 0 100%, 54% 100%, 54% 0, 100% 0, 100% 100%, 77% 78%, 54% 100%, 0 100%);
-    filter: drop-shadow(0 2px 0 #0a1322);
+    inset: -32%;
+    background: var(--achievement-mount) center / contain no-repeat;
+    pointer-events: none;
 }
-
-.profilePageCenter .achievementMedal.tier-gold::after,
-.profilePageCenter .achievementMedal.tier-platinum::after,
-.profilePageCenter .achievementMedal.tier-diamond::after {
-    --burst-step: 45deg;
-    content: "";
-    position: absolute;
-    z-index: -2;
-    inset: -10px;
-    border-radius: 50%;
-    background: repeating-conic-gradient(from calc(var(--burst-step) / -4), var(--medal-hi) 0 calc(var(--burst-step) / 2), transparent 0 var(--burst-step));
-    -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 79%, #000 96%, transparent 100%);
-    mask: radial-gradient(closest-side, transparent 78%, #000 79%, #000 96%, transparent 100%);
-    opacity: 0.75;
-}
-
-.profilePageCenter .achievementMedal.tier-platinum::after { --burst-step: 30deg; }
-.profilePageCenter .achievementMedal.tier-diamond::after {
-    --burst-step: 22.5deg;
-    inset: -13px;
-    opacity: 0.95;
-    filter: drop-shadow(0 0 4px var(--medal-glow));
-}
-
-.profilePageCenter .achievementMedal.isProgressing::before,
-.profilePageCenter .achievementMedal.isUntouched::before { filter: saturate(0.5) brightness(0.62) drop-shadow(0 2px 0 #0a1322); }
-.profilePageCenter .achievementMedal.isProgressing::after,
-.profilePageCenter .achievementMedal.isUntouched::after { opacity: 0.4; filter: saturate(0.5) brightness(0.7); }
+.profilePageCenter .achievementMedal.tier-silver { --achievement-mount: url('/art/achievements/silver-mount.png'); }
+.profilePageCenter .achievementMedal.tier-gold { --achievement-mount: url('/art/achievements/gold-mount.png'); }
+.profilePageCenter .achievementMedal.tier-platinum { --achievement-mount: url('/art/achievements/platinum-mount.png'); }
+.profilePageCenter .achievementMedal.tier-diamond { --achievement-mount: url('/art/achievements/diamond-mount.png'); }
+.profilePageCenter .achievementMedal.tier-master { --achievement-mount: url('/art/achievements/master-mount.png'); }
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementMedal::before { inset: -15%; }
+.profilePageCenter .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: saturate(0.5) brightness(0.62); }
 
 /* Clear lock badge on locked medals. */
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalLock {
@@ -933,3 +902,7 @@
 .profilePageCenter .achievementTile.isUnlocked:not(.isFeaturedBanner) .achievementProgressMeta { justify-content: center; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementTitle { font-size: 16px; font-weight: 700; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementIconWrap { margin-bottom: 14px; }
+/* Leave room for the illustrated mounts beyond their progress rings. */
+.profileAchievementsSection .achievementsRow { padding-top: 24px; }
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementTileHeaderMain { gap: 24px; }
+.profileAchievementsSection .achievementsRow > .achievementTile { overflow: visible; }
