@@ -3477,3 +3477,14 @@
 .readyCard.arenaLobby .lobbyStageRig { position: absolute; left: calc((100% - 480px) / 2); top: 44%; width: calc(clamp(150px, 16vw, 230px) * 1.30435); height: auto; transform: translate(-50%, -33.82%); pointer-events: none; }
 @media (max-width: 900px) { .readyCard.arenaLobby .lobbyStageRig { left: 50%; top: 36%; width: 101.74px; } }
 
+/* Collectible silhouettes are independent of material. */
+.achievementTile .achievementMedal { background: none !important; box-shadow: none !important; }
+.achievementTile .achievementMedal::before, .achievementTile .achievementMedal::after { display: none !important; }
+.achievementTile .achievementMedalDisc { width: 100% !important; height: 100% !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; clip-path: none !important; background: none !important; box-shadow: none !important; transform: none !important; }
+.achievementTile .achievementMedalDisc::after { display: none; }
+.achievementTile .achievementObject { width: 100%; height: 100%; overflow: visible; }
+/* Set each object's plinth onto the existing shelf edge. */
+.profileAchievementsSection .achievementsRow .achievementMedal { transform: translateY(14px); }
+.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementMedal { transform: translateY(5px) scale(1.22); }
+.achievementMedal.isProgressing .achievementObject { filter: grayscale(.55) brightness(.92); opacity: .9; }
+.achievementMedal.isUntouched .achievementObject { filter: grayscale(1) brightness(.8); opacity: .7; }
