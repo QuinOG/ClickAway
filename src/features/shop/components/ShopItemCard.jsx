@@ -4,6 +4,14 @@ import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
+// Each button skin rests on its own illustrated support (generated art in public/art/shop).
+const CRADLES = ["ring", "cushion", "dish", "claw"]
+function getCradle(id = "") {
+  let hash = 0
+  for (const char of String(id)) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+  return CRADLES[hash % CRADLES.length]
+}
+
 function getActionState({ isOwned, isEquipped, canAfford }) {
   const label = isOwned
     ? isEquipped
@@ -120,6 +128,7 @@ export default function ShopItemCard({
   }
 
   const hasImage = Boolean(item.imageSrc)
+  const cradle = getCradle(item.id)
   const itemTypeClass = getTypeClass(item.type)
   const previewClassName = `shopPreview is-${itemTypeClass} ${
     hasImage ? "hasImage" : item.effectClass
@@ -183,6 +192,9 @@ export default function ShopItemCard({
               <Eye weight="bold" />
             </span>
             <span className="shopItemPreviewGlow" aria-hidden="true" />
+            {item.type === "button_skin" ? (
+              <img className={`shopItemCradle is-${cradle}`} src={`/art/shop/cradle-${cradle}.png`} alt="" aria-hidden="true" width="320" height="160" decoding="async" />
+            ) : null}
             {item.type === "button_skin" ? (
               <div
                 className={`shopPreviewButtonStage ${hasImage ? "hasImage" : item.effectClass}`}

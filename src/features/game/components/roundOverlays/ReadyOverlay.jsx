@@ -180,51 +180,7 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
       <span className="lobbyStageBeam" aria-hidden="true" />
       <span className="lobbyStageOrbit isOuter" aria-hidden="true" />
       <span className="lobbyStageOrbit isInner" aria-hidden="true" />
-      <svg className="lobbyStageRig" viewBox="0 0 300 340" aria-hidden="true">
-        <defs>
-          <linearGradient id="lobbyRigStem" x1="0" x2="1">
-            <stop offset="0" stopColor="#8da0ab" /><stop offset=".22" stopColor="#5c6c78" /><stop offset=".7" stopColor="#3b4a56" /><stop offset="1" stopColor="#222f3a" />
-          </linearGradient>
-          <linearGradient id="lobbyRigYoke" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#7b8d98" /><stop offset=".55" stopColor="#566772" /><stop offset="1" stopColor="#34434f" />
-          </linearGradient>
-          <linearGradient id="lobbyRigGlow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#e070ff" stopOpacity=".75" /><stop offset="1" stopColor="#e070ff" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <ellipse cx="150" cy="315" rx="133" ry="20" fill="#040912" opacity=".55" />
-        <ellipse cx="150" cy="300" rx="96" ry="9" fill="#d65cff" opacity=".22" />
-        <g stroke="#040912" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round">
-          <path d="M165 247 C215 245 205 308 265 312" fill="none" strokeWidth="7" />
-          <path d="M165 247 C215 245 205 308 265 312" fill="none" stroke="#71808b" strokeWidth="2" />
-          <path d="M137 140 L163 140 L170 285 L130 285 Z" fill="url(#lobbyRigStem)" />
-          <path d="M139 146 L161 146 L163 196 L137 196 Z" fill="url(#lobbyRigGlow)" stroke="none" />
-          <path d="M136 182 H164 M134 232 H166" fill="none" stroke="#141f29" strokeWidth="3" />
-          <path d="M137 185.5 H163 M135 235.5 H165" fill="none" stroke="#a9bac2" strokeWidth="1.5" />
-          <path d="M140 150 L135 280" fill="none" stroke="#c7d4d8" strokeWidth="2.5" />
-          <circle cx="141" cy="207" r="2.6" fill="#dbe3df" strokeWidth="1.5" /><circle cx="159" cy="207" r="2.6" fill="#dbe3df" strokeWidth="1.5" />
-          <circle cx="140" cy="257" r="2.6" fill="#dbe3df" strokeWidth="1.5" /><circle cx="160" cy="257" r="2.6" fill="#dbe3df" strokeWidth="1.5" />
-          <path d="M44 112 L60 112 Q63 220 150 229 Q237 220 240 112 L256 112 Q256 235 150 247 Q44 235 44 112 Z" fill="url(#lobbyRigYoke)" />
-          <path d="M60 118 Q64 216 150 225 Q236 216 240 118" fill="none" stroke="#e070ff" strokeOpacity=".55" strokeWidth="3" />
-          <path d="M49 120 Q50 232 150 242" fill="none" stroke="#b9c8ce" strokeWidth="2" />
-          <path d="M54 164 Q67 225 150 237 Q233 225 246 164" fill="none" stroke="#283743" strokeWidth="7" />
-          <path d="M57 170 Q70 227 150 239" fill="none" stroke="#8fa1ab" strokeWidth="1.5" />
-          <circle cx="104" cy="229" r="2.6" fill="#dbe3df" strokeWidth="1.5" /><circle cx="196" cy="229" r="2.6" fill="#dbe3df" strokeWidth="1.5" />
-          <path d="M36 99 h24 v27 H36 Z M240 99 h24 v27 h-24 Z" fill="#b28b43" />
-          <path d="M38 102 h20 M242 102 h20" fill="none" stroke="#f0d08a" strokeWidth="2" />
-          <circle cx="48" cy="112" r="5" fill="#dbe3df" /><circle cx="252" cy="112" r="5" fill="#dbe3df" />
-          <path d="M111 272 H189 L205 294 H95 Z" fill="#687985" />
-          <path d="M113 275 H187" fill="none" stroke="#c3d0d4" strokeWidth="2" />
-          <path d="M70 291 L230 291 L252 305 L245 316 L55 316 L48 305 Z" fill="#354550" />
-          <path d="M96 296 H204" fill="none" stroke="#d65cff" strokeOpacity=".5" strokeWidth="3" />
-          <path d="M48 305 H252 L245 316 H55 Z" fill="#1b2934" />
-          <path d="M70 293 H229" fill="none" stroke="#b6c6c9" strokeWidth="3" />
-          <path d="M150 291 V305" fill="none" stroke="#141f29" strokeWidth="2" />
-          <path d="M98 309 H202" fill="none" stroke="#c49a4b" strokeWidth="3" />
-          <circle cx="72" cy="309" r="3" fill="#c6d1d1" /><circle cx="228" cy="309" r="3" fill="#c6d1d1" />
-          <circle cx="82" cy="299" r="2.6" fill="#c6d1d1" strokeWidth="1.5" /><circle cx="218" cy="299" r="2.6" fill="#c6d1d1" strokeWidth="1.5" />
-        </g>
-      </svg>
+      <img className="lobbyStageRig" src="/art/play/target-stand.png" alt="" aria-hidden="true" width="640" height="571" decoding="async" />
       <span
         aria-hidden="true"
         className={`lobbyStageTarget bigCircleButton ${hasImage ? "hasImage" : targetPreview?.skinClass ?? "skin-default"}`}

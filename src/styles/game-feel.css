@@ -5047,15 +5047,8 @@
 
 /* Round 48: Compare - each hub holds its own target face instead of an empty plus socket */
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigCore { background: #0a1421 !important; border-color: #c9d6de; box-shadow: 0 0 0 2px #050912, 0 0 12px rgb(85 217 255 / 35%); overflow: visible; }
-.armoryCompareRigTarget { width: 100%; height: 100%; overflow: visible; display: block; }
-.armoryCompareRigTarget circle { stroke: #050912; stroke-width: 1.4; }
-.armoryCompareRigTarget .ringOuter { fill: #e8f2f8; }
-.armoryCompareRigTarget .ringMid { fill: #e5484d; }
-.armoryCompareRigTarget .ringInner { fill: #f4f8fb; }
-.armoryCompareRigTarget .ringCore { fill: #e5484d; }
-.armoryCompareRigTarget .ringTicks { stroke: #55d9ff; stroke-width: 2; stroke-linecap: round; }
-.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigTarget circle { fill-opacity: .65; stroke-dasharray: 3 2; stroke: #c9b6ff; }
-.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigTarget .ringTicks { stroke: #b48cff; }
+.armoryCompareRigTarget { width: 140%; height: 140%; margin: -20%; display: block; object-fit: contain; }
+.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigTarget { opacity: .6; filter: grayscale(.5) hue-rotate(200deg); }
 
 /* Round 48: Live round - a crisp impact star with short shards and bolder score lettering */
 .clickFeedback.hit .clickFeedbackLocus, .clickFeedback.comboHit .clickFeedbackLocus {
@@ -5103,7 +5096,7 @@
 /* Round 50: Results - the unlocked part sits in the socket of an illustrated workshop rig (generated image) */
 .gameOverSpotlight .gameOverNextUnlockIcon { overflow: visible; }
 .gameOverSpotlight .gameOverNextUnlockIcon .gameOverUnlockRig { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); z-index: 0; filter: drop-shadow(0 3px 2px rgb(5 9 18 / 70%)); }
-.gameOverSpotlight .gameOverNextUnlockIcon > svg { position: relative; z-index: 1; width: 52px; height: 52px; transform: translateY(-9px); }
+.gameOverSpotlight .gameOverNextUnlockIcon > :is(svg, img):not(.gameOverUnlockRig) { position: relative; z-index: 1; width: 52px; height: 52px; object-fit: contain; transform: translateY(-9px); }
 .gameOverSpotlight .gameOverNextUnlockIcon .gameOverNextUnlockBadge { z-index: 2; }
 
 /* Round 50: History highlights - illustrated medals (target and laurel for the best, rising chevrons for the RR surge) */
@@ -5120,3 +5113,34 @@
 .helpPowerupEmblem .helpPowerupArt { width: 66px; height: 66px; display: block; filter: drop-shadow(0 3px 2px rgb(40 22 4 / 35%)); }
 .helpPowerupMeta .helpPowerupMetaLevel { white-space: nowrap; }
 .helpDoc .helpPowerupCards .helpPowerupCard:has(.helpPowerupArt) { gap: 10px !important; }
+
+/* Art pass: Play lobby stand is a generated image; its brass clamps hold the ring at mid-height */
+@media (min-width: 901px) {
+  .readyCard.arenaLobby .lobbyStageRig { width: 276px !important; height: auto; top: 43% !important; transform: translate(-50%, 0) !important; filter: drop-shadow(0 10px 8px rgb(4 9 18 / 55%)); }
+}
+
+/* Art pass: Ladder standing spot as a hanging cloth pennant (generated image) */
+.leaderboardTopRow .standingShield {
+  width: 112px !important; min-width: 112px !important; height: 160px !important; padding: 34px 8px 52px !important;
+  clip-path: none !important; background: url("/art/ladder/spot-pennant.png") center / contain no-repeat !important;
+  filter: drop-shadow(0 6px 6px rgb(4 9 18 / 55%)) !important;
+}
+.leaderboardTopRow .standingShield .leaderboardStandingSpotlightLabel { color: #e8f6ff !important; text-shadow: 0 1px 0 #04263f; }
+
+/* Art pass: Help rule cards and round strip use generated illustrations */
+.helpRuleArt .helpStripArt, .helpRoundArt .helpStripArt { width: auto; height: 120px; max-width: 200px; object-fit: contain; display: block; margin-inline: auto; filter: drop-shadow(0 4px 3px rgb(40 22 4 / 30%)); }
+
+/* Art pass: Shop button skins rest on item-specific illustrated supports */
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-button { position: relative; }
+.shopItemPreviewFrame .shopItemCradle { position: absolute; left: 50%; bottom: 6%; width: 74%; height: auto; transform: translateX(-50%); z-index: 0; pointer-events: none; filter: drop-shadow(0 5px 4px rgb(4 9 18 / 55%)); }
+.shopItemPreviewFrame .shopItemCradle.is-claw { bottom: 4%; }
+.shopItemPreviewFrame:has(.shopItemCradle) .shopPreviewButtonStage { position: relative; z-index: 1; transform: translateY(-14%) scale(.86); }
+/* Art pass: Duels unknown rival is a masked challenger portrait */
+.duelFightCard .duelFighterPortrait .duelFighterMasked { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
+/* Art pass: More menu - Help tile shows the field-guide book; icons are generated art on plain tiles */
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile .navItemIcon .gameArt { width: 40px; height: 40px; object-fit: contain; }
+/* Art pass: Spec sheet - the assembly strip shows an exploded illustration of the machine; the part chips sit on it */
+.specSheetClipboard .specSheetAssembly { height: 132px !important; }
+.specSheetClipboard .specSheetAssembly::before { display: none !important; }
+.specSheetClipboard .specSheetAssembly .specSheetAssemblyArt { position: absolute; inset: 6px 70px 18px 8px; width: calc(100% - 78px); height: calc(100% - 24px); object-fit: contain; object-position: left center; }
+.specSheetClipboard .specSheetAssembly::after { display: none !important; }

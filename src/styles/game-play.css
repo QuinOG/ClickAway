@@ -262,7 +262,7 @@
     .arenaStage::before,
     .arenaStage::after { animation: none; }
 }
-.powerupIconWrap svg.gameIcon { width: 30px; height: 30px; }
+.powerupIconWrap .gameIcon { width: 30px; height: 30px; }
 /* Overlays (lobby, results) sit above the docked HUD and powerup tray. */
 .gameOverlay.gameOverlayStage { z-index: 10; }
 .gameOverTitle { font-family: "Russo One", var(--ca-font-display); font-size: clamp(30px, 3vw, 40px); text-shadow: 0 3px 0 var(--skin-ink); }
@@ -415,7 +415,7 @@
     filter: drop-shadow(0 6px 0 rgb(0 0 0 / 40%));
 }
 
-.gameOverPromotionEmblem svg.gameIcon { width: 150px; height: 150px; position: relative; z-index: 1; }
+.gameOverPromotionEmblem .gameIcon { width: 150px; height: 150px; position: relative; z-index: 1; }
 
 .gameOverPromotionRays {
     position: absolute;
@@ -802,7 +802,7 @@
 }
 .gameOverPromotionTitle { margin: 10px 0 0; font-size: clamp(34px, 4.4vw, 50px); line-height: 1; color: #ffffff; text-shadow: 0 4px 0 var(--skin-ink); }
 .gameOverPromotionEmblem { margin: 8px auto 0; gap: 0; }
-.gameOverPromotionEmblem svg.gameIcon { width: 220px; height: 220px; filter: drop-shadow(0 0 28px rgb(var(--tier) / 55%)); }
+.gameOverPromotionEmblem .gameIcon { width: 220px; height: 220px; filter: drop-shadow(0 0 28px rgb(var(--tier) / 55%)); }
 .gameOverPromotionRays {
     width: 460px; height: 460px; translate: -50% -54%;
     background: repeating-conic-gradient(from 0deg, rgb(var(--tier) / 30%) 0 7deg, transparent 7deg 18deg);

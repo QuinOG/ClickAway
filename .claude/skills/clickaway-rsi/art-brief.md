@@ -20,4 +20,8 @@ Static illustrations (medals, mounts, props, item supports, power pictures) are 
 ## Output
 - PNG, transparent background (check the alpha channel), generated at 1024 or 512 square.
 - The builder trims the transparent margin and saves at about 3x the display size (for example 256px for a 76px slot) in `public/art/<screen>/<name>.png`.
-- A set (for example the nine power keys) must look like one family: same outline weight, same lighting, same framing. Generate the set in one session and compare them side by side before saving.
+- A set (for example the nine power keys) must look like one family: same outline weight, same lighting, same finish. Generate the set in one session and compare them side by side before saving.
+- **Family, not clones (user, 2026-11-12).** Members of a set must be instantly told apart at their smallest display size: give each its own object and silhouette, and carry the family through palette, outline and finish only. Never reuse one frame or housing with a swapped centre (the first Armory part batch did this and was rejected).
+- **Give the image model creative freedom (user, 2026-11-12).** Describe what each item IS and DOES in the game, plus the constraints (size, empty areas, no text); let it invent the object rather than dictating every detail. Prescribe details only where code depends on them (a socket, an empty cloth centre).
+- **Don't touch an output folder while Terra is still writing to it.** Compressing its files or moving its contact sheet mid-batch made Terra stop to avoid a conflict. Run `prep_art.py` only after the batch reports back, and have Terra write contact sheets to the scratchpad, not `public/`.
+- Generate one image at a time and save each file immediately; a batch that queued 15 requests at once stalled and lost them all. Avoid running more than two image batches in parallel.

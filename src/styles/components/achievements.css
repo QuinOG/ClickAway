@@ -702,7 +702,7 @@
     box-shadow: inset 0 -3px 0 rgb(0 0 0 / 28%), 0 3px 0 #0a1322;
 }
 
-.achievementTile .achievementMedalDisc svg.gameIcon {
+.achievementTile .achievementMedalDisc .gameIcon {
     width: 30px;
     height: 30px;
     filter: drop-shadow(0 1px 0 rgb(0 0 0 / 35%));
@@ -717,14 +717,14 @@
         linear-gradient(160deg, #3a4558, #1b2333);
 }
 
-.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon,
-.achievementMedal.isUntouched .achievementMedalDisc svg.gameIcon {
+.achievementMedal.isProgressing .achievementMedalDisc .gameIcon,
+.achievementMedal.isUntouched .achievementMedalDisc .gameIcon {
     filter: grayscale(1) brightness(0.8);
     opacity: 0.7;
 }
 
 .achievementMedal.isProgressing .achievementMedalDisc { border-color: #0a1322; }
-.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon { filter: grayscale(0.55) brightness(0.92); opacity: 0.9; }
+.achievementMedal.isProgressing .achievementMedalDisc .gameIcon { filter: grayscale(0.55) brightness(0.92); opacity: 0.9; }
 
 .achievementMedalLock {
     position: absolute;
@@ -739,7 +739,7 @@
     border: 2px solid #0a1322;
 }
 
-.achievementTile .achievementMedalLock svg.gameIcon { width: 14px; height: 14px; }
+.achievementTile .achievementMedalLock .gameIcon { width: 14px; height: 14px; }
 
 /* Tiles: medal leads, title beside it; unlocked tiles carry their tier colour. */
 .achievementTile .achievementTileHeaderMain { gap: 12px; align-items: center; }
@@ -787,7 +787,7 @@
     border-width: 3px;
 }
 
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc svg.gameIcon { width: 42px; height: 42px; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc .gameIcon { width: 42px; height: 42px; }
 
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalLock { width: 26px; height: 26px; right: 0; bottom: 0; }
 
@@ -815,8 +815,8 @@
     filter: saturate(0.5) brightness(0.62);
 }
 
-.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon,
-.achievementMedal.isUntouched .achievementMedalDisc svg.gameIcon { filter: grayscale(0.4); opacity: 0.85; }
+.achievementMedal.isProgressing .achievementMedalDisc .gameIcon,
+.achievementMedal.isUntouched .achievementMedalDisc .gameIcon { filter: grayscale(0.4); opacity: 0.85; }
 
 .achievementMedal.isProgressing { background: conic-gradient(color-mix(in srgb, var(--medal-hi) 80%, transparent) var(--medal-progress, 0%), rgb(255 255 255 / 9%) 0); }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementDescription { text-align: center; }
@@ -925,7 +925,7 @@
 /* Bigger master medallion in the banner. */
 .profilePageCenter .achievementTile.isFeaturedBanner .achievementMedal { width: 64px; height: 64px; box-shadow: 0 0 20px var(--medal-glow); }
 .profilePageCenter .achievementTile.isFeaturedBanner .achievementMedalDisc { width: 52px; height: 52px; }
-.profilePageCenter .achievementTile.isFeaturedBanner .achievementMedalDisc svg.gameIcon { width: 34px; height: 34px; }
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementMedalDisc .gameIcon { width: 34px; height: 34px; }
 
 /* Unlocked tiles: one completion signal set. */
 .profilePageCenter .achievementTile.isUnlocked:not(.isFeaturedBanner) .achievementProgressTrack,

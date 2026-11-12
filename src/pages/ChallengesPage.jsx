@@ -379,7 +379,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
               <label className={`duelFighter is-rival ${rivalName ? "isLocked" : ""}`}>
                 <span className="duelFighterPortrait" aria-hidden="true">
-                  {rivalName ? <PlayerPortrait name={rivalName} size={112} /> : <span className="duelFighterUnknown">?</span>}
+                  {rivalName ? <PlayerPortrait name={rivalName} size={112} /> : <img className="duelFighterMasked" src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />}
                 </span>
                 <span className="duelFighterPlate duelRivalInput">
                   <small>Rival</small>

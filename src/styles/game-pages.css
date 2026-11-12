@@ -88,10 +88,10 @@
 }
 
 /* Illustrated emblems keep their drawn size over legacy glyph sizing. */
-.commandHeaderGlyph svg.gameIcon { width: 42px; height: 42px; }
-.navItem.hudMenuTile svg.gameIcon { width: 32px; height: 32px; }
-.navItem.hudUtilityButton svg.gameIcon { width: 24px; height: 24px; }
-.hudResource svg.gameIcon { width: 20px; height: 20px; }
+.commandHeaderGlyph .gameIcon { width: 42px; height: 42px; }
+.navItem.hudMenuTile .gameIcon { width: 32px; height: 32px; }
+.navItem.hudUtilityButton .gameIcon { width: 24px; height: 24px; }
+.hudResource .gameIcon { width: 20px; height: 20px; }
 
 @media (max-width: 900px) {
     .lobbyStageLoadout small { display: none; }
@@ -225,8 +225,8 @@
     box-shadow: none;
     filter: drop-shadow(0 2px 0 var(--skin-ink));
 }
-.leaderboardPodiumCrest svg.gameIcon,
-.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 30px; height: 30px; }
+.leaderboardPodiumCrest .gameIcon,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest .gameIcon { width: 30px; height: 30px; }
 .leaderboardPodiumCrown { position: absolute; left: 50%; top: -24px; transform: translateX(-50%) rotate(-8deg); }
 .leaderboardPodiumPlayer {
     border: 0;
@@ -251,7 +251,7 @@
 
 .commandHeaderGlyph,
 .commandHeaderGlyph[aria-hidden] { width: 48px; height: 48px; }
-.commandHeaderGlyph svg.gameIcon { width: 36px; height: 36px; }
+.commandHeaderGlyph .gameIcon { width: 36px; height: 36px; }
 .commandHeaderEyebrow { display: none; }
 .commandHeaderTitle { font-size: clamp(24px, 2vw, 30px); }
 
@@ -330,9 +330,9 @@
 }
 
 .profileInstrumentValue { font-family: var(--ca-font-display); font-weight: 400; }
-.leaderboardPodiumCrest svg.gameIcon { width: 52px; height: 52px; }
-.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 64px; height: 64px; }
-.leaderboardPodiumCrown svg.gameIcon { width: 30px; height: 30px; }
+.leaderboardPodiumCrest .gameIcon { width: 52px; height: 52px; }
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest .gameIcon { width: 64px; height: 64px; }
+.leaderboardPodiumCrown .gameIcon { width: 30px; height: 30px; }
 .leaderboardPodiumPlayer { height: 168px; padding-top: 16px; }
 .leaderboardPodiumPlayer.isRank1 { height: 200px; padding-top: 34px; }
 .leaderboardPodiumPlayer.isRank3 { height: 156px; }
@@ -361,8 +361,8 @@
     background: transparent;
     box-shadow: none;
 }
-.leaderboardPodiumPlayer .leaderboardPodiumCrest svg.gameIcon,
-.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest svg.gameIcon { width: 30px; height: 30px; }
+.leaderboardPodiumPlayer .leaderboardPodiumCrest .gameIcon,
+.leaderboardPodiumPlayer.isRank1 .leaderboardPodiumCrest .gameIcon { width: 30px; height: 30px; }
 .leaderboardPodiumPlayer .leaderboardPodiumCrown { top: -20px; }
 
 /* ---- r49: honest history cards --------------------------------------------
