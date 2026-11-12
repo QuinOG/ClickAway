@@ -122,7 +122,7 @@ export default function ArmoryInstruments({
         // only when this stat departs from stock.
         if (!isComparing) {
           // Short forms keep every value on one line in a fifth of the pane.
-          const shortText = (exact) => exact.text.replace(" cadence", "").replace(/^every /, "")
+          const shortText = (exact) => exact.text.replace(" cadence", "").replace(/^every /, "").replace(" / ", "/")
           const standardIndex = scale.indexOf("Standard")
           const departure = standardIndex === -1 || currentIndex === standardIndex
             ? "isStock"
@@ -132,14 +132,11 @@ export default function ArmoryInstruments({
           return (
             <article
               key={stat.label}
-              className={`armoryInstrument isMeasure ${departure} ${showPreview ? previewClass || "isPreviewChange" : ""}`}
+              className={`armoryInstrument isMeasure ${departure}`}
             >
               <span className="armoryInstrumentLabel">{stat.label}</span>
               <span className="armoryInstrumentReadout">
                 <span className="armoryInstrumentValue">{shortText(currentExact)}</span>
-                {showPreview ? (
-                  <span className="armoryInstrumentNext"><i aria-hidden="true">→</i> {shortText(previewExact)}</span>
-                ) : null}
               </span>
               <ArmorySegmentGauge rating={rating} next={showPreview ? previewRatingRaw : null} />
               {departure === "isStock" ? null : (

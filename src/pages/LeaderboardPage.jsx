@@ -247,8 +247,8 @@ function LeaderboardStandingPanel({
     : "Complete placement to appear on the global ladder."
 
   if (currentVisiblePlayer) {
-    title = `Visible at #${formatNumericValue(currentVisiblePlayer.rank)}`
-    lead = "You are in the current results window."
+    title = null
+    lead = null
   } else if (currentRankProgress?.isPlacement) {
     title = "Placement in progress"
     lead = placementMatchesRemaining > 0
@@ -293,10 +293,12 @@ function LeaderboardStandingPanel({
         <div className="leaderboardStandingText">
           <p className="leaderboardSectionEyebrow">Your Standing</p>
           <div className="leaderboardStandingHeading">
-            <div className="leaderboardStandingTitleGroup">
-              <h2 className="cardH2 leaderboardStandingTitle">{title}</h2>
-              <p className="leaderboardStandingLead">{lead}</p>
-            </div>
+            {title ? (
+              <div className="leaderboardStandingTitleGroup">
+                <h2 className="cardH2 leaderboardStandingTitle">{title}</h2>
+                <p className="leaderboardStandingLead">{lead}</p>
+              </div>
+            ) : null}
             <TierBadge
               tierLabel={currentRankProgress?.tierLabel || "Unranked"}
               className="leaderboardStandingTierBadge"
@@ -362,6 +364,7 @@ function LeaderboardControls({
   page,
   totalPages,
   onPageChange,
+  sortControl,
 }) {
   return (
     <div className="leaderboardControls">
@@ -411,6 +414,7 @@ function LeaderboardControls({
             Around Me
           </button>
         </div>
+        {sortControl}
       </div>
 
       {view === "top" && totalPages > 1 ? (
@@ -626,7 +630,6 @@ export default function LeaderboardPage({
     [currentUserId, currentUsername, leaderboardRows]
   )
   const activeSortLabel = getSortLabel(sortConfig.key)
-  const isDefaultLadderSort = sortConfig.key === DEFAULT_SORT.key && sortConfig.direction === DEFAULT_SORT.direction
 
   const nearMeData = useMemo(() => {
     if (view !== "aroundMe") return null
@@ -736,6 +739,11 @@ export default function LeaderboardPage({
           page={page}
           totalPages={totalPages}
           onPageChange={handlePageChange}
+          sortControl={!isLoading && !loadError && sortedRows.length > 0 ? (
+            <button type="button" className="ladderSortFlip" aria-label={`Sorted by ${activeSortLabel}, flip order`} onClick={() => handleSort(sortConfig.key)}>
+              {sortConfig.direction === "asc" ? "Low to high ▲" : "High to low ▼"}
+            </button>
+          ) : null}
         />
 
         {isLoading ? <LeaderboardTableSkeleton /> : null}
@@ -775,15 +783,6 @@ export default function LeaderboardPage({
 
         {!isLoading && !loadError && sortedRows.length > 0 ? (
           <>
-            <div className="leaderboardTableIntro" aria-label="Ladder context">
-              <span className={`leaderboardSortContextBadge${isDefaultLadderSort ? " isDefault" : ""}`}>
-                Sorted by {activeSortLabel}
-              </span>
-              <button type="button" className="ladderSortFlip" onClick={() => handleSort(sortConfig.key)}>
-                {sortConfig.direction === "asc" ? "Low to high ▲" : "High to low ▼"}
-              </button>
-            </div>
-
             <ol className="ladderPlates" aria-label={`Ladder sorted by ${activeSortLabel}`}>
               {sortedRows.map((player) => {
                 const isCurrentUser = isCurrentUserRow(player, currentUserId, currentUsername)

@@ -17,16 +17,18 @@ export default function AuthArenaArrival({ mode = "login", name = "", children }
         <span className="authTagline">Precision arena · Season 1</span>
       </div>
       <section className="authPanel authPass" aria-labelledby="auth-page-title">
-        <span className="authPassStub" aria-hidden="true"><b>Competitor pass</b><i>Admit one · Season 1</i></span>
+        <span className="authPassStub" aria-hidden="true"><b>Competitor pass</b></span>
         <span className="authPassSeal" aria-hidden="true">S1</span>
         <div className="authIdentity" aria-label="Competitor pass preview">
+          <div className="authCredentialDetail" aria-hidden="true">
+            <span className="authCredentialSerial">NO. 001 / 07492</span>
+            <span className="authCredentialWatermark">ARENA<br />01</span>
+            <span className="authCredentialStamp">ISSUED<br /><b>SEASON 01</b><br />ARENA OFFICE</span>
+          </div>
           <div className="authPortrait"><img src="/skins/racoon.svg" alt="" /></div>
           <div className="authIdentityCopy"><small>Season 01 / Competitor</small><strong>{name.trim() || (isSignup ? "NEW COMPETITOR" : "RETURNING PLAYER")}</strong><span>OFFICIAL ARENA PASS / ADMIT ONE</span></div>
         </div>
         <div className="authPanelHeader">
-          <span className="authEyebrow">
-            {isSignup ? "New competitor" : "Competitor access"}
-          </span>
           <h1 className="authTitle" id="auth-page-title">
             {isSignup ? "Make every click count." : "Return to the arena."}
           </h1>

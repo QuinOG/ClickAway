@@ -167,6 +167,8 @@ export default function Navbar({
   coins = 0,
   level = 1,
   accuracyPercent = 0,
+  bestScore = 0,
+  bestStreak = 0,
   rankProgress = null,
   rankLabel = "Unranked",
   rankMmr = 0,
@@ -363,9 +365,9 @@ export default function Navbar({
                   rankProgress={rankProgress}
                   rankLabel={rankLabel}
                   rankMmr={rankMmr}
-                  coins={coins}
-                  level={level}
                   accuracyPercent={accuracyPercent}
+                  bestScore={bestScore}
+                  bestStreak={bestStreak}
                 />
               ) : null}
             </div>
@@ -413,7 +415,7 @@ export default function Navbar({
         open={isMoreOpen}
         onOpenChange={(nextOpen) => (nextOpen ? setMoreOpenPath(pathname) : closeMore())}
         triggerRef={moreTriggerRef}
-        title="More destinations"
+        title="More"
         description="Collection, competition, support, and arena settings."
         className="mobileMoreBackdrop"
         surfaceClassName="mobileMoreSheet mobileMorePlaqueBoard"

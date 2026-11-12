@@ -99,7 +99,7 @@ export default function ArmorySpecSheet({
         <div className="specSheetAssembly" aria-label="Assembly thumbnail">
           <span className="specSheetAssemblyHub">+</span>
           {presentation.moduleStack.map((module) => <span key={module.slotId} className={`specSheetAssemblyPart slot-${module.slotId}`}><PartEmblem partId={module.moduleId} slotId={module.slotId} size={26} /></span>)}
-          <small>ASSEMBLY / {modeLabel}</small>
+          <small>ASSEMBLY</small>
         </div>
         <p className="armorySpecSheetLead">{presentation.glanceText}</p>
         <p className="armorySpecSheetNote">{presentation.bestFor}</p>

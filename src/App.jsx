@@ -221,6 +221,8 @@ export default function App() {
             coins={coins}
             level={levelProgress.level}
             accuracyPercent={playerLeaderboardStats.accuracyPercent}
+            bestScore={playerLeaderboardStats.bestScore}
+            bestStreak={playerLeaderboardStats.bestStreak}
             rankProgress={rankProgress}
             rankLabel={rankProgress.tierLabel}
             rankMmr={rankProgress.mmr}

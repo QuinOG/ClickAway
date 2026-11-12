@@ -226,15 +226,14 @@ function FeedbackSettingsForm({ onRequestClose }) {
         />
       </section>
 
-      <div className="feedbackSettingsStatus" aria-live="polite">
-        <Waveform size={17} aria-hidden="true" />
-        <span>{testMessage || (isDirty ? "Changes are not applied yet." : saveState === "error" ? "Could not save preferences." : "Preferences are saved.")}</span>
-      </div>
-
       <div className="feedbackSettingsActions">
         <ActionButton intent="quiet" size="sm" onClick={handleResetDraft}>
           Reset defaults
         </ActionButton>
+        <div className="feedbackSettingsStatus" aria-live="polite">
+          <Waveform size={17} aria-hidden="true" />
+          <span>{testMessage || (isDirty ? "Changes are not applied yet." : saveState === "error" ? "Could not save preferences." : "Preferences are saved.")}</span>
+        </div>
         <span className="feedbackSettingsActionsSpacer" />
         <ActionButton intent="secondary" onClick={handleRestoreSaved}>
           {isDirty ? "Cancel" : "Close"}

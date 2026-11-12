@@ -13,7 +13,7 @@ import {
   buildCareerReactionStatsFromLifetime,
   buildProfileStatsFromLifetime,
 } from "../utils/lifetimeStatsUtils.js"
-import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
+import { getModeLabelFromHistoryEntry, isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
 import { ArmoryIcon, BoltIcon, FlameIcon, StopwatchIcon, TargetIcon, TrophyIcon } from "../components/art/GameIcons.jsx"
@@ -82,6 +82,8 @@ function buildRecentForm(roundHistory = []) {
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
     score: scores[index],
+    mode: getModeLabelFromHistoryEntry(round),
+    receiptNumber: Math.min(roundHistory.length, 7) - index,
     height: Math.max(12, Math.round((scores[index] / maxScore) * 100)),
     // 0.2–1: where this run sits between the worst and best of the window.
     rise: 0.2 + (maxScore > minScore ? ((scores[index] - minScore) / (maxScore - minScore)) * 0.8 : 0.8),
@@ -144,7 +146,6 @@ function AttributeRow({ icon, label, detail, value, fill, isStrongest = false })
 export default function ProfilePage({
   onLogout,
   playerName = "Player",
-  coins = 0,
   levelProgress = {},
   rankProgress = {},
   roundHistory = [],
@@ -301,7 +302,6 @@ export default function ProfilePage({
               </span>
             </div>
             <div className="profileHeaderResources" aria-label="Player resources and actions">
-              <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
               <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
               <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
             </div>
@@ -314,7 +314,6 @@ export default function ProfilePage({
                   <span className="profileSectionKicker">{getProfileTagline(profileStats)}</span>
                   <h2 id="performance-title">Attributes</h2>
                 </div>
-                <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
               </div>
               <ul className="profileAttributeList">
                 <AttributeRow
@@ -369,6 +368,8 @@ export default function ProfilePage({
                       className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
                       title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
                     >
+                      <span className="profileReceiptMode">{({ Practice: "[P]", Casual: "[C]", Ranked: "[R]" })[bar.mode] ?? "[?]"} {bar.mode}</span>
+                      <span className="profileReceiptId">RECENT #{String(bar.receiptNumber).padStart(2, "0")}</span>
                       <span className="profileStampScore">{formatNumber(bar.score)}</span>
                       <span className="profileStampOutcome">{bar.isRanked ? `${formatSignedValue(bar.rankDelta)} RR` : "ROUND"}</span>
                     </li>
@@ -413,7 +414,6 @@ export default function ProfilePage({
         >
           <div className="achievementHeaderRow">
             <div className="achievementHeaderText">
-              <span className="profileSectionKicker">Collection</span>
               <h2 className="profileStatsSectionTitle">Achievement constellation</h2>
             </div>
             <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">

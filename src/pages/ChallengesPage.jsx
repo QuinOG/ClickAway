@@ -268,11 +268,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           eyebrow="Ghost network"
           title="Duel command"
           subtitle="Lock a rival. Choose your run. Put a score on the line."
-          status={pendingIncomingCount > 0 ? (
-            <span className="challengePendingBadge">
-              <Ghost weight="fill" aria-hidden="true" /> {pendingIncomingCount} incoming
-            </span>
-          ) : (
+          status={pendingIncomingCount > 0 ? null : (
             <span className="duelNetworkStatus"><i /> Network clear</span>
           )}
         />
@@ -287,7 +283,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
             <div className="challengeFilterRow" role="tablist" aria-label="Challenge filters">
               {[
                 { id: "all", label: "All", icon: <Crosshair /> },
-                { id: "incoming", label: "Incoming", icon: <Ghost /> },
+                { id: "incoming", label: pendingIncomingCount > 0 ? `Incoming · ${pendingIncomingCount}` : "Incoming", icon: <Ghost /> },
                 { id: "outgoing", label: "Sent", icon: <PaperPlaneTilt /> },
               ].map((option) => (
                 <button
@@ -377,7 +373,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                 <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
                   <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Score to beat"}</small>
                   <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "?"}</strong>
-                  <span>{selectedReplay ? "on the line" : "stake a run below"}</span>
+                  {selectedReplay ? <span>on the line</span> : null}
                 </div>
               </div>
 

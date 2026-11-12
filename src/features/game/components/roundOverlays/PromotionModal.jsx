@@ -97,6 +97,24 @@ function getCrestToneFromLabel(label = "") {
   return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
 }
 
+function DivisionMetalwork({ label }) {
+  const division = RANK_DIVISIONS.find((rank) => rank.label === label)?.division
+  if (!division) return null
+  return (
+    <svg className="divisionMetalwork" viewBox="0 0 100 100" aria-hidden="true">
+      {division >= 2 && <g className="divisionMetalworkWings">
+        <path d="M20 54 L6 43 L12 58 L22 64 M80 54 L94 43 L88 58 L78 64" />
+        <path d="M17 61 L9 57 L15 68 L24 71 M83 61 L91 57 L85 68 L76 71" />
+      </g>}
+      {division >= 3 && <g className="divisionMetalworkCrown">
+        <path d="M32 21 L29 10 L41 16 L50 5 L59 16 L71 10 L68 21 Z" />
+        <path d="M46 16 L50 11 L54 16 L50 21 Z" className="divisionMetalworkGem" />
+        <path d="M30 76 L50 86 L70 76 M34 81 L50 90 L66 81" fill="none" />
+      </g>}
+    </svg>
+  )
+}
+
 const LADDER_WINDOW = 7
 
 // The climb on the division ladder: a seven-node window around the new rank,
@@ -224,10 +242,10 @@ export default function PromotionModal({
         <span className="gameOverPromotionRays" />
         <span className="gameOverPromotionPedestal" />
         {!isPlacementReveal && getRankImageSrc(currentRankLabel) && (
-          <div className="rankCeremonyPrevious"><img src={getRankImageSrc(currentRankLabel)} alt="" /><span>{currentRankLabel}</span></div>
+          <div className="rankCeremonyPrevious"><div className="divisionCrest"><img src={getRankImageSrc(currentRankLabel)} alt="" /><DivisionMetalwork label={currentRankLabel} /></div><span>{currentRankLabel}</span></div>
         )}
         {getRankImageSrc(projectedRankLabel) ? (
-          <img className="gameOverPromotionMedal" src={getRankImageSrc(projectedRankLabel)} alt="" width="220" height="220" decoding="async" />
+          <div className="divisionCrest divisionCrestNew"><img className="gameOverPromotionMedal" src={getRankImageSrc(projectedRankLabel)} alt="" width="220" height="220" decoding="async" /><DivisionMetalwork label={projectedRankLabel} /></div>
         ) : (
           <CrestIcon tone={getCrestToneFromLabel(projectedRankLabel)} size={220} />
         )}

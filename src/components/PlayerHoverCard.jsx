@@ -128,7 +128,6 @@ export default function PlayerHoverCard({
       <header className="profileHoverIdentity">
         <PlayerAvatar username={username} profileImage={profileImage} />
         <div className="profileHoverIdentityText">
-          <span className="profileHoverIdentityLabel">Competitor</span>
           <strong className="profileHoverIdentityName">{username}</strong>
         </div>
       </header>
