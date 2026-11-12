@@ -1,4 +1,4 @@
-﻿import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import {
   ArrowRight,
@@ -132,15 +132,14 @@ function HistoryTrajectory({ rounds = [] }) {
   const modeLabel = TRAJECTORY_MODES.find((mode) => mode.id === modeFilter)?.label ?? "Casual"
   const plottedRounds = rounds.filter((round) => getModeTone(round) === modeFilter).slice(0, 8).reverse()
   const scores = plottedRounds.map((round) => Number(round.score) || 0)
-  const highestScore = Math.max(...scores, 1)
-  const minimumScore = scores.length > 0 ? Math.min(...scores) : 0
-  // Start the scale just under the lowest run so real movement is visible.
-  const lowestScore = Math.max(0, Math.floor((minimumScore - (highestScore - minimumScore) * 0.35) / 10) * 10)
-  const scoreRange = Math.max(1, highestScore - lowestScore)
-  const plotPoints = scores.map((value, index) => ({
-    x: ((index + 0.5) / scores.length) * 100,
-    y: 100 - (34 + ((value - lowestScore) / scoreRange) * 66),
+  const highestScore = Math.max(...scores, 0)
+  const minScore = scores.length ? Math.min(...scores) : 0
+  const range = highestScore - minScore
+  const points = scores.map((value, index) => ({
+    x: scores.length === 1 ? 50 : 5 + index * 90 / (scores.length - 1),
+    y: 80 - (range ? (value - minScore) / range * 30 : 15),
   }))
+  const bestIndex = scores.lastIndexOf(highestScore)
   const scoreChange = scores.length > 1 ? scores.at(-1) - scores[0] : 0
   const trendIcon = scoreChange >= 0
     ? <TrendUp weight="bold" />
@@ -160,43 +159,15 @@ function HistoryTrajectory({ rounds = [] }) {
         </span>
       </div>
 
-      <ol className="historyClimb" aria-hidden="true">
-        {plottedRounds.length === 0 ? <li className="historyClimbEmpty">No {modeLabel.toLowerCase()} rounds yet</li> : null}
-        {plottedRounds.length > 1 ? (
-          <li className="historyClimbAxis">
-            {[100, 67, 34].map((level) => (
-              <span key={level} style={{ "--axis": `${level}%` }}>
-                {formatNumber(Math.round(lowestScore + ((level - 34) / 66) * scoreRange))}
-              </span>
-            ))}
-          </li>
-        ) : null}
-        {plottedRounds.length > 1 ? (
-          <li className="historyClimbLine" style={{ "--line-tone": LINE_TONES[modeFilter] ?? "#4fb8ff" }}>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
-              <polygon points={`${plotPoints[0].x},100 ${plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} ${plotPoints.at(-1).x},100`} />
-              <polyline points={plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} />
-            </svg>
-          </li>
-        ) : null}
-        {plottedRounds.map((round, index) => {
-          const value = Number(round.score) || 0
-          const height = 34 + ((value - lowestScore) / scoreRange) * 66
-          const isBest = value === highestScore
-          const isLatest = index === plottedRounds.length - 1
-          return (
-            <li
-              key={round.id}
-              className={`historyClimbStep ${getModeToneClassName(round)} ${isBest ? "isBest" : ""} ${isLatest ? "isLatest" : ""}`}
-              style={{ "--climb": `${height}%` }}
-            >
-              <span className="historyClimbMedal">{isBest ? <i className="historyClimbCrown" /> : null}{formatNumber(value)}</span>
-              <span className="historyClimbPillar" />
-              <span className="historyClimbLabel">{isLatest ? "Latest" : `#${index + 1}`}</span>
-            </li>
-          )
-        })}
-      </ol>
+      <div className="historyScoreboardTrack">
+        {scores.length === 0 && <p className="historyScoreEmpty">No {modeLabel.toLowerCase()} rounds yet</p>}
+        {scores.length > 1 && <svg className="historyScoreWire" viewBox="0 0 1000 108" preserveAspectRatio="none" aria-hidden="true"><path d={points.map((point, index) => index === 0 ? `M ${point.x * 10} ${point.y}` : `H ${point.x * 10} V ${point.y}`).join(" ")} /></svg>}
+        {plottedRounds.map((round, index) => <div key={round.id} className={`historyScoreSocket ${index === scores.length - 1 ? "isLatest" : ""}`} style={{ left: `${points[index].x}%`, top: `${points[index].y}px`, "--lamp": LINE_TONES[modeFilter], "--socket-y": `${points[index].y}px` }}>
+          {index === bestIndex && <i className="historyClimbCrown" aria-hidden="true" />}
+          <strong>{formatNumber(scores[index])}</strong><span className="historyBulb" aria-hidden="true" />
+          <small>{index === scores.length - 1 ? "Latest" : `#${index + 1}`}</small>
+        </div>)}
+      </div>
 
       <div className="historyTrajectoryLegend isFilter" role="group" aria-label="Trend mode">
         {TRAJECTORY_MODES.map((mode) => (
@@ -255,8 +226,8 @@ function HistoryRoundCard({ round, markers = [] }) {
         </div>
       </div>
       <div className="historyRoundCardOutcome">
-        <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span>
-        {markers.map((marker) => <small key={marker}>{marker}</small>)}
+        <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{isPractice ? "No stakes" : getRankResultText(round)}</span>
+        {markers.map((marker) => <small key={marker} className={marker === "Peak score" ? "isPB" : ""}>{marker === "Peak score" ? "PB" : marker}</small>)}
       </div>
     </article>
   )
@@ -336,7 +307,7 @@ export default function HistoryPage({
         stats: [
           `${formatPercent(historySnapshot.latestRound.accuracyPercent)} accuracy`,
           `${formatNumber(historySnapshot.latestRound.hits)} hits`,
-          `${formatNumber(historySnapshot.latestRound.coinsEarned)} coins`,
+          isPracticeRound(historySnapshot.latestRound) ? "No stakes" : `${formatNumber(historySnapshot.latestRound.coinsEarned)} coins`,
         ],
         tone: "latest",
       })
@@ -444,9 +415,6 @@ export default function HistoryPage({
 
             {highlightCards.length > 0 ? (
               <section className="historyHighlightsSection" aria-label="Round highlights">
-                <div className="historySectionHeader">
-                  <h2 className="historySectionTitle">Highlights</h2>
-                </div>
                 <div className="historyHighlightsGrid">
                   {highlightCards.map((card) => (
                     <HighlightCard
@@ -590,3 +558,5 @@ export default function HistoryPage({
     </div>
   )
 }
+
+
