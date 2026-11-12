@@ -47,11 +47,9 @@ function ArmoryUnlockWallPanel({
               <span className="armoryUnlockWallItemBody">
                 <strong className="armoryUnlockWallItemLabel">{part.label}</strong>
                 <span className="armoryUnlockWallItemMeta">{part.description}</span>
-                {isOwned ? null : (
-                  <span className="armoryUnlockWallItemLock" aria-label={getUnlockText(part.unlockLevel)}>
+                <span className="armoryUnlockWallItemLock" aria-label={getUnlockText(part.unlockLevel)}>
                     Lv {part.unlockLevel}
                   </span>
-                )}
               </span>
               {isInstalled ? <ArmoryStateEmblem state="installed" label="Installed" compact /> : null}
             </li>
@@ -89,7 +87,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
   return (
     <>
       <div className="armoryUnlockWallScrim" onClick={onClose} aria-hidden="true" />
-      <section className="armoryUnlockWall" role="dialog" aria-label="Unlock wall">
+      <section className="armoryUnlockWall unlockWallRebuild" role="dialog" aria-label="Unlock wall">
         <header className="armoryUnlockWallHeader">
           <div>
             <p className="armoryUnlockWallEyebrow">Unlock Wall</p>
@@ -103,15 +101,15 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
         <div className="armoryUnlockWallTop">
         <section className="armoryCollectionSummary" aria-label="Parts collection summary">
           <div
-            className="armoryCollectionRing"
+            className="unlockWallGauge"
             role="progressbar"
             aria-label="Parts collected"
             aria-valuemin="0"
             aria-valuemax={allParts.length}
             aria-valuenow={ownedCount}
-            style={{ "--armory-collection-progress": `${collectionPercent * 3.6}deg` }}
+            style={{ "--wall-progress": `${collectionPercent}%` }}
           >
-            <strong>{collectionPercent}%</strong>
+            <strong>{collectionPercent}%</strong><span className="unlockWallGaugeTrack" aria-hidden="true"><span /></span>
           </div>
           <div className="armoryCollectionSummaryCopy">
             <span className="armoryUnlockWallEyebrow">Workshop collection</span>
