@@ -219,6 +219,7 @@ Build JSON bodies with Python (`json.dump`) and never echo the token. Link the P
       - distinct illustrated competitors (Sol);
       - the Shop storefront (Opus).
       - Sol only ever moved on **new illustration**: r4's SVG item set gave +0.3. Use the `skins.py` approach for competitor portraits and the target apparatus, not CSS effects.
+- 2026-11-11 run 3 (branch `game-feel-run3`, cut from main after PR #12 merged). Open a new PR when round 13 is committed. `post_round.py` and `update_pr_body.py` read the current git branch (override with `RSI_BRANCH`). Council is Sol, Gemini and Qwen; Sol gates; Terra builds the art. The user asked for a two-round test (r13, r14) of scoring v2 before it is adopted for good.
   - **NEXT = run 3.** Start with an anchor read of i12 under brief v2 (no PREVIOUS_SCORES), then round 13 from that anchor, using the gap map above.
   - Earlier plan, done in r12: **NEXT = round 12, the final round (cap).** Gemini and Qwen stay at medium but open trimmed images (see Council). Picks by consensus:
     - (1) Profile: rebuild the scouting report as a tight instrument panel (recessed tray for the form coins, framed sub-plaques for Top Build and Nearest Achievement) at natural height, and fill the column another way; trophies stand on the shelf with contact shadows (all four).

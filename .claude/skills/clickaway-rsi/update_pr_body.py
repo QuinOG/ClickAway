@@ -10,10 +10,11 @@ transformation is visible without comparing intermediate rounds.
 """
 import json
 import os
+import subprocess
 import sys
 
 REPO = "QuinOG/ClickAway"
-BRANCH = os.environ.get("RSI_BRANCH", "game-feel-council")
+BRANCH = os.environ.get("RSI_BRANCH") or subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True).stdout.strip()
 SHOTS_DIR = "docs/ui-polish/game-feel"
 
 n = int(sys.argv[1])
