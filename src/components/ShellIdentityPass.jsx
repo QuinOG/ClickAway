@@ -44,13 +44,15 @@ function ArenaSeal() {
   </svg>
 }
 
-export default function ShellIdentityPass({ id, className = "", role, username = "Player", profileImage = null, profileHref, onNavigate, rankProgress = null, rankLabel = "Unranked", rankMmr = 0, coins = 0, level = 1, accuracyPercent = 0 }) {
+export default function ShellIdentityPass({ id, className = "", role, username = "Player", profileImage = null, profileHref, onNavigate, rankProgress = null, rankLabel = "Unranked", rankMmr = 0, accuracyPercent = 0, bestScore = 0, bestStreak = 0 }) {
   const label = rankProgress?.tierLabel || rankLabel || "Unranked"
   const crest = getRankImageSrc(rankProgress ?? label)
   const hasImage = Boolean(profileImage?.imageSrc)
   const showTrack = rankProgress && !rankProgress.isUnranked && !rankProgress.isPlacement && !rankProgress.isTopRank && Number.isFinite(rankProgress.rr) && Number.isFinite(rankProgress.rrMax) && rankProgress.rrMax > 0
   const progress = showTrack ? Math.max(0, Math.min(100, 100 * rankProgress.rr / rankProgress.rrMax)) : 0
-  const stats = [["Coins", Number.isFinite(coins) ? coins.toLocaleString() : "0"], ["Level", (Number.isFinite(level) ? Math.max(1, level) : 1).toLocaleString()], ["Accuracy", formatPercent(accuracyPercent)]]
+  // Coins and level sit in the header bar right above this card, so it shows personal bests instead.
+  const count = (value) => (Number.isFinite(value) ? Math.max(0, value) : 0).toLocaleString()
+  const stats = [["Best score", count(bestScore)], ["Best streak", count(bestStreak)], ["Accuracy", formatPercent(accuracyPercent)]]
   return <div id={id} className={`${className} shellIdentityPass`.trim()} role={role} aria-label={role ? `${username} player details` : undefined}>
     <header className="shellPassBanner">Competitor Pass</header>
     <div className="shellPassHero">

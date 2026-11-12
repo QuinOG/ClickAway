@@ -70,6 +70,8 @@ export default function Layout({
   coins,
   level,
   accuracyPercent,
+  bestScore,
+  bestStreak,
   rankProgress,
   rankLabel,
   rankMmr,
@@ -165,6 +167,8 @@ export default function Layout({
         coins={coins}
         level={level}
         accuracyPercent={accuracyPercent}
+        bestScore={bestScore}
+        bestStreak={bestStreak}
         rankProgress={rankProgress}
         rankLabel={rankLabel}
         rankMmr={rankMmr}
