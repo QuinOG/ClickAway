@@ -4861,3 +4861,23 @@
 .shopCommandFooter:empty { display: none; }
 @media (max-width: 760px) { .shopCommandSurface { grid-template-columns: 1fr !important; } .shopInspectStage.shopCommandLoadoutStage { height: 220px; } }
 .shopInspectStage .shopCommandLoadoutButton { bottom: 30px !important; }
+
+/* Round 37: Results without the repeated hit/miss bar; unlock copy gets the width */
+.gameOverSpotlight .gameOverNextUnlock { grid-template-columns: 124px minmax(0, 1fr); column-gap: 20px; padding-bottom: 22px; }
+.gameOverSpotlight .gameOverNextUnlockIcon { width: 124px; height: 124px; }
+.gameOverSpotlight .gameOverNextUnlockCopy strong { white-space: nowrap; }
+.gameOverRewards .gameOverReward { justify-content: start; align-content: center; }
+.gameOverRewards .gameOverReward small { white-space: nowrap; }
+@media (min-width: 1000px) {
+    .gameOverCardWithDifficulty > .gameOverSpotlight { align-self: stretch !important; }
+    .gameOverCardWithDifficulty > .gameOverSpotlight .gameOverNextUnlock { height: 100%; }
+}
+
+/* Round 37: Rank-up says the promotion once; actions spaced apart */
+.gameOverPromotionEyebrow, .gameOverPromotionLead {
+    position: absolute !important; width: 1px !important; height: 1px !important; margin: -1px !important; padding: 0 !important;
+    overflow: hidden !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important;
+}
+.rankCeremony .gameOverPromotionTitle { margin-top: 34px !important; margin-bottom: 22px !important; }
+.rankCeremony .gameOverPromotionTierRow { margin-bottom: 4px !important; }
+.rankCeremony .gameOverPromotionActions { display: flex !important; flex-direction: column; align-items: center; gap: 14px !important; }

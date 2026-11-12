@@ -6,7 +6,6 @@ import {
   Timer,
   TrendDown,
   TrendUp,
-  XCircle,
 } from "@phosphor-icons/react"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -25,7 +24,6 @@ import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMot
 
 const MotionDiv = motion.div
 const MotionSection = motion.section
-const SIGNATURE_CELL_COUNT = 18
 
 function getCardVariants(prefersReducedMotion) {
   if (prefersReducedMotion) {
@@ -72,50 +70,6 @@ function formatReactionTime(value) {
   return `${Math.round(normalizedValue)} ms`
 }
 
-function buildOutcomeSignature(hits = 0, misses = 0) {
-  const normalizedHits = Math.max(0, Number(hits) || 0)
-  const normalizedMisses = Math.max(0, Number(misses) || 0)
-  const totalAttempts = normalizedHits + normalizedMisses
-  if (totalAttempts === 0) return Array(SIGNATURE_CELL_COUNT).fill("empty")
-
-  const hitCells = Math.round((normalizedHits / totalAttempts) * SIGNATURE_CELL_COUNT)
-  return Array.from(
-    { length: SIGNATURE_CELL_COUNT },
-    (_, index) => (index < hitCells ? "hit" : "miss")
-  )
-}
-
-function HitMissSignature({ hits, misses, prefersReducedMotion }) {
-  const cells = useMemo(() => buildOutcomeSignature(hits, misses), [hits, misses])
-
-  return (
-    <section
-      className="outcomeSignature"
-      aria-label={`Hit signature: ${hits} hits and ${misses} misses`}
-      role="img"
-    >
-      <div className="outcomeSignatureHeader" aria-hidden="true">
-        <span><Crosshair weight="fill" /> {hits} hits</span>
-        <span><XCircle weight="fill" /> {misses} misses</span>
-      </div>
-      <div className="outcomeSignatureTrack" aria-hidden="true">
-        {cells.map((cell, index) => (
-          <MotionDiv
-            className={`outcomeSignatureCell is-${cell}`}
-            key={`${cell}-${index}`}
-            initial={prefersReducedMotion ? false : { opacity: 0, scaleY: 0.2 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            transition={prefersReducedMotion ? { duration: 0 } : {
-              delay: 0.5 + (index * 0.025),
-              duration: 0.18,
-            }}
-          />
-        ))}
-      </div>
-    </section>
-  )
-}
-
 function PersonalBestComparison({ score, bestScore }) {
   const normalizedBest = Math.max(0, Number(bestScore) || 0)
   const delta = score - normalizedBest
@@ -129,7 +83,7 @@ function PersonalBestComparison({ score, bestScore }) {
   let comparisonCopy = "First score on record"
   if (normalizedBest > 0 && isNewBest) comparisonCopy = `New best by ${formatNumber(delta)}`
   if (normalizedBest > 0 && !isNewBest && delta === 0) comparisonCopy = "Personal best matched"
-  if (normalizedBest > 0 && delta < 0) comparisonCopy = `Personal best ${formatNumber(normalizedBest)} — keep climbing`
+  if (normalizedBest > 0 && delta < 0) comparisonCopy = `${formatNumber(normalizedBest)} — keep climbing`
 
   return (
     <section className={`outcomeBestComparison ${isNewBest ? "isNewBest" : ""}`} aria-label="Personal best comparison">
@@ -457,7 +411,6 @@ export function GameOverOverlay({
           animate={{ opacity: 1, y: 0 }}
           transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.34, duration: 0.3 }}
         >
-          <HitMissSignature hits={hits} misses={misses} prefersReducedMotion={prefersReducedMotion} />
           <PersonalBestComparison score={score} bestScore={bestScore} />
           <OutcomeInstruments
             accuracy={accuracy}
