@@ -66,6 +66,14 @@ def main():
         vals = [v for v in out[j].values() if v is not None]
         overall[j] = sum(vals) / len(vals) if vals else 0
     print("| **OVERALL** | " + " | ".join(f"**{overall[j]:.2f}**" for j in judges) + " | |\n")
+    # New captures change the mean, so also compare like with like on the screens scored last round.
+    shared = [s for s in SCREENS if prev and all(prev.get(j, {}).get(s) is not None for j in judges)]
+    if prev and len(shared) < len(SCREENS):
+        def mean_on(src, j):
+            vals = [src[j][s] for s in shared if src[j].get(s) is not None]
+            return sum(vals) / len(vals) if vals else 0
+        print(f"Like-for-like on the {len(shared)} screens scored last round: "
+              + ", ".join(f"{j} {mean_on(prev, j):.2f}→{mean_on(out, j):.2f}" for j in judges) + "\n")
 
     gaps = sorted(judges, key=lambda j: overall[j] - BARS.get(j, 9.0))
     weight = {j: (1.3 if i == 0 else 1.15 if i == 1 else 1.0) for i, j in enumerate(gaps)}
