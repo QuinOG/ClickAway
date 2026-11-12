@@ -4755,3 +4755,47 @@
 .profileReceiptMode { color: #513b27; font: 900 10px/1 var(--ca-font-display); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px dashed #8e7652; padding-bottom: 3px; }
 .profileReceiptId { color: #665039; font: 700 9px/1 monospace; white-space: nowrap; }
 .profileReceiptMode { font-size: 9px; letter-spacing: 0; white-space: nowrap; }
+/* Round 31: Shop - each product family has its own display furniture (rarity colours kept) */
+/* Button skins: arched arcade cabinets with a marquee bulb strip */
+.shopSection[data-shop-family="button_skins"] .shopGrid .shopItemCard { border-top-left-radius: 38px !important; border-top-right-radius: 38px !important; }
+.shopSection[data-shop-family="button_skins"] .shopGrid .shopItemCard::before { display: block !important; content: ''; position: absolute; z-index: 3; left: 26px; right: 26px; top: 5px; height: 8px; pointer-events: none;
+  background: radial-gradient(circle, #fff3c4 0 2px, #ffc94a 2.5px 3.2px, transparent 3.6px) 0 50% / 14px 8px repeat-x; filter: drop-shadow(0 0 3px rgb(255 201 74 / 75%)); }
+/* Arena themes: framed posters hung from a nail on two wires (no shelf) */
+.shopSection[data-shop-family="arena_themes"] .shopGrid { row-gap: 40px; }
+.shopSection[data-shop-family="arena_themes"] .shopGrid .shopItemCard { margin-top: 26px; border-radius: 2px !important; }
+.shopSection[data-shop-family="arena_themes"] .shopGrid .shopItemCard::after { display: none !important; }
+.shopSection[data-shop-family="arena_themes"] .shopGrid .shopItemCard::before { display: block !important; content: ''; position: absolute; z-index: 0; left: 18%; right: 18%; top: -26px; height: 28px; pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 4px, #e7edf4 0 2px, #6f7c8a 2.5px 4px, #050912 4.5px 5.5px, transparent 6px),
+    linear-gradient(to top right, transparent calc(50% - 1.2px), #9aa6b2 calc(50% - 1.2px) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 0 0 / 50% 100% no-repeat,
+    linear-gradient(to top left, transparent calc(50% - 1.2px), #9aa6b2 calc(50% - 1.2px) calc(50% + 1.2px), transparent calc(50% + 1.2px)) 100% 0 / 50% 100% no-repeat; }
+/* Profile images: ID badges on a steel lanyard clip (no shelf) */
+.shopSection[data-shop-family="profile_images"] .shopGrid { row-gap: 34px; }
+.shopSection[data-shop-family="profile_images"] .shopGrid .shopItemCard { margin-top: 18px; border-radius: 16px !important; }
+.shopSection[data-shop-family="profile_images"] .shopGrid .shopItemCard::after { display: none !important; }
+.shopSection[data-shop-family="profile_images"] .shopGrid .shopItemCard::before { display: block !important; content: ''; position: absolute; z-index: 3; left: 50%; top: -18px; width: 40px; height: 26px; transform: translateX(-50%); pointer-events: none; border: 2px solid #050912; border-radius: 6px 6px 4px 4px;
+  background: linear-gradient(180deg, transparent 0 7px, #050912 7px 11px, transparent 11px) 50% 0 / 20px 100% no-repeat, linear-gradient(180deg, #e7edf4, #8a97a6 55%, #5a6573); box-shadow: inset 0 1px #fff, 0 2px 0 #050912; }
+/* Round 31: Duels - the challenger signs in on a layered ticket with punched edges and a wax seal */
+.duelPage .duelFightCard .duelFighter.is-player .duelFighterPlate {
+  position: relative; box-sizing: border-box; width: min(100%, 300px); padding: 12px 54px 14px 24px; border: 4px solid #1d3354 !important; border-radius: 5px !important;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgb(30 60 110 / 5%) 3px 4px), linear-gradient(#e6f0ff, #a9c4ea) !important;
+  -webkit-mask: radial-gradient(circle 9px at 0 50%, transparent 8.5px, #000 9px) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, transparent 8.5px, #000 9px) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 9px at 0 50%, transparent 8.5px, #000 9px) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, transparent 8.5px, #000 9px) right / 51% 100% no-repeat;
+  box-shadow: inset 0 0 0 2px #f4f8ff, inset -46px 0 0 -44px rgb(29 51 84 / 0%) !important; transform: rotate(-1deg); text-align: left;
+}
+.duelPage .duelFightCard .duelFighter.is-player { filter: drop-shadow(0 5px 0 #0b1424) drop-shadow(0 8px 10px rgb(0 0 0 / 50%)); }
+.duelPage .duelFightCard .duelFighter.is-player .duelFighterPlate::before { content: ''; position: absolute; right: 44px; top: 8px; bottom: 8px; border-left: 2px dashed rgb(29 51 84 / 45%); }
+.duelPage .duelFightCard .duelFighter.is-player .duelFighterPlate::after { content: '\2605'; position: absolute; right: 8px; top: 50%; width: 30px; height: 30px; transform: translateY(-50%) rotate(-12deg); display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #6aa8ff, #2a5fb8 60%, #183d7a); box-shadow: 0 0 0 3px rgb(42 95 184 / 45%), inset 0 -2px 3px rgb(0 0 0 / 35%); color: #e6f0ff; font-size: 15px; }
+.duelPage .duelFightCard .duelFighter.is-player .duelFighterPlate small { color: #2a4a7a !important; letter-spacing: .18em; font-size: 12px; }
+.duelPage .duelFightCard .duelFighter.is-player .duelFighterPlate strong { color: #10223f !important; text-shadow: none !important; font-size: 26px; }
+
+/* Round 31: Locked parts keep their equipment identity */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph { opacity: .88; filter: saturate(.72) brightness(.88); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph svg { filter: none; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartBody { opacity: .85; filter: none; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlass { background: rgb(6 12 24 / 12%); }
+.unlockWallRebuild .armoryUnlockWallGrid .armoryUnlockWallItem.isLocked > .armoryPartGlyph { filter: saturate(.7) brightness(.82); opacity: 1; }
+.unlockWallRebuild .armoryUnlockWallItem.isLocked::after { content: '\1F512'; color: #ffe0a0; background: #172230; border-color: #d0aa62; }
+.unlockWallRebuild .armoryUnlockWallItem.isLocked .armoryUnlockWallItemLock { color: #ffe0a0; border: 1px solid #a98447; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph { filter: saturate(.8) brightness(1.35); }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartLabel { opacity: 1; }
