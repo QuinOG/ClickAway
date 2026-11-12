@@ -11,13 +11,17 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 
 ## Defaults (override with whatever the user says)
 - **Goal:** move ClickAway from a SaaS-dashboard feel to a shipped indie-game feel (illustrated icons, game menus, world, juice) across the whole app.
-- **Council (from run 2):** `delegate_task` ×4, all launched in one message, `role: "review"`, **all at medium reasoning** (user's rule):
+- **Council (from run 3):** `delegate_task` ×3, all launched in one message, `role: "review"`, **all at medium reasoning** (user's rule):
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "medium"}`
-  - Claude `claude-opus-5`, `{effort: "low"}`. This is the one exception to medium, at the user's request, because Claude session usage is limited. (Not in the short list; `orchestrator_capabilities` with `search: "opus-5"` finds it)
   - OpenCode `opencode-go/gemini-4-argon`, `{variant: "medium"}` (providerInstanceId `opencode`)
   - OpenCode `opencode-go/qwen3.8-max`, `{variant: "medium"}`
+  - **Gate judge** for the blind A/B check (Scoring v2, step 5): Qwen at medium, on the changed screens only.
+  - Opus was dropped after run 2 (user, 2026-11-11), for two reasons:
+    - The builder is Opus 5.5, so a Claude judge risks sharing its blind spots.
+    - Claude usage was running ahead of schedule.
+    Gemini's scores moved with Opus's (0.75 correlation over run 2), so its direction stays covered. Opus's strictness about overclaims is now covered by the ACCEPT crop checklist and Qwen's gate. If Claude usage allows, Opus (`claude-opus-5`, `{effort: "low"}`; `orchestrator_capabilities` with `search: "opus-5"` finds it) can be run once to audit a run's final round.
   - Gemini and Qwen stay at **medium** (user, 2026-11-11): the image trim below is enough, since they are only slightly over pace.
-  - Token budget (user, 2026-11-11): Gemini and Qwen were burning tokens fast, mostly on images (13 current + 13 previous PNGs, some 4600px tall). For them, add to the prompt: "Open all 13 CURRENT_DIR images, but open PREVIOUS_DIR images only for the screens named in CHANGES_FILE." Sol and Opus keep the full set.
+  - Token budget (user, 2026-11-11): Gemini and Qwen were burning tokens fast, mostly on images (13 current + 13 previous PNGs, some 4600px tall). For them, add to the prompt: "Open all 13 CURRENT_DIR images, but open PREVIOUS_DIR images only for the screens named in CHANGES_FILE." Sol keeps the full set.
   - Judges must read PNGs, so only image-input models qualify. Check `models.dev/api.json` → `modalities.input`.
   - Reserve: `opencode-go/grok-4.7` `{variant: "medium"}`. It takes images and supports medium, but has no public vision or design results yet.
   - Excluded because they lack a medium variant: Kimi K3.1 Pro (low/high/max) and Hy4 (none/high).
@@ -61,7 +65,7 @@ Why: in run 2 every round landed between −0.17 and +0.25 on average, and Sol n
 The mechanics that answer each:
 1. **Per-screen scores with an anchor.** `brief.md` v2 makes each judge score all 13 screens, and OVERALL is their mean. Unchanged screens keep last round's score unless the judge names a missed defect. That removes the drift, so a gain on a changed screen shows up as a gain.
    - Prompt each judge with: `Follow <repo>/docs/ui-polish/game-feel/brief.md exactly. JUDGE = <sol|opus|gemini|qwen> ; CURRENT_DIR = …/iN ; PREVIOUS_DIR = …/i(N-1) ; CHANGES_FILE = …/iN-changes.md ; PREVIOUS_SCORES = …/i(N-1)-screens.json ; REPLY_FILE = …/replies/iN/<judge>.md . Standards: …/standards/.`
-   - Add the Opus and Gemini/Qwen extras from Council.
+   - Add the Gemini/Qwen extras from Council.
    - Each judge writes its reply to REPLY_FILE and returns only the OVERALL line, which keeps four long replies out of the session context.
    - The first council of a run has no PREVIOUS_SCORES. It is the anchor read.
 2. **Arithmetic, not vibes.** `python .claude/skills/clickaway-rsi/council.py N` parses the replies and writes `iN-screens.json`, which becomes the next round's PREVIOUS_SCORES. It prints:
@@ -79,7 +83,7 @@ The mechanics that answer each:
 4. **ACCEPT checklist.** Copy every picked item's ACCEPT line into `iN-decisions.md`. Before writing the change notes, check each one against a 100% crop and mark it pass or fail. Change notes claim **only** the items that pass, and they state each one in the judge's own ACCEPT wording.
 5. **Blind A/B gate (before committing and before the council).**
    - `python .claude/skills/clickaway-rsi/ab_gate.py make …/i(N-1) …/iN <scratchpad>/abN/pairs <changed screens>` copies each changed screen's before and after shots in a random X/Y order.
-   - Then send one `delegate_task` to the gate judge (Opus, low): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
+   - Then send one `delegate_task` to the gate judge (Qwen, medium): "For each <screen> in <pairs dir>, open <screen>-X.png and <screen>-Y.png. Which looks more like a shipped indie game (not a web app), and by how many points on a 10-point scale for that screen? Write one line per screen to <reply file>: `<screen>: X|Y|same | <margin> | <the deciding difference, ≤15 words>`. Read-only otherwise."
    - Run `ab_gate.py score`. Any screen judged SAME or OLD gets fixed or reverted before the council runs. This is the guard against a backwards round, and it costs about 10 images instead of about 80.
 6. **Ratchet.** After the council, a changed screen whose mean dropped, or that 2+ judges scored lower, is reverted to the previous round's CSS for that screen at the start of the next round. Undo that screen's section in the round's CSS block, unless the next round rebuilds it anyway. Keep per-round CSS grouped by screen to make this cheap.
 7. **Calibration file.** `docs/ui-polish/game-feel/calibration.json` holds `{judge: factor}`, which is the realized share of that judge's own claimed screen gains (start every judge at 0.5). After each round, set it to the running mean of (actual screen Δ ÷ claimed screen Δ) over the screens that were changed.

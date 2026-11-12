@@ -39,4 +39,4 @@ PROTECT: <2–4 elements that work and must not regress: screen and element>
 REGRESSIONS: <anything worse than PREVIOUS_DIR, or a claimed change that is not visible. "none" if there are none; "n/a" if there is no previous round>
 ```
 
-Your screen scores are averaged with three other judges' to decide what gets built, and your ACCEPT lines become the checklist the builder verifies before the next round. Make every ACCEPT line specific enough that someone else could check it pass or fail from the image.
+Your screen scores are averaged with the other judges' to decide what gets built, and your ACCEPT lines become the checklist the builder verifies before the next round. Make every ACCEPT line specific enough that someone else could check it pass or fail from the image.
