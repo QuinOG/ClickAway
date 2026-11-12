@@ -4183,3 +4183,201 @@
   .historyContent .historyTrajectoryLegend { gap: 4px !important; }
   .historyContent .historyTrajectoryLegend button { font-size: 10px !important; padding-inline: 6px !important; }
 }
+/* Round 20: Armory telemetry instruments */
+.armoryWorkspace > .armoryInstruments { padding: 8px 5px !important; gap: 4px !important; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument + .armoryInstrument::after { display: none !important; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto auto !important; align-content: start !important;
+  gap: 5px !important; padding: 9px 8px 10px !important;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentLabel {
+  display: block; padding: 0 8px 4px !important; text-align: center;
+  color: #8e9db2 !important; font-size: 10px !important; font-weight: 800 !important;
+  letter-spacing: 0.12em !important; white-space: nowrap; overflow: hidden; text-overflow: clip;
+  text-shadow: 0 -1px 0 #02060d, 0 1px 0 rgb(220 232 248 / 22%);
+  border-bottom: 1px solid #050912; box-shadow: 0 1px 0 rgb(196 206 219 / 16%);
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentReadout {
+  display: flex !important; flex-direction: column !important; justify-content: flex-end !important;
+  align-items: center !important; gap: 1px !important;
+  min-height: 46px; margin: 0 !important; padding: 4px 4px 3px !important;
+  border: 1px solid #000; border-radius: 4px;
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 120%, rgb(80 170 255 / 12%), transparent 70%),
+    linear-gradient(180deg, #01040a, #061020) !important;
+  box-shadow: inset 0 2px 5px #000, 0 1px 0 rgb(196 206 219 / 22%);
+  overflow: hidden;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentValue {
+  font-family: var(--ca-font-display) !important; font-size: 20px !important; line-height: 1.05 !important;
+  letter-spacing: -0.02em !important; font-variant-numeric: tabular-nums;
+  color: #cfeaff !important; text-shadow: 0 0 7px rgb(90 180 255 / 60%), 0 0 1px #fff;
+  white-space: nowrap; max-width: 100%;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp .armoryInstrumentValue,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown .armoryInstrumentValue,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange .armoryInstrumentValue {
+  font-size: 11.5px !important; line-height: 1.1 !important; letter-spacing: 0.02em !important;
+  color: rgb(170 196 228 / 62%) !important; text-shadow: none;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp .armoryInstrumentValue::after,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown .armoryInstrumentValue::after,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewChange .armoryInstrumentValue::after { content: " \2192"; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext {
+  font-family: var(--ca-font-display) !important; font-size: 19px !important; line-height: 1.05 !important;
+  font-weight: 400 !important; letter-spacing: -0.02em !important; white-space: nowrap;
+  color: #e6f0ff !important;
+}
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext i { display: none !important; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp .armoryInstrumentNext { color: #7dffc6 !important; text-shadow: 0 0 8px rgb(60 230 150 / 65%); }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown .armoryInstrumentNext { color: #ff9a8a !important; text-shadow: 0 0 8px rgb(255 110 90 / 60%); }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armorySegmentGauge { height: 10px !important; margin: 0 !important; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentTag { justify-self: center !important; margin-top: 0 !important; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewUp::before,
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure.isPreviewDown::before { left: 10px !important; right: 10px !important; bottom: 3px !important; height: 3px !important; box-shadow: 0 0 6px currentColor; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentLabel { padding-inline: 2px !important; font-size: 9.5px !important; letter-spacing: 0.07em !important; }
+.armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentReadout { justify-content: center !important; min-height: 44px; }
+
+/* Round 20: Ladder hover card as a scouting dossier (portrait third, three instruments, compact footer) */
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard {
+  display: grid !important; grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-areas: "portrait name" "portrait rank" "instr instr" "link link";
+  gap: 8px !important; width: 360px !important; align-items: stretch;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentity { display: contents !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar {
+  grid-area: portrait; width: 112px !important; height: auto !important; min-height: 150px;
+  padding: 0 !important; border-radius: 8px !important; border: 3px solid #050912 !important; align-self: stretch !important;
+  display: grid !important; place-items: end center; overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 38%, color-mix(in srgb, var(--pass-trim) 55%, transparent), transparent 72%),
+    repeating-linear-gradient(180deg, transparent 0 13px, rgb(255 255 255 / 6%) 13px 14px),
+    linear-gradient(180deg, var(--pass-deep), #08111e 92%) !important;
+  box-shadow: inset 0 0 0 2px var(--pass-trim), inset 0 -10px 18px #050912, 0 3px 0 #050912 !important;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width: 112px !important; height: 112px !important; border-radius: 0 !important; margin-bottom: -4px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityText {
+  grid-area: name; align-self: stretch !important; padding: 7px 10px 6px !important; border: 1px solid #050912;
+  background: linear-gradient(180deg, var(--pass-trim), var(--pass-deep)); box-shadow: inset 0 1px #fff8, 0 2px 0 #050912;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityName { font-size: 24px !important; line-height: 26px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankBlock { grid-area: rank; min-height: 0 !important; grid-template-columns: 46px minmax(0, 1fr) !important; gap: 8px !important; padding: 6px 8px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankIconSlot, .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankIcon { width: 46px !important; height: 46px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankValue { font-size: 17px !important; line-height: 19px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankMeta { font-size: 11px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStats {
+  grid-area: instr; display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 6px !important; padding: 0 !important; background: transparent !important;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-accuracy { order: 1; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-score { order: 2; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-streak { order: 3; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-coins { order: 4; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-level { order: 5; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-rounds { order: 6; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-accuracy, .tone-score, .tone-streak) {
+  position: relative; min-height: 86px !important; padding: 8px 4px 7px !important;
+  display: grid !important; grid-template-rows: 1fr auto; justify-items: center; align-content: end; text-align: center;
+  border: 2px solid #050912 !important; border-radius: 8px !important;
+  background:
+    radial-gradient(circle at 6px 6px, #c9d4df 0 1px, #46576a 1.5px 2.2px, transparent 2.6px),
+    radial-gradient(circle at calc(100% - 6px) 6px, #c9d4df 0 1px, #46576a 1.5px 2.2px, transparent 2.6px),
+    linear-gradient(180deg, #1b2c44, #0a1424) !important;
+  box-shadow: inset 0 1px 0 rgb(196 206 219 / 35%), inset 0 -3px 0 #050912, 0 2px 0 #050912 !important;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-accuracy, .tone-score, .tone-streak) .profileHoverStatLabel { order: 2; font-size: 9.5px !important; line-height: 11px !important; letter-spacing: 0.06em; text-transform: uppercase; color: #9fb4cc !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-accuracy, .tone-score, .tone-streak) .profileHoverStatValue {
+  order: 1; align-self: center; font-size: 22px !important; line-height: 24px !important; text-shadow: 0 0 8px currentColor, 0 2px 0 #050912;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-accuracy .profileHoverStatValue {
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font-size: 15px !important; color: #7ff0c6 !important;
+  background: radial-gradient(circle, #07101c 0 58%, transparent 59%), conic-gradient(#4fe3a6 0 var(--stat-pct), #1b2a3c var(--stat-pct) 100%);
+  box-shadow: 0 0 0 2px #050912, 0 0 10px rgb(79 227 166 / 35%); text-shadow: 0 0 6px rgb(79 227 166 / 60%);
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-score .profileHoverStatValue { color: #ffd76a !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat.tone-streak .profileHoverStatValue { color: #ff9b5c !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-coins, .tone-level, .tone-rounds) {
+  min-height: 0 !important; padding: 4px 8px !important; display: flex !important; align-items: baseline; justify-content: space-between; gap: 4px;
+  border: 1px solid #050912 !important; border-radius: 5px !important; background: #08111d !important; box-shadow: inset 0 1px 3px #000 !important;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-coins, .tone-level, .tone-rounds) .profileHoverStatLabel { font-size: 9px !important; line-height: 11px !important; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-coins, .tone-level, .tone-rounds) .profileHoverStatValue { font-size: 14px !important; line-height: 16px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverProfileLink { grid-area: link; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width: 132px !important; height: 132px !important; margin-bottom: -10px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat:is(.tone-coins, .tone-level, .tone-rounds) { flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 1px !important; padding: 4px 4px 5px !important; }
+
+/* Round 20: Competitor pass as one continuous credential face (rank named once, engraved readouts) */
+.shellIdentityPopover.shellIdentityPass {
+  background:
+    radial-gradient(ellipse 80% 40% at 30% 30%, rgb(255 201 74 / 10%), transparent 70%),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 2.2%) 0 2px, transparent 2px 7px),
+    linear-gradient(170deg, #1c2d47, #0e192b 70%) !important;
+}
+.shellIdentityPopover.shellIdentityPass .shellPassHero { margin: 14px 14px 0 !important; padding-bottom: 12px; background: none !important; box-shadow: 0 1px 0 #050912, 0 2px 0 rgb(255 255 255 / 9%); }
+.shellIdentityPopover.shellIdentityPass .shellPassPortraitMount { box-shadow: 0 0 0 2px #050912, 0 3px 0 #050912, inset 0 1px 0 #fff8; }
+.shellIdentityPopover.shellIdentityPass .shellPassIdentity > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.shellIdentityPopover.shellIdentityPass .shellPassName { font-size: 28px !important; line-height: 30px !important; text-shadow: 0 2px 0 #050912; }
+.shellIdentityPopover.shellIdentityPass .shellPassRank {
+  min-height: 0 !important; margin: 0 14px !important; padding: 12px 2px !important;
+  border: 0 !important; border-radius: 0 !important; background: none !important;
+  box-shadow: 0 1px 0 #050912, 0 2px 0 rgb(255 255 255 / 9%) !important;
+}
+.shellIdentityPopover.shellIdentityPass .shellPassCrest { width: 52px !important; height: 52px !important; filter: drop-shadow(0 3px 0 #050912); }
+.shellIdentityPopover.shellIdentityPass .shellPassRankText strong { font-size: 20px !important; line-height: 22px !important; color: #ffd76a !important; text-shadow: 0 2px 0 #050912; }
+.shellIdentityPopover.shellIdentityPass .shellPassRrTrack { height: 10px !important; box-shadow: inset 0 1px 2px #000, 0 1px 0 rgb(255 255 255 / 12%); }
+.shellIdentityPopover.shellIdentityPass .shellPassRrTrack i { height: 6px !important; background: linear-gradient(180deg, #ffe7a0, #e0a53a) !important; box-shadow: 0 0 6px rgb(255 201 74 / 55%); }
+.shellIdentityPopover.shellIdentityPass .shellPassStats { gap: 0 !important; margin: 10px 14px 12px !important; }
+.shellIdentityPopover.shellIdentityPass .shellPassStat {
+  min-height: 0 !important; padding: 4px 6px 2px !important; text-align: center;
+  border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important;
+}
+.shellIdentityPopover.shellIdentityPass .shellPassStat + .shellPassStat { box-shadow: -1px 0 0 #050912, -2px 0 0 rgb(255 255 255 / 9%) !important; }
+.shellIdentityPopover.shellIdentityPass .shellPassStat dt { font: 400 10px/13px var(--ca-font-display) !important; letter-spacing: 0.08em; text-transform: uppercase; color: #8ea4bf !important; }
+.shellIdentityPopover.shellIdentityPass .shellPassStat dd { font-size: 22px !important; line-height: 26px !important; text-shadow: 0 2px 0 #050912, 0 -1px 0 rgb(255 255 255 / 10%); }
+
+/* Round 20: More menu - Settings is a slim utility switch plate under the destinations; no web subtitle */
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogDescription { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0 !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.mobileMoreSettings {
+  grid-column: 1 / -1; min-height: 0 !important; height: 52px; margin-top: 6px;
+  display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: center !important; gap: 10px !important;
+  padding: 6px 16px !important;
+  background: linear-gradient(180deg, #2a3344, #161d2a) !important;
+}
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.mobileMoreSettings > .navItemIcon { width: 34px !important; height: 34px !important; flex-basis: 34px !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.mobileMoreSettings > .navItemIcon svg { width: 26px !important; height: 26px !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.mobileMoreSettings > .mobileMoreCategory { display: none !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.mobileMoreSettings > .navItemLabel { font-size: 15px !important; letter-spacing: 0.06em; text-transform: uppercase; color: #c9d4e2 !important; }
+
+/* Round 20: Armory compare paired instruments */
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGrid { gap: 10px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrument { min-height: 0 !important; padding: 7px 10px 9px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentLabel { font-family: var(--ca-font-display); font-size: 13px !important; line-height: 17px !important; letter-spacing: .02em; padding-right: 64px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentDelta { top: 7px !important; right: 10px !important; padding: 0 6px; border: 1px solid #050912; border-radius: 3px; background: #050c16; font-size: 12px !important; line-height: 16px; font-weight: 700; color: #a8b6c8; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues { display: grid; gap: 5px; margin: 5px 0 0 !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div { display: grid !important; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "tag val" "bar bar"; align-items: baseline; gap: 2px 8px !important; font-size: 12px !important; line-height: 15px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues dt { grid-area: tag; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #55d9ff !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div + div dt { color: #c7b8ff !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues dd { grid-area: val; justify-self: end; font-weight: 700; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge { grid-area: bar; display: grid !important; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px !important; margin: 0 !important; padding: 3px; border: 1px solid #050912; border-radius: 3px; background: #040a13; box-shadow: inset 0 1px 2px #000; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentGauge i { width: auto !important; height: 10px !important; border-radius: 1px; background: #1a2a3b !important; }
+/* Active track: solid lit segments */
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div:first-child .armoryCompareInstrumentGauge i.filled { background: linear-gradient(180deg, #b6f1ff, #55d9ff 45%, #1e94c4) !important; box-shadow: 0 0 5px rgb(85 217 255 / 55%); }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div:first-child .armoryCompareInstrumentGauge i.filled.is-gain { background: linear-gradient(180deg, #c3ffee, #4eddb8 45%, #1f9c7c) !important; box-shadow: 0 0 5px rgb(78 221 184 / 55%); }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div:first-child .armoryCompareInstrumentGauge i.filled.is-cost { background: linear-gradient(180deg, #ffc2bd, #ff665d 45%, #b4302a) !important; box-shadow: 0 0 5px rgb(255 102 93 / 55%); }
+/* Ghost track: outlined, hatched segments */
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div + div .armoryCompareInstrumentGauge { border-style: dashed; border-color: #5d527f; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div + div .armoryCompareInstrumentGauge i { background: transparent !important; box-shadow: inset 0 0 0 1px #2a3446; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div + div .armoryCompareInstrumentGauge i.filled { --gh: #c7b8ff; background: repeating-linear-gradient(135deg, var(--gh) 0 2px, transparent 2px 4px) !important; box-shadow: inset 0 0 0 1px var(--gh); }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div + div .armoryCompareInstrumentGauge i.filled.is-gain { --gh: #4eddb8; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareInstrumentValues > div + div .armoryCompareInstrumentGauge i.filled.is-cost { --gh: #ff665d; }
+/* Shorter report plates: title + one-line strengths / tradeoffs rows */
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumn { min-height: 0 !important; padding: 8px 14px 9px !important; gap: 6px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnTitle { justify-self: start; padding: 2px 10px !important; font-size: 12px !important; line-height: 16px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnBody { gap: 3px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnBody > div { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: baseline; gap: 8px; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnBody .armorySpecSheetPanelTitle { margin: 0 !important; padding: 0 !important; font-size: 10px !important; line-height: 17px; letter-spacing: .12em; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnBody .armoryChipRow { margin: 0 !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumnBody .armorySnapshotChip { min-height: 0 !important; line-height: 18px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareSpecColumn { padding: 8px 20px 10px !important; }

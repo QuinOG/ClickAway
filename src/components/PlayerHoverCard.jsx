@@ -6,9 +6,9 @@ import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import { formatPercent } from "../utils/gameMath.js"
 import { PLACEMENT_MATCH_COUNT, getRankImageSrc } from "../utils/rankUtils.js"
 
-function QuickStat({ label, value, tone = "default" }) {
+function QuickStat({ label, value, tone = "default", style }) {
   return (
-    <div className={`profileHoverStat tone-${tone}`}>
+    <div className={`profileHoverStat tone-${tone}`} style={style}>
       <dt className="profileHoverStatLabel">{label}</dt>
       <dd className="profileHoverStatValue">{value}</dd>
     </div>
@@ -138,22 +138,30 @@ export default function PlayerHoverCard({
       <dl className="profileHoverStats" aria-label="Player quick stats">
         <QuickStat label="Coins" value={formattedCoins} tone="coins" />
         <QuickStat label="Level" value={normalizedLevel.toLocaleString()} tone="level" />
-        <QuickStat label="Accuracy" value={formattedAccuracy} tone="accuracy" />
+        <QuickStat
+          label="Accuracy"
+          value={formattedAccuracy}
+          tone="accuracy"
+          style={{ "--stat-pct": `${Math.max(0, Math.min(100, Number(accuracyPercent) || 0))}%` }}
+        />
         {bestScore !== null ? (
           <QuickStat
             label="Best score"
+            tone="score"
             value={Number.isFinite(bestScore) ? Math.max(0, bestScore).toLocaleString() : "0"}
           />
         ) : null}
         {bestStreak !== null ? (
           <QuickStat
             label="Best streak"
+            tone="streak"
             value={Number.isFinite(bestStreak) ? Math.max(0, bestStreak).toLocaleString() : "0"}
           />
         ) : null}
         {rankedRounds !== null ? (
           <QuickStat
             label="Ranked rounds"
+            tone="rounds"
             value={Number.isFinite(rankedRounds) ? Math.max(0, rankedRounds).toLocaleString() : "0"}
           />
         ) : null}
