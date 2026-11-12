@@ -3472,3 +3472,8 @@
 .arenaLobby .lobbyModeRecord .lobbyModeRecordChart b.isLatest {
     background: repeating-linear-gradient(0deg, #fff0b8 0 4px, transparent 4px 6px) !important;
 }
+
+/* The rig shares the target's centre and scales with its face. */
+.readyCard.arenaLobby .lobbyStageRig { position: absolute; left: calc((100% - 480px) / 2); top: 44%; width: calc(clamp(150px, 16vw, 230px) * 1.30435); height: auto; transform: translate(-50%, -33.82%); pointer-events: none; }
+@media (max-width: 900px) { .readyCard.arenaLobby .lobbyStageRig { left: 50%; top: 36%; width: 101.74px; } }
+
