@@ -825,6 +825,7 @@ export default function LeaderboardPage({
                         <PlayerHoverCard
                           username={player.username}
                           className="ladderPlayerHoverCard"
+                          ladder
                           rankProgress={player.rankProgress}
                           rankLabel={player.rankLabel}
                           rankMmr={player.mmr}

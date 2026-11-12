@@ -3702,3 +3702,48 @@
 @media (max-width:420px) { .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard { width:min(360px, calc(100vw - 24px)); } }
 @media (max-width:320px) { .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStats { grid-template-columns:1fr; } }
 @media (prefers-reduced-motion:reduce) { .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard { transition:none; } }
+
+/* Rivals' scouting pass: steel frame and tier enamel. */
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard {
+  --pass-trim:#a8b6c8; --pass-deep:#536273;
+  padding:10px; border:6px solid transparent; border-radius:7px;
+  background:
+    radial-gradient(circle at 3px 3px,#e9f4fa 0 1px,#536476 1.5px 2.5px,#111a26 3px,transparent 3.5px) border-box,
+    radial-gradient(circle at calc(100% - 3px) 3px,#e9f4fa 0 1px,#536476 1.5px 2.5px,#111a26 3px,transparent 3.5px) border-box,
+    radial-gradient(circle at 3px calc(100% - 3px),#e9f4fa 0 1px,#536476 1.5px 2.5px,#111a26 3px,transparent 3.5px) border-box,
+    radial-gradient(circle at calc(100% - 3px) calc(100% - 3px),#e9f4fa 0 1px,#536476 1.5px 2.5px,#111a26 3px,transparent 3.5px) border-box,
+    linear-gradient(#142338,#0b1725) padding-box,
+    linear-gradient(145deg,#f3f7f9 0%,#8295a6 18%,#394958 48%,#aebdca 72%,#263441 100%) border-box;
+  box-shadow:inset 0 0 0 1px var(--pass-trim), inset 0 2px 0 #ffffff99, 0 4px 0 #050912, 0 9px 18px #050912aa;
+  gap:10px;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .ladderPlayerHoverCard.ladderTier-platinum { --pass-trim:#7ff0e2; --pass-deep:#237e79; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .ladderPlayerHoverCard.ladderTier-gold { --pass-trim:#ffcf55; --pass-deep:#98691b; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .ladderPlayerHoverCard.ladderTier-silver { --pass-trim:#dfe7f1; --pass-deep:#697c92; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .ladderPlayerHoverCard.ladderTier-bronze { --pass-trim:#e59a62; --pass-deep:#8a4f2d; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .ladderPlayerHoverCard.ladderTier-diamond { --pass-trim:#9cc0ff; --pass-deep:#4a6fd1; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentity {
+  position:relative; min-height:88px; grid-template-columns:84px minmax(0,1fr); gap:10px; padding:5px 9px 0;
+  background:linear-gradient(180deg,var(--pass-trim),var(--pass-deep) 68%,#142338 69%,#142338 100%);
+  border:1px solid #050912; box-shadow:inset 0 1px #fff8, 0 2px 0 #050912;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar {
+  width:80px; height:80px; padding:2px; border:3px solid #15212e; border-radius:50%; background:#08111e !important;
+  box-shadow:0 0 0 2px var(--pass-trim), 0 3px 0 #050912, inset 0 1px #fff9; align-self:start;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width:72px; height:72px; border-radius:50%; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityText { align-self:start; padding-top:6px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityLabel { color:#102c32; text-shadow:0 1px #ffffff66; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverIdentityName { font:26px/30px var(--ca-font-display, sans-serif); color:#071a21; text-shadow:0 1px #ffffff66; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankBlock {
+  min-height:90px; grid-template-columns:84px minmax(0,1fr); gap:10px; padding:6px 10px;
+  border:1px solid #050912; background:linear-gradient(115deg,#162c39,#08111e 72%); box-shadow:inset 0 2px 5px #000, inset 0 -1px var(--pass-trim);
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankIconSlot { width:84px; height:84px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankIcon { width:84px; height:84px; filter:drop-shadow(0 3px 1px #000); }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankText { align-content:center; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverRankValue { font-size:20px; line-height:23px; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .ladderRankGauge { display:block; height:8px; margin-top:4px; background:#030a12; border:1px solid #050912; box-shadow:0 1px #ffffff30; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .ladderRankGauge > span { display:block; height:100%; width:var(--rank-progress); background:repeating-linear-gradient(90deg,var(--pass-trim) 0 12px,transparent 12px 15px); }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStats { gap:5px; background:transparent; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat { min-height:49px; background:#09131f; border:1px solid #050912; box-shadow:inset 0 2px 5px #000, inset 0 -1px var(--pass-trim); }
