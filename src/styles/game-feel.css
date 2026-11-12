@@ -3747,3 +3747,36 @@
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .ladderRankGauge > span { display:block; height:100%; width:var(--rank-progress); background:repeating-linear-gradient(90deg,var(--pass-trim) 0 12px,transparent 12px 15px); }
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStats { gap:5px; background:transparent; }
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverStat { min-height:49px; background:#09131f; border:1px solid #050912; box-shadow:inset 0 2px 5px #000, inset 0 -1px var(--pass-trim); }
+/* Round 14: mobile More menu */
+.mobileMoreSheet.mobileMorePlaqueBoard {
+  width: min(370px, 100%); height: 534px; margin-bottom: calc(10px + env(safe-area-inset-bottom)); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  border: 2px solid #c4cedb !important; border-image: none !important; border-radius: 8px !important; clip-path: none; overflow: hidden;
+  display: grid; grid-template-rows: 152px minmax(0, 1fr); gap: 0;
+  background: linear-gradient(145deg, #142338, #050912); box-shadow: inset 0 0 0 1px #f3c45a, 0 20px 50px #050912;
+}
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogHeader { position: relative; display: block; padding: 16px 16px 0; border: 0; }
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogHeadingGroup { width: 100%; }
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogTitle { width: 264px; max-width: calc(100% - 50px); height: 62px; padding: 6px 30px 8px 12px !important; font: 400 22px/24px var(--ca-font-display) !important; letter-spacing: 0; }
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogDescription { width: 300px; max-width: 100%; margin: 10px 0 0; font: 400 13px/20px Sora, sans-serif; color: #f3efe6; }
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogClose { position: absolute; top: 18px; right: 16px; width: 44px; height: 44px; }
+.mobileMoreSheet.mobileMorePlaqueBoard .uiDialogBody { padding: 0 16px 30px; overflow-y: auto; overflow-x: hidden; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTileGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; padding: 0; background: repeating-linear-gradient(to bottom, transparent 0 118px, #050912 118px 120px), repeating-linear-gradient(175deg, #39291e 0 3px, #261c18 4px 8px, #39291e 9px 12px); }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile { position: relative; width: 100%; height: 108px; min-height: 0; padding: 8px; border: 2px solid #050912; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0; color: #f3efe6; text-decoration: none; background: linear-gradient(150deg, #142338, #0f1b2a); box-shadow: inset 0 1px #c4cedb, inset 0 -3px #050912, 0 3px #050912; cursor: pointer; transition: filter 120ms, transform 120ms, box-shadow 120ms; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile::before, .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile::after { content: ''; position: absolute; top: 7px; width: 4px; height: 4px; border-radius: 50%; background: linear-gradient(#c4cedb 0 40%, #050912 40% 60%, #c4cedb 60%); }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile::before { left: 7px; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile::after { right: 7px; }
+.mobileMoreSheet.mobileMorePlaqueBoard .navItemIcon, .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreHistoryClock { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle, #263951, #050912); box-shadow: inset 0 1px 2px #050912, 0 1px #53647a; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreHistoryClock { position: relative; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreHistoryClock::before { content: ''; width: 38px; height: 38px; border: 2px solid #c4cedb; border-radius: 50%; background: linear-gradient(35deg, transparent 46%, #f3c45a 48% 52%, transparent 54%) center/18px 18px no-repeat, #142338; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreHistoryClock::after { content: ''; position: absolute; top: 10px; left: 21px; width: 2px; height: 12px; background: #f3c45a; transform: rotate(55deg); transform-origin: bottom; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreHistoryClock .navItemIcon { position: absolute; width: 26px; height: 26px; right: -3px; bottom: -3px; background: none; box-shadow: none; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreCategory { margin-top: 4px; color: #a8b6c8; font: 700 10px/12px Sora, sans-serif; white-space: nowrap; }
+.mobileMoreSheet.mobileMorePlaqueBoard .navItemLabel { margin-top: 2px; color: #f3efe6; font: 400 15px/20px var(--ca-font-display); white-space: nowrap; }
+.mobileMoreSheet.mobileMorePlaqueBoard .navPendingBadge { position: absolute; top: 8px; right: 8px; margin: 0; min-width: 20px; min-height: 20px; font-size: 11px; line-height: 16px; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.active { border-color: #f3c45a; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile.active::before { background: #f3c45a; width: 5px; height: 5px; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile:hover { filter: brightness(1.2); }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile:active { transform: translateY(1px); box-shadow: inset 0 1px #c4cedb, inset 0 -2px #050912, 0 2px #050912; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile:focus-visible { outline: 2px solid #55d9ff; outline-offset: 3px; z-index: 1; }
+@media (max-width: 380px) { .mobileMoreSheet.mobileMorePlaqueBoard .uiDialogBody { padding-left: 12px; padding-right: 12px; } .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTileGrid { column-gap: 8px; } }
+@media (prefers-reduced-motion: reduce) { .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile { transition: none; } }

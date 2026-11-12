@@ -1,11 +1,9 @@
 import {
-  CaretRight,
   ClockCounterClockwise,
   Coins,
   Crosshair,
   DotsThree,
   GameController,
-  GearSix,
   Question,
   ShoppingBag,
   Sword,
@@ -97,6 +95,24 @@ function ShellNavLink({ route, className = "navItem", pendingDuelCount = 0, show
           {route.id === "armory" && showArmoryUnlockBadge ? <b className="navNewBadge">New</b> : null}
         </>
       )}
+    </NavLink>
+  )
+}
+
+function MoreTileLink({ route, pendingDuelCount, onNavigate }) {
+  const { signalAction } = useActionFeedback()
+  const category = route.group === ROUTE_GROUP.COLLECTION ? "Collection" : route.group === ROUTE_GROUP.COMPETITION ? "Competition" : "Support"
+  return (
+    <NavLink to={route.path} end aria-label={route.label} aria-description={category}
+      className={({ isActive }) => `mobileMoreLink mobileMoreTile mobileMoreTile-${route.id}${isActive ? " active" : ""}`}
+      onClick={(event) => { signalAction(event.currentTarget, { silent: true }); onNavigate?.(event) }}
+      onPointerEnter={() => prefetchRouteModule(route.path)} onFocus={() => prefetchRouteModule(route.path)}>
+      {({ isActive }) => <>
+        {route.id === "history" ? <span className="mobileMoreHistoryClock" aria-hidden="true"><span className="navItemIcon"><RouteIcon route={route} active={isActive} illustrated size={26} /></span></span> : <span className="navItemIcon"><RouteIcon route={route} active={isActive} illustrated size={36} /></span>}
+        <span className="mobileMoreCategory">{category}</span>
+        <span className="navItemLabel">{route.label}</span>
+        {route.id === "duels" ? <PendingBadge count={pendingDuelCount} /> : null}
+      </>}
     </NavLink>
   )
 }
@@ -400,47 +416,17 @@ export default function Navbar({
         title="More destinations"
         description="Collection, competition, support, and arena settings."
         className="mobileMoreBackdrop"
-        surfaceClassName="mobileMoreSheet"
+        surfaceClassName="mobileMoreSheet mobileMorePlaqueBoard"
       >
-        <div className="mobileMoreGroups">
-              {[ROUTE_GROUP.COLLECTION, ROUTE_GROUP.COMPETITION, ROUTE_GROUP.SUPPORT].map((group) => {
-                const routes = MOBILE_MORE_ROUTES.filter((route) => route.group === group)
-                if (!routes.length) return null
-                const label = group === ROUTE_GROUP.COLLECTION
-                  ? "Collection"
-                  : group === ROUTE_GROUP.COMPETITION
-                    ? "Competition"
-                    : "Support"
-
-                return (
-                  <div className="mobileMoreGroup" key={group}>
-                    <h3 className="mobileMoreGroupLabel">{label}</h3>
-                    <div className="mobileMoreLinks">
-                      {routes.map((route) => (
-                        <ShellNavLink
-                          key={route.id}
-                          route={route}
-                          className="mobileMoreLink"
-                          pendingDuelCount={pendingDuelCount}
-                          showArmoryUnlockBadge={showArmoryUnlockBadge}
-                          onNavigate={handleMoreNavigation}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-
-              <button
-                type="button"
-                className="mobileMoreLink mobileMoreSettings"
-                onClick={openSettings}
-                disabled={!onOpenSettings}
-              >
-                <span className="navItemIcon"><GearSix size={18} weight="bold" aria-hidden="true" /></span>
-                <span className="navItemLabel">Settings</span>
-                <CaretRight size={16} weight="bold" aria-hidden="true" />
-              </button>
+        <div className="mobileMoreTileGrid">
+          {MOBILE_MORE_ROUTES.map((route) => (
+            <MoreTileLink key={route.id} route={route} pendingDuelCount={pendingDuelCount} onNavigate={handleMoreNavigation} />
+          ))}
+          <button type="button" className="mobileMoreLink mobileMoreSettings mobileMoreTile" aria-label="Settings, Support" onClick={openSettings} disabled={!onOpenSettings}>
+            <span className="navItemIcon"><GearIcon size={36} /></span>
+            <span className="mobileMoreCategory">Support</span>
+            <span className="navItemLabel">Settings</span>
+          </button>
         </div>
       </MobileSheet>
     </>
