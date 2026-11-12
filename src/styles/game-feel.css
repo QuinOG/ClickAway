@@ -5044,3 +5044,50 @@
 /* Round 46: More menu - icons and labels on one line per row */
 .mobileMoreTile.mobileMoreTile-shop, .mobileMoreTile.mobileMoreTile-duels { padding: 22px 8px 18px !important; }
 .mobileMoreTile .mobileMoreHistoryClock { margin-block: 5px; }
+
+/* Round 48: Compare - each hub holds its own target face instead of an empty plus socket */
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigCore { background: #0a1421 !important; border-color: #c9d6de; box-shadow: 0 0 0 2px #050912, 0 0 12px rgb(85 217 255 / 35%); overflow: visible; }
+.armoryCompareRigTarget { width: 100%; height: 100%; overflow: visible; display: block; }
+.armoryCompareRigTarget circle { stroke: #050912; stroke-width: 1.4; }
+.armoryCompareRigTarget .ringOuter { fill: #e8f2f8; }
+.armoryCompareRigTarget .ringMid { fill: #e5484d; }
+.armoryCompareRigTarget .ringInner { fill: #f4f8fb; }
+.armoryCompareRigTarget .ringCore { fill: #e5484d; }
+.armoryCompareRigTarget .ringTicks { stroke: #55d9ff; stroke-width: 2; stroke-linecap: round; }
+.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigTarget circle { fill-opacity: .65; stroke-dasharray: 3 2; stroke: #c9b6ff; }
+.armoryCompareBench.armoryCompareWorkshop .isGhost .armoryCompareRigTarget .ringTicks { stroke: #b48cff; }
+
+/* Round 48: Live round - a crisp impact star with short shards and bolder score lettering */
+.clickFeedback.hit .clickFeedbackLocus, .clickFeedback.comboHit .clickFeedbackLocus {
+  left: 50% !important; top: 50% !important; width: 64px !important; height: 64px !important; border: 0 !important; border-radius: 0 !important; mask-image: none !important;
+  background: radial-gradient(circle, #ffffff 0 22%, #fff1a8 34%, #ffc94a 62%, #ff9a2e 100%) !important;
+  clip-path: polygon(50% 0%, 59% 34%, 85% 15%, 68% 42%, 100% 50%, 68% 58%, 85% 85%, 59% 66%, 50% 100%, 41% 66%, 15% 85%, 32% 58%, 0% 50%, 32% 42%, 15% 15%, 41% 34%);
+  filter: drop-shadow(0 0 1.5px #35270a) drop-shadow(0 0 10px rgb(255 201 74 / 70%));
+  animation: hitImpactStar 380ms cubic-bezier(.2,.9,.3,1) forwards !important;
+}
+@keyframes hitImpactStar {
+  0% { transform: translate(-50%, -50%) scale(.45) rotate(-12deg); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(1.05) rotate(0deg); opacity: 1; }
+  58% { transform: translate(-50%, -50%) scale(1.08) rotate(3deg); opacity: 1; }
+  74% { transform: translate(-50%, -50%) scale(.25) rotate(20deg); opacity: 1; }
+  76%, 100% { transform: translate(-50%, -50%) scale(.2) rotate(20deg); opacity: 0; }
+}
+.clickFeedback.hit::after, .clickFeedback.comboHit::after {
+  opacity: 1 !important; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 1px;
+  background: #fff4b8; box-shadow: 0 -30px 0 0 #fff4b8, 26px -15px 0 0 #ffc94a, 26px 15px 0 0 #fff4b8, 0 30px 0 0 #ffc94a, -26px 15px 0 0 #fff4b8, -26px -15px 0 0 #ffc94a, 0 -40px 0 -1px #ffc94a, 35px -20px 0 -1px #fff4b8, 35px 20px 0 -1px #ffc94a, 0 40px 0 -1px #fff4b8, -35px 20px 0 -1px #ffc94a, -35px -20px 0 -1px #fff4b8;
+  animation: hitSparks 380ms ease-out forwards;
+}
+.clickFeedback.hit .clickFeedbackValue, .clickFeedback.comboHit .clickFeedbackValue {
+  font-family: "Russo One", var(--ca-font-display); font-size: 34px !important; font-weight: 400;
+  color: #fff5bf !important; -webkit-text-stroke: 1.5px #35270a;
+  text-shadow: 0 3px 0 #35270a, 0 0 14px rgb(255 201 74 / 80%) !important;
+  margin-left: 22px; margin-top: -30px;
+}
+.clickFeedback.hit, .clickFeedback.comboHit { animation-duration: .7s !important; }
+.clickFeedback.hit .clickFeedbackLocus, .clickFeedback.comboHit .clickFeedbackLocus { animation-duration: 560ms !important; }
+.clickFeedback.hit::after, .clickFeedback.comboHit::after { animation-duration: 520ms !important; }
+.clickFeedback.hit .clickFeedbackValue, .clickFeedback.comboHit .clickFeedbackValue { position: relative; z-index: 2; margin-left: 40px !important; margin-top: -52px !important; }
+/* The hit box's top-left is the click point (its float animation replaces the centring translate). */
+.clickFeedback.hit .clickFeedbackLocus, .clickFeedback.comboHit .clickFeedbackLocus { left: 0 !important; top: 0 !important; }
+.clickFeedback.hit::before, .clickFeedback.comboHit::before, .clickFeedback.hit::after, .clickFeedback.comboHit::after { left: 0 !important; top: 0 !important; }
+.clickFeedback.hit .clickFeedbackValue, .clickFeedback.comboHit .clickFeedbackValue { margin-left: 18px !important; margin-top: -58px !important; }

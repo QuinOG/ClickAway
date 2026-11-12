@@ -15,7 +15,15 @@ function GhostMachine({ label, loadout, presentation, isGhost = false }) {
         <div className="armoryCompareRigMechanics" aria-hidden="true">
           <span className="armoryCompareRigConnector left" /><span className="armoryCompareRigConnector right" /><span className="armoryCompareRigConnector top" />
           <span className="armoryCompareRigBase" />
-          <span className="armoryCompareRigHub"><span className="armoryCompareRigCore" style={{ width: targetSize, height: targetSize }}>+</span></span>
+          <span className="armoryCompareRigHub"><span className="armoryCompareRigCore" style={{ width: targetSize, height: targetSize }}>
+            <svg className="armoryCompareRigTarget" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="18" className="ringOuter" />
+              <circle cx="20" cy="20" r="12.5" className="ringMid" />
+              <circle cx="20" cy="20" r="7" className="ringInner" />
+              <circle cx="20" cy="20" r="2.6" className="ringCore" />
+              <path d="M20 0.5v5M20 34.5v5M0.5 20h5M34.5 20h5" className="ringTicks" />
+            </svg>
+          </span></span>
           {presentation.moduleStack.map((module) => <span key={module.slotId} className={`armoryCompareRigModule slot-${module.slotId}`}><PartEmblem partId={module.moduleId} slotId={module.slotId} size={32} /></span>)}
         </div>
         <div className="armoryCompareRigLabels">{presentation.moduleStack.map((module) => <span key={module.slotId} className={`armoryCompareRigModuleLabel slot-${module.slotId}`}><b>{module.slotLabel}</b><br />{module.label}</span>)}</div>
