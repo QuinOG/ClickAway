@@ -169,9 +169,6 @@ export default function ShopHeroHeader({
               <strong className="shopCommandPreviewTitle">
                 {selectedItem?.name ?? "Equipped cosmetics"}
               </strong>
-              <span className="shopCommandPreviewDescription">
-                {selectedItem?.description ?? "Your equipped cosmetic set."}
-              </span>
             </div>
             <span className={`shopCommandPreviewState is-${selectedState}`}>
               <StateIcon state={selectedState} />

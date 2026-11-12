@@ -5024,3 +5024,12 @@
 
 /* Round 44: Auth pass - avatar and title centred in the pass, no repeated season tag */
 @media (min-width: 901px) { .authPass .authIdentity { justify-content: center; } }
+
+/* Round 45: Shop hero - title and loadout list as one group */
+.shopCommandSurface .shopCommandDetails { gap: 16px; align-content: center; }
+.shopItemCard.shopItemCard-selected:not(:hover) { transform: none; }
+
+/* Round 45: Help - power key titles share a top line in each row */
+.helpDoc .helpPowerupCards .helpPowerupCard { align-items: flex-start !important; }
+.helpDoc .helpPowerupCards .helpPowerupCard > .helpPowerupEmblem { margin-top: 0 !important; align-self: flex-start !important; }
+.faqList .faqItem { align-content: start; row-gap: 8px; }
