@@ -5,8 +5,7 @@ import json, re, sys
 from pathlib import Path
 
 ROOT = Path("docs/ui-polish/game-feel")
-SCREENS = ["01-login", "02-play", "03-armory", "04-shop", "05-profile", "06-ladder", "07-duels",
-           "08-history", "09-help", "10-settings-sheet", "11-live-round", "12-results", "13-rankup"]
+SCREENS = []  # filled from the round's screenshot folder, so new captures (14+) are picked up automatically
 BARS = {"sol": 9.4}            # everyone else: 9.0
 CONF = {"high": 1.0, "med": 0.7, "low": 0.4}
 
@@ -39,6 +38,7 @@ def parse(path):
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     n = int(sys.argv[1])
+    SCREENS[:] = sorted(p.stem for p in (ROOT / f"i{n}").glob("*.png"))
     replies = sorted((ROOT / "replies" / f"i{n}").glob("*.md"))
     cal = json.loads((ROOT / "calibration.json").read_text()) if (ROOT / "calibration.json").exists() else {}
     prev_file = ROOT / f"i{n-1}-screens.json"
