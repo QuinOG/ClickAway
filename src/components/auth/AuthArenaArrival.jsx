@@ -17,7 +17,7 @@ export default function AuthArenaArrival({ mode = "login", name = "", children }
         <span className="authTagline">Precision arena · Season 1</span>
       </div>
       <section className="authPanel authPass" aria-labelledby="auth-page-title">
-        <span className="authPassStub" aria-hidden="true"><b>Competitor pass</b><i>Admit one · Season 1</i></span>
+        <span className="authPassStub" aria-hidden="true"><b>Competitor pass</b></span>
         <span className="authPassSeal" aria-hidden="true">S1</span>
         <div className="authIdentity" aria-label="Competitor pass preview">
           <div className="authCredentialDetail" aria-hidden="true">

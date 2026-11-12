@@ -5013,3 +5013,14 @@
 .historyTrajectory .historyClimbAxis { right: 0; }
 .historyRoundDeck .historyRoundCard > .historyRoundCardMain { grid-column: 1 / -1 !important; justify-self: stretch !important; width: auto !important; margin-right: 126px !important; }
 .historyRoundCard .historyRoundCardTopline { justify-content: space-between; }
+
+/* Round 44: Ladder - the "You" row keeps the other rows' columns */
+.ladderPlate.isCurrentUser { margin-inline: 0 !important; }
+
+/* Round 44: Settings - save status inline in the footer row, one 48px button height */
+.feedbackSettingsSheet .feedbackSettingsActions > .feedbackSettingsStatus { border-top: 0 !important; padding: 0 !important; margin: 0 0 0 8px !important; align-self: center; white-space: nowrap; }
+.feedbackSettingsSheet .feedbackSettingsActions { align-items: center; }
+.feedbackSettingsSheet .feedbackSettingsActions .uiAction { min-height: 48px !important; box-sizing: border-box; }
+
+/* Round 44: Auth pass - avatar and title centred in the pass, no repeated season tag */
+@media (min-width: 901px) { .authPass .authIdentity { justify-content: center; } }
