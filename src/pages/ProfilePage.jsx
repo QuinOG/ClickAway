@@ -316,7 +316,6 @@ export default function ProfilePage({
                   <span className="profileSectionKicker">{getProfileTagline(profileStats)}</span>
                   <h2 id="performance-title">Attributes</h2>
                 </div>
-                <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
               </div>
               <ul className="profileAttributeList">
                 <AttributeRow
@@ -417,7 +416,6 @@ export default function ProfilePage({
         >
           <div className="achievementHeaderRow">
             <div className="achievementHeaderText">
-              <span className="profileSectionKicker">Collection</span>
               <h2 className="profileStatsSectionTitle">Achievement constellation</h2>
             </div>
             <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">

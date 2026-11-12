@@ -4836,3 +4836,28 @@
 .rankCeremony .divisionMetalworkCrown { fill: #ffd76a; }
 .rankCeremony .divisionMetalworkGem { fill: #c34127; stroke: #713412; stroke-width: 1; }
 .rankCeremony .divisionMetalwork { z-index: 3; }
+
+/* Round 36: Ladder controls in two aligned rows; standing card fills the podium height */
+.leaderboardControls { flex-direction: column; align-items: stretch !important; gap: 12px !important; }
+.leaderboardControls .leaderboardBoardTabs { display: grid !important; grid-template-columns: repeat(5, 1fr); gap: 6px !important; }
+.leaderboardControls .leaderboardBoardTab { justify-content: center; text-align: center; }
+.leaderboardControls .leaderboardControlRow { display: flex !important; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 !important; }
+.leaderboardControls .ladderSortFlip { flex: none; min-height: 44px; }
+.leaderboardTopRow { align-items: stretch !important; }
+.leaderboardTopRow .leaderboardStandingPanel { display: flex !important; flex-direction: column; gap: 14px; }
+.leaderboardTopRow .leaderboardStandingPanel .leaderboardStandingMain { align-items: center; }
+.leaderboardTopRow .leaderboardStandingPanel { justify-content: center; gap: 22px !important; }
+.leaderboardTopRow .leaderboardStandingPanel .leaderboardStandingScope { margin: 0 0 -12px !important; }
+
+/* Round 36: Profile achievement banner clear of its tabs; build stats on one line */
+.profileAchievementsSection .achievementHeaderRow { align-items: center !important; gap: 24px !important; margin-bottom: 8px; }
+.profileSheetMain .profileBuildMetrics { display: block !important; margin-top: 4px !important; white-space: nowrap; }
+
+/* Round 36: Shop compact hero */
+.shopInspectStage.shopCommandLoadoutStage { min-height: 220px !important; }
+.shopInspectStage .shopCommandLoadoutButton { width: 150px !important; height: 150px !important; bottom: 55px !important; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutButton { width: 60px !important; height: 60px !important; bottom: auto !important; }
+.shopCommandDetails { gap: 12px; }
+.shopCommandFooter:empty { display: none; }
+@media (max-width: 760px) { .shopCommandSurface { grid-template-columns: 1fr !important; } .shopInspectStage.shopCommandLoadoutStage { height: 220px; } }
+.shopInspectStage .shopCommandLoadoutButton { bottom: 30px !important; }

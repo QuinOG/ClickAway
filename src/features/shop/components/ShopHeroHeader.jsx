@@ -186,30 +186,6 @@ export default function ShopHeroHeader({
           </div>
 
           <div className="shopCommandFooter">
-            <div className="shopCommandProgress">
-              <div className="shopCommandProgressHeader">
-                <span className="shopCommandLabel">Collection</span>
-                <span className="shopCommandProgressMeta">
-                  <strong>{totalOwnedCount}/{totalItems}</strong>
-                  {" · "}
-                  {remainingCount === 0 ? "Complete" : `${remainingCount} to unlock`}
-                </span>
-              </div>
-              <div
-                className="shopCommandProgressBar"
-                role="progressbar"
-                aria-label="Collection progress"
-                aria-valuemin="0"
-                aria-valuemax={totalItems}
-                aria-valuenow={totalOwnedCount}
-              >
-                <span
-                  className="shopCommandProgressFill"
-                  style={{ width: `${collectionPercent}%` }}
-                />
-              </div>
-            </div>
-
             {selectedItemStatus.isEquipped && !isSubmitting ? null : (
               <div className="shopCommandPreviewButtons">
                 {isPreviewing ? (

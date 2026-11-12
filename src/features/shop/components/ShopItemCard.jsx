@@ -150,13 +150,13 @@ export default function ShopItemCard({
       data-shop-item-id={item.id}
       data-rarity={rarity.id}
     >
-      <span className={`shopPriceTag is-${visualState}`} aria-hidden="true">
+      {!isEquipped && <span className={`shopPriceTag is-${visualState}`} aria-hidden="true">
         {isEquipped ? "Equipped" : isOwned ? "Owned" : (
           <><Coins weight="fill" />{formatCoins(item.cost)}</>
         )}
-      </span>
+      </span>}
       <div className="shopItemHeader">
-        <span className={`shopItemStateTag is-${visualState}`}>
+        {!isEquipped && <span className={`shopItemStateTag is-${visualState}`}>
           <StateIcon state={visualState} />
           {visualState === "locked" ? (
             <>
@@ -164,7 +164,7 @@ export default function ShopItemCard({
               {formatCoins(item.cost)} coins
             </>
           ) : stateLabel}
-        </span>
+        </span>}
         <span className="shopItemRarity">{rarity.label}</span>
       </div>
 

@@ -52,7 +52,6 @@ export default function ShopCategoryTabs({
                   {tab.ownedCount}/{tab.itemCount} owned
                 </span>
               </span>
-              <span className="shopTabCount">{tab.itemCount}</span>
             </button>
           )
         })}
