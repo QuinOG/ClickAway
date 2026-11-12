@@ -190,7 +190,7 @@ Current examples:
 - Postgres transactions around shop mutations in [server/playerStateStore.js](server/playerStateStore.js), using `beginTransaction()` backed by `BEGIN`/`COMMIT` in [server/db/pgPool.js](server/db/pgPool.js).
 
 Recommended improvement:
-- Keep the `/api/progress` allowlist narrow and add explicit catalog checks for client-controlled identifiers.
+- Keep the `/api/progress` allowlist narrow and validate the one remaining unchecked identifier (`selectedModeId`) against the mode catalog or drop it from the allowlist.
 
 ### Authenticate
 Interpretation:
@@ -243,7 +243,7 @@ Current examples:
 - `Math.max(0, ...)` coin, XP, and MMR clamping in [server/index.js](server/index.js).
 
 Gap:
-- The server now clamps coins, XP, and MMR to fixed ceilings, but client-controlled ids and loadout content are normalized rather than checked against an allowlist.
+- The server now clamps coins, XP, and MMR to fixed ceilings. Client-controlled cosmetic, loadout, module, powerup, unlock-wall, and walkthrough identifiers are checked against their catalogs during persistence and replaced or filtered when invalid; `selectedModeId` is the remaining unchecked identifier, accepted by the endpoint but never persisted.
 
 ## Static Analysis
 Interpretation:
