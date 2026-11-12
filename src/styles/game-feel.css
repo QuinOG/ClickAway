@@ -3525,18 +3525,6 @@
   box-shadow: 0 0 0 7px #040912, 0 10px 0 7px #04091280 !important;
 }
 
-/* Collectible silhouettes are independent of material. */
-.achievementTile .achievementMedal { background: none !important; box-shadow: none !important; }
-.achievementTile .achievementMedal::before, .achievementTile .achievementMedal::after { display: none !important; }
-.achievementTile .achievementMedalDisc { width: 100% !important; height: 100% !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; clip-path: none !important; background: none !important; box-shadow: none !important; transform: none !important; }
-.achievementTile .achievementMedalDisc::after { display: none; }
-.achievementTile .achievementObject { width: 100%; height: 100%; overflow: visible; }
-/* Set each object's plinth onto the existing shelf edge. */
-.profileAchievementsSection .achievementsRow .achievementMedal { transform-origin: 50% 100%; transform: translateY(14px) scale(1.35); }
-.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementMedal { transform-origin: 50% 100%; transform: translateY(14px) scale(1.6); }
-.achievementMedal.isProgressing .achievementObject { filter: grayscale(.55) brightness(.92); opacity: .9; }
-.achievementMedal.isUntouched .achievementObject { filter: grayscale(1) brightness(.8); opacity: .7; }
-
 /* Illustrated shop displays sit behind the original preview art. */
 .shopGrid .shopItemCard .shopItemPreviewFrame::before {
     content: "";

@@ -22,7 +22,7 @@ if cmd == "make":
     (out.parent / "ab-key.json").write_text(json.dumps(key, indent=1))
     print(f"{len(key)} pairs in {out}")
 elif cmd == "score":
-    out, reply = Path(sys.argv[2]), Path(sys.argv[3]).read_text(encoding="utf-8")
+    out, reply = Path(sys.argv[2]), Path(sys.argv[3]).read_text(encoding="utf-8-sig")
     key = json.loads((out.parent / "ab-key.json").read_text())
     failed = False
     for s, new in key.items():
