@@ -13,3 +13,6 @@ Every claim below was checked in a 100% crop and passed a blind before/after che
 
 ## C. Armory (03)
 - **Bezels:** the five stat cells (Aim window, Shrink pace, Combo ramp, Miss cost, Power tempo) and the SWAP REPORT panel have riveted steel frames (a rivet in each corner, a beveled top edge and a dark lower lip) instead of flat 1px borders. Their content and layout are unchanged.
+
+## Correction after judging
+- **Armory stat cells:** the riveted frames did not reach the five stat cells at the top of the right rail (their selector missed); only the SWAP REPORT panel got the frame. Sol caught it.

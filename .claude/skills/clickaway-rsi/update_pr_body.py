@@ -24,7 +24,7 @@ blob = f"https://github.com/{REPO}/blob/{BRANCH}/{SHOTS_DIR}"
 tree = blob.replace("/blob/", "/tree/")
 
 shots = sorted(f for f in os.listdir(os.path.join(SHOTS_DIR, latest)) if f.endswith(".png"))
-JUDGES = ["Sol", "Terra", "Opus 5", "Gemini 4 Argon", "Qwen3.8 Max"]
+JUDGES = ["Sol", "Terra", "Opus 5", "Gemini 4 Argon", "Qwen3.8 Max", "Grok 4.7"]  # scores.json lists follow this order
 score_rows = "\n".join(
     f"| {r}{' (baseline)' if r == 'i0' else ''}{' **latest**' if r == latest else ''} | "
     + " | ".join("—" if v is None else str(v) for v in (vals + [None] * len(JUDGES))[:len(JUDGES)])

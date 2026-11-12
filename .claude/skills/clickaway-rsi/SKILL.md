@@ -14,7 +14,7 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
 - **Council (from run 3):** `delegate_task` ×3, all launched in one message, `role: "review"`, **all at medium reasoning** (user's rule):
   - Codex `gpt-6.1-sol`, `{reasoningEffort: "medium"}`
   - OpenCode `opencode-go/gemini-4-argon`, `{variant: "medium"}` (providerInstanceId `opencode`)
-  - OpenCode `opencode-go/qwen3.8-max`, `{variant: "medium"}`
+  - OpenCode `opencode-go/grok-4.7`, `{variant: "medium"}`, JUDGE = `grok` (from r18; user, 2026-11-12). It replaced Qwen3.8 Max, which was the slowest to return and pushed OpenCode ~10% ahead of pace. Grok has no entry in PREVIOUS_SCORES at first, so under brief v2 it opens and scores every screen fresh in its first round (its anchor read); treat its first-round overall as a baseline, not a gain. Drop it after a round or two if its asks are generic or its scores swing.
   - **Gate judge** for the blind A/B check (Scoring v2, step 5): Sol (`gpt-6.1-sol`, medium) on the changed screens only. Sol is the bottleneck judge, so a round it doesn't prefer won't move the score that matters. This also keeps OpenCode usage for the council (user, 2026-11-11).
   - **Division of labour** (user, 2026-11-11: Claude usage runs ahead of schedule, Codex under):
     - **Claude (builder session):** reads the replies, runs `council.py`, picks, writes specs, does the CSS/JSX integration, reviews every Codex result, and writes the change notes.
