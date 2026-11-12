@@ -5,7 +5,7 @@ import {
 } from "../../../../services/celebrationEffects.js"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef } from "react"
-import { RANK_DIVISIONS } from "../../../../utils/rankUtils.js"
+import { RANK_DIVISIONS, getRankImageSrc } from "../../../../utils/rankUtils.js"
 import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
 import { FEEDBACK_EVENTS } from "../../../../constants/feedbackEvents.js"
 import { usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
@@ -124,7 +124,7 @@ function DivisionLadder({ fromLabel, toLabel }) {
         const railLit = division.order <= toIndex && division.order > Math.min(fromIndex, toIndex)
         return (
           <span key={division.id} className={`promotionLadderNode tier-${division.majorTierId} ${state} ${railLit ? "isRailLit" : ""}`}>
-            <i />
+            <i>{getRankImageSrc(division.label) ? <img src={getRankImageSrc(division.label)} alt="" width="40" height="40" decoding="async" /> : null}</i>
             <b>{division.majorTierLabel}</b>
             <small>{division.divisionLabel}</small>
           </span>
@@ -221,8 +221,12 @@ export default function PromotionModal({
       <MotionDiv className="gameOverPromotionEmblem" aria-hidden="true" variants={newBadgeVariants}>
         <span className="gameOverPromotionRays" />
         <span className="gameOverPromotionPedestal" />
-        <CrestIcon tone={getCrestToneFromLabel(projectedRankLabel)} size={220} />
-        <strong className="gameOverPromotionEmblemLabel">{projectedRankLabel}</strong>
+        {getRankImageSrc(projectedRankLabel) ? (
+          <img className="gameOverPromotionMedal" src={getRankImageSrc(projectedRankLabel)} alt="" width="220" height="220" decoding="async" />
+        ) : (
+          <CrestIcon tone={getCrestToneFromLabel(projectedRankLabel)} size={220} />
+        )}
+        <strong className="gameOverPromotionEmblemLabel gameOverPromotionRibbon"><span>{projectedRankLabel}</span></strong>
       </MotionDiv>
 
       <MotionDiv className="gameOverPromotionTierRow isLadder" aria-hidden="true" variants={badgeRowVariants}>

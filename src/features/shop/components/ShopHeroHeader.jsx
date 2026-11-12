@@ -4,6 +4,7 @@ import { getProfileAvatarStyle } from "../../../utils/profileAvatarStyling.js"
 import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { InterpolatedNumber } from "../../../components/ui/status/InterpolatedNumber.jsx"
 import { CommandHeader } from "../../../components/RouteScene.jsx"
+import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 
 function formatCoins(value) {
   return Number.isFinite(value) ? value.toLocaleString() : "0"
@@ -20,16 +21,20 @@ function getButtonPreviewStyle(item, useGameScale = false) {
   }
 }
 
-function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPreviewing }) {
+function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPreviewing, focusType = "button_skin" }) {
   const hasButtonImage = Boolean(buttonSkin?.imageSrc)
   const hasProfileImage = Boolean(profileImage?.imageSrc)
 
   return (
     <div
-      className={`shopCommandLoadoutStage ${arenaTheme?.effectClass ?? "theme-default"}${isPreviewing ? " isPreviewing" : ""}`}
+      className={`shopCommandLoadoutStage shopInspectStage stageFocus-${focusType} ${arenaTheme?.effectClass ?? "theme-default"}${isPreviewing ? " isPreviewing" : ""}`}
       role="img"
       aria-label={`${isPreviewing ? "Selected" : "Equipped"} preview with ${buttonSkin?.name ?? "button skin"} and ${arenaTheme?.name ?? "arena theme"}`}
     >
+      <ArenaWorldArt className="shopStageWorld" />
+      <span className="shopStageAwning" aria-hidden="true" />
+      <span className="shopStageSpot" aria-hidden="true" />
+      <span className="shopStageCounter" aria-hidden="true" />
       <span className="shopCommandLoadoutPedestal" aria-hidden="true" />
 
       <div className="shopCommandLoadoutAvatarFrame">
@@ -151,6 +156,7 @@ export default function ShopHeroHeader({
           arenaTheme={previewArenaTheme}
           profileImage={previewProfileImage}
           isPreviewing={isPreviewing}
+          focusType={selectedItem?.type ?? "button_skin"}
         />
 
         <div className="shopCommandDetails">

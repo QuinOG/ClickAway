@@ -1,5 +1,6 @@
 import { getExactMetric } from "../armoryExactMetrics.js"
 import { getProfileStats } from "../armorySpecRatings.js"
+import ArmorySegmentGauge from "./ArmorySegmentGauge.jsx"
 
 // Calibrated instrument column (Phase 5): the five feel readouts rendered as
 // segment dials instead of metric cards.
@@ -140,6 +141,7 @@ export default function ArmoryInstruments({
                   <span className="armoryInstrumentNext"><i aria-hidden="true">→</i> {shortText(previewExact)}</span>
                 ) : null}
               </span>
+              <ArmorySegmentGauge rating={rating} next={showPreview ? previewRatingRaw : null} />
               {departure === "isStock" ? null : (
                 <span className="armoryInstrumentTag">{stat.value}</span>
               )}

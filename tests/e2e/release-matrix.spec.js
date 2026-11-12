@@ -56,6 +56,8 @@ test.describe("responsive route matrix", () => {
 })
 
 test("critical routes have no serious or critical automated accessibility violations", async ({ page }) => {
+  // axe runs on every authenticated route in sequence (~50s), above the 30s default.
+  test.setTimeout(120_000)
   await page.setViewportSize({ width: 390, height: 844 })
   await prepareDeterministicPage(page)
 
@@ -199,7 +201,7 @@ test("shop unlock-to-equip and duel response journeys keep inline continuity", a
   await page.getByRole("button", { name: "Accept" }).click()
   await expect(page.getByRole("button", { name: "Race Ghost" })).toBeVisible()
 
-  await page.getByPlaceholder("Opponent username").fill("Prism")
+  await page.getByLabel("Opponent username").fill("Prism")
   await page.getByRole("radio", { name: /920 Score/ }).check()
   await page.getByRole("button", { name: "Send duel" }).click()
   await expect(page.getByText(/Duel transmitted to Prism/i)).toBeVisible()

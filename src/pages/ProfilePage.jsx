@@ -78,10 +78,13 @@ function buildRecentForm(roundHistory = []) {
   const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
   const scores = recentRounds.map((round) => toNumber(round.score))
   const maxScore = Math.max(...scores, 1)
+  const minScore = scores.length > 0 ? Math.min(...scores) : 0
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
     score: scores[index],
     height: Math.max(12, Math.round((scores[index] / maxScore) * 100)),
+    // 0.2–1: where this run sits between the worst and best of the window.
+    rise: 0.2 + (maxScore > minScore ? ((scores[index] - minScore) / (maxScore - minScore)) * 0.8 : 0.8),
     rankDelta: toNumber(round.rankDelta),
     isRanked: isRankedModeEntry(round),
   }))
@@ -112,20 +115,29 @@ function getStrongestTrait(profileStats, reactionStats) {
   return traits.sort((firstTrait, secondTrait) => secondTrait.score - firstTrait.score)[0]
 }
 
-const INSTRUMENT_ICONS = { precision: TargetIcon, chain: FlameIcon, tempo: StopwatchIcon }
+const GAUGE_PIPS = 12
 
-function PerformanceInstrument({ label, value, detail, tone, isStrongest }) {
-  const Icon = INSTRUMENT_ICONS[tone] ?? TargetIcon
+function AttributeRow({ icon, label, detail, value, fill, isStrongest = false }) {
+  const lit = Math.round(Math.max(0, Math.min(1, Number(fill) || 0)) * GAUGE_PIPS)
   return (
-    <article className={`profileInstrument tone-${tone} ${isStrongest ? "isStrongest" : ""}`}>
-      <span className="profileInstrumentEmblem" aria-hidden="true"><Icon size={34} /></span>
-      <p className="profileInstrumentLabel">
-        {label}
-        {isStrongest ? <span className="profileInstrumentTag">Signature</span> : null}
-      </p>
-      <strong className="profileInstrumentValue">{value}</strong>
-      <span className="profileInstrumentDetail">{detail}</span>
-    </article>
+    <li className={`profileAttribute ${isStrongest ? "isStrongest" : ""}`}>
+      <span className="profileAttributeEmblem" aria-hidden="true">{icon}</span>
+      <span className="profileAttributeLabel">
+        <strong>{label}</strong>
+        <small>{detail}</small>
+      </span>
+      <svg className="profileAttributeDial" viewBox="0 0 100 58" aria-hidden="true">
+        <path className="profileDialTrack" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" />
+        <path className="profileDialFill" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" strokeDasharray={`${(lit / GAUGE_PIPS) * 100} 100`} />
+        {Array.from({ length: 11 }, (_, index) => (
+          <line key={index} className="profileDialTick" x1="50" y1="5" x2="50" y2={index % 5 === 0 ? 13 : 10} transform={`rotate(${-90 + index * 18} 50 52)`} />
+        ))}
+        <line className="profileDialNeedle" x1="50" y1="52" x2="50" y2="18" transform={`rotate(${-90 + (lit / GAUGE_PIPS) * 180} 50 52)`} />
+        <circle className="profileDialHub" cx="50" cy="52" r="5" />
+      </svg>
+      <strong className="profileAttributeValue">{value}</strong>
+      {isStrongest ? <span className="profileInstrumentTag">Signature</span> : null}
+    </li>
   )
 }
 
@@ -223,12 +235,6 @@ export default function ProfilePage({
     .sort((firstAchievement, secondAchievement) => (
       toNumber(secondAchievement.percent) - toNumber(firstAchievement.percent)
     ))[0] ?? evaluatedAchievements.find((achievement) => achievement.isUnlocked) ?? null
-  const constellationAchievements = [...evaluatedAchievements]
-    .sort((firstAchievement, secondAchievement) => (
-      Number(secondAchievement.isUnlocked) - Number(firstAchievement.isUnlocked)
-      || toNumber(secondAchievement.percent) - toNumber(firstAchievement.percent)
-    ))
-    .slice(0, 7)
 
   const rankLabel = rankProgress.tierLabel ?? "Unranked"
   const rankIconSrc = getRankImageSrc(rankLabel)
@@ -259,168 +265,145 @@ export default function ProfilePage({
       <section className={`profileCockpit ${rankToneClass}`} aria-labelledby="profile-player-name">
         <div className="profileCockpitGrid" aria-hidden="true" />
 
-        <header className="profileCommandHeader">
-          <div className="profileIdentityRow">
-            <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
-              {hasProfileImage
-                ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
-                : <PlayerPortrait name={playerName} size={76} />}
+        <div className="profileSheet">
+          <aside className="profileCompetitorCard" aria-label={`${rankLabel} rank, level ${levelValue}`}>
+            <div className="profileCardBanner">
+              <span>Competitor card</span>
+              <span className="profileOrbitLevel">LV {levelValue}</span>
             </div>
-            <div className="profileIdentityText">
-              <span className="profileIdentityKicker">Player profile</span>
-              <h1 className="profilePlayerName" id="profile-player-name">
-                {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
-              </h1>
-              <p className="profilePlayerTitle">{playerTitle}</p>
-              <p className="profileLead">{getProfileTagline(profileStats)}</p>
-            </div>
-          </div>
-          <div className="profileHeaderResources" aria-label="Player resources and actions">
-            <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
-            <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
-            <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
-          </div>
-        </header>
-
-        <div className="profileCockpitPrimary">
-          <section className="profileRankCore" aria-label={`${rankLabel} rank, level ${levelValue}`}>
-            <div
-              className="profileLevelOrbit"
-              style={{ "--level-progress": `${levelProgressPercent * 3.6}deg` }}
-            >
-              <div className={`profileRankCrest ${rankProgress.isUnranked ? "isUnranked" : ""}`}>
+            <div className="profilePortraitSlab">
+              <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
+                {hasProfileImage
+                  ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
+                  : <PlayerPortrait name={playerName} size={176} />}
+              </div>
+              <div className={`profileRankCrest ${rankProgress.isUnranked ? "isUnranked" : ""}`} aria-hidden="true">
                 {rankIconSrc
                   ? <img className="profileRankCrestImage" src={rankIconSrc} alt="" width="128" height="128" decoding="async" />
                   : <span className="profileRankCrestFallback">?</span>}
               </div>
-              <span className="profileOrbitLevel">LV {levelValue}</span>
             </div>
-            <div className="profileRankReadout">
-              <span className="profileRankLabel">Current division</span>
-              <h2 className="profileRankTitle">{rankLabel}</h2>
-              <p className="profileRankMeta">{getRankMetaText(rankProgress)}</p>
-              <div className="profileRankGoal">
-                <span>Next rank</span>
-                <strong>{rankGoal}</strong>
-              </div>
+            <h1 className="profilePlayerName" id="profile-player-name">
+              {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
+            </h1>
+            <p className="profilePlayerTitle">{playerTitle}</p>
+            <div className="profileDivisionPlate">
+              <small>Division</small>
+              <strong className="profileRankTitle">{rankLabel}</strong>
+              <span>{getRankMetaText(rankProgress)}</span>
             </div>
+            <p className="profileRankGoal"><span>Next rank</span> <strong>{rankGoal}</strong></p>
             <div className="profileXpReadout">
-              <span><strong>{levelProgressPercent}%</strong> to next level</span>
-              <span>{formatNumber(xpToNextLevel)} XP to LV {nextLevelValue}</span>
+              <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
+              <span>{formatNumber(xpToNextLevel)} XP</span>
               <span className="profileXpTrack" aria-hidden="true">
                 <i style={{ width: `${Math.max(0, Math.min(100, levelProgressPercent))}%` }} />
               </span>
             </div>
-          </section>
+            <div className="profileHeaderResources" aria-label="Player resources and actions">
+              <span className="profileCoinReadout"><i aria-hidden="true" />{formatNumber(coins)} coins</span>
+              <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
+              <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+            </div>
+          </aside>
 
-          <section className="profilePerformancePanel" aria-labelledby="performance-title">
-            <div className="profilePanelHeading">
-              <div>
-                <span className="profileSectionKicker">Performance</span>
-                <h2 id="performance-title">Core stats</h2>
+          <div className="profileSheetMain">
+            <section className="profileAttributes" aria-labelledby="performance-title">
+              <div className="profilePanelHeading">
+                <div>
+                  <span className="profileSectionKicker">{getProfileTagline(profileStats)}</span>
+                  <h2 id="performance-title">Attributes</h2>
+                </div>
+                <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
               </div>
-              <span className="profileStrengthCallout">Signature strength · {strongestTrait.label}</span>
-            </div>
-            <div className="profileInstrumentGrid">
-              <PerformanceInstrument
-                label="Accuracy"
-                value={`${profileStats.accuracyPercent}%`}
-                detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
-                tone="precision"
-                isStrongest={strongestTrait.key === "precision"}
-              />
-              <PerformanceInstrument
-                label="Best streak"
-                value={formatNumber(profileStats.bestStreak)}
-                detail="unbroken targets"
-                tone="chain"
-                isStrongest={strongestTrait.key === "chain"}
-              />
-              <PerformanceInstrument
-                label="Reaction"
-                value={formatReactionTime(reactionStats.avgReactionMs)}
-                detail={reactionStats.bestReactionMs ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
-                tone="tempo"
-                isStrongest={strongestTrait.key === "tempo"}
-              />
-            </div>
-            <div className="profilePeakStrip">
-              <span>Peak score</span>
-              <strong>{formatNumber(profileStats.bestScore)}</strong>
-              <span>This week</span>
-              <strong>{formatNumber(profileStats.roundsThisWeek)} rounds</strong>
-            </div>
-          </section>
-        </div>
-
-        <div className="profileSignalBand">
-          <section className="profileFormPanel" aria-labelledby="recent-form-title">
-            <div className="profileMiniHeading">
-              <span className="profilePanelEmblem" aria-hidden="true"><BoltIcon size={28} /></span>
-              <div>
-                <span className="profileSectionKicker">Recent form</span>
-                <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
-              </div>
-              <strong className={recentForm.trendPercent >= 0 ? "isPositive" : "isNegative"}>
-                {recentForm.bars.length > 1 ? `${formatSignedValue(recentForm.trendPercent)}%` : "Calibrating"}
-              </strong>
-            </div>
-            <div className="profileFormChart" aria-label={`Average recent score ${recentForm.averageScore}`}>
-              {recentForm.bars.length > 0 ? recentForm.bars.map((bar) => (
-                <span
-                  key={bar.id}
-                  className={`profileFormBar ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
-                  style={{ "--form-height": `${bar.height}%` }}
-                  title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
+              <ul className="profileAttributeList">
+                <AttributeRow
+                  icon={<TargetIcon size={30} />}
+                  label="Accuracy"
+                  detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
+                  value={`${profileStats.accuracyPercent}%`}
+                  fill={profileStats.accuracyPercent / 100}
+                  isStrongest={strongestTrait.key === "precision"}
                 />
-              )) : <span className="profileEmptySignal">Play a round to establish form</span>}
-            </div>
-            <p className="profileFormAverage"><span>Avg score</span>{formatNumber(recentForm.averageScore)}</p>
-          </section>
-
-          <section className="profileBuildSignature" aria-labelledby="build-signature-title">
-            <div className="profileMiniHeading">
-              <span className="profilePanelEmblem" aria-hidden="true"><ArmoryIcon size={28} /></span>
-              <div>
-                <span className="profileSectionKicker">Top build · this loadout only</span>
-                <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
-              </div>
-            </div>
-            {signatureBuild ? (
-              <div className="profileBuildMetrics">
-                <span><strong>{formatNumber(signatureBuild.totalRounds)}</strong> rounds</span>
-                <span><strong>{buildAccuracy}%</strong> accuracy</span>
-                <span><strong>{formatNumber(signatureBuild.bestScore)}</strong> peak</span>
-              </div>
-            ) : (
-              <p className="profileEmptySignal">Run a saved loadout to reveal your field signature.</p>
-            )}
-          </section>
-
-          <section className="profileNearestGoal" aria-labelledby="nearest-goal-title">
-            <div className="profileGoalConstellation" aria-hidden="true">
-              {constellationAchievements.map((achievement, index) => (
-                <i
-                  key={achievement.id}
-                  className={achievement.isUnlocked ? "isUnlocked" : ""}
-                  style={{ "--node-index": index }}
+                <AttributeRow
+                  icon={<FlameIcon size={30} />}
+                  label="Best streak"
+                  detail="unbroken targets"
+                  value={formatNumber(profileStats.bestStreak)}
+                  fill={profileStats.bestStreak / 30}
+                  isStrongest={strongestTrait.key === "chain"}
                 />
-              ))}
+                <AttributeRow
+                  icon={<StopwatchIcon size={30} />}
+                  label="Reaction"
+                  detail={reactionStats.bestReactionMs ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
+                  value={formatReactionTime(reactionStats.avgReactionMs)}
+                  fill={reactionStats.avgReactionMs ? (520 - reactionStats.avgReactionMs) / 360 : 0}
+                  isStrongest={strongestTrait.key === "tempo"}
+                />
+                <AttributeRow
+                  icon={<TrophyIcon size={30} />}
+                  label="Peak score"
+                  detail={`${formatNumber(profileStats.roundsThisWeek)} rounds this week`}
+                  value={formatNumber(profileStats.bestScore)}
+                  fill={profileStats.bestScore / 1500}
+                />
+              </ul>
+            </section>
+
+            <div className="profileSignalBand">
+              <section className="profileFormPanel" aria-labelledby="recent-form-title">
+                <div className="profileMiniHeading">
+                  <div>
+                    <span className="profileSectionKicker">Recent form</span>
+                    <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
+                  </div>
+                  <strong className={recentForm.trendPercent >= 0 ? "isPositive" : "isNegative"}>
+                    {recentForm.bars.length > 1 ? `${formatSignedValue(recentForm.trendPercent)}%` : "Calibrating"}
+                  </strong>
+                </div>
+                <ol className="profileFormTokens" aria-label={`Average recent score ${recentForm.averageScore}`}>
+                  {recentForm.bars.length > 0 ? recentForm.bars.map((bar) => (
+                    <li
+                      key={bar.id}
+                      className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
+                      style={{ "--rise": bar.rise.toFixed(3) }}
+                      title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
+                    >
+                      {formatNumber(bar.score)}
+                    </li>
+                  )) : <li className="profileEmptySignal">Play a round to establish form</li>}
+                </ol>
+              </section>
+
+              <section className="profileBuildSignature" aria-labelledby="build-signature-title">
+                <span className="profilePanelEmblem" aria-hidden="true"><ArmoryIcon size={30} /></span>
+                <div>
+                  <span className="profileSectionKicker">Top build</span>
+                  <h2 id="build-signature-title">{signatureBuild?.loadoutName ?? "No field record"}</h2>
+                  {signatureBuild ? (
+                    <p className="profileBuildMetrics">
+                      {formatNumber(signatureBuild.totalRounds)} rounds · {buildAccuracy}% acc · {formatNumber(signatureBuild.bestScore)} peak
+                    </p>
+                  ) : (
+                    <p className="profileEmptySignal">Run a saved loadout to reveal your field signature.</p>
+                  )}
+                </div>
+              </section>
+
+              <section className="profileNearestGoal" aria-labelledby="nearest-goal-title">
+                <span className="profilePanelEmblem" aria-hidden="true"><TrophyIcon size={30} /></span>
+                <div>
+                  <span className="profileSectionKicker">Nearest achievement</span>
+                  <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>
+                  <div className="profileGoalTrack" aria-hidden="true">
+                    <span style={{ width: `${Math.max(0, Math.min(100, toNumber(nearestAchievement?.percent)))}%` }} />
+                  </div>
+                  <span className="profileGoalProgress">{nearestAchievement?.progressText ?? "Awaiting progress"}</span>
+                </div>
+              </section>
             </div>
-            <div className="profileMiniHeading">
-              <span className="profilePanelEmblem" aria-hidden="true"><TrophyIcon size={28} /></span>
-              <div>
-                <span className="profileSectionKicker">Nearest achievement</span>
-                <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>
-              </div>
-              <strong>{nearestAchievement?.percentText ?? "—"}</strong>
-            </div>
-            <p>{nearestAchievement?.description ?? "Achievement telemetry will appear after your first round."}</p>
-            <div className="profileGoalTrack" aria-hidden="true">
-              <span style={{ width: `${Math.max(0, Math.min(100, toNumber(nearestAchievement?.percent)))}%` }} />
-            </div>
-            <span className="profileGoalProgress">{nearestAchievement?.progressText ?? "Awaiting progress"}</span>
-          </section>
+          </div>
         </div>
 
         <section

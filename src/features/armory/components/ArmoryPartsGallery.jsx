@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { getModuleDeltaChips, getUnlockText } from "../armoryUtils.js"
 import { getProfileStats } from "../armorySpecRatings.js"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
+import ArmorySegmentGauge from "./ArmorySegmentGauge.jsx"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
 // laid out as machined parts. Clicking an unlocked card equips it immediately.
@@ -68,7 +69,7 @@ function SwapImpact({ rows, title = "Swap report", fromLabel = "Current", toLabe
         const verdict = delta > 0 ? "better" : delta < 0 ? "worse" : "no change"
         return (
           <div key={key} className={`armorySwapReportRow ${tone}`} role="row" aria-label={`${REPORT_LABELS[key] ?? label}: ${formatReportValue(key, from.value)} to ${formatReportValue(key, to.value)}, ${verdict}`}>
-            <span className="armorySwapReportLabel" role="rowheader">{REPORT_LABELS[key] ?? label}</span>
+            <span className="armorySwapReportLabel" role="rowheader"><span className="armorySwapReportName">{REPORT_LABELS[key] ?? label}</span><ArmorySegmentGauge rating={from.rating} next={to.rating} className="armorySwapReportGauge" /></span>
             <span className="armorySwapReportFrom" role="cell">{formatReportValue(key, from.value)}</span>
             <b className="armorySwapReportTo" role="cell">{formatReportValue(key, to.value)}</b>
           </div>

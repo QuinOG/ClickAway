@@ -86,7 +86,7 @@ export const SHOP_CATEGORIES = [
         id: "skin_button",
         name: "Classic",
         builtIn: true,
-        imageSrc: "/button.png",
+        imageSrc: "/skins/button.svg",
         gameImageScale: 120,
         shopImageScale: 105,
         description: "We got button at home.",
@@ -94,7 +94,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_neon",
         name: "Neon Ring",
-        imageSrc: "/neoncircle.avif",
+        imageSrc: "/skins/neoncircle.svg",
         gameImageScale: 115,
         shopImageScale: 110,
         description: "RGB but make it locked in.",
@@ -102,7 +102,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_fireball",
         name: "Fireball",
-        imageSrc: "/fireball.png",
+        imageSrc: "/skins/fireball.svg",
         gameImageScale: 160,
         shopImageScale: 130,
         description: "Crash out core.",
@@ -111,7 +111,7 @@ export const SHOP_CATEGORIES = [
         id: "skin_cd",
         name: "CD",
         effectClass: "skin-cd",
-        imageSrc: "/cd.avif",
+        imageSrc: "/skins/cd.svg",
         gameImageScale: 100,
         shopImageScale: 90,
         description: "y2k ahh button.",
@@ -119,7 +119,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_earth",
         name: "Earth",
-        imageSrc: "/earth.avif",
+        imageSrc: "/skins/earth.svg",
         gameImageScale: 110,
         shopImageScale: 100,
         description: "Everybody on here weird.",
@@ -127,7 +127,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_melon",
         name: "Melon",
-        imageSrc: "/melon.avif",
+        imageSrc: "/skins/melon.svg",
         gameImageScale: 105,
         shopImageScale: 90,
         description: "Flowkey juicy.",
@@ -135,7 +135,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_moon",
         name: "Moon",
-        imageSrc: "/moon.avif",
+        imageSrc: "/skins/moon.svg",
         gameImageScale: 105,
         shopImageScale: 95,
         description: "Mash the moon away to day.",
@@ -143,7 +143,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_wheel",
         name: "Wheel",
-        imageSrc: "/wheel.avif",
+        imageSrc: "/skins/wheel.svg",
         gameImageScale: 115,
         shopImageScale: 105,
         description: "The wheels on the bus go...",
@@ -151,7 +151,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_xboxbutton",
         name: "Xbox",
-        imageSrc: "/xboxbutton.png",
+        imageSrc: "/skins/xboxbutton.svg",
         gameImageScale: 105,
         shopImageScale: 95,
         description: "Button masher.",
@@ -159,7 +159,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_coin",
         name: "Gold Token",
-        imageSrc: "/coin.png",
+        imageSrc: "/skins/coin.svg",
         gameImageScale: 140,
         shopImageScale: 130,
         description: "Chase dat bag.",
@@ -167,7 +167,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_donut",
         name: "Gabe's Donut",
-        imageSrc: "/donut.png",
+        imageSrc: "/skins/donut.svg",
         gameImageScale: 140,
         shopImageScale: 120,
         description: "Gabe's sacred donut. To click...",
@@ -175,15 +175,15 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_bubble",
         name: "Buuble",
-        imageSrc: "/bubble.png",
-        gameImageScale: 260,
-        shopImageScale: 250,
+        imageSrc: "/skins/bubble.svg",
+        gameImageScale: 120,
+        shopImageScale: 120,
         description: "Try to pop it!",
       }),
       createButtonSkinItem({
         id: "skin_tennis",
         name: "Tennis Ball",
-        imageSrc: "/tennis.png",
+        imageSrc: "/skins/tennis.svg",
         gameImageScale: 120,
         shopImageScale: 120,
         description: "This one got bounce.",
@@ -191,7 +191,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_eye",
         name: "Eye",
-        imageSrc: "/eye.avif",
+        imageSrc: "/skins/eye.svg",
         gameImageScale: 150,
         shopImageScale: 150,
         description: "He's always watching...",
@@ -199,7 +199,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_disco",
         name: "Disco",
-        imageSrc: "/disco.png",
+        imageSrc: "/skins/disco.svg",
         gameImageScale: 120,
         shopImageScale: 120,
         description: "Serving boogiewoogie.",
@@ -207,7 +207,7 @@ export const SHOP_CATEGORIES = [
       createButtonSkinItem({
         id: "skin_poolball",
         name: "Lucky 7",
-        imageSrc: "/poolball.png",
+        imageSrc: "/skins/poolball.svg",
         gameImageScale: 125,
         shopImageScale: 130,
         description: "8 ball’s loud cousin.",
@@ -265,7 +265,7 @@ export const SHOP_CATEGORIES = [
         name: "Raccoon Scout",
         cost: 100,
         effectClass: "profile-image-racoon",
-        imageSrc: "/racoon.png",
+        imageSrc: "/skins/racoon.svg",
         shopImageScale: 96,
         description:
           "A sharp-eyed midnight scavenger portrait.",
@@ -275,7 +275,7 @@ export const SHOP_CATEGORIES = [
         name: "Secure Lock",
         cost: 100,
         effectClass: "profile-image-lock",
-        imageSrc: "/lock.png",
+        imageSrc: "/skins/lock.svg",
         shopImageScale: 94,
         description:
           "A no-compromise defense mindset.",
@@ -285,7 +285,7 @@ export const SHOP_CATEGORIES = [
         name: "Heart Pulse",
         cost: 100,
         effectClass: "profile-image-heart",
-        imageSrc: "/heart.png",
+        imageSrc: "/skins/heart.svg",
         shopImageScale: 95,
         description:
           "A bright heart icon with warm glow accents.",
@@ -295,7 +295,7 @@ export const SHOP_CATEGORIES = [
         name: "Phantom Drift",
         cost: 100,
         effectClass: "profile-image-ghost",
-        imageSrc: "/ghost.png",
+        imageSrc: "/skins/ghost.svg",
         shopImageScale: 95,
         description:
           "A mischievous ghost portrait, haunting arcade style.",
@@ -305,7 +305,7 @@ export const SHOP_CATEGORIES = [
         name: "Grape Burst",
         cost: 100,
         effectClass: "profile-image-grape",
-        imageSrc: "/grape.png",
+        imageSrc: "/skins/grape.svg",
         shopImageScale: 93,
         description:
           "A juicy grape cluster badge with bold color depth.",
@@ -315,7 +315,7 @@ export const SHOP_CATEGORIES = [
         name: "Night Beam",
         cost: 100,
         effectClass: "profile-image-flashlight",
-        imageSrc: "/flashlight.png",
+        imageSrc: "/skins/flashlight.svg",
         shopImageScale: 132,
         description:
           "A tactical flashlight portrait casting a focused beam.",

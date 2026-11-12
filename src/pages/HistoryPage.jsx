@@ -125,6 +125,8 @@ const TRAJECTORY_MODES = [
 // Modes have different timers and scoring pressure, so the trend compares one
 // mode at a time (defaulting to the latest round's mode) instead of drawing a
 // single line through Practice, Casual and Ranked scores.
+const LINE_TONES = { ranked: "#ffc94a", casual: "#4fb8ff", practice: "#3ee59a" }
+
 function HistoryTrajectory({ rounds = [] }) {
   const [modeFilter, setModeFilter] = useState(() => (rounds[0] ? getModeTone(rounds[0]) : "casual"))
   const modeLabel = TRAJECTORY_MODES.find((mode) => mode.id === modeFilter)?.label ?? "Casual"
@@ -135,12 +137,10 @@ function HistoryTrajectory({ rounds = [] }) {
   // Start the scale just under the lowest run so real movement is visible.
   const lowestScore = Math.max(0, Math.floor((minimumScore - (highestScore - minimumScore) * 0.35) / 10) * 10)
   const scoreRange = Math.max(1, highestScore - lowestScore)
-  const points = plottedRounds.map((round, index) => {
-    const x = plottedRounds.length === 1 ? 300 : 24 + (index * 552) / (plottedRounds.length - 1)
-    const y = 122 - (((Number(round.score) || 0) - lowestScore) / scoreRange) * 90
-    return { round, x, y }
-  })
-  const pointString = points.map((point) => `${point.x},${point.y}`).join(" ")
+  const plotPoints = scores.map((value, index) => ({
+    x: ((index + 0.5) / scores.length) * 100,
+    y: 100 - (34 + ((value - lowestScore) / scoreRange) * 66),
+  }))
   const scoreChange = scores.length > 1 ? scores.at(-1) - scores[0] : 0
   const trendIcon = scoreChange >= 0
     ? <TrendUp weight="bold" />
@@ -160,47 +160,43 @@ function HistoryTrajectory({ rounds = [] }) {
         </span>
       </div>
 
-      <div className="historyTrajectoryPlot" aria-hidden="true">
-        <svg viewBox="0 0 600 150" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="history-line" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="#4aa8ff" />
-              <stop offset="1" stopColor="#62e1c1" />
-            </linearGradient>
-            <linearGradient id="history-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#62e1c1" stopOpacity="0.24" />
-              <stop offset="1" stopColor="#62e1c1" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <line x1="24" y1="122" x2="576" y2="122" className="historyTrajectoryBaseline" />
-          {points.length > 1 ? (
-            <polygon points={`24,122 ${pointString} 576,122`} fill="url(#history-fill)" />
-          ) : null}
-          <polyline points={pointString} fill="none" stroke="url(#history-line)" strokeWidth="4" vectorEffect="non-scaling-stroke" />
-        </svg>
-        {points.map((point) => (
-          <span
-            key={point.round.id}
-            className={`historyTrajectoryMarker ${getModeToneClassName(point.round)}`}
-            style={{ left: `${(point.x / 600) * 100}%`, top: `${(point.y / 150) * 100}%` }}
-          />
-        ))}
-        {points.length > 0 ? (
-          <span
-            className="historyTrajectoryEndLabel"
-            style={{ left: `${(points.at(-1).x / 600) * 100}%`, top: `${(points.at(-1).y / 150) * 100}%` }}
-          >
-            {formatNumber(points.at(-1).round.score)}
-          </span>
+      <ol className="historyClimb" aria-hidden="true">
+        {plottedRounds.length === 0 ? <li className="historyClimbEmpty">No {modeLabel.toLowerCase()} rounds yet</li> : null}
+        {plottedRounds.length > 1 ? (
+          <li className="historyClimbAxis">
+            {[100, 67, 34].map((level) => (
+              <span key={level} style={{ "--axis": `${level}%` }}>
+                {formatNumber(Math.round(lowestScore + ((level - 34) / 66) * scoreRange))}
+              </span>
+            ))}
+          </li>
         ) : null}
-        <span className="historyTrajectoryAxis isMid">{formatNumber(Math.round((highestScore + lowestScore) / 2))}</span>
-        <span className="historyTrajectoryAxis isTop">{formatNumber(highestScore)}</span>
-        <span className="historyTrajectoryAxis isBottom">{formatNumber(lowestScore)}</span>
-        <span className="historyTrajectoryAxis isStart">
-          {plottedRounds.length ? `${plottedRounds.length} ${modeLabel.toLowerCase()} rounds ago` : `No ${modeLabel.toLowerCase()} rounds yet`}
-        </span>
-        <span className="historyTrajectoryAxis isEnd">Latest</span>
-      </div>
+        {plottedRounds.length > 1 ? (
+          <li className="historyClimbLine" style={{ "--line-tone": LINE_TONES[modeFilter] ?? "#4fb8ff" }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+              <polygon points={`${plotPoints[0].x},100 ${plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} ${plotPoints.at(-1).x},100`} />
+              <polyline points={plotPoints.map((point) => `${point.x},${point.y}`).join(" ")} />
+            </svg>
+          </li>
+        ) : null}
+        {plottedRounds.map((round, index) => {
+          const value = Number(round.score) || 0
+          const height = 34 + ((value - lowestScore) / scoreRange) * 66
+          const isBest = value === highestScore
+          const isLatest = index === plottedRounds.length - 1
+          return (
+            <li
+              key={round.id}
+              className={`historyClimbStep ${getModeToneClassName(round)} ${isBest ? "isBest" : ""} ${isLatest ? "isLatest" : ""}`}
+              style={{ "--climb": `${height}%` }}
+            >
+              <span className="historyClimbMedal">{isBest ? <i className="historyClimbCrown" /> : null}{formatNumber(value)}</span>
+              <span className="historyClimbPillar" />
+              <span className="historyClimbLabel">{isLatest ? "Latest" : `#${index + 1}`}</span>
+            </li>
+          )
+        })}
+      </ol>
 
       <div className="historyTrajectoryLegend isFilter" role="group" aria-label="Trend mode">
         {TRAJECTORY_MODES.map((mode) => (

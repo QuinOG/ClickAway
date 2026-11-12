@@ -13,6 +13,7 @@ export default function AuthInputField({
   error = "",
   hint = "",
   hintTone = "neutral",
+  icon = null,
   ...inputProps
 }) {
   const inputId = useId()
@@ -30,7 +31,8 @@ export default function AuthInputField({
         {label}
       </label>
 
-      <div className={`authInputRow${isPasswordField ? " hasToggle" : ""}`}>
+      <div className={`authInputRow${isPasswordField ? " hasToggle" : ""}${icon ? " gfField hasCap" : ""}`}>
+        {icon ? <span className="gfFieldCap" aria-hidden="true">{icon}</span> : null}
         <input
           {...inputProps}
           id={inputId}

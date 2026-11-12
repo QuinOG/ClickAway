@@ -1,5 +1,6 @@
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
+import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
@@ -57,6 +58,7 @@ function getTypeClass(type) {
 function ArenaThemeScene({ effectClass }) {
   return (
     <div className={`shopArenaScene ${effectClass}`} aria-hidden="true">
+      <ArenaWorldArt className="shopArenaWorld" />
       <span className="shopArenaSceneFloor" />
       <span className="shopArenaSceneCorner isTL" />
       <span className="shopArenaSceneCorner isTR" />
@@ -148,6 +150,11 @@ export default function ShopItemCard({
       data-shop-item-id={item.id}
       data-rarity={rarity.id}
     >
+      <span className={`shopPriceTag is-${visualState}`} aria-hidden="true">
+        {isEquipped ? "Equipped" : isOwned ? "Owned" : (
+          <><Coins weight="fill" />{formatCoins(item.cost)}</>
+        )}
+      </span>
       <div className="shopItemHeader">
         <span className={`shopItemStateTag is-${visualState}`}>
           <StateIcon state={visualState} />
