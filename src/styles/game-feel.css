@@ -3954,3 +3954,20 @@
 .unlockWallRebuild .armoryUnlockWallItem.isLocked::after { content: ''; top: 18px; right: 4px; width: 15px; height: 15px; border: 2px solid #d0aa62; background: radial-gradient(circle, #d0aa62 0 2px, #1b2937 3px); }
 .unlockWallRebuild .armoryUnlockWallItemLock { font-size: 9px; padding: 1px 3px; letter-spacing: 0; }
 .unlockWallRebuild .armoryUnlockWallItemLock::before { content: '' !important; }
+
+/* Round 15: Unlock wall ribbon header and close medallion (matches the compare bench) */
+.armoryUnlockWall.unlockWallRebuild .armoryUnlockWallTitle {
+  display: inline-block; margin-top: 4px; padding: 6px 34px 7px 14px; color: #2a1600 !important;
+  background: linear-gradient(180deg, #ffe08a, #f0b53c 55%, #c98a1c);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 50%, 100% 100%, 0 100%);
+  filter: drop-shadow(0 2px 0 #050912);
+}
+.armoryUnlockWall.unlockWallRebuild .armoryUnlockWallHeader > .secondaryButton {
+  width: 48px; min-width: 48px !important; height: 48px; padding: 0 !important; border-radius: 50% !important;
+  font-size: 0 !important; position: relative; border: 3px solid #050912 !important;
+  background: radial-gradient(circle at 35% 30%, #ff8a7a, #d23a33 55%, #7d1a1a) !important;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 35%), 0 0 0 3px #c98a1c, 0 3px 0 4px #050912 !important;
+}
+.armoryUnlockWall.unlockWallRebuild .armoryUnlockWallHeader > .secondaryButton::before {
+  content: "\2715"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff4ec; font: 700 20px/1 sans-serif; text-shadow: 0 2px 0 #4d0d0d;
+}

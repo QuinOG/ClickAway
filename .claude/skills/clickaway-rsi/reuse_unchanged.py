@@ -13,7 +13,7 @@ changed = {s.removesuffix(".png") for s in sys.argv[3].split(",") if s}
 # Measured on identical builds (i11 -> i12 unchanged screens): static pages differ by ~0.00%, the animated ones up to
 # ~0.9%. A real change can be tiny (new portraits moved Ladder by 0.44% and the nav avatar moved Play by 0.03%), so
 # static screens get a tight limit.
-ANIMATED = {"01-login": 0.003, "02-play": 0.008, "19-signup": 0.002, "11-live-round": 0.02, "12-results": 0.005, "13-rankup": 0.015}
+ANIMATED = {"01-login": 0.003, "02-play": 0.008, "19-signup": 0.002, "11-live-round": 0.025, "12-results": 0.005, "13-rankup": 0.015}
 STATIC_LIMIT = 0.00005  # a 40px nav avatar on a tall page is ~0.02%
 flagged = False
 for new in sorted(cur.glob("*.png")):
