@@ -31,10 +31,17 @@ score_rows = "\n".join(
     + f" | **{sum(v for v in vals if v is not None) / len([v for v in vals if v is not None]):.2f}** |"
     for r, vals in scores.items()
 )
+def baseline_cell(s):
+    # Screens added after i0 (e.g. 14-20 from i13) show their first capture as the baseline, labelled with its round.
+    rounds = sorted((d for d in os.listdir(SHOTS_DIR) if d[:1] == "i" and d[1:].isdigit()), key=lambda d: int(d[1:]))
+    first = next((r for r in rounds if os.path.exists(os.path.join(SHOTS_DIR, r, s))), None)
+    if first is None:
+        return "_not captured_"
+    return f"![]({blob}/{first}/{s}?raw=true)" + ("" if first == "i0" else f"<br>_first captured in {first}_")
+
+
 shot_rows = "\n".join(
-    f"| **{s.split('-', 1)[1][:-4]}** | "
-    + (f"![]({blob}/i0/{s}?raw=true)" if os.path.exists(os.path.join(SHOTS_DIR, "i0", s)) else "_not captured in i0_")
-    + f" | ![]({blob}/{latest}/{s}?raw=true) |"
+    f"| **{s.split('-', 1)[1][:-4]}** | " + baseline_cell(s) + f" | ![]({blob}/{latest}/{s}?raw=true) |"
     for s in shots
 )
 
