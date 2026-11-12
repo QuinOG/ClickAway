@@ -6,7 +6,7 @@ scores.json: {"i0": [sol, terra, opus, gemini, qwen], ...} (shorter lists are pa
 (Terra is null from i6 on).
 
 Produces {"body": ...} with: the process blurb, the full score table, and a
-Baseline (i0) vs Latest (iN) table for every captured screen, so the whole
+single baseline vs latest table for the screens this run changed, so the whole
 transformation is visible without comparing intermediate rounds.
 """
 import json
@@ -45,38 +45,17 @@ def baseline_cell(s):
     return f"![]({blob}/{first}/{s}?raw=true)"
 
 
+def changed(s):
+    old = os.path.join(SHOTS_DIR, base, s)
+    return not os.path.exists(old) or open(old, "rb").read() != open(os.path.join(SHOTS_DIR, latest, s), "rb").read()
+
+
+changed_shots = [s for s in shots if changed(s)]
+changed_count = len(changed_shots)
 shot_rows = "\n".join(
     f"| **{s.split('-', 1)[1][:-4]}** | " + baseline_cell(s) + f" | ![]({blob}/{latest}/{s}?raw=true) |"
-    for s in shots
+    for s in changed_shots
 )
-
-def set_tables():
-    # Run sets (docs/ui-polish/game-feel/sets.json): each compares the shot before the set's first round with its
-    # last round (or the latest round while "last" is null), listing only the screens that changed.
-    path = os.path.join(SHOTS_DIR, "sets.json")
-    if not os.path.exists(path):
-        return ""
-    out = []
-    for st in json.load(open(path, encoding="utf-8")):
-        before = f"i{st['first'] - 1}"
-        last_n = min(st["last"] or n, n)
-        after = f"i{last_n}"
-        if last_n < st["first"] or not os.path.isdir(os.path.join(SHOTS_DIR, after)):
-            continue
-        changed = [f for f in sorted(os.listdir(os.path.join(SHOTS_DIR, after))) if f.endswith(".png")
-                   and open(os.path.join(SHOTS_DIR, after, f), "rb").read() != open(os.path.join(SHOTS_DIR, before, f), "rb").read()]
-        span = f"rounds {st['first']}–{last_n}" if last_n > st["first"] else f"round {st['first']}"
-        live = " · _after updates every round_" if st["last"] is None else ""
-        rows = "\n".join(f"| **{f.split('-', 1)[1][:-4]}** | ![]({blob}/{before}/{f}?raw=true) | ![]({blob}/{after}/{f}?raw=true) |" for f in changed)
-        out.append(f"""### {st['name']} ({span})
-Before ({before}) → after ({after}){live} · {len(changed)} screens changed · notes in `{SHOTS_DIR}/i{st['first']}-changes.md` onward
-
-| Screen | Before ({before}) | After ({after}) |
-|---|---|---|
-{rows}
-""")
-    return "## Run sets\n" + "\n".join(out) + "\n" if out else ""
-
 
 PROCESS = os.environ.get("RSI_PROCESS") or "each round, judges rate the full-app screenshots against `docs/ui-polish/standards/`; Claude implements the highest-value fixes, recaptures, and repeats. Each round is its own commit, and each round's PR comment has its changes and before/after vs the previous round."
 
@@ -89,8 +68,8 @@ body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a Saa
 |---|{"---|" * len(used)}---|
 {score_rows}
 
-{set_tables()}## Total change: baseline ({base}) → latest ({latest})
-_This table is regenerated on every round, so it always compares the app as this PR started with the current one._
+## Before → after for this run: baseline ({base}) → latest ({latest})
+_One table per PR: the app as this run started ({base}) vs the latest round. It is regenerated every round and lists only screens that changed ({changed_count} of {len(shots)})._
 
 | Screen | Baseline ({base}) | Latest ({latest}) |
 |---|---|---|

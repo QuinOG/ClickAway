@@ -97,7 +97,8 @@ export default function ArmorySpecSheet({
         </header>
 
         <div className="specSheetAssembly" aria-label="Assembly thumbnail">
-          <img className="specSheetAssemblyArt" src="/art/armory/assembly-exploded.png" alt="" width="640" height="324" decoding="async" />
+          <span className="specSheetAssemblyHub">+</span>
+          {presentation.moduleStack.map((module) => <span key={module.slotId} className={`specSheetAssemblyPart slot-${module.slotId}`}><PartEmblem partId={module.moduleId} slotId={module.slotId} size={26} /></span>)}
           <small>ASSEMBLY</small>
         </div>
         <p className="armorySpecSheetLead">{presentation.glanceText}</p>
