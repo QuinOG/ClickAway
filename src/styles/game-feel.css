@@ -4460,3 +4460,45 @@
 .profileStampOutcome { color: var(--ink); border: 2px double currentColor; padding: 4px 3px; font-size: 11px; font-weight: 900; line-height: 1; transform: rotate(-7deg); }
 .profileSheetMain .profileSignalBand .profileFormTokens { gap: 5px; padding: 18px 10px !important; }
 .profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken { width: 78px !important; }
+
+/* Round 23: Ladder hover card - cut-out rival bust rising out of a rank socket */
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar {
+  position: relative; overflow: visible !important;
+  background: linear-gradient(180deg, #0c1828, #08111e) !important;
+  box-shadow: inset 0 0 0 1px rgb(196 206 219 / 22%), 0 3px 0 #050912 !important;
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar::before {
+  content: ''; position: absolute; left: 50%; bottom: 4px; width: 108px; height: 108px; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--pass-trim) 45%, #142338), #08111e 70%);
+  box-shadow: inset 0 0 0 5px var(--pass-trim), inset 0 0 0 8px #050912, inset 0 -12px 18px #050912, 0 0 0 2px #050912, 0 0 18px color-mix(in srgb, var(--pass-trim) 40%, transparent);
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait {
+  position: relative; z-index: 1; width: 128px !important; height: 128px !important; margin-bottom: 0 !important;
+  overflow: visible; filter: drop-shadow(0 3px 0 #050912);
+}
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait > rect:first-of-type,
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait > path:first-of-type { display: none; }
+/* Round 23: Duels challenger ticket */
+.duelPage .duelFightCard .duelFighter.is-rival { width: 100%; }
+.duelPage .duelFightCard .duelRivalInput {
+  box-sizing: border-box; width: min(100%, 310px); min-width: 0;
+  padding: 14px 18px 16px; gap: 8px; border: 4px solid #4e2b20;
+  border-radius: 5px; background: repeating-linear-gradient(0deg, transparent 0 3px, rgb(92 48 27 / 4%) 3px 4px), linear-gradient(#ffe5a5, #dca865) !important;
+  box-shadow: inset 0 0 0 2px #f8d58e, 0 5px 0 #24151a, 0 8px 12px #0008;
+  transform: rotate(1deg);
+}
+.duelPage .duelFightCard .duelRivalInput small { color: #713b2c; font-size: 12px; letter-spacing: .18em; }
+.duelPage .duelFightCard .duelRivalInput input {
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px !important;
+  border: 2px solid #774332; border-radius: 3px; background: #fff0c9 !important;
+  color: #3e2524 !important; box-shadow: inset 0 2px 4px #60392255;
+}
+.duelPage .duelFightCard .duelRivalInput input::placeholder { color: #805b4d !important; }
+.duelPage .duelFightCenter .duelVsMark {
+  display: grid; place-items: center; width: 100px; height: 100px;
+  border: 5px solid #7a3b23; border-radius: 50%;
+  background: radial-gradient(circle, #f9d77c 0 54%, #bf7137 55% 64%, #f5c568 65%);
+  box-shadow: inset 0 0 0 3px #ffe7a4, 0 5px 0 #301c19, 0 7px 12px #0008;
+  color: #733127; font-size: 50px !important; line-height: 1; text-shadow: 0 2px #ffe4a0;
+  transform: rotate(-8deg);
+}

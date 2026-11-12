@@ -7,4 +7,4 @@ Every claim below was checked in a 100% crop and passed a blind before/after che
 
 ## B. Spec sheet (18)
 - **Field record:** the four record cells (Best score, Best streak, Rounds, Accuracy) are ruled log entries with a red margin line, a stamped label box tilted slightly above the value, and a green circled inspection tick in the corner. The seven dials are unchanged.
-- The ranked record is a tilted double-ruled red stamp ("RANKED RECORD 6/9 (67%)") instead of a plain grey line.
+- The ranked record is a tilted red outlined stamp ("RANKED RECORD 6/9 (67%)") instead of a plain grey line.
