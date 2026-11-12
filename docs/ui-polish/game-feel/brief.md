@@ -5,7 +5,7 @@ You are an independent UI and art-direction reviewer for ClickAway, a browser cl
 Do NOT read source code. Judge from screenshots only. Edit nothing except REPLY_FILE.
 
 ## Steps
-1. View the reference standards in docs/ui-polish/standards/ (standard-1..4.jpg). They set the bar.
+1. **No PREVIOUS_SCORES, or FULL_READ = yes:** view the reference standards in docs/ui-polish/standards/ (standard-1..4.jpg). They set the bar. **Otherwise** skip them: your previous scores already encode the bar, so score changed screens relative to their previous version and your previous score.
 2. Open the screenshots. They are full-page captures at 1440px wide, so tall images include scrolled content.
    - **No PREVIOUS_SCORES, or FULL_READ = yes:** open every PNG in CURRENT_DIR.
    - **Otherwise:** open only the screens named in CHANGES_FILE, both the CURRENT_DIR and the PREVIOUS_DIR version, plus any screen that has no score of yours in PREVIOUS_SCORES (a newly captured surface: score it fresh). Do not open the other screens: they are byte-for-byte copies of last round's files, so there is nothing new to see.

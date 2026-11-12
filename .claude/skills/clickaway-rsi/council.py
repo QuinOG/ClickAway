@@ -12,6 +12,11 @@ CONF = {"high": 1.0, "med": 0.7, "low": 0.4}
 
 def screen_key(token):
     t = token.strip().lower()
+    if t in SCREENS:
+        return t
+    for s in SCREENS:  # same two-digit number (e.g. "15-hovercard" -> "15-ladder-hovercard")
+        if t[:2].isdigit() and t[:2] == s[:2]:
+            return s
     for s in SCREENS:
         if t.startswith(s[:2]) or s.split("-", 1)[1].split("-")[0] in t:
             return s

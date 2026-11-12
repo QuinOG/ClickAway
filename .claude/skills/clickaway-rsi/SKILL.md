@@ -32,7 +32,9 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
   - **Image budget (user, 2026-11-11: cut only redundant work, never anything that costs judging signal):**
     - `reuse_unchanged.py` makes every unchanged screen a byte-for-byte copy of last round's file. So under brief v2, judges open only the screens named in CHANGES_FILE (current plus previous, about 10 images instead of 26), and copy their previous scores for the rest.
     - **Full read:** at a run's anchor read and on every third round after it (r16, r19, …), add `FULL_READ = yes` to the prompt. Judges then open all 13 and may re-score with a reason, which catches drift.
-    - **Kept on purpose:** full-resolution images (downscaling would hide fine detail) and the four reference standards each round (fresh judges need the bar). Gemini also runs every round; skipping it would lose signal.
+    - **Standards only on full reads** (user, 2026-11-11, OpenCode ~10% ahead of pace): the four reference standards are viewed on the anchor read and on FULL_READ rounds only. On other rounds each judge is anchored by its own previous scores, so the standards are redundant there.
+    - **Keep global changes out of ordinary rounds.** A change that touches every screen (nav avatar, shared icons, nav chrome) forces a full read, because every screen differs and nothing can be reused. Batch such changes into the FULL_READ rounds (r16, r19, …). Round 13 had one (icons and nav portrait), so all 20 screens plus 13 previous plus 4 standards were opened.
+    - **Kept on purpose:** full-resolution images (downscaling would hide fine detail). Gemini also runs every round; skipping it would lose signal.
   - Judges must read PNGs, so only image-input models qualify. Check `models.dev/api.json` → `modalities.input`.
   - Reserve: `opencode-go/grok-4.7` `{variant: "medium"}`. It takes images and supports medium, but has no public vision or design results yet.
   - Excluded because they lack a medium variant: Kimi K3.1 Pro (low/high/max) and Hy4 (none/high).
