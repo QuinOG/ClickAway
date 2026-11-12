@@ -4712,3 +4712,31 @@
   box-shadow: 0 0 0 3px #f5ffe9, 0 0 0 7px #040912, 0 10px 0 7px #04091280, 0 0 0 26px rgb(255 201 74 / 10%), 0 0 38px 22px rgb(255 201 74 / 22%) !important; }
 .clickFeedback.hit::before, .clickFeedback.comboHit::before { width: 56px !important; height: 56px !important; margin: -28px 0 0 -28px !important; border-width: 2px !important; border-color: rgb(255 255 255 / 45%) !important; box-shadow: none !important; }
 .clickFeedback.hit::after, .clickFeedback.comboHit::after { opacity: .35; }
+/* Round 29: More menu - destinations as distinct arena signposts on the shared plank board */
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-shop { padding-top: 22px; border-radius: 4px 4px 8px 8px; background: linear-gradient(180deg, #6e4a2a, #4a3020 60%, #3a251a) !important; box-shadow: inset 0 0 0 3px #2a1a10, inset 0 -4px #050912, 0 3px #050912 !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-shop::before { left: -2px; right: -2px; top: -2px; width: auto; height: 18px; border-radius: 4px 4px 0 0; background: repeating-linear-gradient(90deg, #e75448 0 16px, #f6ecd8 16px 32px); -webkit-mask: radial-gradient(circle 8px at 8px 18px, transparent 7.5px, #000 8px) 0 0 / 16px 18px repeat-x; mask: radial-gradient(circle 8px at 8px 18px, transparent 7.5px, #000 8px) 0 0 / 16px 18px repeat-x; box-shadow: none; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-shop::after { display: none; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-duels { padding-bottom: 18px; border: 0; border-radius: 0; clip-path: polygon(0 0, 100% 0, 100% 84%, 50% 100%, 0 84%); background: linear-gradient(180deg, #a8322c, #7a1f1d 70%, #5a1616) !important; box-shadow: inset 0 0 0 3px #3d0f0e, inset 0 3px 0 rgb(255 255 255 / 20%) !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-duels .mobileMoreCategory { color: #ffc9b8; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-history { border-radius: 3px; background:
+    linear-gradient(90deg, #8a6a40 0 7px, #c9a874 7px 10px, transparent 10px calc(100% - 10px), #c9a874 calc(100% - 10px) calc(100% - 7px), #8a6a40 calc(100% - 7px)),
+    repeating-linear-gradient(180deg, transparent 0 15px, rgb(122 90 40 / 18%) 15px 16px),
+    linear-gradient(180deg, #f6ead0, #e4cf9f) !important; box-shadow: 0 3px #050912, inset 0 -3px rgb(90 60 20 / 35%) !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-history .mobileMoreCategory { color: #7a5a2a; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-history > :last-child { color: #3b2508; text-shadow: none; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-history::before, .mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-history::after { display: none; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-help { border-radius: 54px 54px 6px 6px; background: radial-gradient(ellipse 70% 50% at 50% 0, #3e7fd0, transparent 70%), linear-gradient(180deg, #2a5aa0, #1b3d70 70%, #142e56) !important; box-shadow: inset 0 0 0 3px #0c1f3c, inset 0 3px 0 rgb(255 255 255 / 22%), inset 0 -4px #050912, 0 3px #050912 !important; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-help .mobileMoreCategory { color: #b8d4ff; }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-help::before { left: 50%; top: 6px; transform: translateX(-50%); }
+.mobileMoreSheet.mobileMorePlaqueBoard .mobileMoreTile-help::after { display: none; }
+
+/* Round 29: History single match-record instrument face */
+.historyTrajectory .historyClimb {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  height: 300px !important;
+  background: repeating-linear-gradient(90deg, transparent 0 59px, rgb(120 170 230 / 7%) 59px 60px), linear-gradient(180deg, #0d1828, #08111d) !important;
+}
+.historyTrajectory .historyClimb { height: 100% !important; box-sizing: border-box; }
