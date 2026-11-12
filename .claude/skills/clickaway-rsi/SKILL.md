@@ -64,7 +64,7 @@ Before starting, restate the task to the user in 3–4 lines: who's on the counc
    - A FLAGGED screen differs by more than that. Look at it: a shared-CSS change may have leaked, so either fix the leak or add the screen to the changed list.
    - The folder stays complete for the judges and for `update_pr_body.py`.
    - **Before/after on every visual commit (user, 2026-11-11).** Every commit that changes how a screen looks gets its own PR comment, not only the round comment. This includes merged Terra builds and fixes between rounds.
-     - Capture, then copy just the affected screens to `docs/ui-polish/game-feel/steps/NN-<slug>/`. Commit and push them with the change.
+     - **One commit holds the change and its after shots** (user, 2026-11-11). Capture before committing, copy just the affected screens to `docs/ui-polish/game-feel/steps/NN-<slug>/`, and commit them together with the code. For a Terra branch: `git merge --no-commit --no-ff <branch>`, capture, add the shots, then `git commit`, so the merge commit carries both.
      - Then run `python .claude/skills/clickaway-rsi/step_comment.py "<title>" "<summary>" <sha> <before.png>::<after.png> … > cN.json` and `gh.sh POST /issues/<PR>/comments cN.json`.
      - "Before" is the latest committed shot of that screen: the last round folder, or the previous step.
    - Then write `i(N+1)-changes.md` and commit code and shots together (`Game feel rN: …`), and push. Then, when the council's scores for that round are in:
