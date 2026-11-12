@@ -1427,11 +1427,6 @@
     .profileSheetMain .profileSignalBand { grid-template-columns: 1fr !important; }
 }
 
-/* achievement medals: each tier has its own silhouette, not one round disc */
-.achievementMedal.tier-silver .achievementMedalDisc { clip-path: polygon(50% 0, 100% 14%, 100% 60%, 50% 100%, 0 60%, 0 14%); border-radius: 0 !important; }
-.achievementMedal.tier-gold .achievementMedalDisc { clip-path: polygon(50% 0, 62% 30%, 98% 35%, 70% 57%, 79% 92%, 50% 74%, 21% 92%, 30% 57%, 2% 35%, 38% 30%); border-radius: 0 !important; }
-.achievementMedal.tier-platinum .achievementMedalDisc { clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); border-radius: 0 !important; }
-.achievementMedal.tier-diamond .achievementMedalDisc { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border-radius: 0 !important; }
 .profileAttribute { grid-template-columns: 54px 160px minmax(0, 1fr) 150px; padding-right: 28px; }
 .profileAttributeValue { white-space: nowrap; }
 .profileSheetMain .profileBuildSignature, .profileSheetMain .profileNearestGoal { display: flex !important; flex-direction: row !important; align-items: center !important; }

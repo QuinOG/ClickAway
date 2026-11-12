@@ -857,32 +857,25 @@
     .profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { border-left: 0; padding-left: 0; flex-basis: 100%; }
 }
 
-/* p09: tier silhouettes. Medals grow more ornate as they climb, so a tier
-   reads from its outline, not just its colour. Bronze is a plain disc,
-   silver adds ribbon tails, gold adds an 8-point burst, platinum 12 points
-   and diamond 16 brighter points; masters keep the crown. Locked medals
-   show the same outline, dimmed. Unlocked tiles drop the redundant full bar
-   and percent, leaving the glowing medal, the state chip and the count. */
+/* Shared illustrated rims retain the live category emblem and progress ring. */
 .profilePageCenter .achievementMedal { isolation: isolate; }
 .profilePageCenter .achievementMedalDisc { z-index: 2; }
 .profilePageCenter .achievementMedalLock { z-index: 3; }
-
-/* Illustrated mounts surround the data-driven progress ring. */
-.profilePageCenter .achievementMedal:is(.tier-silver, .tier-gold, .tier-platinum, .tier-diamond, .tier-master)::before {
+.profilePageCenter .achievementMedal::before {
     content: "";
     position: absolute;
-    z-index: -1;
-    inset: -32%;
+    z-index: 1;
+    inset: -10%;
     background: var(--achievement-mount) center / contain no-repeat;
     pointer-events: none;
 }
-.profilePageCenter .achievementMedal.tier-silver { --achievement-mount: url('/art/achievements/silver-mount.png'); }
-.profilePageCenter .achievementMedal.tier-gold { --achievement-mount: url('/art/achievements/gold-mount.png'); }
-.profilePageCenter .achievementMedal.tier-platinum { --achievement-mount: url('/art/achievements/platinum-mount.png'); }
-.profilePageCenter .achievementMedal.tier-diamond { --achievement-mount: url('/art/achievements/diamond-mount.png'); }
-.profilePageCenter .achievementMedal.tier-master { --achievement-mount: url('/art/achievements/master-mount.png'); }
-.profilePageCenter .achievementTile.isFeaturedBanner .achievementMedal::before { inset: -15%; }
-.profilePageCenter .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: saturate(0.5) brightness(0.62); }
+.profilePageCenter .achievementMedal.tier-bronze { --achievement-mount: url('/art/achievements/bronze-medal-v2.png'); }
+.profilePageCenter .achievementMedal.tier-silver { --achievement-mount: url('/art/achievements/silver-medal-v2.png'); }
+.profilePageCenter .achievementMedal.tier-gold { --achievement-mount: url('/art/achievements/gold-medal-v2.png'); }
+.profilePageCenter .achievementMedal.tier-platinum { --achievement-mount: url('/art/achievements/platinum-medal-v2.png'); }
+.profilePageCenter .achievementMedal.tier-diamond { --achievement-mount: url('/art/achievements/diamond-medal-v2.png'); }
+.profilePageCenter .achievementMedal.tier-master { --achievement-mount: url('/art/achievements/master-medal-v2.png'); }
+.profilePageCenter .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: saturate(0.6) brightness(0.75); }
 
 /* Clear lock badge on locked medals. */
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalLock {
