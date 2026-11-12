@@ -3536,3 +3536,45 @@
 .profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementMedal { transform-origin: 50% 100%; transform: translateY(14px) scale(1.6); }
 .achievementMedal.isProgressing .achievementObject { filter: grayscale(.55) brightness(.92); opacity: .9; }
 .achievementMedal.isUntouched .achievementObject { filter: grayscale(1) brightness(.8); opacity: .7; }
+
+/* Illustrated shop displays sit behind the original preview art. */
+.shopGrid .shopItemCard .shopItemPreviewFrame::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    left: 50%; bottom: 8px;
+    width: 72%; height: 22px;
+    transform: translateX(-50%);
+    border: 3px solid #040912;
+    border-radius: 50% 50% 35% 35%;
+    background: linear-gradient(160deg, #dce8ee 0 14%, #667c91 15% 48%, #26394f 49% 100%);
+    box-shadow: 0 5px 0 #040912, 0 9px 8px #040912, 0 -4px 14px 4px color-mix(in srgb, var(--rarity) 75%, transparent);
+}
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-arena-theme::before {
+    width: 78%; height: 12px; bottom: 10px;
+    border-radius: 3px;
+    background: linear-gradient(160deg, #f7e5b4 0 25%, #a8794c 26% 65%, #60432f 66%);
+}
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-arena-theme .shopArenaScene {
+    border: 5px solid #f5e6c5;
+    border-bottom-width: 10px;
+    border-radius: 2px;
+    box-shadow: 0 2px 0 #040912;
+    transform: rotate(-3deg);
+}
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-profile-image::before {
+    width: 58%; height: 14px;
+    border-radius: 3px 3px 8px 8px;
+    background: linear-gradient(160deg, #e8bf7a 0 20%, #93623e 21% 65%, #54392e 66%);
+}
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-profile-image .shopPreview,
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-profile-image .shopPreviewPortrait {
+    outline: 4px solid #d6ad6a;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px #040912;
+}
+
+.shopGrid .shopItemCard .shopItemPreviewFrame::before { top: auto; right: auto; opacity: 1; }
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-arena-theme .shopArenaScene { transform: translateY(-7px) rotate(-3deg) scale(.88); }
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-profile-image .shopPreview,
+.shopGrid .shopItemCard .shopItemPreviewFrame.is-profile-image .shopPreviewPortrait { transform: translateY(-7px) scale(.88); }
