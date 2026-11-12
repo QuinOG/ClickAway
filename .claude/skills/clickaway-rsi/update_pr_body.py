@@ -32,7 +32,7 @@ score_rows = "\n".join(
     for r, vals in scores.items()
 )
 def baseline_cell(s):
-    # Screens added after i0 (e.g. 14-20 from i13) show their first capture as the baseline, labelled with its round.
+    # Screens added after i0 (e.g. 14-20 from i13) show their first capture as the baseline, used as the baseline.
     rounds = sorted((d for d in os.listdir(SHOTS_DIR) if d[:1] == "i" and d[1:].isdigit()), key=lambda d: int(d[1:]))
     first = next((r for r in rounds if os.path.exists(os.path.join(SHOTS_DIR, r, s))), None)
     if first is None:
