@@ -1004,6 +1004,7 @@ export function useGameScreenController({
       ))
     }
 
+    const isComboSurgeHit = simulationRef.current.getState().comboSurgeHitsRemaining > 0
     const result = simulationRef.current.applyHit(eventTimeMs)
     syncSimulationState(result)
 
@@ -1025,7 +1026,7 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      result.comboSurgeHitsRemaining > 0 ? "hit comboHit" : "hit"
+      isComboSurgeHit ? "hit comboHit" : "hit"
     )
     if (
       !hasPassedPersonalBestRef.current
