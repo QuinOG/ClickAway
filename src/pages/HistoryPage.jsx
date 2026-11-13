@@ -1,5 +1,5 @@
 ﻿import { RECENT_HISTORY_LIMIT } from "../utils/lifetimeStatsUtils.js"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import {
   ArrowRight,
@@ -266,6 +266,8 @@ export default function HistoryPage({
   totalRoundCount = 0,
   careerBestScore = null,
 }) {
+  const historyGeneration = useRef(0)
+  const pendingPage = useRef(null)
   const [extraHistoryRows, setExtraHistoryRows] = useState([])
   const [historyPage, setHistoryPage] = useState(1)
   const [hasMoreHistory, setHasMoreHistory] = useState(false)
@@ -283,7 +285,17 @@ export default function HistoryPage({
     setHistoryPage(1)
     setHasMoreHistory(false)
     setHistoryLoadError("")
+    setIsLoadingMoreHistory(false)
   }
+
+  useLayoutEffect(() => {
+    historyGeneration.current += 1
+    pendingPage.current = null
+    return () => {
+      historyGeneration.current += 1
+      pendingPage.current = null
+    }
+  }, [baseHistoryKey])
 
   const historyRows = useMemo(() => {
     const baseRows = Array.isArray(roundHistory) ? roundHistory : []
@@ -306,6 +318,9 @@ export default function HistoryPage({
     || (resolvedTotalRoundCount > historyRows.length && historyPage === 1)
 
   const handleLoadMoreHistory = useCallback(async () => {
+    if (pendingPage.current !== null) return
+    const generation = historyGeneration.current
+    pendingPage.current = generation
     const nextPage = historyPage + 1
     setIsLoadingMoreHistory(true)
     setHistoryLoadError("")
@@ -314,6 +329,7 @@ export default function HistoryPage({
       // Same page size as the 50 rounds that arrive with your progress, so page 2
       // starts at round 51 instead of re-fetching rounds already shown.
       const historyResponse = await fetchHistoryPage({ page: nextPage, limit: RECENT_HISTORY_LIMIT })
+      if (generation !== historyGeneration.current) return
       const nextEntries = (Array.isArray(historyResponse?.entries) ? historyResponse.entries : [])
         .map(normalizeHistoryEntry)
 
@@ -329,9 +345,13 @@ export default function HistoryPage({
       setHistoryPage(nextPage)
       setHasMoreHistory(Boolean(historyResponse?.hasMore))
     } catch (error) {
+      if (generation !== historyGeneration.current) return
       setHistoryLoadError(error?.message || "Unable to load older rounds.")
     } finally {
-      setIsLoadingMoreHistory(false)
+      if (generation === historyGeneration.current) {
+        pendingPage.current = null
+        setIsLoadingMoreHistory(false)
+      }
     }
   }, [historyPage])
   const hasHistory = historyRows.length > 0

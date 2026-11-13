@@ -54,3 +54,24 @@ test("empty history provides a first-round link", () => {
   expect(screen.getByRole("link", { name: "Play a Round" }).getAttribute("href")).toBe("/game")
   expect(screen.queryByRole("table")).toBeNull()
 })
+
+test.each(['resolve', 'reject'])('obsolete page %s cannot change a refreshed generation or clear its loading', async outcome => {
+  let oldResolve, oldReject, newResolve
+  fetchHistoryPage.mockReturnValueOnce(new Promise((resolve, reject) => { oldResolve = resolve; oldReject = reject }))
+    .mockReturnValueOnce(new Promise(resolve => { newResolve = resolve }))
+  const { container, rerender, unmount } = render(page('A'))
+  fireEvent.click(screen.getByRole('button', { name: 'Load older rounds' }))
+  rerender(page('B')); rerender(page('A'))
+  fireEvent.click(screen.getByRole('button', { name: 'Load older rounds' }))
+  await act(async () => {
+    if (outcome === 'resolve') oldResolve({ entries: rounds('stale'), hasMore: false })
+    else oldReject(Error('stale error'))
+  })
+  expect(container.querySelectorAll('tbody tr')).toHaveLength(1)
+  expect(screen.queryByRole('alert')).toBeNull()
+  expect(screen.getByRole('button', { name: /Loading/i }).disabled).toBe(true)
+  await act(async () => newResolve({ entries: rounds('fresh'), hasMore: true }))
+  expect(container.querySelectorAll('tbody tr')).toHaveLength(2)
+  expect(screen.getByRole('button', { name: 'Load older rounds' }).disabled).toBe(false)
+  unmount()
+})
