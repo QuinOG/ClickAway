@@ -3166,7 +3166,7 @@
    side, so keep the parts rail on the left and stack the machine above the details. */
 @media (min-width: 941px) and (max-width: 1259px) {
     .armoryScene {
-        grid-template-columns: 196px minmax(0, 1fr);
+        grid-template-columns: 210px minmax(0, 1fr);
         grid-template-rows: auto auto auto;
         overflow: visible;
     }
@@ -3235,3 +3235,8 @@
     /* The rig's side clamps are decoration; keep them inside the machine frame. */
     .armoryStage .armoryMachineCore { overflow: hidden; }
 }
+/* "No runs yet" ran under the Compare button (by 5px at 1440): the stats kept 78px clear on
+   the right, but the button plus its 8px offset needs 86px. Keep enough room, and let the
+   empty-state text wrap into it. */
+.armoryBayWall .armoryCart:not(.isActive) .armoryCartStats { padding-right: 92px; }
+.armoryBayWall .armoryCart .armoryCartStats.isEmpty { white-space: normal; line-height: 1.15; min-width: 0; }
