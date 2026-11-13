@@ -788,7 +788,7 @@ export default function LeaderboardPage({
         ) : null}
 
         {!isLoading && !loadError && sortedRows.length === 0 ? (
-          resultsQuery ? (
+          resultsQuery && !(view === "aroundMe" && !selfRank) ? (
             // An empty search result is not an empty Ladder: say what was searched and offer a way back.
             // Around Me only searches the players near your rank, so it says so and offers the full Ladder.
             <div className="leaderboardStatusCard leaderboardNoMatch" role="status" aria-live="polite">
