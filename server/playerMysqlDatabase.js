@@ -1814,7 +1814,7 @@ export async function completeUserRound({
         ...historyEntry,
         rankDelta: rankOutcome.appliedRankDelta,
         // Placement rounds award a placement score, not a ranked win.
-        rankedWin: !rankOutcome.previousRankProgress?.isPlacement && rankOutcome.appliedRankDelta > 0,
+        rankedWin: !rankOutcome.previousRankProgress?.isUnranked && !rankOutcome.previousRankProgress?.isPlacement && rankOutcome.appliedRankDelta > 0,
       }
       const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
       let nextLifetimeStats = applyRoundToLifetimeStats(
