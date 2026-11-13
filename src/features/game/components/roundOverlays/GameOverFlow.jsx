@@ -46,6 +46,7 @@ export function GameOverFlow({
   roundRankDelta = 0,
   roundSaveStatus = "idle",
   roundSaveError = "",
+  roundSaveNote = "",
   allowsRankProgression = false,
   selectedModeId,
   bestScore = 0,
@@ -115,6 +116,7 @@ export function GameOverFlow({
     roundRankDelta,
     roundSaveStatus,
     roundSaveError,
+    roundSaveNote,
     // During placements the round earns a placement score, not visible RR.
     placementLabel: projectedRankProgress?.isPlacement ? projectedRankProgress.tierLabel : null,
     playerLevel,

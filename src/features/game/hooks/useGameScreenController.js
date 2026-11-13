@@ -1644,10 +1644,13 @@ export function useGameScreenController({
       roundCoinsEarned: roundSave.outcome?.earnedCoins ?? roundCoinsEarned,
       roundSaveStatus: roundSave.status,
       roundSaveError: roundSave.error ?? "",
+      roundSaveNote: roundSave.outcome?.followUpError ?? "",
       allowsCoinRewards,
       allowsLevelProgression,
-      previousRankProgress: projectedRankOutcome.previousRankProgress,
-      projectedRankProgress: projectedRankOutcome.nextRankProgress,
+      // After the save, the rank shown is the one the server calculated (another
+      // tab may have played a ranked round in between).
+      previousRankProgress: roundSave.outcome?.rankProgress?.previous ?? projectedRankOutcome.previousRankProgress,
+      projectedRankProgress: roundSave.outcome?.rankProgress?.next ?? projectedRankOutcome.nextRankProgress,
       roundRankDelta: roundSave.outcome?.rankDelta ?? projectedRankOutcome.appliedRankDelta,
       allowsRankProgression,
       selectedModeId,

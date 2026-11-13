@@ -44,6 +44,8 @@ export function usePlayerProgressionUpdates({
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
           rankDelta: response.rankDelta,
+          rankProgress: response.rankProgress ?? null,
+          followUpError: response.followUpError ?? "",
         }
       } catch (error) {
         console.error("Unable to submit round:", error)

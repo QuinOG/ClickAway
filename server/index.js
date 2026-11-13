@@ -808,6 +808,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         currentMmr: currentProgress.rankMmr,
         currentRankedState: currentProgress.rankedState,
       },
+      countsTowardStats: Boolean(roundTokenId),
       historyEntry,
     })
 
@@ -816,55 +817,76 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
 
     // A duel race is stored even with no clicks: a zero-score run is a real
     // result and still has to settle the duel.
+    // The round and its rewards are committed at this point. If a follow-up write
+    // (replay, season, duel) fails, the round is still reported as saved, with a
+    // note, instead of telling the player their rewards were lost.
     let replay = null
-    const submittedEvents = Array.isArray(events) ? events : []
-    if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
-      replay = await insertRoundReplay({
-        userId: user.id,
-        username: user.username,
-        modeId,
-        seed: roundSeed,
-        events: submittedEvents,
-        loadoutSnapshot: simulation.loadoutSnapshot,
-        score,
-        hits,
-        misses,
-        bestStreak,
-      })
-    }
-
-    const seasonProgress = await applyUserSeasonProgress(user.id, {
-      rankMmr: nextRankMmr,
-      isRankedRound: progressionMode === "ranked",
-      isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
-    })
-
-    // Only a round started for a duel (its token names the challenge) can complete it.
-    const challengeId = roundTokenChallengeId
+    let seasonProgress = null
     let completedChallenge = null
-    if (challengeId && replay?.id) {
-      const completion = await completeChallenge({
-        challengeId,
-        userId: user.id,
-        opponentReplayId: replay.id,
-      })
-      if (completion.ok) {
-        completedChallenge = completion.challenge
+    let followUpError = null
+    try {
+      const submittedEvents = Array.isArray(events) ? events : []
+      if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
+        replay = await insertRoundReplay({
+          userId: user.id,
+          username: user.username,
+          modeId,
+          seed: roundSeed,
+          events: submittedEvents,
+          loadoutSnapshot: simulation.loadoutSnapshot,
+          score,
+          hits,
+          misses,
+          bestStreak,
+        })
       }
+
+      seasonProgress = await applyUserSeasonProgress(user.id, {
+        rankMmr: nextRankMmr,
+        isRankedRound: progressionMode === "ranked",
+        isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
+      })
+
+      // Only a round started for a duel (its token names the challenge) can complete it.
+      const challengeId = roundTokenChallengeId
+      if (challengeId && replay?.id) {
+        const completion = await completeChallenge({
+          challengeId,
+          userId: user.id,
+          opponentReplayId: replay.id,
+        })
+        if (completion.ok) {
+          completedChallenge = completion.challenge
+        }
+      }
+    } catch (error) {
+      console.error("Round saved, but a follow-up write failed:", error)
+      followUpError = "Your round was saved, but its replay or duel result couldn't be stored."
     }
 
     // Read last, after the replay, season and duel writes, so the response is the
-    // newest state this request produced.
-    const progress = await findUserProgressByUserId(user.id)
+    // newest state this request produced. If even this read fails, the round is
+    // still saved; the client refreshes its progress on the next request.
+    let progress = null
+    try {
+      progress = await findUserProgressByUserId(user.id)
+    } catch (error) {
+      console.error("Round saved, but reading progress failed:", error)
+    }
 
     response.json({
       progress,
       earnedCoins,
       earnedXp,
       rankDelta,
+      rankProgress: {
+        previous: rankOutcome.previousRankProgress,
+        next: rankOutcome.nextRankProgress,
+      },
       replay,
       seasonProgress,
       completedChallenge,
+      followUpError,
     })
   } catch (error) {
     handleRouteError(error, response)

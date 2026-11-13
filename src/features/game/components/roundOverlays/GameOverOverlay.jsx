@@ -266,6 +266,7 @@ export function GameOverOverlay({
   placementLabel = null,
   roundSaveStatus = "idle",
   roundSaveError = "",
+  roundSaveNote = "",
   playerLevel = 1,
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
@@ -359,6 +360,9 @@ export function GameOverOverlay({
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
         {roundSaveStatus === "saving" ? (
           <p className="gameOverSaveStatus isSaving" role="status">Saving round…</p>
+        ) : null}
+        {roundSaveStatus === "saved" && roundSaveNote ? (
+          <p className="gameOverSaveStatus isSaving" role="status">{roundSaveNote}</p>
         ) : null}
         {roundSaveStatus === "failed" ? (
           <p className="gameOverSaveStatus isFailed" role="alert">

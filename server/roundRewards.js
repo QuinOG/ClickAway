@@ -150,23 +150,15 @@ export function simulateRound(events, modeId, {
   const deadlineCheck = validateRoundDeadline(roundRules, mode, events)
   if (!deadlineCheck.valid) return deadlineCheck
 
-  if (mode.allowsRankProgression) {
-    if (roundSeed === null || roundSeed === undefined) {
-      return { valid: false, reason: "Ranked rounds require a round seed." }
-    }
+  const hasRoundSeed = roundSeed !== null && roundSeed !== undefined
+  if (mode.allowsRankProgression && !hasRoundSeed) {
+    return { valid: false, reason: "Ranked rounds require a round seed." }
+  }
 
-    const geometryCheck = validateRoundGeometry(roundRules, events, {
-      seed: roundSeed,
-      arenaWidth,
-      arenaHeight,
-    })
-    if (!geometryCheck.valid) return geometryCheck
-  } else if (
-    roundSeed !== null
-    && roundSeed !== undefined
-    && arenaWidth !== null
-    && arenaHeight !== null
-  ) {
+  // Any server-seeded round has its click positions checked, whatever the mode.
+  // Leaving out the arena size used to skip this for Casual; it now fails the
+  // check instead (validateRoundGeometry rejects missing dimensions).
+  if (hasRoundSeed) {
     const geometryCheck = validateRoundGeometry(roundRules, events, {
       seed: roundSeed,
       arenaWidth,

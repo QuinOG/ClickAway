@@ -1688,6 +1688,9 @@ export async function completeUserRound({
   // writes rank. The fallback state is used only for legacy rank-system rows.
   rankInputs = {},
   fallbackRankState = {},
+  // Only server-started rounds count toward lifetime and loadout stats and
+  // achievements. Unverified rounds are kept in history but can't be farmed.
+  countsTowardStats = true,
   historyEntry,
 }) {
   const connection = await pool.getConnection()
@@ -1764,67 +1767,69 @@ export async function completeUserRound({
       rankDelta: rankOutcome.appliedRankDelta,
     })
 
-    const committedHistoryEntry = { ...historyEntry, rankDelta: rankOutcome.appliedRankDelta }
-    const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
-    let nextLifetimeStats = applyRoundToLifetimeStats(
-      existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
-      committedHistoryEntry
-    )
-    if (committedHistoryEntry?.drillId) {
-      nextLifetimeStats = {
-        ...nextLifetimeStats,
-        drillStats: applyRoundToDrillStats(
-          nextLifetimeStats.drillStats,
-          committedHistoryEntry.drillId,
-          committedHistoryEntry
-        ),
-      }
-    }
-    await persistLifetimeStats(connection, userId, nextLifetimeStats)
-
-    const loadoutId = committedHistoryEntry?.loadoutSnapshot?.loadoutId
-    if (loadoutId) {
-      const [existingLoadoutRows] = await connection.query(
-        `SELECT
-           loadout_id AS loadoutId,
-           loadout_name AS loadoutName,
-           total_rounds AS totalRounds,
-           ranked_rounds AS rankedRounds,
-           ranked_wins AS rankedWins,
-           best_score AS bestScore,
-           best_streak AS bestStreak,
-           best_ranked_streak AS bestRankedStreak,
-           total_hits AS totalHits,
-           total_misses AS totalMisses
-         FROM user_loadout_stats
-         WHERE user_id = ? AND loadout_id = ?
-         LIMIT 1
-         FOR UPDATE`,
-        [userId, loadoutId]
-      )
-      const nextLoadoutStats = applyRoundToLoadoutStats(
-        existingLoadoutRows[0] ? mapLoadoutStatsRow(existingLoadoutRows[0]) : {},
+    if (countsTowardStats) {
+      const committedHistoryEntry = { ...historyEntry, rankDelta: rankOutcome.appliedRankDelta }
+      const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
+      let nextLifetimeStats = applyRoundToLifetimeStats(
+        existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
         committedHistoryEntry
       )
-      await persistLoadoutStats(connection, userId, nextLoadoutStats)
-    }
+      if (committedHistoryEntry?.drillId) {
+        nextLifetimeStats = {
+          ...nextLifetimeStats,
+          drillStats: applyRoundToDrillStats(
+            nextLifetimeStats.drillStats,
+            committedHistoryEntry.drillId,
+            committedHistoryEntry
+          ),
+        }
+      }
+      await persistLifetimeStats(connection, userId, nextLifetimeStats)
 
-    // Achievements are worked out here from the totals this transaction just
-    // wrote, and only ever added, so two rounds finishing together can't erase
-    // each other's unlocks or miss a threshold their combined totals reached.
-    const [unlockedRows] = await connection.query(
-      "SELECT achievement_id AS achievementId FROM user_achievement_progress WHERE user_id = ?",
-      [userId]
-    )
-    const evaluatedAchievements = evaluateAchievements(
-      buildAchievementStatsFromLifetime({
-        lifetimeStats: nextLifetimeStats,
-        levelProgress: getLevelProgress(levelXp),
-        coins,
-      }),
-      { persistedUnlockedIds: unlockedRows.map((row) => String(row.achievementId)) }
-    )
-    await addUnlockedAchievements(connection, userId, getUnlockedAchievementIds(evaluatedAchievements))
+      const loadoutId = committedHistoryEntry?.loadoutSnapshot?.loadoutId
+      if (loadoutId) {
+        const [existingLoadoutRows] = await connection.query(
+          `SELECT
+             loadout_id AS loadoutId,
+             loadout_name AS loadoutName,
+             total_rounds AS totalRounds,
+             ranked_rounds AS rankedRounds,
+             ranked_wins AS rankedWins,
+             best_score AS bestScore,
+             best_streak AS bestStreak,
+             best_ranked_streak AS bestRankedStreak,
+             total_hits AS totalHits,
+             total_misses AS totalMisses
+           FROM user_loadout_stats
+           WHERE user_id = ? AND loadout_id = ?
+           LIMIT 1
+           FOR UPDATE`,
+          [userId, loadoutId]
+        )
+        const nextLoadoutStats = applyRoundToLoadoutStats(
+          existingLoadoutRows[0] ? mapLoadoutStatsRow(existingLoadoutRows[0]) : {},
+          committedHistoryEntry
+        )
+        await persistLoadoutStats(connection, userId, nextLoadoutStats)
+      }
+
+      // Achievements are worked out here from the totals this transaction just
+      // wrote, and only ever added, so two rounds finishing together can't erase
+      // each other's unlocks or miss a threshold their combined totals reached.
+      const [unlockedRows] = await connection.query(
+        "SELECT achievement_id AS achievementId FROM user_achievement_progress WHERE user_id = ?",
+        [userId]
+      )
+      const evaluatedAchievements = evaluateAchievements(
+        buildAchievementStatsFromLifetime({
+          lifetimeStats: nextLifetimeStats,
+          levelProgress: getLevelProgress(levelXp),
+          coins,
+        }),
+        { persistedUnlockedIds: unlockedRows.map((row) => String(row.achievementId)) }
+      )
+      await addUnlockedAchievements(connection, userId, getUnlockedAchievementIds(evaluatedAchievements))
+    }
 
     await connection.commit()
   } catch (error) {
@@ -1834,11 +1839,9 @@ export async function completeUserRound({
     connection.release()
   }
 
-  // Read after releasing the transaction's connection, so a burst of round
-  // completions can't each hold one connection while waiting for another.
-  const progress = await findUserProgressByUserId(userId)
+  // The caller reads progress once its follow-up writes are done; reading it
+  // here as well could fail after the commit and report a saved round as lost.
   return {
-    progress,
     historyEntry: insertedHistoryEntry,
     rankOutcome,
   }
