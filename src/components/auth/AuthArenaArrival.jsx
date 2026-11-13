@@ -25,7 +25,7 @@ export default function AuthArenaArrival({ mode = "login", name = "", children }
             <span className="authCredentialWatermark">ARENA<br />01</span>
             <span className="authCredentialStamp">ISSUED<br /><b>SEASON 01</b><br />ARENA OFFICE</span>
           </div>
-          <div className="authPortrait"><img src="/skins/racoon.svg" alt="" /></div>
+          <div className="authPortrait"><img src="/art/auth/pass-portrait.png" alt="" width="512" height="512" decoding="async" /></div>
           <div className="authIdentityCopy"><small>Season 01 / Competitor</small><strong>{name.trim() || (isSignup ? "NEW COMPETITOR" : "RETURNING PLAYER")}</strong><span>OFFICIAL ARENA PASS / ADMIT ONE</span></div>
         </div>
         <div className="authPanelHeader">

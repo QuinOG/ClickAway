@@ -1,9 +1,17 @@
-/* A light shade keeps the stadium visible behind targets and feedback. */
+/* A light shade keeps the stadium visible behind targets and feedback.
+ * r53: the floor keeps the 15% shade; the stands, trusses and lamps above it
+ * fade to a deeper shade so the target is the brightest
+ * thing in play while the crowd stays readable. */
 .arena .arenaGameplayBackdrop {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: rgb(0 0 0 / 15%);
+  background: linear-gradient(180deg,
+    rgb(2 6 14 / 62%) 0%,
+    rgb(2 6 14 / 52%) 40%,
+    rgb(2 6 14 / 34%) 50%,
+    rgb(0 0 0 / 15%) 58%,
+    rgb(0 0 0 / 15%) 100%);
   pointer-events: none;
 }
 
@@ -15,3 +23,16 @@
 .arena .arenaStage > :is(.arenaStreakMark, .arenaFinalCount, .arenaCorner) {
   z-index: 1;
 }
+
+/* r53: the streak callout gets back a dark scoreboard plate. */
+.gameScreen:is(.streakTier2, .streakTier3, .streakTier4) .arenaStreakMark,
+.arena:has(.clickFeedback.streakBreak) .arenaStreakMark {
+  padding: 5px 18px 6px;
+  border-radius: 6px;
+  background: rgb(6 12 24 / 88%);
+  box-shadow: inset 0 0 0 1px rgba(var(--heat), 0.55), 0 4px 10px rgb(0 0 0 / 45%);
+}
+
+/* r54: two keys charging on the same hit stack instead of overprinting. */
+.clickFeedback.chargeGain ~ .clickFeedback.chargeGain { bottom: 38px; }
+.clickFeedback.chargeGain ~ .clickFeedback.chargeGain ~ .clickFeedback.chargeGain { bottom: 60px; }

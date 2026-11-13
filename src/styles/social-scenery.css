@@ -4,7 +4,7 @@
   box-shadow: none !important;
 }
 .duelFightComposer .duelRunTokens.duelRunTokens::after { display: none !important; }
-.duelFightComposer .duelLaunchStep.duelLaunchStep { background: #322014 !important; }
+.duelFightComposer .duelLaunchStep.duelLaunchStep { background: linear-gradient(180deg, #1b2c45, #111d30) !important; }
 .shopInspectStage.shopInspectStage .shopStageAwning,
 .shopInspectStage.shopInspectStage .shopStageCounter { display: none !important; }
 .shopInspectStage.shopInspectStage::after {

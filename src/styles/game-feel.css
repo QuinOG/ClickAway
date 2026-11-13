@@ -5134,3 +5134,85 @@
 
 /* Ratchet i51: the featured part fills its preview badge (generated emblems carry their own padding) */
 .armoryPartFeatureGlyph .gameArt { width: 68% !important; height: 68% !important; object-fit: contain; }
+
+/* ---- r53 (Sol i52 #3): installed parts fill their bench mounts ------------
+ * The part art rendered at 30px inside 96-116px mounts. Each part now fills
+ * over half its mount's inner width; labels sit outside the mounts. */
+.armoryMachine .armoryMachineRigMount > .gameArt { width: 60px !important; height: 60px !important; object-fit: contain; }
+.armoryMachine .armoryMachineRigMount.mount-streakLens > .gameArt { width: 50px !important; height: 50px !important; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig > .gameArt { width: 56px !important; height: 56px !important; transform: translateY(-8px); }
+
+/* r53 (Sol i52 #5): the unlocked part fills the rig's socket */
+.gameOverSpotlight .gameOverNextUnlockIcon > img.gameArt:not(.gameOverUnlockRig) { width: 70px !important; height: 70px !important; transform: translateY(-9px); }
+
+/* ---- r54 (Sol i53 #2): Compare mounts show their parts at readable size -- */
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule > .gameArt { width: 46px !important; height: 46px !important; object-fit: contain; transform: none !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(6) > .gameArt { width: 42px !important; height: 42px !important; }
+.armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule:nth-of-type(7) > .gameArt { width: 50px !important; height: 50px !important; }
+
+/* ---- r54 (Sol i53 #3): the spec-sheet assembly spans its blueprint strip -- */
+.specSheetClipboard .specSheetAssembly { height: 80px; }
+.specSheetClipboard .specSheetAssembly::before { left: calc(8% + 21px); right: calc(8% + 21px); width: auto; top: 46px; }
+.specSheetClipboard .specSheetAssembly::after { display: none; }
+.specSheetClipboard .specSheetAssemblyHub { left: calc(57% - 28px); top: 20px; width: 56px; height: 56px; line-height: 44px; }
+.specSheetClipboard .specSheetAssemblyPart { width: 42px !important; height: 42px !important; top: 25px; }
+.specSheetClipboard .specSheetAssemblyPart.slot-streakLens { left: 8%; }
+.specSheetClipboard .specSheetAssemblyPart.slot-tempoCore { left: calc(31% - 21px); top: 25px; }
+.specSheetClipboard .specSheetAssemblyPart.slot-powerRig { left: auto; right: 8%; }
+.specSheetClipboard .specSheetAssemblyPart > .gameArt { width: 34px !important; height: 34px !important; object-fit: contain; }
+.specSheetClipboard .specSheetAssembly small { top: 8px; bottom: auto; }
+
+/* r54: the narrow Power Rig battery fills more of its bench mount */
+.armoryMachine .armoryMachineRigMount.mount-powerRig > .gameArt { width: 70px !important; height: 70px !important; transform: translateY(-12px); }
+
+/* ---- r54 (Sol i53 #1): Settings header as a console nameplate ------------
+ * Generated steel-and-brass plate behind the header; a console badge (speaker
+ * grille, fader, amber lamp) sits at its left. Title and description stay live. */
+.feedbackSettingsSheet .uiDialogHeader {
+    position: relative;
+    align-items: center;
+    margin: 12px 14px 4px;
+    flex: 0 0 auto;
+    min-height: 124px;
+    box-sizing: border-box;
+    padding: 28px 28px 30px 112px;
+    border-bottom: 0;
+    background: url('/art/settings/header-plate.png') center / 100% 100% no-repeat;
+}
+.feedbackSettingsSheet .uiDialogHeader::before {
+    content: "";
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    width: 70px;
+    height: 70px;
+    transform: translateY(-50%);
+    background: url('/art/settings/console-emblem.png') center / contain no-repeat;
+    filter: drop-shadow(0 3px 3px rgb(4 9 18 / 60%));
+}
+.feedbackSettingsSheet .uiDialogDescription { color: #b9c9d8; }
+@media (max-width: 640px) {
+    .feedbackSettingsSheet .uiDialogHeader { margin: 8px 8px 2px; padding: 14px 14px 14px 76px; }
+    .feedbackSettingsSheet .uiDialogHeader::before { left: 14px; width: 52px; height: 52px; }
+}
+
+/* ---- r55 (Sol i54 #3): locked medals read as dark metal reliefs ----------
+ * Locked tiers were double-darkened (tile filter + mount filter) until the rim
+ * details vanished. They are now a lighter gunmetal grey, and the lock badge
+ * sits on the rim's lower-right edge instead of over the medal face. */
+.profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isUnlocked + .isLocked) .achievementMedal { filter: grayscale(1) brightness(0.9) contrast(1.12) drop-shadow(0 -1px 0 rgb(220 232 245 / 45%)) drop-shadow(0 2px 0 #02050b) drop-shadow(0 4px 4px rgb(0 0 0 / 55%)); }
+.profilePageCenter .profileAchievementsSection .achievementTile.isLocked .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: brightness(0.92); }
+.profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isFeaturedBanner) .achievementMedalLock { right: -14px; bottom: -8px; }
+
+/* ---- Round 57: Ladder hovercard portrait fills its panel ------------- */
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar { overflow: hidden !important; place-items: end center !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar::before { width: 150px !important; height: 150px !important; bottom: 14px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width: 160px !important; height: 160px !important; margin-bottom: -6px !important; }
+
+/* ---- Cleanup: History result is plain text; mode logo without a disc --- */
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge { transform: none; border: 0 !important; border-radius: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; filter: none; opacity: 1; font-size: 20px !important; letter-spacing: .02em !important; text-shadow: 0 2px 0 #050912; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isPositive { color: #6ff0b0; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNegative { color: #ff8a7a; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNeutral { color: #8fa3b8; font-size: 13px !important; }
+.historyRoundCardSignal { border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
+.historyRoundCardSignal > .gameArt { width: 46px !important; height: 46px !important; filter: drop-shadow(0 2px 0 #040912); }
