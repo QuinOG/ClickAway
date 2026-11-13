@@ -159,7 +159,8 @@ export default function ArmoryTestRange({
 
   // Keyed by the bay's stable id (names can be copied or renamed).
   const historyKey = `${roundRules?.loadoutSnapshot?.loadoutId ?? loadoutName}|${modeLabel}`
-  const rulesKey = JSON.stringify(roundRules ?? {})
+  // A cosmetic rename does not change the rules or installed parts.
+  const rulesKey = JSON.stringify(roundRules ?? {}, (key, value) => key === "loadoutName" ? undefined : value)
   const isRunDone = isOpen
     && range.phase === RANGE_PHASE.DONE
     && Boolean(range.results)
