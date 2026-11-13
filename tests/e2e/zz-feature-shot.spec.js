@@ -1,5 +1,6 @@
 // Before/after captures for feature RSI trials (clickaway-feature-rsi skill).
 // Run: ROUTE=history OUT=docs/feature-improvement/shots/002/before npx playwright test tests/e2e/zz-feature-shot.spec.js --workers=1
+// FILL=<field label>::<text> types into one field first.
 // LINK=<link name> follows one link first (e.g. into another page).
 // Writes <OUT>-desktop.png (1440 wide) and <OUT>-mobile.png (390 wide). The app scrolls
 // .mainContent rather than the document, so the viewport is grown to the content height
@@ -22,6 +23,11 @@ for (const [label, width, height] of [["desktop", 1440, 900], ["mobile", 390, 84
     await gotoRoute(page, AUTHENTICATED_ROUTES.find((route) => route.id === ROUTE))
     await page.waitForTimeout(800)
     if (process.env.CLICK) await page.getByRole("button", { name: process.env.CLICK, exact: true }).first().click()
+    if (process.env.FILL) {
+      const [label, text] = process.env.FILL.split("::")
+      await page.getByLabel(label, { exact: true }).fill(text)
+      await page.waitForTimeout(800)
+    }
     if (process.env.LINK) {
       await page.getByRole("link", { name: process.env.LINK, exact: true }).first().click()
       await page.waitForLoadState("networkidle")

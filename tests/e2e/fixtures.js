@@ -192,7 +192,10 @@ export async function installApiMocks(page, {
 
     if (path === "/leaderboard") {
       if (dataState === "error") return json(route, { error: "Standings are temporarily unavailable." }, 503)
-      const rows = dataState === "empty" ? [] : dataState === "sparse" ? leaderboardRows.slice(0, 2) : leaderboardRows
+      const search = (url.searchParams.get("search") || "").trim().toLowerCase()
+      const stateRows = dataState === "empty" ? [] : dataState === "sparse" ? leaderboardRows.slice(0, 2) : leaderboardRows
+      // Mirror the server's name search so search states can be exercised in the browser.
+      const rows = search ? stateRows.filter((row) => row.username.toLowerCase().includes(search)) : stateRows
       return json(route, {
         rows,
         page: 1,
