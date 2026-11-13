@@ -1939,7 +1939,12 @@ export async function saveUserProgress({ userId, providedFields = [], ...progres
     connection.release()
   }
 
-  return findUserProgressByUserId(userId)
+  try {
+    return await findUserProgressByUserId(userId)
+  } catch {
+    // The write committed; only the follow-up read failed.
+    return null
+  }
 }
 
 function mapSeasonRow(row = {}) {
