@@ -101,3 +101,28 @@ describe("Challenge a Ladder player", () => {
     expect(screen.queryByText(/Rival set to/)).toBeNull()
   })
 })
+
+
+describe("Independent Duels page states", () => {
+  test("an unavailable replay list leaves incoming challenges actionable", async () => {
+    fetchChallenges.mockResolvedValue({ challenges: [{
+      id: 1, challengerUserId: 9, challengerUsername: "Kestrel",
+      opponentUserId: 7, status: "pending", modeId: "normal", replayScore: 8,
+    }] })
+    fetchUserReplays.mockRejectedValue(new Error("Runs unavailable"))
+    renderApp("/challenges")
+    expect(await screen.findByRole("button", { name: "Accept" })).toBeTruthy()
+    expect(screen.getByText("Runs unavailable")).toBeTruthy()
+    expect(screen.queryByRole("button", { name: /Record a run/ })).toBeNull()
+    fetchUserReplays.mockResolvedValue({ replays })
+    await userEvent.click(screen.getByRole("button", { name: "Retry runs" }))
+    expect(await screen.findByRole("radio", { name: /880/ })).toBeTruthy()
+  })
+
+  test("an unavailable inbox leaves recorded runs available to send", async () => {
+    fetchChallenges.mockRejectedValue(new Error("Inbox unavailable"))
+    renderApp("/challenges")
+    expect(await screen.findByText("Inbox unavailable")).toBeTruthy()
+    expect(screen.getByRole("radio", { name: /880/ })).toBeTruthy()
+  })
+})

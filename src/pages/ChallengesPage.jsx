@@ -176,6 +176,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   const [filter, setFilter] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
+  const [replayLoadError, setReplayLoadError] = useState("")
   const [respondingChallengeId, setRespondingChallengeId] = useState(null)
   const [sendForm, setSendForm] = useState({ opponentUsername: ladderRival, replayId: "", message: "" })
   const [sendError, setSendError] = useState("")
@@ -191,16 +192,25 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
     setIsLoading(true)
     setLoadError("")
+    setReplayLoadError("")
     try {
-      const [challengeResponse, replayResponse] = await Promise.all([
+      const [challengeResponse, replayResponse] = await Promise.allSettled([
         // Always fetch every role, so the incoming count stays right on any tab.
         fetchChallenges({ role: "all" }),
         fetchUserReplays({ limit: 10 }),
       ])
       if (!isCurrent()) return false
-      setChallenges(Array.isArray(challengeResponse?.challenges) ? challengeResponse.challenges : [])
-      setReplays(Array.isArray(replayResponse?.replays) ? replayResponse.replays : [])
-      return true
+      setChallenges(challengeResponse.status === "fulfilled" && Array.isArray(challengeResponse.value?.challenges)
+        ? challengeResponse.value.challenges : [])
+      setReplays(replayResponse.status === "fulfilled" && Array.isArray(replayResponse.value?.replays)
+        ? replayResponse.value.replays : [])
+      if (challengeResponse.status === "rejected") {
+        setLoadError(challengeResponse.reason?.message || "Unable to load challenges.")
+      }
+      if (replayResponse.status === "rejected") {
+        setReplayLoadError(replayResponse.reason?.message || "Unable to load your runs.")
+      }
+      return challengeResponse.status === "fulfilled"
     } catch (error) {
       if (!isCurrent()) return false
       setChallenges([])
@@ -448,7 +458,14 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
             <fieldset className="duelRunTokens">
               <legend>Stake a run</legend>
-              {replays.length > 0 ? (
+              {replayLoadError ? (
+                <div role="alert">
+                  <p>{replayLoadError}</p>
+                  <button type="button" className="secondaryButton" onClick={loadChallenges}>Retry runs</button>
+                </div>
+              ) : isLoading ? (
+                <p role="status">Loading your runs?</p>
+              ) : replays.length > 0 ? (
                 <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
                   {replays.map((replay) => {
                     const isSelected = String(replay.id) === String(sendForm.replayId)
