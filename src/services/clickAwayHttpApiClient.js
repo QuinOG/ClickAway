@@ -72,6 +72,7 @@ export async function fetchLeaderboard({
   limit,
   search = "",
   view = "top",
+  reverse = false,
 } = {}) {
   try {
     const response = await apiClient.get("/leaderboard", {
@@ -79,6 +80,7 @@ export async function fetchLeaderboard({
         board,
         page,
         view,
+        ...(reverse ? { order: "reverse" } : {}),
         ...(limit ? { limit } : {}),
         ...(search ? { search } : {}),
       },

@@ -21,6 +21,7 @@ import {
   fireConfetti,
 } from "../../../../services/celebrationEffects.js"
 import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
+import { getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -161,11 +162,28 @@ function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionM
 
 // The next Armory part the level track pays out, so every round points at a
 // concrete reward. If this round crossed that level, it reads as unlocked.
-function NextUnlock({ level, xpIntoLevel, xpToNextLevel, earned }) {
-  const levelsUp = Number(xpIntoLevel) + Number(earned) >= Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
-  const reachedLevel = levelsUp ? level + 1 : level
-  const justUnlocked = levelsUp
-    ? UNLOCK_WALL_PARTS.find((part) => part.unlockLevel === level + 1)
+// Where the round's XP actually lands. Early levels are cheap, so one round can
+// cross several of them.
+function getLevelAfterRound(level, xpIntoLevel, earned) {
+  let reachedLevel = Math.max(1, Number(level) || 1)
+  let remaining = Math.max(0, Number(xpIntoLevel) || 0) + Math.max(0, Number(earned) || 0)
+  while (remaining >= getRequiredXpForLevel(reachedLevel)) {
+    remaining -= getRequiredXpForLevel(reachedLevel)
+    reachedLevel += 1
+  }
+  return {
+    reachedLevel,
+    xpIntoReachedLevel: remaining,
+    xpToNextLevel: getRequiredXpForLevel(reachedLevel) - remaining,
+  }
+}
+
+function NextUnlock({ level, xpIntoLevel, earned }) {
+  const { reachedLevel } = getLevelAfterRound(level, xpIntoLevel, earned)
+  const justUnlocked = reachedLevel > level
+    ? [...UNLOCK_WALL_PARTS]
+      .filter((part) => part.unlockLevel > level && part.unlockLevel <= reachedLevel)
+      .sort((a, b) => b.unlockLevel - a.unlockLevel)[0] ?? null
     : null
   const nextPart = justUnlocked ?? [...UNLOCK_WALL_PARTS]
     .filter((part) => part.unlockLevel > reachedLevel)
@@ -197,14 +215,15 @@ function XpTally({ level, xpIntoLevel, xpToNextLevel, earned, prefersReducedMoti
   const span = Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
   const startPercent = Math.min(100, (Number(xpIntoLevel) / span) * 100)
   const endXp = Number(xpIntoLevel) + Number(earned)
-  const levelsUp = endXp >= span
+  const { reachedLevel } = getLevelAfterRound(level, xpIntoLevel, earned)
+  const levelsUp = reachedLevel > level
   const endPercent = levelsUp ? 100 : Math.min(100, (endXp / span) * 100)
 
   return (
     <span className={`gameOverXpTally ${levelsUp ? "isLevelUp" : ""}`} aria-label={`Level ${level} progress`}>
       <span className="gameOverXpTallyHeader">
         <b>Lv {level}</b>
-        <small>{levelsUp ? `Level up to ${level + 1}!` : `${Math.max(0, span - endXp).toLocaleString()} XP to Lv ${level + 1}`}</small>
+        <small>{levelsUp ? `Level up to ${reachedLevel}!` : `${Math.max(0, span - endXp).toLocaleString()} XP to Lv ${level + 1}`}</small>
       </span>
       <span className="gameOverXpTallyTrack">
         <i className="gameOverXpTallyBase" style={{ width: `${startPercent}%` }} />
@@ -244,6 +263,9 @@ export function GameOverOverlay({
   roundCoinsEarned = 0,
   roundXpEarned = 0,
   roundRankDelta = 0,
+  placementLabel = null,
+  roundSaveStatus = "idle",
+  roundSaveError = "",
   playerLevel = 1,
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
@@ -335,6 +357,14 @@ export function GameOverOverlay({
       <header className="gameOverHeader">
         <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? " · New personal best" : hasCleanRun && hits > 0 ? " · Flawless" : ""}</p>
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
+        {roundSaveStatus === "saving" ? (
+          <p className="gameOverSaveStatus isSaving" role="status">Saving round…</p>
+        ) : null}
+        {roundSaveStatus === "failed" ? (
+          <p className="gameOverSaveStatus isFailed" role="alert">
+            This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}
+          </p>
+        ) : null}
       </header>
 
       <MotionDiv
@@ -379,7 +409,10 @@ export function GameOverOverlay({
               prefersReducedMotion={prefersReducedMotion}
             />
           ) : null}
-          {allowsRankProgression ? (
+          {allowsRankProgression && placementLabel ? (
+            <span className="gameOverReward isRank isPlacement"><CrestIcon size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
+          ) : null}
+          {allowsRankProgression && !placementLabel ? (
             <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
           ) : null}
         </MotionDiv>

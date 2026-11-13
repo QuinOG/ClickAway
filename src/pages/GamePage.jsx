@@ -26,7 +26,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     emitFeedback,
     stopFeedback,
   } = useFeedbackPreferences()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const challengeId = Number(searchParams.get("challengeId")) || null
   const replayId = Number(searchParams.get("replayId")) || null
   const [loadState, setLoadState] = useState({
@@ -78,6 +78,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     ghostReplay,
     challengeId,
     autoStartGhostDuel: Boolean(replayId && challengeId && ghostReplay?.seed),
+    onExitDuel: () => setSearchParams({}, { replace: true }),
     emitFeedback,
     allowScreenShake: effectivePreferences.screenShake,
   })

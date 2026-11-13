@@ -51,15 +51,7 @@ import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
-import {
-  evaluateAchievements,
-  getUnlockedAchievementIds,
-} from "../src/game/achievements/evaluateAchievements.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
-import {
-  applyRoundToLifetimeStats,
-  buildAchievementStatsFromLifetime,
-} from "../src/utils/lifetimeStatsUtils.js"
 import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
@@ -145,7 +137,10 @@ function clearAuthCookie(response) {
   })
 }
 
+// The session cookie is set last, after every read the response needs, so a
+// failed login or sign-up can never leave the browser signed in.
 async function createAuthResponse(user, response) {
+  const progress = await findUserProgressByUserId(user.id)
   setAuthCookie(response, signAuthToken(buildAuthPayload(user), JWT_SECRET))
 
   return {
@@ -154,7 +149,7 @@ async function createAuthResponse(user, response) {
       username: user.username,
       role: user.role,
     },
-    progress: await findUserProgressByUserId(user.id),
+    progress,
   }
 }
 
@@ -173,19 +168,6 @@ function normalizeProgressPayload(body = {}) {
     buildWalkthrough: body.buildWalkthrough,
     seenUnlockPartIds: body.seenUnlockPartIds,
   }
-}
-
-function resolveUnlockedAchievementIds(currentProgress) {
-  const achievementStats = buildAchievementStatsFromLifetime({
-    lifetimeStats: currentProgress.lifetimeStats,
-    levelProgress: getLevelProgress(currentProgress.levelXp),
-    coins: currentProgress.coins,
-  })
-  const evaluatedAchievements = evaluateAchievements(achievementStats, {
-    persistedUnlockedIds: currentProgress.unlockedAchievementIds,
-  })
-
-  return getUnlockedAchievementIds(evaluatedAchievements)
 }
 
 function mergeProgressPayload(existingProgress = {}, nextProgress = {}) {
@@ -403,6 +385,7 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
     const limit = Number(request.query?.limit) || undefined
     const search = String(request.query?.search || "")
     const view = String(request.query?.view || "top")
+    const reverse = String(request.query?.order || "") === "reverse"
 
     const [leaderboard, season] = await Promise.all([
       findLeaderboardPage({
@@ -412,6 +395,7 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
         search,
         userId: user.id,
         view,
+        reverse,
       }),
       findCurrentSeason(),
     ])
@@ -580,40 +564,8 @@ app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, re
   }
 })
 
-app.post("/api/challenges/:challengeId/complete", requireAuth, async (request, response) => {
-  const user = await findUserById(request.auth.userId)
-  if (!user) {
-    response.status(401).json({ error: "Session is no longer valid." })
-    return
-  }
-
-  try {
-    const opponentReplayId = Number(request.body?.opponentReplayId)
-
-    if (!opponentReplayId) {
-      response.status(400).json({ error: "opponentReplayId is required." })
-      return
-    }
-
-    const result = await completeChallenge({
-      challengeId: Number(request.params.challengeId),
-      userId: user.id,
-      opponentReplayId,
-    })
-
-    if (!result.ok) {
-      response.status(400).json({ error: result.reason })
-      return
-    }
-
-    response.json({
-      challenge: result.challenge,
-      challengerWon: result.challengerWon,
-    })
-  } catch (error) {
-    handleRouteError(error, response)
-  }
-})
+// Duels are completed only by a round started for that duel (see
+// /api/round/complete), so one run can't be reused to settle another duel.
 
 app.get("/api/history", requireAuth, async (request, response) => {
   const user = await findUserById(request.auth.userId)
@@ -673,6 +625,7 @@ const MAX_REACTION_MS = 60_000
 const ROUND_SUBMIT_CLOCK_SLACK_MS = 5_000
 
 function sanitizeReactionMs(value) {
+  if (value === null || value === undefined || value === "") return null
   const n = Number(value)
   if (!Number.isFinite(n) || n < 0) return null
   return Math.min(MAX_REACTION_MS, Math.round(n))
@@ -744,6 +697,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
   let roundSeed = null
   let roundTokenId = null
   let roundTokenChallengeId = null
+  let roundTokenIssuedAtMs = null
   if (roundToken) {
     const tokenCheck = verifyRoundToken(String(roundToken), {
       userId: request.auth.userId,
@@ -766,6 +720,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     roundSeed = tokenCheck.seed
     roundTokenId = tokenCheck.roundId
     roundTokenChallengeId = tokenCheck.challengeId
+    roundTokenIssuedAtMs = tokenCheck.issuedAtMs
   }
 
   try {
@@ -784,6 +739,16 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     if (!simulation.valid) {
       response.status(400).json({ error: simulation.reason })
       return
+    }
+
+    // A timed round can't be handed in before its timer (plus any Time Boosts)
+    // could have run out. Without this, a fresh token could be cashed in at once.
+    if (roundTokenIssuedAtMs !== null && simulation.roundEndMs !== null && simulation.roundEndMs !== undefined) {
+      const elapsedSinceIssueMs = Date.now() - roundTokenIssuedAtMs
+      if (elapsedSinceIssueMs + ROUND_SUBMIT_CLOCK_SLACK_MS < simulation.roundEndMs) {
+        response.status(400).json({ error: "Round was submitted before its timer ran out." })
+        return
+      }
     }
 
     const { hits, misses, score, bestStreak } = simulation
@@ -812,8 +777,6 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       allowsRankProgression,
     })
 
-    const nextCoins = clampCoins(currentProgress.coins + earnedCoins)
-    const nextLevelXp = clampXp(currentProgress.levelXp + earnedXp)
 
     const historyEntry = {
       score,
@@ -831,10 +794,6 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }
-    const nextLifetimeStats = applyRoundToLifetimeStats(
-      currentProgress.lifetimeStats,
-      historyEntry
-    )
 
     const { rankOutcome } = await completeUserRound({
       userId: user.id,
@@ -849,12 +808,6 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         currentMmr: currentProgress.rankMmr,
         currentRankedState: currentProgress.rankedState,
       },
-      unlockedAchievementIds: resolveUnlockedAchievementIds({
-        ...currentProgress,
-        coins: nextCoins,
-        levelXp: nextLevelXp,
-        lifetimeStats: nextLifetimeStats,
-      }),
       historyEntry,
     })
 

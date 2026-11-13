@@ -94,7 +94,7 @@ export function buildAchievementStats({
     }
 
     if (attempts >= 10) {
-      const accuracy = Math.round((hits / attempts) * 100)
+      const accuracy = Math.floor((hits / attempts) * 100)
       bestSingleRoundAccuracy = Math.max(bestSingleRoundAccuracy, accuracy)
     }
 

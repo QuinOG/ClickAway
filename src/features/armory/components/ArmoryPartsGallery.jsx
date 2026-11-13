@@ -26,10 +26,23 @@ function getPartVisualState({ part, isLocked, isInstalled }) {
 
 // What a swap does to the build's measured rules: each stat that changes,
 // with its current and proposed values.
+// Shrink is compared at full precision (the profile stat rounds it to two
+// decimals), and starting charges get their own row since no profile stat
+// shows them.
+function getReportStats(rules) {
+  const startingCharges = Number(rules.startingPowerupCharges) || 0
+  return [
+    ...getProfileStats(rules).map((stat) => (
+      stat.key === "shrink" ? { ...stat, value: `x${Number(rules.shrinkFactor)}` } : stat
+    )),
+    { key: "starting", label: "Starting charges", rating: Math.min(10, 1 + startingCharges * 3), value: String(startingCharges) },
+  ]
+}
+
 function getSwapImpact(currentRules, nextRules) {
   if (!currentRules || !nextRules) return []
-  const nextByKey = Object.fromEntries(getProfileStats(nextRules).map((stat) => [stat.key, stat]))
-  return getProfileStats(currentRules).flatMap((stat) => {
+  const nextByKey = Object.fromEntries(getReportStats(nextRules).map((stat) => [stat.key, stat]))
+  return getReportStats(currentRules).flatMap((stat) => {
     const next = nextByKey[stat.key]
     if (!next || next.value === stat.value) return []
     return [{ key: stat.key, label: stat.label, from: stat, to: next }]
@@ -46,12 +59,14 @@ const REPORT_LABELS = {
   miss: "Miss cost",
   charge: "Charge rate",
   payout: "Score payout",
+  starting: "Starting charges",
 }
 
 function formatReportValue(key, value) {
   if (key === "miss") return value === "0" ? "0 points" : `${value.replace("-", "")} point${value === "-1" ? "" : "s"}`
   if (key === "combo") return `${value.replace("every ", "")} hits`
   if (key === "shrink") return `${((1 - Number(value.replace("x", ""))) * 100).toFixed(1)}% / hit`
+  if (key === "starting") return `${value} per power`
   return value
 }
 

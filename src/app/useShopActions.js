@@ -2,7 +2,7 @@
 
 import { equipShopItem, purchaseShopItem } from "../services/clickAwayHttpApiClient.js"
 import { canPurchaseShopItem, isShopItemOwned } from "../utils/shopUtils.js"
-import { applyProgressResponse, beginProgressRequest } from "./progressResponseGuard.js"
+import { applyProgressResponse, beginProgressRequest, isCurrentSession } from "./progressResponseGuard.js"
 
 function buildPurchaseError(item, coins, ownedItemIds) {
   if (!item?.id) return "Unknown item."
@@ -45,10 +45,18 @@ export function useShopActions({
     }
 
     try {
-      await waitForPendingProgress?.()
+      // The ticket is taken before waiting, so a purchase or equip started by one
+      // account is never sent after another account has logged in.
       const ticket = beginProgressRequest()
+      await waitForPendingProgress?.()
+      if (!isCurrentSession(ticket)) {
+        return { ok: false, error: "You switched accounts, so that wasn't sent." }
+      }
       const session = await purchaseShopItem(item.id)
-      await applyProgressResponse(ticket, session.progress, applyProgress)
+      const outcome = await applyProgressResponse(ticket, session.progress, applyProgress)
+      if (outcome === "refresh-failed") {
+        return { ok: false, error: "Item unlocked, but the Shop couldn't refresh. Reload to see it." }
+      }
       return { ok: true }
     } catch (error) {
       return {
@@ -88,10 +96,18 @@ export function useShopActions({
     }
 
     try {
-      await waitForPendingProgress?.()
+      // The ticket is taken before waiting, so a purchase or equip started by one
+      // account is never sent after another account has logged in.
       const ticket = beginProgressRequest()
+      await waitForPendingProgress?.()
+      if (!isCurrentSession(ticket)) {
+        return { ok: false, error: "You switched accounts, so that wasn't sent." }
+      }
       const session = await equipShopItem(item.id)
-      await applyProgressResponse(ticket, session.progress, applyProgress)
+      const outcome = await applyProgressResponse(ticket, session.progress, applyProgress)
+      if (outcome === "refresh-failed") {
+        return { ok: false, error: "Item equipped, but the Shop couldn't refresh. Reload to see it." }
+      }
       return { ok: true }
     } catch (error) {
       return {

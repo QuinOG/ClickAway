@@ -115,7 +115,7 @@ describe("Ladder search with no matches", () => {
         <LeaderboardPage isAuthed currentUserId={99} currentUsername="Ghost" currentRankProgress={{ tierLabel: "Gold II", isPlacement: false, isUnranked: false }} />
       </MemoryRouter>,
     )
-    fetchLeaderboard.mockImplementation(async (params) => ({ ...respondWith(params), selfRank: params.search ? null : 3 }))
+    fetchLeaderboard.mockImplementation(async (params) => ({ ...respondWith(params), selfRank: 3 }))
     await waitFor(() => expect(ladderNames()).toHaveLength(3))
     await user.type(searchBox(), "Zephyr")
     await screen.findByText(/No players match “Zephyr”/)
@@ -142,13 +142,11 @@ describe("Ladder search with no matches", () => {
     expect(screen.queryByText(/No players match/)).toBeNull()
   })
 
-  // The server ranks a search's matches among themselves and omits your rank if you aren't
-  // matched. Model that: ranks are renumbered within the results.
+  // The server ranks everyone on the full Ladder before applying a search, so
+  // matches keep their real ranks and your own rank is returned during a search.
   function serverLikeSearch({ search = "", board = "mmr" }) {
     const matches = players.filter((player) => player.username.toLowerCase().includes(search.toLowerCase()))
-      .map((player, index) => ({ ...player, rank: search ? index + 1 : player.rank }))
-    const me = matches.find((player) => player.username === "Vector")
-    const selfRank = search ? (me ? me.rank : null) : (board === "mmr" ? 3 : 2)
+    const selfRank = board === "mmr" ? 3 : 2
     return { rows: matches, page: 1, totalPages: matches.length ? 1 : 0, totalCount: matches.length, selfRank }
   }
   function renderPlaced() {
@@ -175,7 +173,7 @@ describe("Ladder search with no matches", () => {
     expect(screen.queryByText(/#2 out of|Outside the placed ladder|Finish placement/)).toBeNull()
   })
 
-  test("switching boards during a search doesn't invent a rank", async () => {
+  test("switching boards during a search shows your real rank on that board", async () => {
     const user = userEvent.setup()
     fetchLeaderboard.mockImplementation(async (params) => serverLikeSearch(params))
     renderPlaced()
@@ -184,7 +182,8 @@ describe("Ladder search with no matches", () => {
     await screen.findByText(/No players match “zzz”/)
     await user.click(screen.getByRole("tab", { name: "Best Score" }))
     await waitFor(() => expect(fetchLeaderboard).toHaveBeenLastCalledWith(expect.objectContaining({ board: "bestScore", search: "zzz" })))
-    expect(await screen.findByText("Clear the search to see your rank on this board.")).toBeTruthy()
+    expect(await screen.findByText(/ranked #2 out of/)).toBeTruthy()
+    expect(screen.queryByText("Clear the search to see your rank on this board.")).toBeNull()
     expect(screen.queryByText(/Outside the placed ladder|Finish placement/)).toBeNull()
     await user.clear(searchBox())
     await waitFor(() => expect(ladderNames()).toHaveLength(3))

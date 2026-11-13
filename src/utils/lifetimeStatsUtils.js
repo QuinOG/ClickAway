@@ -120,7 +120,9 @@ export function applyRoundToLifetimeStats(stats = {}, round = {}) {
     bestSingleRoundAccuracy: attempts >= 10
       ? Math.max(
           normalizedStats.bestSingleRoundAccuracy,
-          Math.round((hits / attempts) * 100)
+          // Floored, not rounded: this feeds the 90%+/95%+ achievements, and
+          // 94.7% must not count as 95%.
+          Math.floor((hits / attempts) * 100)
         )
       : normalizedStats.bestSingleRoundAccuracy,
     cleanRounds: misses === 0 && hits >= 5

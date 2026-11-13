@@ -1,4 +1,5 @@
-﻿import { useCallback, useMemo, useState } from "react"
+﻿import { RECENT_HISTORY_LIMIT } from "../utils/lifetimeStatsUtils.js"
+import { useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import {
   ArrowRight,
@@ -263,6 +264,7 @@ function HistoryRoundCard({ round, markers = [] }) {
 export default function HistoryPage({
   roundHistory = [],
   totalRoundCount = 0,
+  careerBestScore = null,
 }) {
   const [extraHistoryRows, setExtraHistoryRows] = useState([])
   const [historyPage, setHistoryPage] = useState(1)
@@ -296,7 +298,9 @@ export default function HistoryPage({
     setHistoryLoadError("")
 
     try {
-      const historyResponse = await fetchHistoryPage({ page: nextPage })
+      // Same page size as the 50 rounds that arrive with your progress, so page 2
+      // starts at round 51 instead of re-fetching rounds already shown.
+      const historyResponse = await fetchHistoryPage({ page: nextPage, limit: RECENT_HISTORY_LIMIT })
       const nextEntries = (Array.isArray(historyResponse?.entries) ? historyResponse.entries : [])
         .map(normalizeHistoryEntry)
 
@@ -340,10 +344,13 @@ export default function HistoryPage({
       })
     }
 
+    // Only a real career best is called a personal best: the loaded rounds may
+    // not include the player's best, so check it against the lifetime record.
     const isLatestAlsoPeak = Boolean(
       historySnapshot.latestRound
       && historySnapshot.bestScoreRound
       && historySnapshot.latestRound.id === historySnapshot.bestScoreRound.id
+      && (careerBestScore === null || Number(historySnapshot.latestRound.score) >= Number(careerBestScore))
     )
 
     if (isLatestAlsoPeak && cards[0]) {
@@ -394,7 +401,7 @@ export default function HistoryPage({
     }
 
     return cards
-  }, [historySnapshot])
+  }, [careerBestScore, historySnapshot])
 
   return (
     <div className="pageCenter historyPageScene">

@@ -32,6 +32,29 @@ export function getRandomPosition(arenaWidth, arenaHeight, itemSize, random = Ma
   }
 }
 
+// The target is drawn as a circle. A click the browser counted as a hit landed
+// on the button, so hits are checked against its square with a small tolerance
+// for sub-pixel layout; a miss is refused only when it is clearly inside the
+// circle, since clicks in the square's corners fall through to the arena.
+const CLICK_TOLERANCE_PX = 2
+
+export function isPointOnButtonForHit(x, y, position, buttonSize) {
+  return (
+    x >= position.x - CLICK_TOLERANCE_PX
+    && y >= position.y - CLICK_TOLERANCE_PX
+    && x <= position.x + buttonSize + CLICK_TOLERANCE_PX
+    && y <= position.y + buttonSize + CLICK_TOLERANCE_PX
+  )
+}
+
+export function isPointClearlyInsideCircle(x, y, position, buttonSize) {
+  const radius = buttonSize / 2
+  const dx = x - (position.x + radius)
+  const dy = y - (position.y + radius)
+  const insideRadius = radius - CLICK_TOLERANCE_PX
+  return insideRadius > 0 && dx * dx + dy * dy < insideRadius * insideRadius
+}
+
 export function isPointInsideButton(x, y, position, buttonSize) {
   return (
     x >= position.x
@@ -93,6 +116,14 @@ export function createGeometrySimulation({
     return isPointInsideButton(x, y, position, buttonSize)
   }
 
+  function pointCountsAsHit(x, y) {
+    return isPointOnButtonForHit(x, y, position, buttonSize)
+  }
+
+  function pointIsInsideTarget(x, y) {
+    return isPointClearlyInsideCircle(x, y, position, buttonSize)
+  }
+
   function applyHit(eventTimeMs = 0) {
     if (eventTimeMs >= sizeLockUntilMs) {
       buttonSize = getNextButtonSize(buttonSize, roundRules)
@@ -134,6 +165,8 @@ export function createGeometrySimulation({
     applyPowerup,
     getState,
     pointHitsButton,
+    pointCountsAsHit,
+    pointIsInsideTarget,
   }
 }
 
@@ -165,13 +198,13 @@ export function validateRoundGeometry(roundRules, events = [], {
       if (typeof event.x !== "number" || typeof event.y !== "number") {
         return { valid: false, reason: "Hit missing click coordinates." }
       }
-      if (!simulation.pointHitsButton(event.x, event.y)) {
+      if (!simulation.pointCountsAsHit(event.x, event.y)) {
         return { valid: false, reason: "Hit click was outside the target." }
       }
       simulation.applyHit(event.t)
     } else if (event.type === ROUND_EVENT_TYPES.MISS) {
       if (typeof event.x === "number" && typeof event.y === "number") {
-        if (simulation.pointHitsButton(event.x, event.y)) {
+        if (simulation.pointIsInsideTarget(event.x, event.y)) {
           return { valid: false, reason: "Miss click was inside the target." }
         }
       }

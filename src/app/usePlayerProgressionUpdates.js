@@ -22,7 +22,7 @@ export function usePlayerProgressionUpdates({
         drillId = null,
       } = roundResult
 
-      if (!isAuthed) return
+      if (!isAuthed) return { ok: false, error: "You're logged out, so this round wasn't saved." }
 
       const ticket = beginProgressRequest()
       try {
@@ -39,8 +39,15 @@ export function usePlayerProgressionUpdates({
           drillId,
         })
         await applyProgressResponse(ticket, response.progress, applyProgress)
+        return {
+          ok: true,
+          earnedCoins: response.earnedCoins,
+          earnedXp: response.earnedXp,
+          rankDelta: response.rankDelta,
+        }
       } catch (error) {
         console.error("Unable to submit round:", error)
+        return { ok: false, error: error?.message || "Couldn't reach the server." }
       }
     },
     [isAuthed, applyProgress]

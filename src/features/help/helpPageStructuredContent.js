@@ -129,16 +129,16 @@ export const SCORING_ROWS = [
 export const POWERUP_ROWS = LOADOUT_POWERUPS.map((powerup) => [
   powerup.label,
   `Lv ${powerup.unlockLevel}`,
-  `Every ${powerup.awardEvery} streak`,
+  `Every ${powerup.awardEvery} streak (base)`,
   powerup.description,
 ])
 
 export const POWERUP_RULES_POINTS = [
-  "Power-up charges start at 0 every round and do not carry across rounds.",
+  "Charges don't carry across rounds. Each round starts with your Power Rig's starting charges: none for most rigs, 1 per power with Reserve Rig, 2 with Vault Rig.",
   "Your active loadout chooses which 3 powers occupy keys 1, 2, and 3 for that round.",
-  "Charges are awarded when streak exactly hits each equipped power's milestone.",
+  "Charges are awarded when your streak hits each equipped power's milestone. Milestones shown are base values; your Power Rig makes them faster or slower.",
   "Power-ups can only be activated while the round is actively playing.",
-  "Time +2s cannot exceed mode time buffer cap (Practice 40, Casual 30, Ranked 24).",
+  "Time +2s has no effect in Practice (no timer). In Casual and Ranked it can't raise the time left above 30 or 24 seconds.",
 ]
 
 export const LOADOUT_POINTS = [

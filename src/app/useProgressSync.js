@@ -3,7 +3,13 @@ import toast from "react-hot-toast"
 
 import { updatePlayerProgress } from "../services/clickAwayHttpApiClient.js"
 import { pickProgressIntent } from "./progressIntent.js"
-import { applyProgressResponse, beginProgressRequest, isCurrentSession } from "./progressResponseGuard.js"
+import {
+  applyProgressResponse,
+  beginProgressRequest,
+  isCurrentSession,
+  markPendingPreferences,
+  settlePendingPreferences,
+} from "./progressResponseGuard.js"
 
 const PROGRESS_SYNC_TOAST_ID = "progress-sync"
 
@@ -47,6 +53,7 @@ export function useProgressSync({ isAuthed, applyProgress }) {
     const requestEpoch = sessionEpochRef.current
     const intentSequence = ++latestIntentSequenceRef.current
     const ticket = beginProgressRequest()
+    const pendingHandle = markPendingPreferences(payload)
 
     persistQueueRef.current = persistQueueRef.current
       .catch(() => null)
@@ -75,6 +82,9 @@ export function useProgressSync({ isAuthed, applyProgress }) {
           style: PROGRESS_ERROR_TOAST_STYLE,
         })
         return null
+      })
+      .finally(() => {
+        settlePendingPreferences(pendingHandle)
       })
 
     return persistQueueRef.current

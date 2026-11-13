@@ -159,7 +159,9 @@ export default function ArmoryTestRange({
 
   const historyKey = `${loadoutName}|${modeLabel}`
   const rulesKey = JSON.stringify(roundRules ?? {})
-  const isRunDone = range.phase === RANGE_PHASE.DONE && Boolean(range.results)
+  const isRunDone = range.phase === RANGE_PHASE.DONE
+    && Boolean(range.results)
+    && range.completedRunToken === runToken
 
   useEffect(() => {
     if (!isRunDone) return

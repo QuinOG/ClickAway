@@ -10,9 +10,14 @@ import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
 
 // Powerup activations are keyboard/UI actions, not clicks, so they are exempt
-// from the click-interval check but still capped: charges are earned at best
-// once per hit, so activations can never legitimately outnumber hits.
-const MAX_POWERUP_EVENTS = 100
+// from the click-interval check. The replay already refuses any activation
+// without an earned charge; this ceiling only bounds payload size. Charges are
+// earned at most once per hit plus a few starting charges, so it follows the
+// mode's click cap.
+const STARTING_CHARGE_ALLOWANCE = 20
+function getMaxPowerupEvents(modeId) {
+  return getMaxClickEvents(modeId) + STARTING_CHARGE_ALLOWANCE
+}
 
 function clamp(value) {
   const n = Number.isFinite(value) ? value : 0
@@ -62,7 +67,7 @@ function validateEventStream(events, mode) {
   }
 
   if (clickCount > maxClickEvents) return { valid: false, reason: "Too many events." }
-  if (powerupCount > MAX_POWERUP_EVENTS) {
+  if (powerupCount > getMaxPowerupEvents(mode.id)) {
     return { valid: false, reason: "Too many powerup events." }
   }
 
@@ -77,7 +82,7 @@ const TIME_BOOST_MS = 2000
 const ROUND_DEADLINE_GRACE_MS = 1000
 
 function validateRoundDeadline(roundRules, mode, events) {
-  if (!mode.isTimedRound) return { valid: true }
+  if (!mode.isTimedRound) return { valid: true, roundEndMs: null }
 
   const bufferMs = (Number(roundRules.maxTimeBufferSeconds ?? mode.maxTimeBufferSeconds) || 0) * 1000
   let deadlineMs = (Number(roundRules.durationSeconds ?? mode.durationSeconds) || 0) * 1000
@@ -97,7 +102,8 @@ function validateRoundDeadline(roundRules, mode, events) {
     }
   }
 
-  return { valid: true }
+  // When the timer actually ran out, counting every Time Boost used.
+  return { valid: true, roundEndMs: deadlineMs }
 }
 
 /**
@@ -176,6 +182,7 @@ export function simulateRound(events, modeId, {
     score: replay.score,
     bestStreak: replay.bestStreak,
     loadoutSnapshot: normalizedSnapshot,
+    roundEndMs: deadlineCheck.roundEndMs,
   }
 }
 

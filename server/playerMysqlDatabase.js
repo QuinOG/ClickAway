@@ -15,6 +15,10 @@ import { normalizeSeenUnlockPartIds } from "../src/utils/unlockWallUtils.js"
 import { ACHIEVEMENTS } from "../src/game/achievements/achievementsList.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import {
+  evaluateAchievements,
+  getUnlockedAchievementIds,
+} from "../src/game/achievements/evaluateAchievements.js"
+import {
   applyRankedMatchResult,
   buildDefaultRankedState,
   PLACEMENT_MATCH_COUNT,
@@ -27,6 +31,7 @@ import {
   HISTORY_PAGE_SIZE,
   applyRoundToLifetimeStats,
   applyRoundToLoadoutStats,
+  buildAchievementStatsFromLifetime,
   buildLifetimeStatsFromRounds,
   normalizeLifetimeStats,
   normalizeLoadoutStatsEntry,
@@ -408,6 +413,8 @@ function toNonNegativeNumber(value, fallback = 0) {
 }
 
 function toNullableNonNegativeNumber(value) {
+  // Missing stays missing: Number(null) would turn "no measurement" into 0.
+  if (value === null || value === undefined || value === "") return null
   const numericValue = Number(value)
   return Number.isFinite(numericValue) && numericValue >= 0
     ? Math.round(numericValue)
@@ -621,8 +628,9 @@ function buildHistoryEntry(row) {
     misses,
     bestStreak: toNonNegativeNumber(row.bestStreak, 0),
     accuracyPercent: hits + misses > 0 ? (hits / (hits + misses)) * 100 : 0,
-    avgReactionMs: toNullableNonNegativeNumber(row.avgReactionMs),
-    bestReactionMs: toNullableNonNegativeNumber(row.bestReactionMs),
+    // A round with no hits has no reaction time; older rows stored 0 for it.
+    avgReactionMs: hits > 0 ? toNullableNonNegativeNumber(row.avgReactionMs) : null,
+    bestReactionMs: hits > 0 ? toNullableNonNegativeNumber(row.bestReactionMs) : null,
     coinsEarned: toNonNegativeNumber(row.coinsEarned, 0),
     modeId: String(row.modeId || DEFAULT_PROGRESS.selectedModeId),
     difficultyId: String(row.modeId || DEFAULT_PROGRESS.selectedModeId),
@@ -1258,33 +1266,29 @@ async function syncUserLoadouts(executor, userId, progress) {
   )
 }
 
-async function syncUnlockedAchievements(executor, userId, progress) {
-  await executor.query("DELETE FROM user_achievement_progress WHERE user_id = ?", [userId])
-
-  if (progress.unlockedAchievementIds.length === 0) {
-    return
-  }
+async function addUnlockedAchievements(executor, userId, achievementIds = []) {
+  const ids = Array.from(new Set(achievementIds.map(String)))
+  if (ids.length === 0) return
 
   const [rows] = await executor.query(
     `SELECT id
      FROM achievements_catalog
      WHERE id = ANY(?)`,
-    [progress.unlockedAchievementIds]
+    [ids]
   )
-
   const insertRows = rows.map((row) => [userId, row.id, new Date()])
+  if (insertRows.length === 0) return
 
-  if (insertRows.length > 0) {
-    const { clause, params } = buildValuesClause(insertRows)
-    await executor.query(
-      `INSERT INTO user_achievement_progress (
-         user_id,
-         achievement_id,
-         unlocked_at
-       ) VALUES ${clause}`,
-      params
-    )
-  }
+  const { clause, params } = buildValuesClause(insertRows)
+  await executor.query(
+    `INSERT INTO user_achievement_progress (
+       user_id,
+       achievement_id,
+       unlocked_at
+     ) VALUES ${clause}
+     ON CONFLICT (user_id, achievement_id) DO NOTHING`,
+    params
+  )
 }
 
 export async function findUserByUsername(username) {
@@ -1438,6 +1442,7 @@ async function queryRankedLeaderboardRows({
   search = "",
   userId = null,
   view = "top",
+  reverse = false,
 } = {}) {
   const normalizedBoard = Object.values(LEADERBOARD_BOARDS).includes(board)
     ? board
@@ -1474,6 +1479,9 @@ async function queryRankedLeaderboardRows({
       LEFT JOIN user_lifetime_stats ls
         ON ls.user_id = u.id
       WHERE u.placement_matches_played >= ?
+        -- Players still on an old rank system are unplaced until they replay
+        -- placements (Profile shows them that way), so they aren't ranked here.
+        AND u.rank_system_version = ${Number(RANK_SYSTEM_VERSION)}
         ${reactionFilter}
     ),
     ranked_ladder AS (
@@ -1553,7 +1561,7 @@ async function queryRankedLeaderboardRows({
     `${baseCte}
      SELECT *
      FROM filtered_ladder
-     ORDER BY rank ASC
+     ORDER BY rank ${reverse ? "DESC" : "ASC"}
      LIMIT ? OFFSET ?`,
     [PLACEMENT_MATCH_COUNT, ...searchParams, normalizedLimit, offset]
   )
@@ -1680,7 +1688,6 @@ export async function completeUserRound({
   // writes rank. The fallback state is used only for legacy rank-system rows.
   rankInputs = {},
   fallbackRankState = {},
-  unlockedAchievementIds,
   historyEntry,
 }) {
   const connection = await pool.getConnection()
@@ -1802,14 +1809,22 @@ export async function completeUserRound({
       await persistLoadoutStats(connection, userId, nextLoadoutStats)
     }
 
-    const normalizedProgress = normalizeProgressInput({
-      coins,
-      levelXp,
-      unlockedAchievementIds,
-      roundHistory: [insertedHistoryEntry],
-    })
-
-    await syncUnlockedAchievements(connection, userId, normalizedProgress)
+    // Achievements are worked out here from the totals this transaction just
+    // wrote, and only ever added, so two rounds finishing together can't erase
+    // each other's unlocks or miss a threshold their combined totals reached.
+    const [unlockedRows] = await connection.query(
+      "SELECT achievement_id AS achievementId FROM user_achievement_progress WHERE user_id = ?",
+      [userId]
+    )
+    const evaluatedAchievements = evaluateAchievements(
+      buildAchievementStatsFromLifetime({
+        lifetimeStats: nextLifetimeStats,
+        levelProgress: getLevelProgress(levelXp),
+        coins,
+      }),
+      { persistedUnlockedIds: unlockedRows.map((row) => String(row.achievementId)) }
+    )
+    await addUnlockedAchievements(connection, userId, getUnlockedAchievementIds(evaluatedAchievements))
 
     await connection.commit()
   } catch (error) {
@@ -1853,7 +1868,7 @@ export async function saveUserProgress({ userId, providedFields = [], ...progres
 
     const assignments = []
     const values = []
-    if (provided.has("activeLoadoutId") || provided.has("savedLoadouts")) {
+    if (provided.has("activeLoadoutId")) {
       assignments.push("active_loadout_slot = ?")
       values.push(normalizedProgress.activeLoadoutId)
     }

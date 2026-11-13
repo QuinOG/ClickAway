@@ -129,8 +129,9 @@ async function requestLeaderboardPage({
   page = 1,
   search = "",
   view = "top",
+  reverse = false,
 } = {}) {
-  const response = await fetchLeaderboard({ board, page, limit: LEADERBOARD_PAGE_SIZE, search, view })
+  const response = await fetchLeaderboard({ board, page, limit: LEADERBOARD_PAGE_SIZE, search, view, reverse })
   return {
     rows: (Array.isArray(response?.rows) ? response.rows : []).map(normalizeLeaderboardRow),
     page: Math.max(1, Number(response?.page) || 1),
@@ -544,6 +545,11 @@ export default function LeaderboardPage({
   const [leaderboardRows, setLeaderboardRows] = useState([])
   const [board, setBoard] = useState("mmr")
   const [page, setPage] = useState(1)
+  // "Low to high" on the board's own stat is applied by the server across all
+  // pages, not just to the rows already loaded.
+  const boardSortKey = board === "reaction" ? "bestReactionMs" : board === "accuracy" ? "accuracyPercent" : board
+  const isReversed = sortConfig.key === boardSortKey
+    && sortConfig.direction !== (board === "reaction" ? "asc" : "desc")
   const [totalPages, setTotalPages] = useState(0)
   // Size of the whole Ladder, kept from the last unsearched load so a search with no
   // matches doesn't make the field look empty.
@@ -559,7 +565,6 @@ export default function LeaderboardPage({
   const latestLoadRef = useRef(0)
   // Your rank per board from the last load without a search. Searches rank players among the
   // matches only, so their selfRank (or its absence) is never your real rank.
-  const knownSelfRankRef = useRef({})
   const [view, setView] = useState("top")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
@@ -593,6 +598,7 @@ export default function LeaderboardPage({
         page,
         search: searchQuery,
         view,
+        reverse: isReversed,
       })
       if (!isLatest()) return false
       setLeaderboardRows(response.rows)
@@ -601,8 +607,8 @@ export default function LeaderboardPage({
       setResultsQuery(searchQuery)
       // A search can leave you out of the results, and the server then omits your rank.
       // Keep your known rank instead of telling a placed player they are unranked.
-      if (!searchQuery) knownSelfRankRef.current[board] = response.selfRank
-      setSelfRank(searchQuery ? knownSelfRankRef.current[board] ?? null : response.selfRank)
+      // The server ranks you on the full ladder even while searching.
+      setSelfRank(response.selfRank)
       setSeason(response.season)
       return true
     } catch (error) {
@@ -613,7 +619,7 @@ export default function LeaderboardPage({
     } finally {
       if (isLatest()) setIsLoading(false)
     }
-  }, [board, isAuthed, page, searchQuery, view])
+  }, [board, isAuthed, isReversed, page, searchQuery, view])
 
   useEffect(() => {
     loadLeaderboard()
@@ -650,10 +656,11 @@ export default function LeaderboardPage({
     const sortedRows = [...leaderboardRows].sort((a, b) => a.rank - b.rank)
     const rowAbove = sortedRows.find((player) => player.rank === selfRank - 1)
     const userRow = sortedRows.find((player) => isCurrentUserRow(player, currentUserId, currentUsername))
-    const mmrGap = rowAbove && userRow ? Math.max(0, rowAbove.mmr - userRow.mmr) : 0
+    // Only on the Rating board does RR decide who is above you.
+    const mmrGap = board === "mmr" && rowAbove && userRow ? Math.max(0, rowAbove.mmr - userRow.mmr) : 0
 
     return { rows: sortedRows, selfRank, mmrGap }
-  }, [currentUserId, currentUsername, leaderboardRows, selfRank, view])
+  }, [board, currentUserId, currentUsername, leaderboardRows, selfRank, view])
 
   function handleBoardChange(nextBoard, source) {
     setBoard(nextBoard)
@@ -686,6 +693,7 @@ export default function LeaderboardPage({
   }
 
   function handleSort(columnKey) {
+    setPage(1)
     setSortConfig((currentSort) => {
       if (currentSort.key === columnKey) {
         return {

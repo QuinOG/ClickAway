@@ -193,7 +193,8 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
     setLoadError("")
     try {
       const [challengeResponse, replayResponse] = await Promise.all([
-        fetchChallenges({ role: filter === "all" ? "all" : filter }),
+        // Always fetch every role, so the incoming count stays right on any tab.
+        fetchChallenges({ role: "all" }),
         fetchUserReplays({ limit: 10 }),
       ])
       if (!isCurrent()) return false
@@ -209,7 +210,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
     } finally {
       if (isCurrent()) setIsLoading(false)
     }
-  }, [filter])
+  }, [])
 
   useEffect(() => {
     loadChallenges()
@@ -236,6 +237,11 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
     ).length,
     [challenges, currentUserId]
   )
+  const visibleChallenges = useMemo(() => {
+    if (filter === "incoming") return challenges.filter((challenge) => challenge.opponentUserId === currentUserId)
+    if (filter === "outgoing") return challenges.filter((challenge) => challenge.challengerUserId === currentUserId)
+    return challenges
+  }, [challenges, currentUserId, filter])
 
   const selectedReplay = useMemo(
     () => replays.find((replay) => String(replay.id) === String(sendForm.replayId)) ?? null,
@@ -305,7 +311,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           eyebrow="Ghost network"
           title="Duel command"
           subtitle="Lock a rival. Choose your run. Put a score on the line."
-          status={pendingIncomingCount > 0 ? null : (
+          status={pendingIncomingCount > 0 || isLoading || loadError ? null : (
             <span className="duelNetworkStatus"><i /> Network clear</span>
           )}
         />
@@ -372,7 +378,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
             </div>
           ) : null}
 
-          {!isLoading && !loadError && challenges.length === 0 ? (
+          {!isLoading && !loadError && visibleChallenges.length === 0 ? (
             <div className="duelRadarState" role="status">
               <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
               <strong>No rival signals</strong>
@@ -381,7 +387,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           ) : null}
 
           <div className="challengeList">
-            {challenges.map((challenge) => (
+            {visibleChallenges.map((challenge) => (
               <ChallengeCard
                 key={challenge.id}
                 challenge={challenge}

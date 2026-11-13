@@ -57,12 +57,61 @@ async function waitForLogoutToSettle() {
   }
 }
 
+// One login or sign-up at a time, and a logout always wins: if the player logs
+// out while one is still in flight, its result is discarded and the session it
+// created is logged out again.
+let authAttemptInFlight = false
+let authGeneration = 0
+
+// Other open tabs share the same login cookie. When this tab logs in or out,
+// they reload so they never keep showing (and saving as) the previous player.
+const AUTH_CHANGE_KEY = "clickaway.auth-change"
+
+function announceAuthChange() {
+  try {
+    localStorage.setItem(AUTH_CHANGE_KEY, String(Date.now()))
+  } catch {
+    // Storage unavailable; other tabs pick up the change on their next load.
+  }
+}
+
+async function runAuthAttempt(request) {
+  if (authAttemptInFlight) {
+    return { ok: false, error: "Already signing in. One moment." }
+  }
+  authAttemptInFlight = true
+  const generation = authGeneration
+  try {
+    await waitForLogoutToSettle()
+    const response = await request()
+    if (generation !== authGeneration) {
+      // Logged out while this was in flight: undo the session it just created.
+      markPendingLogout()
+      sendLogout().catch(() => {})
+      return { ok: false, error: "You logged out before sign-in finished." }
+    }
+    return { ok: true, response }
+  } finally {
+    authAttemptInFlight = false
+  }
+}
+
 export function useAuthSession({
   setIsAuthed,
   applyAuthenticatedSession,
   resetPlayerState,
 }) {
   const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    function handleStorage(event) {
+      if (event.key === AUTH_CHANGE_KEY) {
+        window.location.reload()
+      }
+    }
+    window.addEventListener("storage", handleStorage)
+    return () => window.removeEventListener("storage", handleStorage)
+  }, [])
 
   useEffect(() => {
     let isCancelled = false
@@ -118,16 +167,17 @@ export function useAuthSession({
     }
 
     try {
-      await waitForLogoutToSettle()
-      const response = await loginUser({
+      const attempt = await runAuthAttempt(() => loginUser({
         username: normalizedUsername,
         password,
-      })
+      }))
+      if (!attempt.ok) return attempt
 
       clearPendingLogout()
       startNewProgressSession()
-      applyAuthenticatedSession(response)
+      applyAuthenticatedSession(attempt.response)
       setIsAuthed(true)
+      announceAuthChange()
       return { ok: true }
     } catch (error) {
       return {
@@ -141,16 +191,17 @@ export function useAuthSession({
     const normalizedUsername = normalizeUsername(username) || "Player"
 
     try {
-      await waitForLogoutToSettle()
-      const response = await signupUser({
+      const attempt = await runAuthAttempt(() => signupUser({
         username: normalizedUsername,
         password,
-      })
+      }))
+      if (!attempt.ok) return attempt
 
       clearPendingLogout()
       startNewProgressSession()
-      applyAuthenticatedSession(response)
+      applyAuthenticatedSession(attempt.response)
       setIsAuthed(true)
+      announceAuthChange()
       return { ok: true }
     } catch (error) {
       return {
@@ -161,6 +212,7 @@ export function useAuthSession({
   }, [applyAuthenticatedSession, setIsAuthed])
 
   const handleLogout = useCallback(() => {
+    authGeneration += 1
     startNewProgressSession()
     resetPlayerState()
     setIsAuthed(false)
@@ -168,6 +220,7 @@ export function useAuthSession({
     sendLogout().catch(() => {
       // Left pending: the next app load retries before restoring any session.
     })
+    announceAuthChange()
   }, [resetPlayerState, setIsAuthed])
 
   return {

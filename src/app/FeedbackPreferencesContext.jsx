@@ -90,7 +90,9 @@ export function FeedbackPreferencesProvider({ children }) {
     try {
       return feedbackService.dispatch(eventName, options)
     } finally {
-      feedbackService.configure(preferencesRef.current)
+      // Restore the saved settings without cutting off the preview that was just
+      // played; otherwise a muted saved setting silences the draft's test cue.
+      feedbackService.configure(preferencesRef.current, { keepPlaying: true })
       setFeedbackStatus(feedbackService.getStatus())
     }
   }, [])

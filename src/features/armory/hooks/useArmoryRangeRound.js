@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { createRoundSimulation } from "../../../game/engine/roundEngine.js"
+import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
@@ -23,6 +23,10 @@ import {
 
 // The range is a fixed, always-timed 10-second sample regardless of the mode's
 // own duration (Practice is untimed in a real round, but here it still ends).
+function isTooSoonAfter(lastClickMs, eventTimeMs) {
+  return lastClickMs !== null && eventTimeMs - lastClickMs < MIN_CLICK_INTERVAL_MS
+}
+
 export const RANGE_DURATION_SECONDS = 10
 
 export const RANGE_PHASE = {
@@ -61,6 +65,15 @@ export function useArmoryRangeRound({
   const countdownEndsAtRef = useRef(0)
   const feedbackTimeoutIdsRef = useRef([])
   const endTimeoutRef = useRef(null)
+  // Matches the real round: input stops the moment the timer hits zero (not
+  // after the settle delay), and a second click within 80ms is ignored.
+  const isEndingRef = useRef(false)
+  const lastClickMsRef = useRef(null)
+  // Which run the current results belong to, so "Run it again" can't file the
+  // previous run's results under the new run.
+  const runTokenRef = useRef(runToken)
+  runTokenRef.current = runToken
+  const [completedRunToken, setCompletedRunToken] = useState(null)
   const activationCueTimeoutRef = useRef(null)
   const rngRef = useRef(Math.random)
 
@@ -137,10 +150,13 @@ export function useArmoryRangeRound({
   }, [addClickFeedback])
 
   const endRound = useCallback(() => {
+    isEndingRef.current = true
     setPhase((current) => {
       if (current === RANGE_PHASE.DONE) return current
       if (endTimeoutRef.current) window.clearTimeout(endTimeoutRef.current)
+      const finishingRunToken = runTokenRef.current
       endTimeoutRef.current = window.setTimeout(() => {
+        setCompletedRunToken(finishingRunToken)
         setPhase(RANGE_PHASE.DONE)
         endTimeoutRef.current = null
       }, ROUND_END_SETTLE_MS)
@@ -154,6 +170,13 @@ export function useArmoryRangeRound({
     if (!isActive) return undefined
 
     simulationRef.current = createRoundSimulation(roundRules)
+    isEndingRef.current = false
+    lastClickMsRef.current = null
+    setCompletedRunToken(null)
+    if (endTimeoutRef.current) {
+      window.clearTimeout(endTimeoutRef.current)
+      endTimeoutRef.current = null
+    }
     rngRef.current = Math.random
     roundStartTimeRef.current = 0
     freezeMovementUntilRef.current = 0
@@ -227,9 +250,11 @@ export function useArmoryRangeRound({
 
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()
-    if (!isPlaying || !simulationRef.current) return
+    if (!isPlaying || isEndingRef.current || !simulationRef.current) return
 
     const eventTimeMs = getElapsedMs()
+    if (isTooSoonAfter(lastClickMsRef.current, eventTimeMs)) return
+    lastClickMsRef.current = eventTimeMs
     const result = simulationRef.current.applyHit(eventTimeMs)
     setScore(result.score)
     setStreak(result.streak)
@@ -263,9 +288,12 @@ export function useArmoryRangeRound({
   }, [addCenterFeedback, addClickFeedback, getElapsedMs, isPlaying, randomizeButton, roundRules])
 
   const handleArenaClick = useCallback((event) => {
-    if (!isPlaying || !simulationRef.current) return
+    if (!isPlaying || isEndingRef.current || !simulationRef.current) return
 
-    const result = simulationRef.current.applyMiss(getElapsedMs())
+    const eventTimeMs = getElapsedMs()
+    if (isTooSoonAfter(lastClickMsRef.current, eventTimeMs)) return
+    lastClickMsRef.current = eventTimeMs
+    const result = simulationRef.current.applyMiss(eventTimeMs)
     setScore(result.score)
     setStreak(result.streak)
     setMisses(result.misses)
@@ -318,7 +346,7 @@ export function useArmoryRangeRound({
   }, [addCenterFeedback, centerButton, roundRules.initialButtonSize, roundRules.maxTimeBufferSeconds])
 
   const handleUsePowerup = useCallback((powerupId) => {
-    if (!isPlaying || !simulationRef.current) return
+    if (!isPlaying || isEndingRef.current || !simulationRef.current) return
     const powerup = roundRules.equippedPowerups.find((item) => item.id === powerupId)
     if (!powerup) return
 
@@ -403,6 +431,7 @@ export function useArmoryRangeRound({
     chargesEarned,
     comboMultiplier,
     results: { score, hits, misses, bestStreak, chargesEarned },
+    completedRunToken,
     endRound,
     arenaProps: {
       arenaRef,

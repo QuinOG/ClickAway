@@ -224,9 +224,12 @@ export class FeedbackService {
     this.maxVoices = maxVoices
   }
 
-  configure(preferences = {}) {
+  // keepPlaying: restore preferences without cutting off sounds already
+  // scheduled (used after a settings preview, so the preview stays audible).
+  configure(preferences = {}, { keepPlaying = false } = {}) {
     const previousPreferences = this.preferences
     this.preferences = { ...this.preferences, ...preferences }
+    if (keepPlaying) return
     if (
       this.preferences.muted
       || this.preferences.masterVolume <= 0
