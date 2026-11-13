@@ -40,7 +40,7 @@ function ArenaSeal() {
     <circle cx="40" cy="40" r="37" />
     <circle cx="40" cy="40" r="21" />
     <text><textPath href="#shellPassSealArc">CLICKAWAY ARENA ★ SEASON 1 ★</textPath></text>
-    <path d="M40 27l3.8 8.2 9 .9-6.7 6 1.9 8.8L40 46.4l-8 4.5 1.9-8.8-6.7-6 9-.9z" />
+    <image href="/art/icons/play.png" x="27" y="27" width="26" height="26" />
   </svg>
 }
 

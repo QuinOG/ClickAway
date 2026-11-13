@@ -1,6 +1,7 @@
 import MovingButton from "../../../components/MovingButton.jsx"
 import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import ClickFeedbackLayer from "./ClickFeedbackLayer.jsx"
+import "./arena-focus.css"
 
 export default function GameArena({
   arenaRef,
@@ -52,6 +53,7 @@ export default function GameArena({
         </svg>
         <span className="arenaFloor" />
         <span className="arenaHeatGlow" />
+        <span className="arenaGameplayBackdrop" />
         <span className="arenaStreakMark" />
         {isFinalSeconds ? (
           <span key={`final-${finalSeconds}`} className="arenaFinalCount">{finalSeconds}</span>

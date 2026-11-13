@@ -1,3 +1,4 @@
+import "../styles/social-scenery.css"
 import {
   ArrowRight,
   ChatTeardropText,

@@ -1,3 +1,4 @@
+import "./roundResultsArt.css"
 import { CoinIcon, CrestIcon, GemIcon, PartEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
 import {
   Crosshair,
@@ -356,15 +357,7 @@ export function GameOverOverlay({
           </span>
         ) : null}
         <div className="roundIllustratedRewards" aria-label={`${hits} hits and ${misses} misses. ${hasCleanRun && hits > 0 ? "Clean run" : "Sharp shooter"} medal`}>
-          <svg className="roundRewardMedal" viewBox="0 0 120 130" aria-hidden="true">
-            <path d="M27 7h25l12 39-19 9zM68 7h25L75 55l-19-9z" fill="#e75448" stroke="#040912" strokeWidth="4" strokeLinejoin="round" />
-            <path d="M33 10h8l11 35-7 3zM74 10h8L70 48l-7-3z" fill="#ffd76a" />
-            <circle cx="60" cy="78" r="43" fill={hasCleanRun && hits > 0 ? "#ffc94a" : accuracy >= 75 ? "#c9d9e7" : "#d89355"} stroke="#040912" strokeWidth="4" />
-            <path d="M27 80a34 34 0 0 0 65 15 35 35 0 0 1-58-31z" fill="#040912" opacity=".22" />
-            <circle cx="60" cy="78" r="31" fill="none" stroke="#040912" strokeWidth="3" />
-            <path d="M60 54l6 14 15 1-12 10 4 15-13-8-13 8 4-15-12-10 15-1z" fill="#fff1b0" stroke="#040912" strokeWidth="3" strokeLinejoin="round" />
-            <path d="M35 58q8-13 21-15" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" />
-          </svg>
+          <img className="roundRewardMedal" src={`/art/game-results/performance-${hasCleanRun && hits > 0 ? "gold" : accuracy >= 75 ? "silver" : "bronze"}.png`} alt="" aria-hidden="true" />
           <div className="roundRewardChain"><strong>{hasCleanRun && hits > 0 ? "Clean run" : "Sharp shooter"}</strong><div className="roundRewardLinks" aria-hidden="true">{Array.from({ length: hits }, (_, i) => <span key={`h${i}`} />)}{Array.from({ length: misses }, (_, i) => <span className="isMiss" key={`m${i}`} />)}</div><small>{hits} hits / {misses} misses</small></div>
         </div>
         {loadoutSnapshot?.loadoutName ? (

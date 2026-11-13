@@ -1,6 +1,8 @@
 """Rewrite the ClickawayRSI PR description as a live summary.
 
 usage: python update_pr_body.py <latest round N> <scores.json> [baseline round B, default 0] > body.json
+(RSI_ART_SHOTS selects a consolidated art capture directory under SHOTS_DIR;
+ RSI_ART_SUMMARY supplies the art summary and validation text.)
 (the baseline is the round the PR started from; the score table and the comparison start there)
 scores.json: {"i0": [sol, terra, opus, gemini, qwen], ...} (shorter lists are padded); use null for a judge who sat a round out
 (Terra is null from i6 on).
@@ -20,7 +22,10 @@ SHOTS_DIR = "docs/ui-polish/game-feel"
 
 n = int(sys.argv[1])
 scores = json.load(open(sys.argv[2], encoding="utf-8"))
-latest = f"i{n}"
+latest_round = f"i{n}"
+# Art batches share one live comparison rather than adding tables per commit.
+latest = os.environ.get("RSI_ART_SHOTS") or latest_round
+latest_label = "Current artwork" if os.environ.get("RSI_ART_SHOTS") else latest
 base_n = int(sys.argv[3]) if len(sys.argv) > 3 else 0
 base = f"i{base_n}"
 blob = f"https://github.com/{REPO}/blob/{BRANCH}/{SHOTS_DIR}"
@@ -31,7 +36,7 @@ JUDGES = ["Sol", "Terra", "Opus 5", "Gemini 4 Argon", "Qwen3.8 Max", "Grok 4.7"]
 shown = {r: (vals + [None] * len(JUDGES))[:len(JUDGES)] for r, vals in scores.items() if r[1:].isdigit() and int(r[1:]) >= base_n}
 used = [j for j in range(len(JUDGES)) if any(v[j] is not None for v in shown.values())]  # hide judges who sat out every shown round
 score_rows = "\n".join(
-    f"| {r}{' (baseline)' if r == base else ''}{' **latest**' if r == latest else ''} | "
+    f"| {r}{' (baseline)' if r == base else ''}{' **latest scored**' if r == latest_round else ''} | "
     + " | ".join("—" if vals[j] is None else str(vals[j]) for j in used)
     + f" | **{sum(v for v in vals if v is not None) / len([v for v in vals if v is not None]):.2f}** |"
     for r, vals in shown.items()
@@ -58,6 +63,7 @@ shot_rows = "\n".join(
 )
 
 PROCESS = os.environ.get("RSI_PROCESS") or "each round, judges rate the full-app screenshots against `docs/ui-polish/standards/`; Claude implements the highest-value fixes, recaptures, and repeats. Each round is its own commit, and each round's PR comment has its changes and before/after vs the previous round."
+ART_SUMMARY = os.environ.get("RSI_ART_SUMMARY", "")
 
 body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a SaaS-dashboard feel to an indie-game feel across the whole app.
 
@@ -68,10 +74,12 @@ body = f"""Council-driven polish run (ClickawayRSI) to move ClickAway from a Saa
 |---|{"---|" * len(used)}---|
 {score_rows}
 
-## Before → after for this run: baseline ({base}) → latest ({latest})
-_One table per PR: the app as this run started ({base}) vs the latest round. It is regenerated every round and lists only screens that changed ({changed_count} of {len(shots)})._
+## Art rework
+{ART_SUMMARY}
 
-| Screen | Baseline ({base}) | Latest ({latest}) |
+_One consolidated table: the app as this run started ({base}) vs the current artwork. Only changed screens are listed ({changed_count} of {len(shots)})._
+
+| Screen | Baseline ({base}) | {latest_label} |
 |---|---|---|
 {shot_rows}
 

@@ -19,4 +19,6 @@ body = f"""### {title} (`{sha[:7]}`)
 | Screen | Before | After |
 |---|---|---|
 """ + "\n".join(rows)
+if os.environ.get("RSI_ART_SHOTS"):
+    body = f"### {title} (`{sha[:7]}`)\n\n{summary}\n\nScreenshots are consolidated in the PR's [Art rework](#art-rework) section."
 json.dump({"body": body}, sys.stdout)
