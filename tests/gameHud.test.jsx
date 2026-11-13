@@ -88,3 +88,9 @@ describe("Competitive game HUD", () => {
     expect(screen.getByLabelText("Score 1,240").getAttribute("aria-live")).toBeNull()
   })
 })
+
+
+test("a zero-score ghost still shows the target to beat", () => {
+  render(<GameHud {...baseProps} isGhostDuel ghostScore={0} ghostTargetScore={0} ghostUsername="Rival" />)
+  expect(screen.getByLabelText("Ghost duel against Rival").textContent).toContain("Target 0")
+})

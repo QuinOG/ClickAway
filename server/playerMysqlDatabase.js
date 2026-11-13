@@ -2306,8 +2306,7 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
            LIMIT 50
          )
        )
-     ORDER BY c.created_at DESC, c.id DESC
-     LIMIT 300`,
+     ORDER BY c.created_at DESC, c.id DESC`,
     [...params, ...params]
   )
 

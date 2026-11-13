@@ -29,6 +29,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const challengeId = Number(searchParams.get("challengeId")) || null
   const replayId = Number(searchParams.get("replayId")) || null
+  const [ghostLoadAttempt, setGhostLoadAttempt] = useState(0)
   const [loadState, setLoadState] = useState({
     replayId: null,
     replay: null,
@@ -68,7 +69,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     return () => {
       isCancelled = true
     }
-  }, [replayId])
+  }, [replayId, ghostLoadAttempt])
 
   const ghostReplay = loadState.replayId === replayId ? loadState.replay : null
   const ghostLoadError = loadState.replayId === replayId ? loadState.error : ""
@@ -122,6 +123,8 @@ export default function GamePage({ onPhaseChange, ...props }) {
       {ghostLoadError ? (
         <div className="ghostDuelError" role="alert">
           {ghostLoadError}
+          <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button>
+          <button type="button" onClick={() => setSearchParams({}, { replace: true })}>Leave duel</button>
         </div>
       ) : challengeId && replayId && !ghostReplay ? (
         <div className="ghostDuelError" role="status">Loading your rival's run…</div>
