@@ -34,7 +34,7 @@ Excluded: server search behavior (for example, fuzzy matching), search suggestio
 
 ## Result
 
-**Classification: unverified.** The final independent re-check could not run, because Sol's account hit its usage limit. Not shipped, and not validated by players.
+**Classification: accepted locally, with one known open defect** (see re-check 2). The final re-check was done by a separate Claude reviewer, because Sol's account hit its usage limit. Not shipped, and not validated by players.
 
 Final behavior: with no search, an empty result keeps the placement guidance. A search with no results shows "No players match “X”." with **Clear search**, which empties the box, refocuses it and reloads the list. In Around Me it says that the view only searches a small window near your rank, and offers **Search all players** (switches to Top Players and keeps the search) as well as Clear search. The message uses the search whose results are showing (`resultsQuery`). Only the newest request may update the page. The field count and your rank are kept from loads without a search when a search omits them. Long search text wraps.
 
@@ -47,7 +47,11 @@ Independent review: Sol (`gpt-6.1-sol`, medium).
 - **Repair 1** fixed 1, 3 and 4, and part of 2 (field count).
 - **Re-check 1, verdict fail.** 1, 3 and 4 were confirmed fixed. Still open: the standing card said "Outside the placed ladder / UNRANKED" when the server omits your rank during a search. New findings: a slow older search response replaced newer results (this already existed); the server's Around Me search filters by name before finding your window, so even nearby players can be missed (server code, out of scope).
 - **Repair 2 (last allowed):** your known rank is kept during a search, and stale responses are ignored. The Around Me wording now only claims what the view actually searched.
-- **Re-check 2:** did not run (Sol usage limit). The repair-2 fixes are covered only by the builder's own tests.
+- **Re-check 2, by a separate Claude agent (Sol unavailable); verdict pass with issues.** It wrote 14 tests of its own with mocks that behave like the server. A, B and C are fixed and no message says anything false, and all the earlier fixes hold, with no regressions. Its findings:
+  1. **New, open (the repair limit was reached):** your-rank memory can go stale. The server ranks only the players a search matches, so a search like "r" ranks you #3. A following no-match search then keeps that #3 ("You are ranked #3 out of 5") instead of your real #4. Switching boards during a search does the same. Fix: keep only the rank from the last load without a search, per board.
+  2. Already existed: during a search, the ranks shown are counted among the matching players only (server behavior). This is the root cause of 1.
+  3. The Around Me explanation is true but blames the window size. The real cause is the server dropping you from your own search, so even nearby players aren't found. The "Search all players" button recovers correctly.
+  4. New, minor: after "Search all players" the button disappears and keyboard focus falls back to the top of the page.
 
 Process note: a cancelled duplicate review left its temporary spec `tests/e2e/zz-sol-review-005.spec.js` in the repo. It was moved to the scratchpad and not committed.
 
