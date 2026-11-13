@@ -124,7 +124,7 @@ export function useArmoryRangeRound({
     setTargetSpawnSequence((sequence) => sequence + 1)
   }, [])
 
-  const addClickFeedback = useCallback((clientX, clientY, value, type) => {
+  const addClickFeedback = useCallback((clientX, clientY, value, type, detail = null) => {
     const arena = arenaRef.current
     if (!arena) return
     const rect = arena.getBoundingClientRect()
@@ -132,7 +132,7 @@ export function useArmoryRangeRound({
 
     setClickFeedbackItems((items) => [
       ...items.slice(-(MAX_FEEDBACK_ITEMS - 1)),
-      { id: feedbackId, x: clientX - rect.left, y: clientY - rect.top, value, type },
+      { id: feedbackId, x: clientX - rect.left, y: clientY - rect.top, value, type, detail },
     ])
 
     const timeoutId = window.setTimeout(() => {
@@ -318,7 +318,8 @@ export function useArmoryRangeRound({
       event.clientX,
       event.clientY,
       result.penaltyApplied > 0 ? `-${result.penaltyApplied}` : "Miss",
-      streak > 0 ? "streakBreak" : "miss"
+      streak > 0 && result.streak === 0 ? "streakBreak" : "miss",
+      streak > 0 && result.streak > 0 ? "Streak saved" : null
     )
   }, [addClickFeedback, getElapsedMs, isPlaying, streak])
 
