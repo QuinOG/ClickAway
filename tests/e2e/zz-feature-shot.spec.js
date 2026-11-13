@@ -12,7 +12,15 @@ const ROUTE = process.env.ROUTE || "history"
 const OUT = process.env.OUT || `test-results/feature-shot/${ROUTE}`
 const PREFS = { masterVolume: 0.7, sfxVolume: 0.75, muted: true, reduceMotion: true, screenShake: false, flashes: false, haptics: false, feedbackIntensity: "standard" }
 
-for (const [label, width, height] of [["desktop", 1440, 900], ["mobile", 390, 844]]) {
+// EXTRA=<label>:<width>x<height> adds one more size, e.g. EXTRA=laptop:1024x700.
+const SIZES = [["desktop", 1440, 900], ["mobile", 390, 844]]
+if (process.env.EXTRA) {
+  const [extraLabel, size] = process.env.EXTRA.split(":")
+  const [extraWidth, extraHeight] = size.split("x").map(Number)
+  SIZES.push([extraLabel, extraWidth, extraHeight])
+}
+
+for (const [label, width, height] of SIZES) {
   test(`feature shot: ${ROUTE} ${label}`, async ({ browser }) => {
     test.skip(!process.env.OUT, "capture tool; set OUT to run")
     const context = await browser.newContext({ viewport: { width, height }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173", reducedMotion: "reduce" })

@@ -510,3 +510,41 @@
     .historyRoundCardOutcome > svg { margin: 0 0 0 auto; }
     .historyTrajectoryLegend { font-size: 11px; }
 }
+
+/* Narrow screens (2026-11-13 fix): the chart's plot is `height: 100%` of a chart with no fixed
+   height here, so it collapsed to its 142px + 30px padding and left a 0px plot. The three axis
+   numbers stacked on one line and the bars flattened. The title, change badge and mode chips
+   are also overlaid in one corner, so on narrow screens they collided and the badge ran off
+   the edge. Below 1100px (where the wide two-column layout starts): stack title, chips and plot instead of overlaying them, and give
+   the plot real height. Desktop is unchanged. */
+@media (max-width: 1099px) {
+    .historyPageCard .historyContent .historyTrajectory {
+        grid-template-rows: auto auto auto !important;
+        row-gap: var(--ca-space-3);
+    }
+    .historyPageCard .historyContent .historyTrajectory > .historyTrajectoryCopy {
+        grid-area: 1 / 1 !important;
+        flex-wrap: wrap;
+        row-gap: var(--ca-space-2);
+        margin: 0 !important;
+        max-width: 100%;
+    }
+    .historyPageCard .historyContent .historyTrajectory > .historyTrajectoryCopy h2 { white-space: normal !important; }
+    .historyPageCard .historyContent .historyTrajectory > .historyTrajectoryLegend {
+        grid-area: 2 / 1 !important;
+        justify-self: start !important;
+        margin: 0 !important;
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+    .historyPageCard .historyContent .historyTrajectory > .historyClimb {
+        grid-area: 3 / 1 !important;
+        height: 280px !important;
+        padding: 40px 8px 30px 80px !important;
+        margin: 0 !important;
+    }
+    /* Axis markers and the trend line span the same band as the bars (inside the plot's padding). */
+    .historyPageCard .historyContent .historyTrajectory .historyClimbAxis,
+    .historyPageCard .historyContent .historyTrajectory .historyClimbLine { top: 40px !important; bottom: 30px !important; }
+    .historyPageCard .historyContent .historyTrajectory .historyClimbLine { left: 80px !important; right: 8px !important; }
+}
