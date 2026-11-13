@@ -3170,7 +3170,8 @@
         grid-template-rows: auto auto auto;
         overflow: visible;
     }
-    .armoryScene .armoryRail { grid-column: 1; grid-row: 1 / span 3; }
+    /* The rail spans the stacked rows; keep its bay cards at their natural size. */
+    .armoryScene .armoryRail { grid-column: 1; grid-row: 1 / span 3; align-self: start; align-content: start; }
     .armoryScene .armoryCommandBar { grid-column: 2; grid-row: 1; }
     .armoryScene .armoryStage { grid-column: 2; grid-row: 2; overflow: visible; }
     .armoryScene .armoryWorkspace { grid-column: 2; grid-row: 3; overflow: visible; }
