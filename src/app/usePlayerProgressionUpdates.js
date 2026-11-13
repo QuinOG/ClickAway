@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 
 import { submitRound } from "../services/clickAwayHttpApiClient.js"
-import { applyProgressResponse, beginProgressRequest } from "./progressResponseGuard.js"
+import { applyProgressResponse, beginProgressRequest, settleProgressMutation } from "./progressResponseGuard.js"
 
 export function usePlayerProgressionUpdates({
   isAuthed,
@@ -53,6 +53,8 @@ export function usePlayerProgressionUpdates({
       } catch (error) {
         console.error("Unable to submit round:", error)
         return { ok: false, error: error?.message || "Couldn't reach the server." }
+      } finally {
+        settleProgressMutation(ticket, applyProgress)
       }
     },
     [isAuthed, applyProgress]

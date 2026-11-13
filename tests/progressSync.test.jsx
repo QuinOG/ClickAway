@@ -1,12 +1,13 @@
-import { act, render, waitFor } from "@testing-library/react"
+import { act, render, renderHook, waitFor } from "@testing-library/react"
 import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
 
 import { useProgressSync } from "../src/app/useProgressSync.js"
-import { updatePlayerProgress } from "../src/services/clickAwayHttpApiClient.js"
+import { fetchCurrentUser, updatePlayerProgress } from "../src/services/clickAwayHttpApiClient.js"
 
 vi.mock("../src/services/clickAwayHttpApiClient.js", () => ({
   updatePlayerProgress: vi.fn(),
+  fetchCurrentUser: vi.fn(),
 }))
 
 function ProgressSyncHarness({ applyProgress, onReady }) {
@@ -59,4 +60,21 @@ describe("progress intent synchronization", () => {
     expect(applyProgress).toHaveBeenCalledOnce()
     expect(applyProgress).toHaveBeenCalledWith({ activeLoadoutId: "loadout_3" })
   })
+})
+
+
+test("failed save queue waits for reconciliation and drops its optimistic overlay", async () => {
+  let resolveRead
+  fetchCurrentUser.mockReturnValueOnce(new Promise(resolve => { resolveRead = resolve }))
+  updatePlayerProgress.mockRejectedValueOnce(new Error("offline"))
+  const apply = vi.fn()
+  const { result } = renderHook(() => useProgressSync({ isAuthed: true, applyProgress: apply }))
+  let completed = false
+  const save = result.current.persistIntent({ activeLoadoutId: "loadout_2" }).then(() => { completed = true })
+  await waitFor(() => expect(resolveRead).toBeDefined())
+  expect(completed).toBe(false)
+  resolveRead({ progress: { activeLoadoutId: "loadout_1" } })
+  await save
+  await result.current.waitForPendingProgress()
+  expect(apply).toHaveBeenLastCalledWith({ activeLoadoutId: "loadout_1" })
 })

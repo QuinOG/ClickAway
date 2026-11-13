@@ -2,7 +2,7 @@
 
 import { equipShopItem, purchaseShopItem } from "../services/clickAwayHttpApiClient.js"
 import { canPurchaseShopItem, isShopItemOwned } from "../utils/shopUtils.js"
-import { applyProgressResponse, beginProgressRequest, isCurrentSession } from "./progressResponseGuard.js"
+import { applyProgressResponse, beginProgressRequest, isCurrentSession, settleProgressMutation } from "./progressResponseGuard.js"
 
 function buildPurchaseError(item, coins, ownedItemIds) {
   if (!item?.id) return "Unknown item."
@@ -44,10 +44,10 @@ export function useShopActions({
       }
     }
 
+    const ticket = beginProgressRequest()
     try {
       // The ticket is taken before waiting, so a purchase or equip started by one
       // account is never sent after another account has logged in.
-      const ticket = beginProgressRequest()
       await waitForPendingProgress?.()
       if (!isCurrentSession(ticket)) {
         return { ok: false, error: "You switched accounts, so that wasn't sent." }
@@ -63,6 +63,8 @@ export function useShopActions({
         ok: false,
         error: error.message || "Could not unlock that item.",
       }
+    } finally {
+      settleProgressMutation(ticket, applyProgress)
     }
   }, [
     applyProgress,
@@ -95,10 +97,10 @@ export function useShopActions({
       }
     }
 
+    const ticket = beginProgressRequest()
     try {
       // The ticket is taken before waiting, so a purchase or equip started by one
       // account is never sent after another account has logged in.
-      const ticket = beginProgressRequest()
       await waitForPendingProgress?.()
       if (!isCurrentSession(ticket)) {
         return { ok: false, error: "You switched accounts, so that wasn't sent." }
@@ -114,6 +116,8 @@ export function useShopActions({
         ok: false,
         error: error.message || "Could not equip that item.",
       }
+    } finally {
+      settleProgressMutation(ticket, applyProgress)
     }
   }, [
     applyProgress,

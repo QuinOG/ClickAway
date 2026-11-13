@@ -9,6 +9,7 @@ import {
   isCurrentSession,
   markPendingPreferences,
   settlePendingPreferences,
+  settleProgressMutation,
 } from "./progressResponseGuard.js"
 
 const PROGRESS_SYNC_TOAST_ID = "progress-sync"
@@ -72,15 +73,23 @@ export function useProgressSync({ isAuthed, applyProgress }) {
           return null
         }
 
-        await applyProgressResponse(ticket, response.progress, applyProgress)
+        settlePendingPreferences(pendingHandle)
+        const outcome = await applyProgressResponse(ticket, response.progress, applyProgress)
+        if (outcome === "refresh-failed") {
+          toast.error("Build saved, but progress couldn't refresh. Reload to see it.")
+        }
         return response.progress
       })
-      .catch((error) => {
-        // The edit was never stored: drop it and show what the server has.
+      .catch(async (error) => {
         settlePendingPreferences(pendingHandle)
-        void applyProgressResponse(beginProgressRequest(), null, applyProgress)
+        if (sessionEpochRef.current !== requestEpoch || !isCurrentSession(ticket)) return null
+        const outcome = await applyProgressResponse(ticket, null, applyProgress)
+        if (!isCurrentSession(ticket) || sessionEpochRef.current !== requestEpoch) return null
+        if (outcome === "refresh-failed") {
+          toast.error("Couldn't refresh your build. Build not saved, retry.")
+        }
         console.error("Unable to sync player progress:", error)
-        toast.error("Couldn't save your progress. Check your connection.", {
+        toast.error("Build not saved, retry. Check your connection.", {
           id: PROGRESS_SYNC_TOAST_ID,
           style: PROGRESS_ERROR_TOAST_STYLE,
         })
@@ -88,6 +97,7 @@ export function useProgressSync({ isAuthed, applyProgress }) {
       })
       .finally(() => {
         settlePendingPreferences(pendingHandle)
+        settleProgressMutation(ticket, applyProgress)
       })
 
     return persistQueueRef.current

@@ -1,3 +1,5 @@
+import toast from "react-hot-toast"
+
 import { fetchCurrentUser } from "../services/clickAwayHttpApiClient.js"
 
 // Rounds, purchases, equips and preference saves each answer with a full
@@ -15,8 +17,12 @@ let lastAppliedRequest = 0
 let pendingPreferenceFields = new Map()
 let pendingPreferenceSequence = 0
 let lastAppliedSnapshotAt = 0
+let reconcileTimer
+let reconcileGeneration = 0
 
 export function startNewProgressSession() {
+  clearTimeout(reconcileTimer)
+  reconcileGeneration += 1
   sessionGeneration += 1
   lastAppliedRequest = requestCounter
   pendingPreferenceFields = new Map()
@@ -96,11 +102,37 @@ export async function applyProgressResponse(ticket, progress, applyProgress) {
   const refreshTicket = beginProgressRequest()
   try {
     const session = await fetchCurrentUser()
-    if (claimProgressResponse(refreshTicket) === "apply" && session?.progress && !isOlderSnapshot(session.progress)) {
-      applySnapshot(session.progress, applyProgress)
+    const refreshClaim = claimProgressResponse(refreshTicket)
+    if (refreshClaim === "other-session") return "other-session"
+    if (refreshClaim !== "apply" || !session?.progress || isOlderSnapshot(session.progress)) {
+      return "refresh-failed"
     }
+    applySnapshot(session.progress, applyProgress)
     return "refreshed"
   } catch {
-    return "refresh-failed"
+    return isCurrentSession(refreshTicket) ? "refresh-failed" : "other-session"
   }
+}
+
+// Each settlement invalidates any read already in flight. A trailing read starts
+// after the last covered mutation has settled, even when response delivery and
+// database snapshot order disagree. Failures are visible and never auto-retried.
+export function settleProgressMutation(ticket, applyProgress) {
+  if (!isCurrentSession(ticket)) return
+  clearTimeout(reconcileTimer)
+  const generation = ++reconcileGeneration
+  reconcileTimer = setTimeout(async () => {
+    const refreshTicket = beginProgressRequest()
+    try {
+      const session = await fetchCurrentUser()
+      if (!isCurrentSession(refreshTicket) || generation !== reconcileGeneration) return
+      if (!session?.progress) throw new Error("Missing progress")
+      lastAppliedRequest = Math.max(lastAppliedRequest, refreshTicket.request)
+      applySnapshot(session.progress, applyProgress)
+    } catch {
+      if (isCurrentSession(refreshTicket) && generation === reconcileGeneration) {
+        toast.error("Couldn't refresh your progress. Reload to see your updated totals.")
+      }
+    }
+  }, 300)
 }
