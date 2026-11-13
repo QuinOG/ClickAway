@@ -1,90 +1,122 @@
 ---
 name: clickaway-bug-pass
-description: Run a ClickAway bug pass. Sol reviewers each take one narrow feature (at most three at a time) and report proven bugs, unintended behaviour and redundant code. Claude triages, fixes, verifies and publishes one plain-language PR. Each run ends by improving this skill from what the reviewers got right and wrong. Use when the user asks for a bug pass, a review round, "Sol review each feature", or another round of fixes.
+description: Run a ClickAway bug pass. Sol agents each take one narrow feature (three at a time). Each one reviews its feature, risk-scores every finding, fixes low-risk items itself, and writes plans for high-risk ones. A Sol challenger attacks the plans, Claude approves them, and a Sol integrator implements and merges everything into one plain-language PR. Each run ends by improving this skill. Use when the user asks for a bug pass, a review round, "Sol review each feature", or another round of fixes.
 ---
 
 # ClickAway bug pass
 
-Find and fix real bugs feature by feature, with reviewers whose instructions get better every run. Sol (gpt-6.1-sol) reviews; Claude triages, fixes, verifies and publishes. A reviewer never edits code.
+Find and fix real bugs feature by feature, with most of the work done by Sol (Codex `gpt-6.1-sol`).
+
+**Claude's job is small on purpose (user, 2026-11-14).** ChatGPT usage is plentiful and Claude is ahead of its weekly pace. Claude:
+- delegates;
+- reads one summary table per run;
+- reviews and approves high-risk fix plans;
+- does a final check before pushing;
+- updates this skill.
+
+Claude does not read full reports or write routine fixes. The aim is about 90% of the quality for a fraction of Claude's usage, with Claude's judgement kept for risky changes.
 
 Before launching, restate in 3–4 lines:
 - the features in this run;
 - the reasoning level;
-- the batch size;
+- the risk thresholds;
 - that the run ends with a PR update and a skill update.
 
 ## Files
-- `reviewer-brief.md`: the shared brief every reviewer reads. Copy it to the scratchpad for each run, and fill in "Already handled" from `state.md`.
-- `features.md`: the feature catalogue (narrow scopes, file lists) and each feature's yield history.
-- `state.md`: what is fixed (by commit), what is deferred and why, and the open PR. This is the single source for the brief's "do not re-report" lists.
-- `learning.md`: the run log, measured reviewer cost and yield, and the lessons that changed this skill.
+- `reviewer-brief.md`: what every feature agent reads (review rules, the risk rubric, fix guardrails, outputs). Copy it to the scratchpad each run, filling the `{{...}}` blocks from `state.md`.
+- `integrator-brief.md`: for the Sol agent that merges the feature branches, implements approved plans, verifies and drafts the PR.
+- `challenger-brief.md`: for the Sol agent that tries to break the high-risk plans before Claude sees them.
+- `features.md`: the feature catalogue (scopes) and yield history.
+- `state.md`: what is fixed (by commit), what is deferred and why, and the open PR.
+- `learning.md`: the run log, risk-score calibration, cost and lessons.
+
+## Risk rules (the heart of the delegation)
+Every finding gets a change-risk score from 1 to 10, covering:
+- the blast radius if the fix is wrong;
+- whether it touches stored data or deployments;
+- how reversible it is;
+- the test coverage.
+
+| Score | What happens |
+|---|---|
+| 1–4 | The feature agent fixes it right away, with a regression test where reproducible, and lists it as one line in its summary. |
+| 5–6 | The feature agent fixes it and flags it in its summary. Claude skims the flagged list and opens a diff only if a line looks off. |
+| 7–10 | The feature agent writes a fix plan and does not implement it. The plan goes to a challenger, then to Claude for approval, then to the integrator. |
+
+**Always 7+, whatever the score:**
+- DB schema or migrations;
+- login, sessions or cookies;
+- round tokens and reward or score validation;
+- coins and purchases;
+- rank and RR math;
+- anything deleting or rewriting stored data;
+- any change claiming an ordering or concurrency guarantee.
+
+These are where the high-severity bugs and Claude's own leaked fixes came from.
+
+**Fix guardrails for agents:**
+- only files in the feature's scope;
+- no new dependencies;
+- never delete or weaken a test;
+- each fix under about 60 changed lines, otherwise escalate to a plan;
+- lint and tests must pass.
 
 ## Defaults (see learning.md for the evidence)
-- **Reviewer:** Codex `gpt-6.1-sol` via `delegate_task`, `role: "review"`, `reasoningEffort: "high"`. High cost about 25% more wall time than medium in the A/B test, and it found the only high-severity bug. See learning.md.
-- **Riskiest feature of the run:** also run a medium reviewer on it in parallel, with the same brief and scope. In the A/B test, medium and high found largely different bugs, and the union beat either one alone.
-- **Batch size:** at most 3 reviewers running at once. Start the next one as soon as one finishes; don't wait for the whole wave.
-- **Scope:** one narrow feature per reviewer (features.md). Twelve narrow features beat six broad ones: deeper findings and fewer half-right claims.
-- **Usage:** the user is not very concerned, but it is a factor. Skip features whose last two runs found nothing, unless their code has changed since.
-- **Who fixes what (user, 2026-11-13: Claude was running ahead of its token pace):**
-  - Claude triages every finding, fixes the M/L items and anything touching server integrity, auth or the database, and reviews every delegated diff.
-  - Effort-S fixes are batched to a Codex builder (`gpt-6.1-sol`, `role: "implementation"`, `isolation: "worktree"`). Each batch gets the finding text, the exact files, the smallest-fix wording and "run lint + the named tests; do not touch other files". Claude merges and verifies.
-  - Rebalance whenever one side is clearly ahead of its pace.
-- **Usage limits:** if a reviewer or builder fails with a usage limit, stop launching for that provider. Finish the run with what is in, list the unreviewed features in the PR and state.md, and tell the user the reset time. Don't silently switch providers.
+- **Agents:** Codex `gpt-6.1-sol` with `reasoningEffort: "high"`.
+  - Feature agents: `role: "implementation"`, `isolation: "worktree"`, one per feature.
+  - Challenger: `role: "review"`.
+  - Integrator: `role: "implementation"`, in the shared checkout.
+- **Batch size:** at most 3 feature agents running at once. Start the next as soon as one finishes.
+- **Paired review:** dropped for now. A second agent fixing the same feature would conflict, and the challenger now covers the riskiest changes.
+- **Claude usage:**
+  - Claude reads summaries and plans, never full reports, unless a summary line is unclear.
+  - Claude doesn't run the browser capture or test suites itself; the integrator does.
+  - Claude runs one final `git log`/`git diff --stat` check before pushing.
+- **Usage limits:** if an agent fails with a usage limit, stop launching for that provider. Finish with what is in, list unreviewed features in the PR and state.md, and tell the user the reset time.
 
 ## Run
 1. **Prepare.**
-   - Make a scratchpad folder `bugpassN/`.
-   - Write `bugpassN/brief.md` from `reviewer-brief.md`. Fill its "Already handled" and "Deferred" sections from `state.md`, and its "What worked / didn't" sections from the latest lessons in `learning.md`.
-   - Record the start time (`date -u`).
-2. **Launch** reviewers per `features.md`, each with:
+   - Make scratchpad `bugpassN/`.
+   - Write `bugpassN/brief.md` from `reviewer-brief.md`, filling `{{RUN}}`, `{{BASE_BRANCH}}`, `{{FIXED}}`, `{{DEFERRED}}`, `{{LATEST_FIX_COMMIT}}`, `{{OUT_DIR}}` and `{{BRANCH_PREFIX}}` from state.md.
+   - Record the start time.
+2. **Feature agents.** Launch per features.md (the feature that missed the last run goes first). Each gets:
    ```
    First read and follow <bugpassN/brief.md> exactly.
    FEATURE: <name and one-line description>
    Scope: <files>
-   REPORT = <bugpassN/<feature>.md>
+   SLUG = <feature-slug>
    Return only "done".
    ```
-   End your turn; completions wake you. As each finishes, read its report and launch the next feature.
-3. **Measure.** For each finished reviewer, call `t3_thread_read` (view activity, limit 1). Record `startedAt`, `completedAt` and `itemCount` from `recentRuns` and `thread` into learning.md. Token counts are not exposed for child runs; use wall time and step count as the cost proxy.
-4. **Triage**, item by item. Fix it if it is:
-   - real (confirm in the code; reproduce pure functions with a small node script);
-   - not already fixed (`git log -p` on main and the PR branch);
-   - worth its effort.
-
-   Skip it, with a stated reason, if fixing would break existing accounts or data. Example: enforcing the password limit at login would lock out older accounts. Move anything big or speculative to `state.md` → Deferred. Several reviewers reporting one root cause is one fix. Write down each skip and its reason; they go in the PR's "Not fixed yet".
-5. **Fix**, on a short-lived local branch off the PR branch, then fast-forward the PR branch. Send effort-S items to the Codex builder, as described under "Who fixes what".
-   - Edit CRLF files in binary-safe Python (most of the repo is CRLF; a few files had cp1252 bytes).
-   - Avoid brittle `sed` on multi-line JSX.
-   - Every DB change needs both startup paths: `initializeSchema` (when `DB_AUTO_MIGRATE` is on), plus a numbered migration in `server/data/migrations/`, `REQUIRED_DATABASE_TABLES` and runtime-role grants. Record pending migrations in `server/data/MIGRATIONS.md`.
-   - Keep comments short and say why.
-6. **Verify:**
-   - `npm run lint`, `npm run test:unit`, `npx vitest run --config vitest.config.js`, `npm run build`;
-   - a browser smoke test, `SHOT_DIR=<scratch> npx playwright test tests/e2e/zz-app.spec.js --workers=1`, then look at 1–2 changed screens. Any `SKIPPED` line is a failure to explain: mocks in `tests/e2e/fixtures.js` may need new endpoints (e.g. `/round/complete`);
-   - re-run the reviewer's reproduction script against the fix.
-
-   If a test fails because it encodes old behaviour, update the test and say so in the PR. Server code can't run against the real database locally (Supabase), so mark those PR checks *(server)*.
-7. **Publish.**
-   - Commit with the Co-Authored-By line from the session's attribution reminder.
-   - Push to the open PR (state.md). Don't open a stacked PR: the user deletes branches after merging, and that auto-closed two stacked PRs.
-   - Update the PR description (format below), and link the PR.
-8. **Improve this skill** (always; this is part of the run, not optional):
-   - **learning.md:** add a run-log row (features, effort, reviewer times and steps, findings, accepted, rejected, regressions of the previous run's fixes, high-severity count).
-   - **Yield:** update each feature's history in features.md. Split features that keep yielding, and merge or rest those that yield nothing twice in a row.
-   - **Lessons:** add 1–3 lessons. What made a finding fast to act on? What was wrong, duplicated, unprovable or too big? What did every reviewer miss that a fix or test later exposed?
-   - **Brief:** fold those lessons into reviewer-brief.md's worked / didn't-work sections. Delete advice that no longer earns its place; keep the brief under about 120 lines.
-   - **Defaults:** if the evidence across runs says so, change the reasoning level, batch size or paired-review rule, and log why.
-   - **state.md:** add this run's fixed items with their commit, and update Deferred.
+   End the turn; completions wake you. On each completion, launch the next feature. Don't read the outputs yet.
+3. **Collect.** When all agents are done, read only each `bugpassN/<slug>-summary.md` (a table of every finding with its score and action). Note which branches have commits.
+4. **Plans.** Concatenate the `bugpassN/<slug>-plans.md` files into `bugpassN/plans.md`. Launch the challenger with `challenger-brief.md`. It writes `bugpassN/plans-challenged.md`, giving each plan a verdict of keep, revise (with the revision) or drop, plus a reason.
+5. **Approve.** Claude reads `plans-challenged.md` only. Approve, edit or drop each plan, and write the decisions to `bugpassN/plans-approved.md`. This is where Claude's judgement goes: data compatibility, both DB startup paths, migrations, and auth or ordering claims.
+6. **Integrate.** Launch the integrator with `integrator-brief.md`. It:
+   - merges the feature branches into a run branch off the PR branch;
+   - implements the approved plans;
+   - runs lint, unit, UI, build and the browser capture (any SKIPPED step is a failure);
+   - writes `bugpassN/pr-items.md` in the PR format below;
+   - reports in `bugpassN/integration.md`.
+7. **Final check (Claude).**
+   - Read `integration.md`.
+   - Skim `git diff --stat` and the risk 5–6 lines.
+   - Open diffs only where something looks off.
+   - Fast-forward the PR branch, push, update the PR description from `pr-items.md`, and link the PR.
+8. **Improve this skill** (always). Have the integrator draft the learning.md row and the features.md yields in `integration.md`, then Claude edits and commits:
+   - **Run log:** findings, auto-fixed (1–4, 5–6), plans (approved, revised, dropped), regressions of the previous run's fixes, high-severity count, and agent times.
+   - **Risk calibration:** if this run's reviewers find a regression caused by a previous auto-fix scored 1–6, record the score it had. Two such misses in an area add that area to the always-7+ list or lower the auto-fix ceiling (e.g. 1–3). Several clean runs can raise it.
+   - **Lessons:** add 1–3 lessons and fold them into reviewer-brief.md; keep it under about 150 lines.
+   - **state.md:** record fixed items with their commit, and update Deferred.
 
 ## PR description format (the user's rule)
-- Plain, non-technical, concise.
+- Plain, non-technical and concise.
 - Sorted by feature, using the features.md names as headings.
-- Each item is **Problem:** one sentence on what the player or operator experienced, then ✅ one sentence the user can try to check the fix. Don't restate the problem as a "solution".
-- Prefix items from later rounds with R2, R3 and so on.
-- Mark items that need the real database with *(server)*.
-- Put "Not fixed yet" under each feature, with the reason when it isn't obvious.
-- Put any **Before deploying** step at the very top (for example, migrations to run).
+- Each item is **Problem:** one sentence on what the player or operator experienced, then ✅ one sentence the user can try. Don't restate the problem as a solution.
+- Prefix later rounds with R2, R3, and so on. Mark items that need the real database with *(server)*.
+- Put "Not fixed yet" under each feature, with the reason. Put any **Before deploying** step at the very top.
 - End with the 🤖 Generated with Claude Code line.
+- Keep everything on the one open PR (state.md): the user deletes branches after merging, which auto-closed stacked PRs twice.
 
 ## Stop rules
 - One run per user request. Updating this skill does not authorize another run.
-- If a run's accepted findings are all low severity and nothing was high or medium, tell the user the feature set looks clean and recommend pausing or switching to the deferred list.
+- If a run's accepted findings are all low severity, tell the user the feature set looks clean and recommend pausing or switching to the deferred list.

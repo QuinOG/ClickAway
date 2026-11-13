@@ -1,64 +1,99 @@
-# ClickAway bug pass: reviewer brief (template)
+# ClickAway bug pass: feature agent brief (template)
 
-<!-- Claude: copy to the run's scratchpad, set RUN, and fill the two {{...}} blocks from state.md. -->
+<!-- Claude: copy to the run's scratchpad and fill every {{...}} from state.md. -->
 
-Bug pass, run {{RUN}}. You review ONE narrow feature of the ClickAway repo (C:\Users\quinl\ClickAway, branch {{BRANCH}}; React + Vite client in src/, Node + Postgres server in server/, migrations in server/data/migrations/). Read-only: do not edit any file except your report. Do not run the dev server or Playwright. You may run `npx vitest run --config vitest.config.js <file>`, `node --test <file>`, `npm run lint`, or small `node` scripts that import the real modules to prove a finding. All tests and lint currently pass. There is no live database, so say so when a finding is proven from the code rather than by execution.
+Bug pass, run {{RUN}}. You own ONE narrow feature of the ClickAway repo (React + Vite client in src/, Node + Postgres server in server/, migrations in server/data/migrations/). You review it, risk-score every finding, fix the low-risk ones yourself and write plans for the risky ones.
 
-Your feature is deliberately narrow. Go deep on it. Anything outside it goes in Cross-feature notes, not in your list.
+## Setup
+- You are in your own git worktree based on `{{BASE_BRANCH}}`. Create a branch `{{BRANCH_PREFIX}}/<SLUG>` and commit there. Do not push.
+- If `node_modules` is missing, run `npm ci` (allow several minutes). Never junction or symlink node_modules.
+- Do not run the dev server or Playwright (the integrator does). You may run `npm run lint`, `node --test <file>`, `npx vitest run --config vitest.config.js <file>`, and small `node` scripts that import the real modules.
+- There is no live database; say so when a finding is proven from code rather than execution.
+- Most files are CRLF. Preserve line endings when editing.
 
-## What worked in earlier runs (keep doing it)
-- **Proof by execution.** The strongest findings called the real functions, or rendered the real component in a small harness:
-  - a node VM ran two tabs' auth hooks to prove the account-switch bug;
-  - a JSDOM render of the Ladder proved "Low to high" only sorted one page;
-  - running the real `/api/round/complete` handler with an injected replay failure proved a saved round reported as lost.
-- **Re-checking the previous run's fixes.** In runs 2 and 3, a quarter to a third of findings were gaps in the previous run's fixes.
-- **Following a flow end to end:** client, then API, then database, then the response applied back in the UI.
-- **Looking for ways around a check**, not just whether the check exists. Examples:
-  - leaving out an optional parameter skipped hit-geometry checks;
-  - a route other than the main one completed duels;
-  - an "unrewarded" path still wrote durable stats.
-- **Checking failure paths after a commit.** Writes that run after a transaction commits can fail and turn a saved result into a reported error.
+## Review: what worked in earlier runs (keep doing it)
+- **Prove by execution.** Call the real functions, or render the real component in a small harness. Examples: a node VM running two tabs' auth hooks; a JSDOM render of the Ladder; real geometry replay; the real `/api/round/complete` handler run with an injected failure.
+- **Re-check the previous fix commit ({{LATEST_FIX_COMMIT}}) in your area.** In every run so far, a quarter or more of findings were gaps in the last run's fixes.
+- **Follow flows end to end:** client, then API, then database, then the response applied back in the UI.
+- **Look for ways around a check:**
+  - optional parameters that skip validation;
+  - alternate routes;
+  - "unrewarded" paths that still write durable data.
+- **Check failures after a commit:** later writes that turn a saved result into a reported error.
+- **Try to break ordering and concurrency claims** with a reordered-I/O harness. Run 5's snapshot-ordering fix leaked this way twice.
 - **The player's view:**
   - wrong numbers or labels;
   - states that never resolve;
   - swallowed errors;
-  - success messages shown when the action didn't land.
-- **A Verified-by line and an honest effort size** on every item, plus Cross-feature notes.
-- **Short, solid reports.** Two to four proven items beat ten guesses.
+  - success shown for an action that didn't land;
+  - dev-only shortcuts that hide behaviour.
 
-## What did not work (avoid it)
-- **Overlap with neighbouring features:** stay in your lane and use Cross-feature notes.
-- **Heavier fixes than needed:** propose the smallest fix that closes the problem, and say what it costs.
-- **Ignoring existing accounts and stored data**, and both database startup paths:
-  - `DB_AUTO_MIGRATE` on, through initializeSchema;
-  - off, through numbered migrations, verifySchema and migration 011's runtime-role grants.
-
-  A fix that would lock out existing users is not a fix.
-- **Half-right claims about how data is stored:** check the whole path before stating it.
-- **Speculation:** skip anything you could not confirm.
+## Review: what did not work (avoid it)
+- **Overlap:** stay in your feature's scope and use Cross-feature notes.
+- **Heavier fixes than needed:** use the smallest fix.
+- **Ignoring existing accounts, stored data or both DB startup paths:**
+  - `DB_AUTO_MIGRATE` on means initializeSchema;
+  - off means numbered migrations, verifySchema and migration 011 grants.
+- **Half-right claims about how data is stored**, and speculation.
 
 ## Already handled; do not re-report
-{{FIXED_FROM_STATE_MD}}
+{{FIXED}}
 
-## Known and deferred (report only with a *small* fix)
-{{DEFERRED_FROM_STATE_MD}}
+## Known and deferred (only with a small fix)
+{{DEFERRED}}
 
-## Re-check the previous run's fixes in your area
-The latest fix commit ({{LATEST_FIX_COMMIT}}) is new and untested against a real database. Look for:
-- regressions;
-- a legitimate flow now refused;
-- responses dropped that should apply;
-- SQL that is invalid in Postgres;
-- migration or permission gaps;
-- UI states that are never cleared.
+## Risk-score every finding (1–10)
+Score the risk of *changing the code*, not how bad the bug is:
+- the blast radius if your fix is wrong;
+- whether it touches stored data or deployment;
+- how reversible it is;
+- how well tests cover it.
 
-## Report format
-Write your report to the REPORT path as a numbered list, most severe first, at most 10 items:
+| Score | What you do |
+|---|---|
+| 1–4 | Fix it now, add a regression test when you can reproduce it, and commit. |
+| 5–6 | Fix it now and commit, but flag it in the summary. |
+| 7–10 | Do not implement. Write a plan (below). |
 
-`N. [bug|behaviour|redundant|regression] [high|med|low] [effort S|M|L] file:line. Problem (what the player or operator experiences): … | Fix (smallest that works; note any data/compat impact): … | Why it matters: … | Verified by: <script output, test run, or the code path read end to end; say "no live DB" where relevant>`
+**Always 7+, regardless of your score:**
+- DB schema or migrations;
+- login, sessions or cookies;
+- round tokens and reward or score validation;
+- coins and purchases;
+- rank and RR math;
+- deleting or rewriting stored data;
+- anything claiming ordering or concurrency guarantees.
 
-Then add `Cross-feature notes:` with one line each, or "none".
+**Fix guardrails:**
+- only files in your scope;
+- no new dependencies;
+- never delete or weaken tests;
+- under about 60 changed lines per fix (bigger means write a plan instead);
+- one commit per fix, with a plain message;
+- keep comments short and say *why*.
 
-On the last line, add: `Self-assessment: <one sentence on how confident you are and what you did not get to>`.
+Before finishing, run `npm run lint` and the tests that touch your files; all must pass. If a test encodes behaviour you deliberately changed, update it and say so.
+
+## Outputs (all under {{OUT_DIR}})
+1. **`<SLUG>-summary.md`:** one table row per finding:
+
+   `| # | Severity (H/M/L) | Risk 1–10 | Action (fixed / fixed-flagged / plan / skipped) | One-line problem as the player sees it | Commit or plan id | How verified |`
+
+   Then add a line `Branch: {{BRANCH_PREFIX}}/<SLUG> (<n> commits)`, then `Cross-feature notes:`, then `Self-assessment:` (one sentence).
+2. **`<SLUG>-plans.md`** (only if you have 7+ findings): for each, give:
+   - an id;
+   - the problem and its proof;
+   - the exact files and change;
+   - data/compat and DB startup-path impact;
+   - the tests to add;
+   - what could go wrong.
+
+   Keep each plan under about 25 lines.
+3. **`<SLUG>-items.md`:** for each fixed item, one PR line in the user's format:
+
+   `- **Problem:** <what the player experienced>`
+   `  ✅ <one sentence they can try>`
+
+   Mark server items *(server)*.
 
 Return only "done".
