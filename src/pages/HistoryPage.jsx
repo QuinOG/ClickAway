@@ -127,8 +127,11 @@ const TRAJECTORY_MODES = [
 // single line through Practice, Casual and Ranked scores.
 const LINE_TONES = { ranked: "#ffc94a", casual: "#4fb8ff", practice: "#3ee59a" }
 
-function HistoryTrajectory({ rounds = [] }) {
-  const [modeFilter, setModeFilter] = useState(() => (rounds[0] ? getModeTone(rounds[0]) : "casual"))
+// The trend follows the page's single mode choice. "All" can't be drawn as one
+// line, so it falls back to the latest round's mode and says so.
+function HistoryTrajectory({ rounds = [], selectedMode = "all" }) {
+  const isFollowingLatest = selectedMode === "all"
+  const modeFilter = isFollowingLatest ? (rounds[0] ? getModeTone(rounds[0]) : "casual") : selectedMode
   const modeLabel = TRAJECTORY_MODES.find((mode) => mode.id === modeFilter)?.label ?? "Casual"
   const plottedRounds = rounds.filter((round) => getModeTone(round) === modeFilter).slice(0, 8).reverse()
   const scores = plottedRounds.map((round) => Number(round.score) || 0)
@@ -149,7 +152,9 @@ function HistoryTrajectory({ rounds = [] }) {
   return (
     <section
       className="historyTrajectory"
-      aria-label={`${modeLabel} score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
+      aria-label={plottedRounds.length === 0
+        ? `${modeLabel} score trajectory: no ${modeLabel} rounds in loaded history.`
+        : `${modeLabel} score trajectory across ${plottedRounds.length} recent rounds. ${scoreChange >= 0 ? "Up" : "Down"} ${Math.abs(scoreChange)} points from first to latest.`}
     >
       <div className="historyTrajectoryCopy">
         <p className="commandHeaderEyebrow">Score trend</p>
@@ -161,7 +166,7 @@ function HistoryTrajectory({ rounds = [] }) {
       </div>
 
       <ol className="historyClimb" aria-hidden="true">
-        {plottedRounds.length === 0 ? <li className="historyClimbEmpty">No {modeLabel.toLowerCase()} rounds yet</li> : null}
+        {plottedRounds.length === 0 ? <li className="historyClimbEmpty">No {modeLabel} rounds in loaded history</li> : null}
         {plottedRounds.length > 1 ? (
           <li className="historyClimbAxis">
             {[100, 67, 34].map((level) => (
@@ -197,21 +202,6 @@ function HistoryTrajectory({ rounds = [] }) {
           )
         })}
       </ol>
-
-      <div className="historyTrajectoryLegend isFilter" role="group" aria-label="Trend mode">
-        {TRAJECTORY_MODES.map((mode) => (
-          <button
-            key={mode.id}
-            type="button"
-            data-mode={mode.id}
-            className={modeFilter === mode.id ? "isActive" : ""}
-            aria-pressed={modeFilter === mode.id}
-            onClick={() => setModeFilter(mode.id)}
-          >
-            <i /> {mode.label}
-          </button>
-        ))}
-      </div>
     </section>
   )
 }
@@ -293,6 +283,9 @@ export default function HistoryPage({
     [historyRows, logModeFilter]
   )
   const logModeLabel = TRAJECTORY_MODES.find((mode) => mode.id === logModeFilter)?.label ?? "All"
+  const latestModeLabel = historyRows[0]
+    ? TRAJECTORY_MODES.find((mode) => mode.id === getModeTone(historyRows[0]))?.label
+    : null
 
   const resolvedTotalRoundCount = Math.max(
     totalRoundCount,
@@ -449,7 +442,28 @@ export default function HistoryPage({
           </section>
         ) : (
           <main className="historyContent">
-            <HistoryTrajectory rounds={historyRows} />
+            <div className="historyModeFilters" role="group" aria-label="Mode for score trend and match log">
+              <span className="historyModeFilterLabel">Mode · score trend and match log</span>
+              {[{ id: "all", label: "All" }, ...TRAJECTORY_MODES].map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  className="secondaryButton"
+                  data-mode={mode.id}
+                  aria-pressed={logModeFilter === mode.id}
+                  onClick={() => setLogModeFilter(mode.id)}
+                >
+                  {mode.label}
+                </button>
+              ))}
+              {logModeFilter === "all" && latestModeLabel ? (
+                <p className="historyModeFilterNote">
+                  With All, the score trend shows your latest mode ({latestModeLabel}).
+                </p>
+              ) : null}
+            </div>
+
+            <HistoryTrajectory rounds={historyRows} selectedMode={logModeFilter} />
 
             {highlightCards.length > 0 ? (
               <section className="historyHighlightsSection" aria-label="Round highlights">
@@ -477,20 +491,6 @@ export default function HistoryPage({
                 <h2 className="historySectionTitle">Full Log</h2>
               </div>
 
-              <div className="historyLogFilters" role="group" aria-label="Filter match log by mode">
-                <span className="historyLogFilterLabel">Filter match log</span>
-                {[{ id: "all", label: "All" }, ...TRAJECTORY_MODES].map((mode) => (
-                  <button
-                    key={mode.id}
-                    type="button"
-                    className="secondaryButton"
-                    aria-pressed={logModeFilter === mode.id}
-                    onClick={() => setLogModeFilter(mode.id)}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
               <p className="historySectionDescription" role="status" aria-live="polite" aria-atomic="true">
                 Showing {formatNumber(filteredHistoryRows.length)} of {formatNumber(historyRows.length)} loaded rounds
                 {logModeFilter === "all" ? " · All modes" : ` · ${logModeLabel}`}

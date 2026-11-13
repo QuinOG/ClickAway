@@ -34,7 +34,8 @@ function logSection() {
 }
 
 function filter() {
-  return within(logSection()).getByRole("group", { name: "Filter match log by mode" })
+  // Trial 002 moved the single mode choice above the chart so it drives both.
+  return screen.getByRole("group", { name: "Mode for score trend and match log" })
 }
 
 function tableScores() {
@@ -116,16 +117,9 @@ describe("History match-log mode selection", () => {
     expect(within(logSection()).queryByRole("alert")).toBeNull()
   })
 
-  test("keeps the first-round action and chart selection separate from the log", async () => {
-    const user = userEvent.setup()
-    const empty = renderHistory({ roundHistory: [] })
+  test("keeps the first-round action for an empty archive", () => {
+    renderHistory({ roundHistory: [] })
     expect(screen.getByRole("link", { name: "Play a Round" }).getAttribute("href")).toBe("/game")
     expect(screen.queryByRole("region", { name: "Full match log" })).toBeNull()
-    empty.unmount()
-    renderHistory()
-    const chart = screen.getByRole("region", { name: /score trajectory across/i })
-    const chartBefore = chart.textContent
-    await user.click(within(filter()).getByRole("button", { name: "Practice", exact: true }))
-    expect(chart.textContent).toBe(chartBefore)
   })
 })
