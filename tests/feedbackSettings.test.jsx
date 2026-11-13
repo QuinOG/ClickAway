@@ -85,6 +85,23 @@ describe("Feedback settings", () => {
     expect(await screen.findByText("Could not save preferences.")).not.toBeNull()
   })
 
+  test("lets Apply retry after storage becomes available again", async () => {
+    const user = userEvent.setup()
+    const storageWrite = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("Storage full", "QuotaExceededError")
+    })
+    render(<SettingsHarness />)
+    await user.click(screen.getByRole("button", { name: "Open feedback settings" }))
+    await user.click(screen.getByRole("checkbox", { name: /Mute all sound/i }))
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+    expect(await screen.findByText("Could not save preferences.")).not.toBeNull()
+    storageWrite.mockRestore()
+    expect(screen.getByRole("button", { name: "Apply" }).disabled).toBe(false)
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+    expect(JSON.parse(localStorage.getItem(FEEDBACK_PREFERENCES_STORAGE_KEY)).muted).toBe(true)
+    expect(screen.getByText("Preferences are saved.")).not.toBeNull()
+  })
+
   test("shows unavailable haptics and honors the OS reduced-motion override", async () => {
     vi.stubGlobal("matchMedia", vi.fn().mockImplementation((query) => ({
       matches: query === "(prefers-reduced-motion: reduce)",
