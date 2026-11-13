@@ -5217,3 +5217,14 @@
 .historyRoundDeck .historyRoundCardOutcome small { padding: 1px 5px; border-radius: 3px; background: #070d18e6; }
 .historyRoundDeck .historyRoundCard:has(.historyRankBadge.isPositive)::after { border-right-color: #c99a3a !important; }
 .historyRoundDeck .historyRoundCard:has(.historyRankBadge.isNegative)::after { border-right: 3px solid #7a2a24 !important; }
+
+/* ---- Round 57: Ladder hovercard portrait fills its panel ------------- */
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar { overflow: hidden !important; place-items: end center !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar::before { width: 150px !important; height: 150px !important; bottom: 14px !important; }
+.ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width: 160px !important; height: 160px !important; margin-bottom: -6px !important; }
+/* ---- Round 57: History seal clearance and loss seam ------------------- */
+.historyRoundDeck .historyRoundCardOutcome:has(small)::before { width: 78px; height: 78px; top: 8px; transform: translateX(-50%); }
+.historyRoundDeck .historyRoundCardOutcome:has(small) { justify-content: flex-end !important; gap: 2px !important; padding-bottom: 7px; }
+.historyRoundDeck .historyRoundCardOutcome:has(small) .historyRankBadge { position: absolute !important; left: 50%; top: 47px; transform: translate(-50%, -50%); }
+.historyRoundDeck .historyRoundCardOutcome:has(small) small { font-size: 9px; line-height: 1.1; }
+.historyRoundDeck .historyRoundCard:has(.historyRankBadge.isNegative)::after { border-right: 4px solid #b8392c !important; }
