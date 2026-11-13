@@ -9,6 +9,7 @@ Update this after every run (SKILL.md step 8). The run log and lessons here are 
 | 1 | 2026-11-13 | 6 broad × medium | 46 | 37 | 9 deferred (size) | – | ~6 | Several half-right claims (e.g. storage of the selected mode). |
 | 2 | 2026-11-13 | 6 broad × medium, with brief | 17 | 16 | 1 (password at login: compat) | ~6 | 3 | Cross-feature notes caught two shared bugs. |
 | 3 | 2026-11-13 | 12 narrow × high | 39 | 38 | 1 (same compat skip) | ~10 | 7 | Nearly every item proven by execution; no wrong claims. |
+| 5 | 2026-11-13 | 12 narrow × high + paired medium on round saving (Help/menus lost to the Codex usage limit) | 34 | 33 | 1 deferred (placement label in History needs a DB column) | ~9 | 3 | Every report carried a run proof. Low-severity items rose; feature set is nearing diminishing returns. |
 | 4 (A/B) | 2026-11-13 | 1 feature (round saving) × medium and × high | 3 + 2 | 4 unique | 0 | – | 1 (high only) | See the A/B result below. |
 
 ## Reviewer cost (wall time from `recentRuns`, steps = `itemCount`)
@@ -27,7 +28,13 @@ Token counts are not exposed for child runs; time and steps are the proxy. Earli
 - **Coverage:** medium found two real bugs that high missed (unverified rounds still counting toward stats, and a stale rank on Results). The overlap was only one of four.
 - **Conclusion:** use high by default, since the extra cost is small and it catches severe issues. On the riskiest feature of a run, also run medium in parallel; they look in different places. One sample only; keep timing both on the paired feature to confirm.
 
+## Paired review, run 5 (round saving)
+Medium found 3 and high found 3, with 2 shared. Each caught one medium-severity bug the other missed: medium found the season write skipped on a replay failure, high found the inverted snapshot order. That's the same pattern as run 4, so keep the paired rule. Times weren't measured this run.
+
 ## Lessons (newest first)
+- **Run 5:** About a quarter of findings were regressions in the previous run's fixes, again. Concurrency-ordering fixes in particular kept leaking: request-start order, then read-start time. When a fix claims an ordering guarantee, ask the reviewer to try to break it with a reordered-I/O harness before it ships.
+- **Run 5:** The browser capture's dev "g" shortcut and missing `/round/complete` mock silently skipped the rank-up screen after a behaviour change. Treat SKIPPED capture steps as failures.
+- **Run 5:** Claude ran ahead of its token pace doing every fix. Effort-S fixes now go to a Codex builder (see SKILL.md).
 - **Run 4:** Reviewers at different effort levels found largely different bugs. A paired review of the riskiest feature is cheap (about +100% on that one feature) and caught twice as many issues.
 - **Run 4:** Two whole bug classes were only found once the brief asked about them: ways around a check (optional parameters, alternate routes, "unrewarded" paths that still write) and failures after a commit. Both are now in reviewer-brief.md.
 - **Run 3:** Narrow features plus high reasoning gave deeper, proven findings and no wrong claims. Broad features at medium gave more half-right findings.

@@ -74,6 +74,28 @@ Open PR: #21 (`sol-bug-pass`, base `main`). It holds all four runs. Before deplo
   - post-commit replay/season/duel/progress-read failures return the saved round with a note;
   - Results uses the server's rank progress.
 
+- **Run 5 (45ba248):**
+  - history backfill only when no stats row exists, run before inserting history;
+  - season write isolated from replay failures;
+  - consistent REPEATABLE READ progress reads with `snapshotAtMs`, older snapshots refetched, missing progress refetched;
+  - live round: Freeze no longer cancels a hit's move, timed rounds keep running at the click cap, spawn animation no longer scales;
+  - promotion only after a confirmed save, "Placements complete" label;
+  - Test Range: abandon stops the run, build miss cost shown, history keyed by bay id;
+  - per-field pending edits, and a failed save reconciles from the server;
+  - swap report direction from raw values, gallery keyed by bay;
+  - shop post-commit read can't fail the action;
+  - `TRUST_PROXY` setting (on for Railway);
+  - cross-tab Web Lock around auth;
+  - an "account created, please log in" sign-up error;
+  - placement rounds aren't ranked wins;
+  - newest loadout name kept;
+  - Deadeye reward tier and crest;
+  - unplaced Around Me message;
+  - all pending/accepted duels returned;
+  - no duel start before the ghost loads;
+  - history paging resets when the first page changes;
+  - personal best must equal the saved record.
+
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
 - **Interval timer drift in background tabs:** M; needs a deadline-based timer.
@@ -85,4 +107,7 @@ Open PR: #21 (`sol-bug-pass`, base `main`). It holds all four runs. Before deplo
 - **Armory dialogs lack a focus trap:** M.
 - **Shop category tabs lack arrow keys:** S–M.
 - **Login doesn't apply the 72-byte password limit:** enforcing it would lock out older accounts. Product decision.
+- **History labels placement points as RR:** needs a nullable `rank_result_kind` column on round_history (both startup paths, migration 013 and verifySchema). Plan it with other schema work.
+- **Existing accounts with stats inflated by unverified rounds:** a one-off repair would be needed; history doesn't record verification.
+- **Help, menus and settings were not reviewed in run 5** (Codex usage limit, resets 2026-11-18). Review this feature first next run.
 - **Duel race lost if its replay write fails after commit:** the round is reported saved with a note, but the duel stays unsettled. Needs the replay and duel writes inside the round transaction.

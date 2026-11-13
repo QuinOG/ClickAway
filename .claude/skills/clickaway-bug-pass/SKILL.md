@@ -25,6 +25,11 @@ Before launching, restate in 3–4 lines:
 - **Batch size:** at most 3 reviewers running at once. Start the next one as soon as one finishes; don't wait for the whole wave.
 - **Scope:** one narrow feature per reviewer (features.md). Twelve narrow features beat six broad ones: deeper findings and fewer half-right claims.
 - **Usage:** the user is not very concerned, but it is a factor. Skip features whose last two runs found nothing, unless their code has changed since.
+- **Who fixes what (user, 2026-11-13: Claude was running ahead of its token pace):**
+  - Claude triages every finding, fixes the M/L items and anything touching server integrity, auth or the database, and reviews every delegated diff.
+  - Effort-S fixes are batched to a Codex builder (`gpt-6.1-sol`, `role: "implementation"`, `isolation: "worktree"`). Each batch gets the finding text, the exact files, the smallest-fix wording and "run lint + the named tests; do not touch other files". Claude merges and verifies.
+  - Rebalance whenever one side is clearly ahead of its pace.
+- **Usage limits:** if a reviewer or builder fails with a usage limit, stop launching for that provider. Finish the run with what is in, list the unreviewed features in the PR and state.md, and tell the user the reset time. Don't silently switch providers.
 
 ## Run
 1. **Prepare.**
@@ -47,14 +52,14 @@ Before launching, restate in 3–4 lines:
    - worth its effort.
 
    Skip it, with a stated reason, if fixing would break existing accounts or data. Example: enforcing the password limit at login would lock out older accounts. Move anything big or speculative to `state.md` → Deferred. Several reviewers reporting one root cause is one fix. Write down each skip and its reason; they go in the PR's "Not fixed yet".
-5. **Fix**, on a short-lived local branch off the PR branch, then fast-forward the PR branch.
+5. **Fix**, on a short-lived local branch off the PR branch, then fast-forward the PR branch. Send effort-S items to the Codex builder, as described under "Who fixes what".
    - Edit CRLF files in binary-safe Python (most of the repo is CRLF; a few files had cp1252 bytes).
    - Avoid brittle `sed` on multi-line JSX.
    - Every DB change needs both startup paths: `initializeSchema` (when `DB_AUTO_MIGRATE` is on), plus a numbered migration in `server/data/migrations/`, `REQUIRED_DATABASE_TABLES` and runtime-role grants. Record pending migrations in `server/data/MIGRATIONS.md`.
    - Keep comments short and say why.
 6. **Verify:**
    - `npm run lint`, `npm run test:unit`, `npx vitest run --config vitest.config.js`, `npm run build`;
-   - a browser smoke test, `SHOT_DIR=<scratch> npx playwright test tests/e2e/zz-app.spec.js --workers=1`, then look at 1–2 changed screens;
+   - a browser smoke test, `SHOT_DIR=<scratch> npx playwright test tests/e2e/zz-app.spec.js --workers=1`, then look at 1–2 changed screens. Any `SKIPPED` line is a failure to explain: mocks in `tests/e2e/fixtures.js` may need new endpoints (e.g. `/round/complete`);
    - re-run the reviewer's reproduction script against the fix.
 
    If a test fails because it encodes old behaviour, update the test and say so in the PR. Server code can't run against the real database locally (Supabase), so mark those PR checks *(server)*.
