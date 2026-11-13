@@ -337,7 +337,8 @@ function ModeRecord({ mode, recentRounds = [] }) {
   const rounds = recentRounds.filter((round) => round.modeId === mode.id).slice(0, 10)
   if (!rounds.length) return null
   const scores = rounds.map((round) => Number(round.score) || 0).reverse()
-  const best = Math.max(...scores, 1)
+  const best = Math.max(...scores)
+  const chartCeiling = Math.max(1, best)
   const average = Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length)
   const latest = scores[scores.length - 1]
   const trend = scores.length > 1 ? latest - scores[scores.length - 2] : 0
@@ -354,13 +355,13 @@ function ModeRecord({ mode, recentRounds = [] }) {
         <span><small>Rounds</small><b>{rounds.length}</b></span>
       </div>
       <div className="lobbyModeRecordChart" aria-hidden="true">
-        <i className="lobbyModeRecordAvg" style={{ bottom: `${(average / best) * 100}%` }} />
+        <i className="lobbyModeRecordAvg" style={{ bottom: `${(average / chartCeiling) * 100}%` }} />
         {Array.from({ length: 10 - scores.length }, (_, index) => <b key={`empty-${index}`} className="isEmpty" />)}
         {scores.map((value, index) => (
           <b
             key={index}
             className={`${value === best ? "isBest" : ""} ${index === scores.length - 1 ? "isLatest" : ""}`}
-            style={{ height: `${Math.max(6, (value / best) * 100)}%` }}
+            style={{ height: `${Math.max(6, (value / chartCeiling) * 100)}%` }}
           />
         ))}
       </div>

@@ -14,6 +14,13 @@ function renderEntrance(props) {
 }
 
 describe("Arena entrance", () => {
+  test.each(["requesting", "error"])("labels Casual authorization correctly while %s", (startStatus) => {
+    renderEntrance({ modeId: "normal", modeLabel: "Casual", startStatus })
+    expect(screen.getByRole("status").textContent).toContain("Casual round")
+    expect(screen.getByText("Casual authorization")).not.toBeNull()
+    expect(screen.queryByText(/Ranked/)).toBeNull()
+  })
+
   test("announces only the active countdown cue and presents the arena briefing", () => {
     renderEntrance({
       countdownValue: 3,

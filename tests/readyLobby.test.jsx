@@ -37,6 +37,14 @@ function renderLobby(overrides = {}) {
 }
 
 describe("Arena lobby", () => {
+  test("shows an actual zero best score without invalid chart percentages", () => {
+    renderLobby({ recentRounds: [{ modeId: "normal", score: 0 }] })
+    const record = screen.getByLabelText("Casual record")
+    expect(within(record).getByText("Best").nextElementSibling.textContent).toBe("0")
+    expect(record.querySelector(".lobbyModeRecordAvg").style.bottom).toBe("0%")
+    expect(record.querySelector(".lobbyModeRecordChart b.isBest")).not.toBeNull()
+  })
+
   test("shows all modes and starts a directly selected mode", async () => {
     const user = userEvent.setup()
     const props = renderLobby()

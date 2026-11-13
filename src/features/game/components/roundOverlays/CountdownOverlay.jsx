@@ -32,9 +32,9 @@ export function CountdownOverlay({
   const isWaiting = startStatus === "requesting"
   const isError = startStatus === "error"
   const spokenCue = isWaiting
-    ? "Securing Ranked round"
+    ? `Securing ${modeLabel} round`
     : isError
-      ? "Ranked round could not be secured"
+      ? `${modeLabel} round could not be secured`
       : isGoCue
         ? "Go"
         : String(countdownValue)
@@ -65,7 +65,7 @@ export function CountdownOverlay({
 
       {isWaiting || isError ? (
         <div className={`roundTokenStatus ${isError ? "isError" : ""}`} role={isError ? "alert" : undefined}>
-          <span className="roundTokenStatusKicker">Ranked authorization</span>
+          <span className="roundTokenStatusKicker">{modeLabel} authorization</span>
           <strong>{isWaiting ? "Securing your round" : "Round not secured"}</strong>
           <p>{isWaiting
             ? "Waiting for a server token. The countdown starts only when the round is verified."
