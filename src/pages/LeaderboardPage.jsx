@@ -226,13 +226,18 @@ function LeaderboardStandingPanel({
   selfRank = null,
   totalCount = 0,
   season = null,
+  isSearching = false,
 }) {
   const normalizedRankedRounds = Math.max(0, Number(rankedRounds) || 0)
   const placementMatchesRemaining = Math.max(
     0,
     Number(currentRankProgress?.placementMatchesRemaining) || 0
   )
-  const displaySpot = currentVisiblePlayer
+  // While searching, rows are ranked among the matches only, so a visible row's rank isn't
+  // your real rank; use the rank kept from the last unsearched load instead.
+  const displaySpot = isSearching
+    ? selfRank ? `#${selfRank}` : "--"
+    : currentVisiblePlayer
     ? `#${currentVisiblePlayer.rank}`
     : selfRank
       ? `#${selfRank}`
@@ -247,7 +252,7 @@ function LeaderboardStandingPanel({
     ? `You are ranked #${formatNumericValue(selfRank ?? 0)} out of ${formatNumericValue(totalCount)} placed players.`
     : "Complete placement to appear on the global ladder."
 
-  if (currentVisiblePlayer) {
+  if (currentVisiblePlayer && !isSearching) {
     title = null
     lead = null
   } else if (currentRankProgress?.isPlacement) {
@@ -258,6 +263,9 @@ function LeaderboardStandingPanel({
   } else if (currentRankProgress?.isUnranked) {
     title = "Play Ranked to place"
     lead = `Complete ${PLACEMENT_MATCH_COUNT} placement matches to unlock your visible ladder standing.`
+  } else if (!selfRank && isSearching) {
+    title = "Your ladder rank"
+    lead = "Clear the search to see your rank on this board."
   } else if (!selfRank) {
     title = "Outside the placed ladder"
     lead = "Finish placement to receive a global rank."
@@ -561,6 +569,9 @@ export default function LeaderboardPage({
   const [searchQuery, setSearchQuery] = useState("")
   // Only the newest request may update the page, so a slow older search can't replace newer results.
   const latestLoadRef = useRef(0)
+  // Your rank per board from the last load without a search. Searches rank players among the
+  // matches only, so their selfRank (or its absence) is never your real rank.
+  const knownSelfRankRef = useRef({})
   const [view, setView] = useState("top")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
@@ -602,7 +613,8 @@ export default function LeaderboardPage({
       setResultsQuery(searchQuery)
       // A search can leave you out of the results, and the server then omits your rank.
       // Keep your known rank instead of telling a placed player they are unranked.
-      if (!searchQuery || response.selfRank != null) setSelfRank(response.selfRank)
+      if (!searchQuery) knownSelfRankRef.current[board] = response.selfRank
+      setSelfRank(searchQuery ? knownSelfRankRef.current[board] ?? null : response.selfRank)
       setSeason(response.season)
       return true
     } catch (error) {
@@ -742,6 +754,7 @@ export default function LeaderboardPage({
             selfRank={selfRank}
             totalCount={fieldTotalCount}
             season={season}
+            isSearching={Boolean(resultsQuery)}
           />
         </div>
 

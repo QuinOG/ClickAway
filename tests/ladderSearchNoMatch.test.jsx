@@ -141,4 +141,54 @@ describe("Ladder search with no matches", () => {
     expect(ladderNames()).toEqual(["Nova"])
     expect(screen.queryByText(/No players match/)).toBeNull()
   })
+
+  // The server ranks a search's matches among themselves and omits your rank if you aren't
+  // matched. Model that: ranks are renumbered within the results.
+  function serverLikeSearch({ search = "", board = "mmr" }) {
+    const matches = players.filter((player) => player.username.toLowerCase().includes(search.toLowerCase()))
+      .map((player, index) => ({ ...player, rank: search ? index + 1 : player.rank }))
+    const me = matches.find((player) => player.username === "Vector")
+    const selfRank = search ? (me ? me.rank : null) : (board === "mmr" ? 3 : 2)
+    return { rows: matches, page: 1, totalPages: matches.length ? 1 : 0, totalCount: matches.length, selfRank }
+  }
+  function renderPlaced() {
+    return render(
+      <MemoryRouter>
+        <LeaderboardPage isAuthed currentUserId={7} currentUsername="Vector" currentRankProgress={{ tierLabel: "Gold II", isPlacement: false, isUnranked: false }} />
+      </MemoryRouter>,
+    )
+  }
+  const spot = () => document.querySelector(".leaderboardStandingSpot, [class*='StandingSpot'] strong")?.textContent
+
+  test("a search that ranks you among its matches doesn't replace your real rank", async () => {
+    const user = userEvent.setup()
+    fetchLeaderboard.mockImplementation(async (params) => serverLikeSearch(params))
+    renderPlaced()
+    await waitFor(() => expect(ladderNames()).toHaveLength(3))
+    await user.type(searchBox(), "r")
+    await waitFor(() => expect(ladderNames()).toEqual(["Orbit", "Vector"]))
+    expect(screen.getByText(/ranked #3 out of 3 placed players/)).toBeTruthy()
+    await user.clear(searchBox())
+    await user.type(searchBox(), "zzz")
+    await screen.findByText(/No players match “zzz”/)
+    expect(screen.getByText(/ranked #3 out of 3 placed players/)).toBeTruthy()
+    expect(screen.queryByText(/#2 out of|Outside the placed ladder|Finish placement/)).toBeNull()
+  })
+
+  test("switching boards during a search doesn't invent a rank", async () => {
+    const user = userEvent.setup()
+    fetchLeaderboard.mockImplementation(async (params) => serverLikeSearch(params))
+    renderPlaced()
+    await waitFor(() => expect(ladderNames()).toHaveLength(3))
+    await user.type(searchBox(), "zzz")
+    await screen.findByText(/No players match “zzz”/)
+    await user.click(screen.getByRole("tab", { name: "Best Score" }))
+    await waitFor(() => expect(fetchLeaderboard).toHaveBeenLastCalledWith(expect.objectContaining({ board: "bestScore", search: "zzz" })))
+    expect(await screen.findByText("Clear the search to see your rank on this board.")).toBeTruthy()
+    expect(screen.queryByText(/Outside the placed ladder|Finish placement/)).toBeNull()
+    await user.clear(searchBox())
+    await waitFor(() => expect(ladderNames()).toHaveLength(3))
+    expect(screen.queryByText("Clear the search to see your rank on this board.")).toBeNull()
+    expect(screen.queryByText(/Outside the placed ladder|Finish placement/)).toBeNull()
+  })
 })

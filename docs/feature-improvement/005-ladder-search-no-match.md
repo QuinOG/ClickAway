@@ -61,3 +61,10 @@ Follow-up (server, out of scope): Around Me + search should find your window fir
 
 - **Problem:** The Clear search button was redundant (you can just empty the search box), and the message text sat flush against the left edge instead of lining up with the panel above it.
 - **Solution:** Removed Clear search. The message is now inset 16px vertically and 19px horizontally, so its text starts at the same x as the controls panel content (49 at 390 wide, 181 at 1440). Screenshot: `shots/005b/after-search-*`.
+
+## Follow-up fix (2026-11-13): stale rank during searches
+
+- **Problem:** During a search, the server ranks players only among the matches. So after searching "r" (where you show as #3 of the matches) and then a name that finds nobody, the card said you were #3 when you're really #4. Switching boards during a search had the same problem.
+- **Solution:** The page now only trusts your rank from a load without a search, kept separately for each board. While searching, the card shows that rank. If the current board's rank isn't known yet, it says "Clear the search to see your rank on this board." and never claims you're unranked.
+
+Checks: two new tests reproduce the re-checker's cases. Both fail on the old code and pass now (Ladder tests 17/17).
