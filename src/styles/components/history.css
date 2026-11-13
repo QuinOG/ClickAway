@@ -543,6 +543,8 @@
         padding: 40px 8px 30px 80px !important;
         margin: 0 !important;
     }
-    /* Axis markers span the same band as the bars (inside the plot's padding). */
-    .historyPageCard .historyContent .historyTrajectory .historyClimbAxis { top: 40px !important; bottom: 30px !important; }
+    /* Axis markers and the trend line span the same band as the bars (inside the plot's padding). */
+    .historyPageCard .historyContent .historyTrajectory .historyClimbAxis,
+    .historyPageCard .historyContent .historyTrajectory .historyClimbLine { top: 40px !important; bottom: 30px !important; }
+    .historyPageCard .historyContent .historyTrajectory .historyClimbLine { left: 80px !important; right: 8px !important; }
 }

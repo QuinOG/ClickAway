@@ -31,11 +31,17 @@ for (const [width, height] of [[320, 740], [390, 844], [768, 1024], [1024, 768],
       }
       const outside = items.filter(([, el]) => box(el).left < bounds.left - 1 || box(el).right > bounds.right + 1).map(([name]) => name)
       const axisTops = [...chart.querySelectorAll(".historyClimbAxis span")].map((el) => Math.round(box(el).top))
-      return { clashes, outside, axisTops }
+      const line = chart.querySelector(".historyClimbLine polyline")
+      const matrix = line.getScreenCTM()
+      const linePoints = [...Array(line.points.numberOfItems).keys()].map((index) => line.points.getItem(index).matrixTransform(matrix))
+      const dots = [...chart.querySelectorAll(".historyClimbPillar")].map((el) => ({ x: box(el).left + box(el).width / 2, y: box(el).top + box(el).height / 2 }))
+      const lineGap = Math.max(...linePoints.map((point, index) => Math.hypot(point.x - dots[index].x, point.y - dots[index].y)))
+      return { clashes, outside, axisTops, lineGap }
     })
 
     expect(report.clashes, "nothing in the chart overlaps").toEqual([])
     expect(report.outside, "nothing sits outside the chart").toEqual([])
     expect(new Set(report.axisTops).size, "axis labels are on separate lines").toBe(report.axisTops.length)
+    expect(report.lineGap, "the trend line passes through every score dot").toBeLessThanOrEqual(2)
   })
 }
