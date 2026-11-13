@@ -17,7 +17,6 @@ import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
 import TierBadge from "../components/TierBadge.jsx"
 import { fetchLeaderboard } from "../services/clickAwayHttpApiClient.js"
 import { formatPercent, normalizePercentValue } from "../utils/gameMath.js"
-import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import { normalizeSeasonRecord, getSeasonRewardTier } from "../utils/seasonUtils.js"
@@ -221,7 +220,6 @@ function RankDisplay({ rank = 0 }) {
 function LeaderboardStandingPanel({
   currentVisiblePlayer = null,
   currentRankProgress = null,
-  currentLeaderboardStats = {},
   rankedRounds = 0,
   selfRank = null,
   totalCount = 0,
@@ -279,18 +277,6 @@ function LeaderboardStandingPanel({
       value: formatNumericValue(currentRankProgress?.mmr),
     },
     {
-      label: "Best Score",
-      value: formatNumericValue(currentLeaderboardStats.bestScore),
-    },
-    {
-      label: "Best Streak",
-      value: formatNumericValue(currentLeaderboardStats.bestStreak),
-    },
-    {
-      label: "Accuracy",
-      value: formatPercent(currentLeaderboardStats.accuracyPercent),
-    },
-    {
       label: "Games",
       value: formatNumericValue(normalizedRankedRounds),
     },
@@ -315,7 +301,7 @@ function LeaderboardStandingPanel({
           </div>
         </div>
 
-        <div className="leaderboardStandingSpotlight standingShield" aria-label="Visible ladder spot">
+        <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
           <span className="leaderboardStandingSpotlightLabel">Spot</span>
           <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
         </div>
@@ -649,10 +635,6 @@ export default function LeaderboardPage({
     () => (Array.isArray(roundHistory) ? roundHistory : []).filter(isRankedModeEntry),
     [roundHistory]
   )
-  const currentLeaderboardStats = useMemo(
-    () => buildPlayerLeaderboardStats(rankedRounds),
-    [rankedRounds]
-  )
   const currentVisiblePlayer = useMemo(
     () => leaderboardRows.find((player) => isCurrentUserRow(player, currentUserId, currentUsername)) ?? null,
     [currentUserId, currentUsername, leaderboardRows]
@@ -749,7 +731,6 @@ export default function LeaderboardPage({
           <LeaderboardStandingPanel
             currentVisiblePlayer={currentVisiblePlayer}
             currentRankProgress={currentRankProgress}
-            currentLeaderboardStats={currentLeaderboardStats}
             rankedRounds={rankedRounds.length}
             selfRank={selfRank}
             totalCount={fieldTotalCount}

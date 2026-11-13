@@ -1,6 +1,5 @@
 import { MODULE_SLOTS } from "../../../constants/buildcraft.js"
 import {
-  BuildIdentityGlyph,
   ModuleSlotGlyph,
   PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
@@ -85,9 +84,6 @@ function MachineNameplate({ loadout, presentation, nameplateRef, machineApi }) {
         </button>
       )}
       <span className="armoryMachineIdentity">
-        <span className="armoryMachineIdentityGlyph" aria-hidden="true">
-          <BuildIdentityGlyph identity={presentation.identity.label} />
-        </span>
         {presentation.titleLine}
       </span>
     </div>

@@ -260,8 +260,6 @@ export function GameOverOverlay({
   const isPracticeMode = !allowsCoinRewards && !allowsLevelProgression && !allowsRankProgression
   const hasCleanRun = misses === 0
   const isNewBestScore = score > bestScore
-  const scoreBadgeText = isNewBestScore ? "New Personal Best!" : hasCleanRun ? "Clean Run" : "Score Locked"
-
   const resolvedLoadoutPresentation = useMemo(
     () => loadoutPresentation ?? (
       loadoutSnapshot
@@ -349,17 +347,7 @@ export function GameOverOverlay({
         <span className="gameOverScoreLockRail" aria-hidden="true"><i /></span>
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
-        <p className="gameOverScoreBadge">{scoreBadgeText}</p>
-        {(hasCleanRun && hits > 0) || isNewBestScore ? (
-          <span className={`gameOverMedal ${isNewBestScore ? "isBest" : "isClean"}`} aria-hidden="true">
-            <CrestIcon tone={isNewBestScore ? "gold" : "platinum"} size={64} />
-            <b>{isNewBestScore ? "PB" : "Clean"}</b>
-          </span>
-        ) : null}
-        <div className="roundIllustratedRewards" aria-label={`${hits} hits and ${misses} misses. ${hasCleanRun && hits > 0 ? "Clean run" : "Sharp shooter"} medal`}>
-          <img className="roundRewardMedal" src={`/art/game-results/performance-${hasCleanRun && hits > 0 ? "gold" : accuracy >= 75 ? "silver" : "bronze"}.png`} alt="" aria-hidden="true" />
-          <div className="roundRewardChain"><strong>{hasCleanRun && hits > 0 ? "Clean run" : "Sharp shooter"}</strong><div className="roundRewardLinks" aria-hidden="true">{Array.from({ length: hits }, (_, i) => <span key={`h${i}`} />)}{Array.from({ length: misses }, (_, i) => <span className="isMiss" key={`m${i}`} />)}</div><small>{hits} hits / {misses} misses</small></div>
-        </div>
+        <p className="gameOverScoreTally">{formatNumber(hits)} hits · {formatNumber(misses)} misses</p>
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}

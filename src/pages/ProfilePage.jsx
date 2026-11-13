@@ -50,13 +50,8 @@ function getProfileTagline({ totalRounds, accuracyPercent, bestStreak }) {
   return "Momentum is building. Focus accuracy and chain longer streaks."
 }
 
-function getPlayerTitle({ totalRounds, rankedRounds, bestStreak, rankLabel = "" }) {
-  const normalizedRankLabel = rankLabel.toLowerCase()
+function getPlayerTitle({ totalRounds, rankedRounds, bestStreak }) {
   if (totalRounds === 0) return "Arena Rookie"
-  if (normalizedRankLabel.includes("deadeye")) return "Deadeye Contender"
-  if (normalizedRankLabel.includes("diamond")) return "Diamond Operator"
-  if (normalizedRankLabel.includes("platinum")) return "Platinum Climber"
-  if (normalizedRankLabel.includes("gold")) return "Gold Contender"
   if (rankedRounds >= 25) return "Ranked Specialist"
   if (bestStreak >= 15) return "Combo Architect"
   if (totalRounds >= 60) return "Arena Veteran"
@@ -248,7 +243,6 @@ export default function ProfilePage({
     totalRounds: profileStats.totalRounds,
     rankedRounds: profileStats.rankedRounds,
     bestStreak: profileStats.bestStreak,
-    rankLabel,
   })
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
   const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
@@ -291,9 +285,8 @@ export default function ProfilePage({
             <div className="profileDivisionPlate">
               <small>Division</small>
               <strong className="profileRankTitle">{rankLabel}</strong>
-              <span>{getRankMetaText(rankProgress)}</span>
+              <span>{rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank ? rankGoal : `${getRankMetaText(rankProgress)} · next ${rankProgress.nextTierLabel ?? "rank"}`}</span>
             </div>
-            <p className="profileRankGoal"><span>Next rank</span> <strong>{rankGoal}</strong></p>
             <div className="profileXpReadout">
               <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
               <span>{formatNumber(xpToNextLevel)} XP</span>
@@ -368,10 +361,9 @@ export default function ProfilePage({
                       className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
                       title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
                     >
-                      <span className="profileReceiptMode">{({ Practice: "[P]", Casual: "[C]", Ranked: "[R]" })[bar.mode] ?? "[?]"} {bar.mode}</span>
-                      <span className="profileReceiptId">RECENT #{String(bar.receiptNumber).padStart(2, "0")}</span>
+                      <span className="profileReceiptMode">{bar.mode}</span>
                       <span className="profileStampScore">{formatNumber(bar.score)}</span>
-                      <span className="profileStampOutcome">{bar.isRanked ? `${formatSignedValue(bar.rankDelta)} RR` : "ROUND"}</span>
+                      {bar.isRanked ? <span className="profileStampOutcome">{formatSignedValue(bar.rankDelta)} RR</span> : null}
                     </li>
                   )) : <li className="profileEmptySignal">Play a round to establish form</li>}
                 </ol>
