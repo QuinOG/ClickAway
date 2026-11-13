@@ -1,0 +1,24 @@
+{
+ "sol": {
+  "01-login": 9.9,
+  "02-play": 9.5,
+  "03-armory": 9.7,
+  "04-shop": 9.3,
+  "05-profile": 9.9,
+  "06-ladder": 9.7,
+  "07-duels": 9.8,
+  "08-history": 9.9,
+  "09-help": 9.2,
+  "10-settings-sheet": 9.7,
+  "11-live-round": 9.5,
+  "12-results": 9.7,
+  "13-rankup": 9.6,
+  "14-identity-popover": 9.5,
+  "15-ladder-hovercard": 9.6,
+  "16-armory-compare": 9.7,
+  "17-armory-unlock-wall": 9.6,
+  "18-armory-spec-sheet": 9.8,
+  "19-signup": 9.9,
+  "20-nav-more": 9.8
+ }
+}
