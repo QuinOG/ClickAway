@@ -282,6 +282,7 @@ export default function HistoryPage({
     setExtraHistoryRows([])
     setHistoryPage(1)
     setHasMoreHistory(false)
+    setHistoryLoadError("")
   }
 
   const historyRows = useMemo(() => {
