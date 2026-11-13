@@ -3156,3 +3156,87 @@
 .armorySwapReportHead > span:nth-child(2) { padding-right: 4px; }
 .armorySwapReportHead > span:nth-child(3) { padding-right: 12px; }
 .armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure .armoryInstrumentNext { font-size: 15px; }
+
+/* ---- Fit fix (2026-11-13): the three-column grid above has no width condition, so it
+   overrode armory.css's narrower-screen layouts. Below 1240px it ran off the right edge
+   (to x=1190 on a 1024 screen), and below 940px every panel was squeezed into a 210px
+   column that clipped the Install action. Keep the wide layout where it fits, use
+   flexible columns on small laptops, and stack into one column on tablets and phones. */
+/* Small laptops: three columns can't fit the 544px machine and the part details side by
+   side, so keep the parts rail on the left and stack the machine above the details. */
+@media (min-width: 941px) and (max-width: 1259px) {
+    .armoryScene {
+        grid-template-columns: 210px minmax(0, 1fr);
+        grid-template-rows: auto auto auto;
+        overflow: visible;
+    }
+    /* The rail spans the stacked rows; keep its bay cards at their natural size. */
+    .armoryScene .armoryRail { grid-column: 1; grid-row: 1 / span 3; align-self: start; align-content: start; }
+    .armoryScene .armoryCommandBar { grid-column: 2; grid-row: 1; }
+    .armoryScene .armoryStage { grid-column: 2; grid-row: 2; overflow: visible; }
+    .armoryScene .armoryWorkspace { grid-column: 2; grid-row: 3; overflow: visible; }
+    /* The stacked page is taller than the screen, so let it scroll like the narrow layout. */
+    .mainContent.armoryMain { overflow: auto; display: block; }
+}
+@media (max-width: 940px) {
+    .armoryScene { grid-template-columns: minmax(0, 1fr); }
+}
+/* The machine is a fixed 544px block. Where its column is narrower (common 1280-1366
+   laptops in the three-column layout), let the header buttons wrap, let the
+   part slots shrink, and scale only the illustration so its housings stay in place. */
+@media (min-width: 1260px) and (max-width: 1399px) {
+    .armoryStage .armoryMachine { width: 100%; min-width: 0; }
+    .armoryStage .armoryMachineHeader { flex-wrap: wrap; row-gap: var(--ca-space-2); }
+    .armoryStage .armoryMachineActionStack { flex-wrap: wrap; max-width: 100%; }
+    .armoryStage .armoryMachineRack { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .armoryStage .armoryMachineCore { overflow: hidden; }
+    .armoryStage .armoryMachineAssembly {
+        flex: none;
+        justify-self: start;
+        align-self: start;
+        width: 544px;
+        transform: scale(var(--armory-machine-scale));
+        transform-origin: top left;
+        margin-left: calc((100% - 544px * var(--armory-machine-scale)) / 2);
+        margin-bottom: calc(378px * (var(--armory-machine-scale) - 1));
+    }
+}
+@media (min-width: 1320px) and (max-width: 1399px) { .armoryStage { --armory-machine-scale: 0.9; } }
+@media (min-width: 1280px) and (max-width: 1319px) { .armoryStage { --armory-machine-scale: 0.82; } }
+@media (min-width: 1260px) and (max-width: 1279px) { .armoryStage { --armory-machine-scale: 0.76; } }
+/* Phones: armory.css stacks the part housings as a list under the machine below 700px, but
+   the floating-housing rules above out-rank it and pinned them off the left edge. Restore the
+   stacked phone design, wrap the header buttons, and fit the bench to the screen. */
+@media (max-width: 700px) {
+    .armoryStage .armoryMachine { width: 100%; min-width: 0; }
+    .armoryStage .armoryMachineHeader { flex-wrap: wrap; row-gap: var(--ca-space-2); }
+    .armoryStage .armoryMachineActionStack { flex-wrap: wrap; max-width: 100%; }
+    .armoryStage .armoryMachine .armoryMachineRack { grid-template-columns: minmax(0, 1fr); }
+    .armoryMachine .armoryMachineHousingRow {
+        position: relative;
+        inset: auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--ca-space-1);
+        width: 100%;
+        pointer-events: auto;
+    }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing,
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens,
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig {
+        position: relative;
+        inset: auto;
+        width: 100%;
+        max-width: none;
+        transform: none;
+    }
+    .armoryMachine .armoryMachineBench { width: 100%; }
+    /* The rig's side clamps are decoration; keep them inside the machine frame. */
+    .armoryStage .armoryMachineCore { overflow: hidden; }
+}
+/* "No runs yet" ran under the Compare button (by 5px at 1440): the stats kept 78px clear on
+   the right, but the button plus its 8px offset needs 86px. Keep enough room, and let the
+   empty-state text wrap into it. */
+.armoryBayWall .armoryCart:not(.isActive) .armoryCartStats { padding-right: 92px; }
+.armoryBayWall .armoryCart .armoryCartStats.isEmpty { white-space: normal; line-height: 1.15; min-width: 0; }

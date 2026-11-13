@@ -10,8 +10,8 @@ import {
   UserFocus,
   X,
 } from "@phosphor-icons/react"
-import { useCallback, useEffect, useMemo, useState, useRef } from "react"
-import { useNavigate } from "react-router-dom"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
@@ -156,8 +156,20 @@ function ChallengeCard({
   )
 }
 
+// A rival handed over from the Ladder (?rival=name). Names outside the server's
+// 3-32 character rule, or your own name, are ignored rather than pre-filled.
+function getLadderRival(searchParams, currentUsername) {
+  const rival = String(searchParams.get("rival") ?? "").trim()
+  if (rival.length < 3 || rival.length > 32) return ""
+  if (rival.toLowerCase() === String(currentUsername ?? "").trim().toLowerCase()) return ""
+  return rival
+}
+
 export default function ChallengesPage({ currentUserId = "", currentUsername = "Player" }) {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [ladderRival] = useState(() => getLadderRival(searchParams, currentUsername))
+  const ladderRivalNoteRef = useRef(null)
   const { signalAction } = useActionFeedback()
   const [challenges, setChallenges] = useState([])
   const [replays, setReplays] = useState([])
@@ -165,7 +177,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
   const [respondingChallengeId, setRespondingChallengeId] = useState(null)
-  const [sendForm, setSendForm] = useState({ opponentUsername: "", replayId: "", message: "" })
+  const [sendForm, setSendForm] = useState({ opponentUsername: ladderRival, replayId: "", message: "" })
   const [sendError, setSendError] = useState("")
   const [sendSuccess, setSendSuccess] = useState("")
   const [isSending, setIsSending] = useState(false)
@@ -202,6 +214,21 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   useEffect(() => {
     loadChallenges()
   }, [loadChallenges])
+
+  // Arriving with a rival: bring the composer into view and confirm the choice,
+  // since on phones it sits below the inbox. Runs once the composer has rendered.
+  const hasRevealedRivalRef = useRef(false)
+  useEffect(() => {
+    if (!ladderRival || isLoading || hasRevealedRivalRef.current) return
+    const note = ladderRivalNoteRef.current
+    if (!note) return
+    hasRevealedRivalRef.current = true
+    // Never pull focus away from a player who has already started typing or choosing.
+    const active = document.activeElement
+    if (active && active !== document.body) return
+    note.scrollIntoView?.({ block: "center" })
+    note.focus({ preventScroll: true })
+  }, [ladderRival, isLoading])
 
   const pendingIncomingCount = useMemo(
     () => challenges.filter(
@@ -255,6 +282,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
       })
       setSendSuccess(opponentUsername)
       setSendForm({ opponentUsername: "", replayId: "", message: "" })
+      if (searchParams.has("rival")) setSearchParams({}, { replace: true })
       await loadChallenges()
       signalAction(source, {
         eventName: FEEDBACK_EVENTS.DUEL_LAUNCH,
@@ -406,6 +434,11 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                 </span>
               </label>
             </div>
+            {ladderRival && sendForm.opponentUsername.trim() === ladderRival ? (
+              <p className="duelLadderRivalNote" ref={ladderRivalNoteRef} tabIndex={-1}>
+                Rival set to {ladderRival}. Pick a run to stake, or type another name.
+              </p>
+            ) : null}
 
             <fieldset className="duelRunTokens">
               <legend>Stake a run</legend>

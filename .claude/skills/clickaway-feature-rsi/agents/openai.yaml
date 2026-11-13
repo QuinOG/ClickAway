@@ -1,0 +1,4 @@
+interface:
+  display_name: "ClickAway Feature RSI"
+  short_description: "Improve player tasks through reviewed feature experiments"
+  default_prompt: "Use $clickaway-feature-rsi to improve one ClickAway player task and run a bounded trial."

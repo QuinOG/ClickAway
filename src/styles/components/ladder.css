@@ -228,3 +228,88 @@
 }
 .leaderboardTopRow .leaderboardStandingStatLabel { overflow: visible; text-overflow: clip; }
 .leaderboardTopRow .leaderboardStandingStatValue { font-size: 17px; }
+
+/* Feature trial 003: a Duel action on other players' plates opens Duels with them as the rival. */
+.ladderPlateEnd { display: grid; gap: 6px; min-width: 0; }
+.ladderPlateDuel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 6px 12px;
+    border: 2px solid #040912;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #2a3d5c, #16233a);
+    box-shadow: inset 0 2px 0 rgb(255 255 255 / 12%), 0 2px 0 #040912;
+    color: var(--ca-color-ink-strong);
+    font-family: var(--ca-font-display);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+.ladderPlateDuel svg { width: 14px; height: 14px; color: var(--ca-mode-pressure); }
+.ladderPlateDuel:hover { border-color: var(--ca-mode-pressure-line); }
+.ladderPlateDuel:focus-visible { outline: 2px solid var(--ca-color-accent); outline-offset: 3px; }
+
+/* Feature trial 004: on phones the five board tabs were forced into one row wider than the
+   screen, pushing Accuracy, Reaction and Around Me off the edge. Let the panel shrink and
+   wrap the tabs into rows that fit. */
+@media (max-width: 600px) {
+    .leaderboardPageScene .leaderboardControls,
+    .leaderboardPageScene .leaderboardControls > * { min-width: 0; max-width: 100%; }
+    .leaderboardPageScene .leaderboardControls .leaderboardBoardTabs {
+        grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    }
+    .leaderboardPageScene .leaderboardControls .leaderboardSearchField { flex: 1 1 100%; min-width: 0; }
+    .leaderboardPageScene .leaderboardControls .leaderboardViewToggle { flex: 1 1 auto; }
+    .leaderboardPageScene .leaderboardControls .leaderboardViewToggle .secondaryButton { flex: 1 1 0; }
+}
+
+/* Feature trial 005: the no-match message names the search, so long text must wrap. */
+.leaderboardNoMatch .leaderboardStatusTitle { overflow-wrap: anywhere; }
+/* Inset the message so its text lines up with the controls panel content above it
+   (that panel has a 3px border plus 16px padding). */
+.leaderboardPageScene .leaderboardNoMatch {
+    display: grid;
+    justify-items: start;
+    gap: var(--ca-space-2);
+    padding: var(--ca-space-4) calc(var(--ca-space-4) + 3px);
+}
+.leaderboardPageScene .leaderboardNoMatch p { margin: 0; }
+
+/* Phones: the desktop three-column plate left the player column ~28px wide at 320px, so names
+   and rank badges spilled over the rating and off the screen. Stack it instead: rank + player
+   on the first line, rating + Duel on the second. */
+@media (max-width: 600px) {
+    .leaderboardPageScene .ladderPlate {
+        grid-template-columns: 40px minmax(0, 1fr);
+        grid-template-areas: "rank identity" "rank end";
+        gap: var(--ca-space-2) var(--ca-space-3);
+        padding: var(--ca-space-2) var(--ca-space-3);
+    }
+    .leaderboardPageScene .ladderPlate .ladderPlateRank { grid-area: rank; }
+    .leaderboardPageScene .ladderPlate .ladderPlateIdentity {
+        grid-area: identity;
+        flex-wrap: wrap;
+        gap: var(--ca-space-1) var(--ca-space-2) !important;
+        min-width: 0;
+        max-width: 100%;
+    }
+    .leaderboardPageScene .ladderPlate .leaderboardPlayerName {
+        min-width: 0;
+        font-size: 18px !important;
+        overflow-wrap: anywhere;
+    }
+    .leaderboardPageScene .ladderPlate .leaderboardTierBadge { max-width: 100%; }
+    .leaderboardPageScene .ladderPlate .ladderPlateEnd {
+        grid-area: end;
+        display: flex;
+        align-items: center;
+        gap: var(--ca-space-2);
+    }
+    .leaderboardPageScene .ladderPlate .ladderPlateHero { flex: 1 1 auto; min-width: 0; }
+    .leaderboardPageScene .ladderPlate .ladderPlateDuel { flex: 0 0 auto; }
+}
