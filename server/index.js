@@ -286,18 +286,23 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
     return
   }
 
-  const existingUser = await findUserByUsername(username)
-  if (existingUser) {
-    response.status(409).json({ error: "That username is already taken." })
+  let createdUser
+  try {
+    const existingUser = await findUserByUsername(username)
+    if (existingUser) {
+      response.status(409).json({ error: "That username is already taken." })
+      return
+    }
+    const passwordHash = await bcrypt.hash(password, 12)
+    createdUser = await createUser({ username, passwordHash, role: "player" })
+  } catch (error) {
+    if (error.code === "23505" && error.constraint === "users_username_key") {
+      response.status(409).json({ error: "That username is already taken." })
+    } else {
+      handleRouteError(error, response)
+    }
     return
   }
-
-  const passwordHash = await bcrypt.hash(password, 12)
-  const createdUser = await createUser({
-    username,
-    passwordHash,
-    role: "player",
-  })
 
   try {
     await playerStateStore.ensurePlayerUser(createdUser)

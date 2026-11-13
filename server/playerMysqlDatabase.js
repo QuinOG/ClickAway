@@ -1326,7 +1326,7 @@ export async function createUser({ username, passwordHash, role = "player" }) {
        role,
        build_walkthrough_status
      ) VALUES (?, ?, ?, ?)
-     RETURNING id`,
+     RETURNING id, username, password_hash AS passwordHash, role`,
     [
       String(username || "").trim(),
       String(passwordHash || ""),
@@ -1335,7 +1335,7 @@ export async function createUser({ username, passwordHash, role = "player" }) {
     ]
   )
 
-  return findUserById(result.insertId)
+  return mapUserRow(result.rows[0])
 }
 
 export async function updateUserPassword({ id, passwordHash }) {
