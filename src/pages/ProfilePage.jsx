@@ -404,7 +404,7 @@ export default function ProfilePage({
               <h2 className="profileStatsSectionTitle">Achievement constellation</h2>
             </div>
             <div className="achievementCategoryTabs" role="tablist" aria-label="Achievement categories">
-              {availableAchievementCategories.map((category) => {
+              {availableAchievementCategories.map((category, categoryIndex) => {
                 const isSelected = category.key === selectedCategoryKey
                 return (
                   <button
@@ -412,6 +412,18 @@ export default function ProfilePage({
                     type="button"
                     role="tab"
                     aria-selected={isSelected}
+                    tabIndex={isSelected ? 0 : -1}
+                    onKeyDown={(event) => {
+                      const count = availableAchievementCategories.length
+                      const nextIndex = event.key === "ArrowRight" ? (categoryIndex + 1) % count
+                        : event.key === "ArrowLeft" ? (categoryIndex - 1 + count) % count
+                          : event.key === "Home" ? 0 : event.key === "End" ? count - 1 : null
+                      if (nextIndex === null) return
+                      event.preventDefault()
+                      const nextTab = event.currentTarget.parentElement.querySelectorAll('[role="tab"]')[nextIndex]
+                      nextTab.focus()
+                      nextTab.click()
+                    }}
                     className={`achievementCategoryTab ${isSelected ? "isSelected" : ""}`}
                     onClick={(event) => {
                       setRequestedCategoryKey(category.key)

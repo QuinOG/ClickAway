@@ -10,6 +10,7 @@ function clamp(value, min, max) {
 }
 
 function toNonNegativeNumber(value) {
+  if (value === null || value === undefined || value === "") return null
   const numericValue = Number(value)
   return Number.isFinite(numericValue) ? Math.max(0, numericValue) : null
 }
@@ -109,7 +110,10 @@ export function buildAchievementStats({
   let currentStreak = 0
   const rankedRoundsOldestFirst = rounds.filter((round) => isRankedModeEntry(round)).reverse()
   rankedRoundsOldestFirst.forEach((round) => {
-    if (Number(round?.rankDelta) > 0) {
+    const isWin = typeof round?.rankedWin === "boolean"
+      ? round.rankedWin
+      : Number(round?.rankDelta) > 0
+    if (isWin) {
       currentStreak += 1
       maxConsecutiveRankedWins = Math.max(maxConsecutiveRankedWins, currentStreak)
     } else {
@@ -157,8 +161,8 @@ function evaluateMetricAchievement(achievement, playerStats, persistedUnlockedId
     isUnlocked,
     isProgressAvailable,
     progressText: getProgressText(current, target, isProgressAvailable),
-    percentText: isProgressAvailable
-      ? (isUnlocked ? "Unlocked" : `${percent}%`)
+    percentText: isUnlocked ? "Unlocked" : isProgressAvailable
+      ? `${percent}%`
       : "Progress unavailable",
   }
 }
