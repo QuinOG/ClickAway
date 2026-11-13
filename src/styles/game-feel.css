@@ -7,7 +7,7 @@
  */
 :root {
     --gf-frame: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2748%27 height=%2748%27 viewBox=%270 0 48 48%27%3E%0A%3Cdefs%3E%3ClinearGradient id=%27b%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%234d6a92%27/%3E%3Cstop offset=%27.5%27 stop-color=%27%2322344f%27/%3E%3Cstop offset=%271%27 stop-color=%27%230d1626%27/%3E%3C/linearGradient%3E%3C/defs%3E%0A%3Cpath d=%27M7 1H41L47 7V41L41 47H7L1 41V7Z%27 fill=%27%23040912%27/%3E%0A%3Cpath d=%27M8 3H40L45 8V40L40 45H8L3 40V8Z%27 fill=%27url%28%23b%29%27/%3E%0A%3Cpath d=%27M10 7H38L41 10V38L38 41H10L7 38V10Z%27 fill=%27%23040912%27/%3E%0A%3Cpath d=%27M10.5 7.5H37.5L40.5 10.5%27 fill=%27none%27 stroke=%27%237fb4ff%27 stroke-opacity=%27.35%27/%3E%0A%3Cpath d=%27M3 15V8L8 3H15%27 fill=%27none%27 stroke=%27%23ffc94a%27 stroke-width=%272%27/%3E%0A%3Cpath d=%27M33 3H40L45 8V15%27 fill=%27none%27 stroke=%27%23ffc94a%27 stroke-width=%272%27/%3E%0A%3Cpath d=%27M45 33V40L40 45H33%27 fill=%27none%27 stroke=%27%23c98a24%27 stroke-width=%272%27/%3E%0A%3Cpath d=%27M15 45H8L3 40V33%27 fill=%27none%27 stroke=%27%23c98a24%27 stroke-width=%272%27/%3E%0A%3Ccircle cx=%279.5%27 cy=%279.5%27 r=%271.3%27 fill=%27%23ffd97a%27/%3E%3Ccircle cx=%2738.5%27 cy=%279.5%27 r=%271.3%27 fill=%27%23ffd97a%27/%3E%3Ccircle cx=%279.5%27 cy=%2738.5%27 r=%271.3%27 fill=%27%23b98030%27/%3E%3Ccircle cx=%2738.5%27 cy=%2738.5%27 r=%271.3%27 fill=%27%23b98030%27/%3E%0A%3C/svg%3E");
-    --gf-world: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 1600 900%27 preserveAspectRatio=%27xMidYMax slice%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient id=%27beam%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%239fd8ff%27 stop-opacity=%27.16%27/%3E%3Cstop offset=%271%27 stop-color=%27%239fd8ff%27 stop-opacity=%270%27/%3E%3C/linearGradient%3E%0A%3ClinearGradient id=%27floor%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%231aa6d6%27 stop-opacity=%270%27/%3E%3Cstop offset=%271%27 stop-color=%27%231aa6d6%27 stop-opacity=%27.22%27/%3E%3C/linearGradient%3E%0A%3CradialGradient id=%27glow%27 cx=%27.5%27 cy=%271%27 r=%27.6%27%3E%3Cstop offset=%270%27 stop-color=%27%23ff7a3c%27 stop-opacity=%27.10%27/%3E%3Cstop offset=%271%27 stop-color=%27%23ff7a3c%27 stop-opacity=%270%27/%3E%3C/radialGradient%3E%0A%3C/defs%3E%0A%3Crect width=%271600%27 height=%27900%27 fill=%27url%28%23glow%29%27/%3E%0A%3Cpath d=%27M120 120 L560 1000 M1480 120 L1040 1000%27 stroke=%27none%27/%3E%0A%3Cpolygon points=%27170,130 230,130 520,900 -120,900%27 fill=%27url%28%23beam%29%27/%3E%0A%3Cpolygon points=%271370,130 1430,130 1720,900 1080,900%27 fill=%27url%28%23beam%29%27/%3E%0A%3Cpolygon points=%27770,90 830,90 980,900 620,900%27 fill=%27url%28%23beam%29%27 opacity=%27.6%27/%3E%0A%3Cg fill=%27none%27 stroke=%27%235d8cc4%27 stroke-opacity=%27.22%27 stroke-width=%273%27%3E%0A%3Cpath d=%27M0 300 Q800 150 1600 300%27/%3E%3Cpath d=%27M0 340 Q800 200 1600 340%27/%3E%0A%3Cpath d=%27M80 300 V560 M240 270 V560 M1360 270 V560 M1520 300 V560%27/%3E%0A%3Cpath d=%27M80 330 L240 300 M80 400 L240 370 M80 470 L240 440 M1360 300 L1520 330 M1360 370 L1520 400 M1360 440 L1520 470%27/%3E%0A%3C/g%3E%0A%3Cg fill=%27%230a1424%27 fill-opacity=%27.85%27%3E%3Cpath d=%27M0 560 Q400 520 800 530 Q1200 520 1600 560 V640 H0Z%27/%3E%3C/g%3E%0A%3Cg fill=%27%23ffe6b0%27%3E%3Ccircle cx=%27200%27 cy=%27128%27 r=%277%27/%3E%3Ccircle cx=%271400%27 cy=%27128%27 r=%277%27/%3E%3Ccircle cx=%27800%27 cy=%2788%27 r=%276%27/%3E%3C/g%3E%0A%3Cg fill=%27%23ffe6b0%27 fill-opacity=%27.25%27%3E%3Ccircle cx=%27200%27 cy=%27128%27 r=%2722%27/%3E%3Ccircle cx=%271400%27 cy=%27128%27 r=%2722%27/%3E%3Ccircle cx=%27800%27 cy=%2788%27 r=%2718%27/%3E%3C/g%3E%0A%3Crect y=%27640%27 width=%271600%27 height=%27260%27 fill=%27url%28%23floor%29%27/%3E%0A%3Cg stroke=%27%233fc8f0%27 stroke-opacity=%27.18%27 stroke-width=%271.5%27%3E%0A%3Cpath d=%27M800 640 L-400 900 M800 640 L0 900 M800 640 L400 900 M800 640 L800 900 M800 640 L1200 900 M800 640 L1600 900 M800 640 L2000 900%27/%3E%0A%3Cpath d=%27M0 660 H1600 M0 690 H1600 M0 735 H1600 M0 800 H1600 M0 885 H1600%27/%3E%0A%3C/g%3E%0A%3C/svg%3E");
+    --gf-world: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 1600 900%27 preserveAspectRatio=%27xMidYMax slice%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient id=%27beam%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%239fd8ff%27 stop-opacity=%27.16%27/%3E%3Cstop offset=%271%27 stop-color=%27%239fd8ff%27 stop-opacity=%270%27/%3E%3C/linearGradient%3E%0A%3ClinearGradient id=%27floor%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%231aa6d6%27 stop-opacity=%270%27/%3E%3Cstop offset=%271%27 stop-color=%27%231aa6d6%27 stop-opacity=%27.22%27/%3E%3C/linearGradient%3E%0A%3CradialGradient id=%27glow%27 cx=%27.5%27 cy=%271%27 r=%27.6%27%3E%3Cstop offset=%270%27 stop-color=%27%23ff7a3c%27 stop-opacity=%27.10%27/%3E%3Cstop offset=%271%27 stop-color=%27%23ff7a3c%27 stop-opacity=%270%27/%3E%3C/radialGradient%3E%0A%3C/defs%3E%0A%3Crect width=%271600%27 height=%27900%27 fill=%27url%28%23glow%29%27/%3E%0A%3Cpath d=%27M120 120 L560 1000 M1480 120 L1040 1000%27 stroke=%27none%27/%3E%0A%3Cg fill=%27none%27 stroke=%27%235d8cc4%27 stroke-opacity=%27.22%27 stroke-width=%273%27%3E%0A%3Cpath d=%27M0 300 Q800 150 1600 300%27/%3E%3Cpath d=%27M0 340 Q800 200 1600 340%27/%3E%0A%3Cpath d=%27M80 300 V560 M240 270 V560 M1360 270 V560 M1520 300 V560%27/%3E%0A%3Cpath d=%27M80 330 L240 300 M80 400 L240 370 M80 470 L240 440 M1360 300 L1520 330 M1360 370 L1520 400 M1360 440 L1520 470%27/%3E%0A%3C/g%3E%0A%3Cg fill=%27%230a1424%27 fill-opacity=%27.85%27%3E%3Cpath d=%27M0 560 Q400 520 800 530 Q1200 520 1600 560 V640 H0Z%27/%3E%3C/g%3E%0A%3Crect y=%27640%27 width=%271600%27 height=%27260%27 fill=%27url%28%23floor%29%27/%3E%0A%3Cg stroke=%27%233fc8f0%27 stroke-opacity=%27.18%27 stroke-width=%271.5%27%3E%0A%3Cpath d=%27M800 640 L-400 900 M800 640 L0 900 M800 640 L400 900 M800 640 L800 900 M800 640 L1200 900 M800 640 L1600 900 M800 640 L2000 900%27/%3E%0A%3Cpath d=%27M0 660 H1600 M0 690 H1600 M0 735 H1600 M0 800 H1600 M0 885 H1600%27/%3E%0A%3C/g%3E%0A%3C/svg%3E");
 }
 
 /* ---- 1. World ---------------------------------------------------------- */
@@ -3888,7 +3888,7 @@
 .specSheetClipboard .armoryReviewPowerMeta { font-size: 10px; }
 
 .specSheetClipboard .armorySpecStat { position: relative; }
-.specSheetClipboard .armorySpecStat::after { content: '•'; position: absolute; top: 0; right: 3px; color: #afc4cc; font-size: 10px; line-height: 1; text-shadow: 0 1px #000; }
+.specSheetClipboard .armorySpecStat::after { content: 'â€¢'; position: absolute; top: 0; right: 3px; color: #afc4cc; font-size: 10px; line-height: 1; text-shadow: 0 1px #000; }
 .specSheetClipboard .armoryReviewPowerItem { display: grid; grid-template-columns: 24px 1fr; gap: 3px; align-items: center; }
 .specSheetClipboard .armoryReviewPowerKey { grid-column: 1; grid-row: 1; }
 .specSheetClipboard .armoryReviewPowerGlyph { grid-column: 2; grid-row: 1; justify-self: center; }
@@ -3916,7 +3916,7 @@
 .unlockWallRebuild .armoryUnlockWallItem.isLocked .armoryPartGlyph { filter: grayscale(1) brightness(.8); opacity: .7; }
 .unlockWallRebuild .armoryUnlockWallItem.isLocked .armoryUnlockWallItemLabel { color: #e0e7ec; }
 .unlockWallRebuild .armoryUnlockWallItemLock { position: static; border-radius: 2px; color: #ffdb91; background: #111b28; font-size: 10px; white-space: nowrap; }
-.unlockWallRebuild .armoryUnlockWallItemLock::before { content: 'LOCK · ' !important; }
+.unlockWallRebuild .armoryUnlockWallItemLock::before { content: 'LOCK Â· ' !important; }
 .unlockWallRebuild .armoryUnlockWallItemBody { width: 100%; }
 .unlockWallRebuild .armoryUnlockWallItemLabel { overflow-wrap: anywhere; }
 @media (max-width: 700px) { .unlockWallRebuild .armoryUnlockWallTop { grid-template-columns: 1fr; } .unlockWallRebuild .armoryUnlockWallGrid.tab-all { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -5216,3 +5216,43 @@
 .historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNeutral { color: #8fa3b8; font-size: 13px !important; }
 .historyRoundCardSignal { border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
 .historyRoundCardSignal > .gameArt { width: 46px !important; height: 46px !important; filter: drop-shadow(0 2px 0 #040912); }
+
+/* ==== Run 7 cleanup: spacing, redundancy, less ornament ================== */
+/* Play lobby: one emblem size for all three modes; no SELECTED tag */
+.lobbyModeRail .lobbyModeChoice, .lobbyModeRail .lobbyModeChoice.isSelected { padding-left: 94px !important; }
+.lobbyModeRail .lobbyModeChoice .lobbyModeEmblem, .lobbyModeRail .lobbyModeChoice.isSelected .lobbyModeEmblem { left: 16px !important; top: 50% !important; width: 64px !important; height: 64px !important; transform: translateY(-50%) !important; }
+.lobbyModeRail .lobbyModeChoice.isSelected .lobbyModeEmblem { top: 18px !important; transform: none !important; }
+.lobbyModeRail .lobbyModeEmblem > .gameArt { width: 46px !important; height: 46px !important; object-fit: contain; }
+.lobbyModeRail .lobbyModeChoice.isSelected .lobbyModeName { font-size: 24px !important; }
+.lobbyModeChoice.isSelected::after { content: none !important; }
+/* Profile: attribute icons centred in their ring; medal symbols fill the metal ring */
+.profileSheetMain .profileAttribute .profileAttributeEmblem > .gameArt { width: 20px !important; height: 20px !important; display: block; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc { width: 74px !important; height: 74px !important; border-width: 0 !important; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc::after { content: none; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc .gameIcon { width: 72px !important; height: 72px !important; }
+/* Results: one plain tally instead of medal + citation plaque */
+.gameOverScorePanel .gameOverScoreTally { margin: 6px 0 0; color: #c9d6e6; font: 400 15px/1.2 var(--ca-font-display); letter-spacing: .06em; text-transform: uppercase; }
+/* Profile recent form: no stamps; ranked rounds show RR as plain text */
+.profileFormTokens .profileStampOutcome { border: 0 !important; padding: 0 !important; transform: none !important; font: 400 13px/1 var(--ca-font-display) !important; color: #2f7d4f !important; }
+.profileFormTokens .profileFormToken.isLoss .profileStampOutcome { color: #b23a2c !important; }
+/* Ladder: the sorted-stat label prints once, on the top row */
+.ladderPlate:not(:first-child) .ladderPlateHero small { display: none !important; }
+/* History highlights: no medal beside numbers that already say it */
+.historyHighlightCard::before, .historyHighlightCard + .historyHighlightCard::before, .historyHighlightCard:nth-child(2)::before { content: none !important; }
+/* History: unranked tickets have no result stub, so no perforation either */
+.historyRoundDeck .historyRoundCard:not(:has(.historyRoundCardOutcome))::after { display: none !important; }
+/* History highlights: medal column removed, so no reserved left padding */
+.historyContent > .historyHighlightsSection .historyHighlightCard { padding-left: 26px !important; }
+/* Profile achievements: progress follows the requirement text; tighter medal tiles */
+.profilePageCenter .achievementTile.isFeaturedBanner { grid-template-columns: auto minmax(220px, 1fr) !important; }
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { flex: 0 1 auto !important; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) { gap: 6px !important; min-height: 0 !important; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementDescription { min-height: 0 !important; }
+/* Duels challenge: mode is printed on the ticket, so no chip; Accept/Decline already say it is pending */
+.duelPage .duelCommandSurface .challengeTargetMode { display: none !important; }
+.duelPage .duelCommandSurface .challengeTargetLine { grid-template-columns: 1fr auto !important; }
+.duelPage .duelCommandSurface .challengeCard:has(.challengeCardActions .primaryButton) .challengeStatusBadge.is-pending { display: none !important; }
+/* Shop: card colour already says the rarity, so its label row goes (kept for screen readers); tighter rows */
+.shopGrid .shopItemCard .shopItemHeader { position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%) !important; }
+.shopGrid { row-gap: 30px !important; }
+.shopGrid .shopItemCard { padding-top: 20px !important; }

@@ -234,9 +234,7 @@ function HistoryRoundCard({ round, markers = [] }) {
       <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
       <div className="historyRoundCardMain">
         <div className="historyRoundCardTopline">
-          <span className={`historyModeBadge ${getModeToneClassName(round)}`}>
-            {getModeLabelFromHistoryEntry(round)}
-          </span>
+          <span className="uiVisuallyHidden">{getModeLabelFromHistoryEntry(round)}</span>
           <time>{getPlayedAtLabel(round)}</time>
         </div>
         <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
@@ -244,9 +242,7 @@ function HistoryRoundCard({ round, markers = [] }) {
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
-          {isPractice ? (
-            <span className="historyNoStakes">No stakes</span>
-          ) : (
+          {isPractice ? null : (
             <>
               <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
               <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
@@ -254,10 +250,12 @@ function HistoryRoundCard({ round, markers = [] }) {
           )}
         </div>
       </div>
-      <div className="historyRoundCardOutcome">
-        <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span>
-        {markers.map((marker) => <small key={marker}>{marker}</small>)}
-      </div>
+      {isRankedModeEntry(round) || markers.length > 0 ? (
+        <div className="historyRoundCardOutcome">
+          {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
+          {markers.map((marker) => <small key={marker}>{marker}</small>)}
+        </div>
+      ) : null}
     </article>
   )
 }

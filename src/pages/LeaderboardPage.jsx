@@ -17,7 +17,6 @@ import PlayerHoverCard from "../components/PlayerHoverCard.jsx"
 import TierBadge from "../components/TierBadge.jsx"
 import { fetchLeaderboard } from "../services/clickAwayHttpApiClient.js"
 import { formatPercent, normalizePercentValue } from "../utils/gameMath.js"
-import { buildPlayerLeaderboardStats } from "../utils/historyUtils.js"
 import { isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import { normalizeSeasonRecord, getSeasonRewardTier } from "../utils/seasonUtils.js"
@@ -198,7 +197,7 @@ function LeaderboardTableSkeleton() {
 
 function formatLadderStat(player, key) {
   if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
-  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
+  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "â€”"
   if (key === "mmr") return formatNumericValue(player.mmr)
   return formatNumericValue(player[key])
 }
@@ -221,7 +220,6 @@ function RankDisplay({ rank = 0 }) {
 function LeaderboardStandingPanel({
   currentVisiblePlayer = null,
   currentRankProgress = null,
-  currentLeaderboardStats = {},
   rankedRounds = 0,
   selfRank = null,
   totalCount = 0,
@@ -271,18 +269,6 @@ function LeaderboardStandingPanel({
       value: formatNumericValue(currentRankProgress?.mmr),
     },
     {
-      label: "Best Score",
-      value: formatNumericValue(currentLeaderboardStats.bestScore),
-    },
-    {
-      label: "Best Streak",
-      value: formatNumericValue(currentLeaderboardStats.bestStreak),
-    },
-    {
-      label: "Accuracy",
-      value: formatPercent(currentLeaderboardStats.accuracyPercent),
-    },
-    {
       label: "Games",
       value: formatNumericValue(normalizedRankedRounds),
     },
@@ -307,13 +293,13 @@ function LeaderboardStandingPanel({
           </div>
         </div>
 
-        <div className="leaderboardStandingSpotlight standingShield" aria-label="Visible ladder spot">
+        <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
           <span className="leaderboardStandingSpotlightLabel">Spot</span>
           <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
         </div>
       </div>
 
-      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
+      <p className="leaderboardStandingScope">Ranked rounds only Â· this season</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -344,7 +330,7 @@ function SeasonBanner({ season = null }) {
       <div className="leaderboardSeasonMeter">
         <p className="leaderboardSeasonMeta">
           {season.daysRemaining > 0
-            ? <><strong>{season.daysRemaining} days</strong> remaining · {season.progressPercent}% complete</>
+            ? <><strong>{season.daysRemaining} days</strong> remaining Â· {season.progressPercent}% complete</>
             : "Season ending soon"}
         </p>
         <div className="leaderboardSeasonProgress" aria-hidden="true">
@@ -506,7 +492,7 @@ function NearMeSection({ rows = [], selfRank = null, mmrGap = 0 }) {
             ? `Your global rank is #${formatNumericValue(selfRank)}`
             : "Your rank window"}
           {mmrGap > 0
-            ? ` · ${formatNumericValue(mmrGap)} RR to the next spot above`
+            ? ` Â· ${formatNumericValue(mmrGap)} RR to the next spot above`
             : ""}
         </p>
       </div>
@@ -622,10 +608,6 @@ export default function LeaderboardPage({
     () => (Array.isArray(roundHistory) ? roundHistory : []).filter(isRankedModeEntry),
     [roundHistory]
   )
-  const currentLeaderboardStats = useMemo(
-    () => buildPlayerLeaderboardStats(rankedRounds),
-    [rankedRounds]
-  )
   const currentVisiblePlayer = useMemo(
     () => leaderboardRows.find((player) => isCurrentUserRow(player, currentUserId, currentUsername)) ?? null,
     [currentUserId, currentUsername, leaderboardRows]
@@ -722,7 +704,6 @@ export default function LeaderboardPage({
           <LeaderboardStandingPanel
             currentVisiblePlayer={currentVisiblePlayer}
             currentRankProgress={currentRankProgress}
-            currentLeaderboardStats={currentLeaderboardStats}
             rankedRounds={rankedRounds.length}
             selfRank={selfRank}
             totalCount={totalCount}
