@@ -2,8 +2,7 @@
  * ClickAway illustrated icon set.
  *
  * Static art is generated raster images in public/art (see
- * .claude/skills/clickaway-rsi/art-brief.md). Only the rank crest stays as
- * SVG, because its colours change with the player's tier.
+ * .claude/skills/clickaway-rsi/art-brief.md).
  */
 
 function Art({ src, size = 32, className = "", title }) {
@@ -58,46 +57,11 @@ export const IronNerveIcon = art("parts/streak_ironnerve")
 export const SurgeIcon = art("parts/power_surge")
 export const FlashpointIcon = art("parts/tempo_flashpoint")
 
-const INK = "#0a1322"
-
-function Svg({ size = 32, className = "", title, children, viewBox = "0 0 48 48" }) {
-  return (
-    <svg
-      className={`gameIcon ${className}`.trim()}
-      width={size}
-      height={size}
-      viewBox={viewBox}
-      role={title ? "img" : undefined}
-      aria-hidden={title ? undefined : "true"}
-      focusable="false"
-    >
-      {title ? <title>{title}</title> : null}
-      <g stroke={INK} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
-        {children}
-      </g>
-    </svg>
-  )
-}
+const RANK_TONES = new Set(["unranked", "bronze", "silver", "gold", "platinum", "diamond"])
 
 export function CrestIcon({ tone = "gold", ...props }) {
-  const fills = {
-    gold: ["#ffcf55", "#c98a1c", "#fff0b0"],
-    silver: ["#dfe7f1", "#8d9db3", "#ffffff"],
-    bronze: ["#e59a62", "#9a5a2c", "#ffd7b5"],
-    platinum: ["#7ff0e2", "#2a9d93", "#dcfffa"],
-    diamond: ["#9cc0ff", "#4a6fd1", "#e6efff"],
-    unranked: ["#9aa8bb", "#5b6779", "#d6dee9"],
-  }[tone] ?? ["#ffcf55", "#c98a1c", "#fff0b0"]
-
-  return (
-    <Svg {...props}>
-      <path d="M24 4 40 10v13c0 10-7 17-16 21C15 40 8 33 8 23V10Z" fill={fills[1]} />
-      <path d="M24 7.5 37 12.5v10.5c0 8-5.6 13.8-13 17.2-7.4-3.4-13-9.2-13-17.2V12.5Z" fill={fills[0]} strokeWidth="2" />
-      <path d="M24 14.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L24 27.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8Z" fill={fills[2]} strokeWidth="1.8" />
-      <path d="M14 13.5 22 10.5" fill="none" stroke="#ffffff" strokeOpacity="0.75" strokeWidth="2" />
-      <path d="M34 14v9c0 6-4 11-10 14" fill="none" stroke={INK} strokeOpacity=".3" strokeWidth="1.8" /><path d="M14 17v5M17 13l3-1" fill="none" stroke={fills[2]} strokeWidth="1.4" />
-    </Svg>
-  )
+  const rank = RANK_TONES.has(tone) ? tone : "gold"
+  return <Art src={`/art/ranks/${rank}.png`} {...props} />
 }
 
 const MODULE_ICONS = { tempoCore: TempoCoreIcon, streakLens: StreakLensIcon, powerRig: PowerRigIcon }

@@ -3139,7 +3139,7 @@
     background-size: 600px 240px, auto;
     box-shadow: 0 8px 12px rgb(0 0 0 / 55%);
 }
-.profileAchievementsSection .achievementMedalDisc { transform: scale(1.4) !important; }
+.profileAchievementsSection .achievementMedalDisc { transform: none !important; }
 .profileAchievementsSection .achievementTile .achievementTileHeader { margin-bottom: 16px; }
 /* fit: the readout and cartridge tray stay above the fold */
 .armorySwapReport { padding: 12px 14px 6px !important; }

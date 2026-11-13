@@ -857,7 +857,7 @@
     .profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { border-left: 0; padding-left: 0; flex-basis: 100%; }
 }
 
-/* Shared illustrated rims retain the live category emblem and progress ring. */
+/* Each tier adds a small visible ornament around the shared category emblem. */
 .profilePageCenter .achievementMedal { isolation: isolate; }
 .profilePageCenter .achievementMedalDisc { z-index: 2; }
 .profilePageCenter .achievementMedalLock { z-index: 3; }
@@ -865,16 +865,16 @@
     content: "";
     position: absolute;
     z-index: 1;
-    inset: -10%;
+    inset: -25%;
     background: var(--achievement-mount) center / contain no-repeat;
     pointer-events: none;
 }
-.profilePageCenter .achievementMedal.tier-bronze { --achievement-mount: url('/art/achievements/bronze-medal-v2.png'); }
-.profilePageCenter .achievementMedal.tier-silver { --achievement-mount: url('/art/achievements/silver-medal-v2.png'); }
-.profilePageCenter .achievementMedal.tier-gold { --achievement-mount: url('/art/achievements/gold-medal-v2.png'); }
-.profilePageCenter .achievementMedal.tier-platinum { --achievement-mount: url('/art/achievements/platinum-medal-v2.png'); }
-.profilePageCenter .achievementMedal.tier-diamond { --achievement-mount: url('/art/achievements/diamond-medal-v2.png'); }
-.profilePageCenter .achievementMedal.tier-master { --achievement-mount: url('/art/achievements/master-medal-v2.png'); }
+.profilePageCenter .achievementMedal.tier-bronze { --achievement-mount: url('/art/achievements/bronze-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-silver { --achievement-mount: url('/art/achievements/silver-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-gold { --achievement-mount: url('/art/achievements/gold-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-platinum { --achievement-mount: url('/art/achievements/platinum-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-diamond { --achievement-mount: url('/art/achievements/diamond-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-master { --achievement-mount: url('/art/achievements/master-medal-v3.png'); }
 .profilePageCenter .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: saturate(0.6) brightness(0.75); }
 
 /* Clear lock badge on locked medals. */
@@ -899,3 +899,4 @@
 .profileAchievementsSection .achievementsRow { padding-top: 24px; }
 .profilePageCenter .achievementTile.isFeaturedBanner .achievementTileHeaderMain { gap: 24px; }
 .profileAchievementsSection .achievementsRow > .achievementTile { overflow: visible; }
+.profilePageCenter .achievementTile.isFeaturedBanner { overflow: visible; }
