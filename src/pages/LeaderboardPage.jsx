@@ -757,7 +757,7 @@ export default function LeaderboardPage({
           onPageChange={handlePageChange}
           sortControl={!isLoading && !loadError && sortedRows.length > 0 ? (
             <button type="button" className="ladderSortFlip" aria-label={`Sorted by ${activeSortLabel}, flip order`} onClick={() => handleSort(sortConfig.key)}>
-              {sortConfig.direction === "asc" ? "Low to high ?" : "High to low ?"}
+              {sortConfig.direction === "asc" ? "Low to high ▲" : "High to low ▼"}
             </button>
           ) : null}
         />
@@ -789,8 +789,8 @@ export default function LeaderboardPage({
             <div className="leaderboardStatusCard leaderboardNoMatch" role="status" aria-live="polite">
               <p className="leaderboardStatusTitle">
                 {view === "aroundMe"
-                  ? <>Around Me found no players matching â€œ{resultsQuery}â€.</>
-                  : <>No players match â€œ{resultsQuery}â€.</>}
+                  ? <>Around Me found no players matching “{resultsQuery}”.</>
+                  : <>No players match “{resultsQuery}”.</>}
               </p>
               <p className="muted">
                 {view === "aroundMe"
