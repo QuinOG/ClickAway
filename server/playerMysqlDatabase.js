@@ -1457,7 +1457,23 @@ function mapLeaderboardRow(row = {}) {
   }
 }
 
-async function queryRankedLeaderboardRows({
+async function queryRankedLeaderboardRows(options = {}) {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    await connection.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+    const result = await readRankedLeaderboardRows(connection, options)
+    await connection.commit()
+    return result
+  } catch (error) {
+    await connection.rollback().catch(() => {})
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
+async function readRankedLeaderboardRows(connection, {
   board = LEADERBOARD_BOARDS.MMR,
   page = 1,
   limit = LEADERBOARD_DEFAULT_LIMIT,
@@ -1523,7 +1539,7 @@ async function queryRankedLeaderboardRows({
   const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
 
   if (view === "aroundMe" && userId) {
-    const [[selfRow]] = await pool.query(
+    const [[selfRow]] = await connection.query(
       `${baseCte}
        SELECT rank
        FROM ranked_ladder
@@ -1548,7 +1564,7 @@ async function queryRankedLeaderboardRows({
     const minRank = Math.max(1, selfRank - LEADERBOARD_AROUND_WINDOW)
     const maxRank = selfRank + LEADERBOARD_AROUND_WINDOW
 
-    const [rows] = await pool.query(
+    const [rows] = await connection.query(
       `${baseCte}
        SELECT *
        FROM filtered_ladder
@@ -1557,7 +1573,7 @@ async function queryRankedLeaderboardRows({
       [PLACEMENT_MATCH_COUNT, ...searchParams, minRank, maxRank]
     )
 
-    const [[countRow]] = await pool.query(
+    const [[countRow]] = await connection.query(
       `${baseCte}
        SELECT COUNT(*) AS totalCount
        FROM filtered_ladder`,
@@ -1579,7 +1595,7 @@ async function queryRankedLeaderboardRows({
   }
 
   const offset = (normalizedPage - 1) * normalizedLimit
-  const [rows] = await pool.query(
+  const [rows] = await connection.query(
     `${baseCte}
      SELECT *
      FROM filtered_ladder
@@ -1588,7 +1604,7 @@ async function queryRankedLeaderboardRows({
     [PLACEMENT_MATCH_COUNT, ...searchParams, normalizedLimit, offset]
   )
 
-  const [[countRow]] = await pool.query(
+  const [[countRow]] = await connection.query(
     `${baseCte}
      SELECT COUNT(*) AS totalCount
      FROM filtered_ladder`,
@@ -1600,7 +1616,7 @@ async function queryRankedLeaderboardRows({
 
   let selfRank = null
   if (userId) {
-    const [[selfRow]] = await pool.query(
+    const [[selfRow]] = await connection.query(
       `${baseCte}
        SELECT rank
        FROM ranked_ladder
