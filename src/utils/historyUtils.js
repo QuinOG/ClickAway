@@ -47,6 +47,8 @@ function formatRelativeTime(value, unit) {
 }
 
 function normalizeReactionMetric(value) {
+  // A round with no hits has no reaction time; Number(null) would make it 0ms.
+  if (value === null || value === undefined || value === "") return null
   const numericValue = Number(value)
   if (!Number.isFinite(numericValue) || numericValue < 0) {
     return null

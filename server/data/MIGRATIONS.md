@@ -36,6 +36,7 @@ project-scoped Supabase MCP connection on `2026-07-13`. The environment classifi
 | `20260713211727` | `bootstrap_clickaway_schema` / `009_supabase_postgres_bootstrap.sql` | Applied |
 | `20260713211800` | `add_clickaway_foreign_key_indexes` / `010_add_clickaway_foreign_key_indexes.sql` | Applied |
 | `20260713212124` | `create_clickaway_app_role` / `011_create_clickaway_app_role.sql` | Applied; login password is stored only in the ignored local `.env` connection string |
+| (pending) | `add_consumed_round_tokens` / `012_add_consumed_round_tokens.sql` | **Not yet applied.** Required before deploying single-use round tokens; the server refuses to start without this table when `DB_AUTO_MIGRATE` is off |
 
 ## Notes
 

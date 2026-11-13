@@ -801,7 +801,9 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const earnedCoins = roundTokenId ? calculatedRewards.earnedCoins : 0
     const earnedXp = roundTokenId ? calculatedRewards.earnedXp : 0
 
-    const rankOutcome = applyRankedMatchResult({
+    // Estimate for the history entry; completeUserRound recalculates the ranked
+    // result from the locked row and stores the value that actually applied.
+    const estimatedRankOutcome = applyRankedMatchResult({
       currentMmr: currentProgress.rankMmr,
       currentRankedState: currentProgress.rankedState,
       hasRankedHistory,
@@ -812,8 +814,6 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
 
     const nextCoins = clampCoins(currentProgress.coins + earnedCoins)
     const nextLevelXp = clampXp(currentProgress.levelXp + earnedXp)
-    const nextRankMmr = clampMmr(rankOutcome.nextMmr)
-    const rankDelta = rankOutcome.appliedRankDelta
 
     const historyEntry = {
       score,
@@ -824,7 +824,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       bestReactionMs,
       coinsEarned: earnedCoins,
       xpEarned: earnedXp,
-      rankDelta,
+      rankDelta: estimatedRankOutcome.appliedRankDelta,
       modeId,
       progressionMode,
       drillId: typeof drillId === "string" ? drillId : null,
@@ -836,15 +836,19 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       historyEntry
     )
 
-    const { progress } = await completeUserRound({
+    const { rankOutcome } = await completeUserRound({
       userId: user.id,
       earnedCoins,
       earnedXp,
       maxCoins: MAX_COINS,
       maxXp: MAX_XP,
+      maxMmr: MAX_MMR,
       roundTokenId,
-      rankMmr: nextRankMmr,
-      rankedState: rankOutcome.nextRankedState,
+      rankInputs: { hasRankedHistory, baseRankDelta, placementMatchScore, allowsRankProgression },
+      fallbackRankState: {
+        currentMmr: currentProgress.rankMmr,
+        currentRankedState: currentProgress.rankedState,
+      },
       unlockedAchievementIds: resolveUnlockedAchievementIds({
         ...currentProgress,
         coins: nextCoins,
@@ -854,9 +858,14 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       historyEntry,
     })
 
+    const rankDelta = rankOutcome.appliedRankDelta
+    const nextRankMmr = rankOutcome.nextMmr
+
+    // A duel race is stored even with no clicks: a zero-score run is a real
+    // result and still has to settle the duel.
     let replay = null
     const submittedEvents = Array.isArray(events) ? events : []
-    if (roundSeed !== null && submittedEvents.length > 0) {
+    if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
       replay = await insertRoundReplay({
         userId: user.id,
         username: user.username,
@@ -874,6 +883,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const seasonProgress = await applyUserSeasonProgress(user.id, {
       rankMmr: nextRankMmr,
       isRankedRound: progressionMode === "ranked",
+      isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
     })
 
     // Only a round started for a duel (its token names the challenge) can complete it.
@@ -889,6 +899,10 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         completedChallenge = completion.challenge
       }
     }
+
+    // Read last, after the replay, season and duel writes, so the response is the
+    // newest state this request produced.
+    const progress = await findUserProgressByUserId(user.id)
 
     response.json({
       progress,
@@ -918,11 +932,11 @@ app.put("/api/progress", requireAuth, async (request, response) => {
     const nextProgress = clampProgressBounds(
       mergeProgressPayload(currentProgress, incoming)
     )
-    nextProgress.unlockedAchievementIds = resolveUnlockedAchievementIds(currentProgress)
 
     const progress = await saveUserProgress({
       userId: user.id,
       ...nextProgress,
+      providedFields: Object.keys(incoming).filter((key) => incoming[key] !== undefined),
     })
 
     response.json({ progress })

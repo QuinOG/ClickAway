@@ -37,7 +37,7 @@ import {
   getRandomPosition,
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
-import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
+import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
@@ -123,6 +123,14 @@ function getResolvedLoadout(savedLoadouts = [], activeLoadoutId = "", activeLoad
   return activeLoadout ?? getLoadoutById(savedLoadouts, activeLoadoutId)
 }
 
+
+function countClickEvents(events) {
+  let count = 0
+  for (const event of events) {
+    if (event.type === "hit" || event.type === "miss") count += 1
+  }
+  return count
+}
 
 // A second click inside MIN_CLICK_INTERVAL_MS (a double-click or bounce) is
 // ignored, matching the server, which would otherwise reject the whole round.
@@ -659,7 +667,7 @@ export function useGameScreenController({
 
     if (activeGhostReplay?.seed) {
       // A duel race asks for a token bound to the challenge, so the run is stored
-      // as a replay and settles the duel. Without one it still runs, unrewarded.
+      // as a replay and settles the duel. A ghost race outside a duel runs unrewarded.
       const duelChallengeId = challengeIdRef.current
       if (!duelChallengeId) {
         applyRoundSeed(activeGhostReplay.seed)
@@ -669,16 +677,23 @@ export function useGameScreenController({
 
       setRoundStartStatus("requesting")
       setPhase(ROUND_PHASE.READY)
+      // Without the challenge token the race could never settle the duel, so a
+      // failed request stops at Ready with the error and a retry, like Ranked.
       requestRoundStart(nextModeId, { challengeId: duelChallengeId })
         .then(({ roundToken, seed }) => {
           if (roundNonceRef.current !== startedRoundNonce) return
-          applyRoundSeed(roundToken ? seed : activeGhostReplay.seed, roundToken ?? null)
+          if (!roundToken) {
+            setRoundStartStatus("error")
+            setRoundStartError("The server did not start this duel. Please try again.")
+            return
+          }
+          applyRoundSeed(seed, roundToken)
           beginCountdown()
         })
-        .catch(() => {
+        .catch((error) => {
           if (roundNonceRef.current !== startedRoundNonce) return
-          applyRoundSeed(activeGhostReplay.seed)
-          beginCountdown()
+          setRoundStartStatus("error")
+          setRoundStartError(error?.message || "Unable to start this duel. Check your connection and try again.")
         })
       return
     }
@@ -941,6 +956,9 @@ export function useGameScreenController({
       t: eventTimeMs,
       ...(clickCoordinates ?? {}),
     })
+    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
+      endCurrentRound()
+    }
     buttonSpawnedAtRef.current = 0
 
     if (hitReactionMs !== null) {
@@ -1006,6 +1024,7 @@ export function useGameScreenController({
       return nextButtonSize
     })
   }, [
+    endCurrentRound,
     addCenterFeedback,
     addClickFeedback,
     emitFeedback,
@@ -1032,6 +1051,9 @@ export function useGameScreenController({
       t: eventTimeMs,
       ...(clickCoordinates ?? {}),
     })
+    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
+      endCurrentRound()
+    }
 
     const result = simulationRef.current.applyMiss(eventTimeMs)
     syncSimulationState(result)
@@ -1074,6 +1096,8 @@ export function useGameScreenController({
       streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
     )
   }, [
+    endCurrentRound,
+    roundMode.id,
     addClickFeedback,
     emitFeedback,
     getElapsedMs,

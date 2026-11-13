@@ -3,20 +3,11 @@ import {
   normalizeLoadoutSnapshotForLevel,
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
-import { MIN_CLICK_INTERVAL_MS, replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
+import { getMaxClickEvents, MIN_CLICK_INTERVAL_MS, replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
 import { validateRoundGeometry } from "../src/game/engine/roundGeometry.js"
 import { calculateRoundCoins } from "../src/utils/roundRewards.js"
 import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
-
-// Server-only safety ceiling on how many click events a single round submission
-// may contain. Independent of the elapsed-time check below — this just bounds
-// payload/CPU cost.
-const MAX_CLICK_EVENTS_BY_MODE_ID = {
-  easy: 800,
-  normal: 400,
-  hard: 300,
-}
 
 // Powerup activations are keyboard/UI actions, not clicks, so they are exempt
 // from the click-interval check but still capped: charges are earned at best
@@ -38,8 +29,7 @@ function isClickEvent(event) {
 }
 
 function validateEventStream(events, mode) {
-  const maxClickEvents = MAX_CLICK_EVENTS_BY_MODE_ID[mode.id]
-    ?? MAX_CLICK_EVENTS_BY_MODE_ID.normal
+  const maxClickEvents = getMaxClickEvents(mode.id)
 
   if (!Array.isArray(events)) return { valid: false, reason: "Events must be an array." }
 

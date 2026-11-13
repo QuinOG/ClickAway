@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 
 import { submitRound } from "../services/clickAwayHttpApiClient.js"
+import { applyProgressResponse, beginProgressRequest } from "./progressResponseGuard.js"
 
 export function usePlayerProgressionUpdates({
   isAuthed,
@@ -23,6 +24,7 @@ export function usePlayerProgressionUpdates({
 
       if (!isAuthed) return
 
+      const ticket = beginProgressRequest()
       try {
         const response = await submitRound({
           modeId,
@@ -36,7 +38,7 @@ export function usePlayerProgressionUpdates({
           challengeId,
           drillId,
         })
-        applyProgress(response.progress)
+        await applyProgressResponse(ticket, response.progress, applyProgress)
       } catch (error) {
         console.error("Unable to submit round:", error)
       }

@@ -2,6 +2,7 @@
 
 import { fetchCurrentUser, loginUser, logoutUser, signupUser } from "../services/clickAwayHttpApiClient.js"
 import { normalizeUsername } from "./appAccountStateHelpers.js"
+import { startNewProgressSession } from "./progressResponseGuard.js"
 
 const PENDING_LOGOUT_KEY = "clickaway.pending-logout"
 
@@ -29,6 +30,33 @@ function clearPendingLogout() {
   }
 }
 
+// The logout request clears the auth cookie when its response arrives. If a new
+// login lands first, a late logout response would wipe the new session, so login
+// and signup wait for any logout still in flight.
+let inFlightLogout = null
+
+function sendLogout() {
+  if (!inFlightLogout) {
+    inFlightLogout = logoutUser()
+      .then(() => {
+        clearPendingLogout()
+      })
+      .finally(() => {
+        inFlightLogout = null
+      })
+  }
+  return inFlightLogout
+}
+
+async function waitForLogoutToSettle() {
+  if (!inFlightLogout) return
+  try {
+    await inFlightLogout
+  } catch {
+    // A failed logout stays pending and is retried on the next load.
+  }
+}
+
 export function useAuthSession({
   setIsAuthed,
   applyAuthenticatedSession,
@@ -44,8 +72,7 @@ export function useAuthSession({
       // here and stay logged out instead of restoring the previous player.
       if (hasPendingLogout()) {
         try {
-          await logoutUser()
-          clearPendingLogout()
+          await sendLogout()
         } catch {
           // Still pending; try again on the next load.
         }
@@ -91,12 +118,14 @@ export function useAuthSession({
     }
 
     try {
+      await waitForLogoutToSettle()
       const response = await loginUser({
         username: normalizedUsername,
         password,
       })
 
       clearPendingLogout()
+      startNewProgressSession()
       applyAuthenticatedSession(response)
       setIsAuthed(true)
       return { ok: true }
@@ -112,12 +141,14 @@ export function useAuthSession({
     const normalizedUsername = normalizeUsername(username) || "Player"
 
     try {
+      await waitForLogoutToSettle()
       const response = await signupUser({
         username: normalizedUsername,
         password,
       })
 
       clearPendingLogout()
+      startNewProgressSession()
       applyAuthenticatedSession(response)
       setIsAuthed(true)
       return { ok: true }
@@ -130,14 +161,13 @@ export function useAuthSession({
   }, [applyAuthenticatedSession, setIsAuthed])
 
   const handleLogout = useCallback(() => {
+    startNewProgressSession()
     resetPlayerState()
     setIsAuthed(false)
     markPendingLogout()
-    logoutUser()
-      .then(clearPendingLogout)
-      .catch(() => {
-        // Left pending: the next app load retries before restoring any session.
-      })
+    sendLogout().catch(() => {
+      // Left pending: the next app load retries before restoring any session.
+    })
   }, [resetPlayerState, setIsAuthed])
 
   return {

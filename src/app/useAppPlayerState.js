@@ -238,7 +238,7 @@ export function useAppPlayerState() {
     setPlayerUserId("")
     setPlayerUsername(DEFAULT_PLAYER_NAME)
     applyProgress(DEFAULT_PROGRESS)
-    setSelectedModeId(DEFAULT_MODE_ID)
+    // The selected mode is a device preference, so it survives logout.
   }, [applyProgress])
 
   return {

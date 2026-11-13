@@ -2,6 +2,7 @@
 
 import { equipShopItem, purchaseShopItem } from "../services/clickAwayHttpApiClient.js"
 import { canPurchaseShopItem, isShopItemOwned } from "../utils/shopUtils.js"
+import { applyProgressResponse, beginProgressRequest } from "./progressResponseGuard.js"
 
 function buildPurchaseError(item, coins, ownedItemIds) {
   if (!item?.id) return "Unknown item."
@@ -45,8 +46,9 @@ export function useShopActions({
 
     try {
       await waitForPendingProgress?.()
+      const ticket = beginProgressRequest()
       const session = await purchaseShopItem(item.id)
-      applyProgress(session.progress)
+      await applyProgressResponse(ticket, session.progress, applyProgress)
       return { ok: true }
     } catch (error) {
       return {
@@ -87,8 +89,9 @@ export function useShopActions({
 
     try {
       await waitForPendingProgress?.()
+      const ticket = beginProgressRequest()
       const session = await equipShopItem(item.id)
-      applyProgress(session.progress)
+      await applyProgressResponse(ticket, session.progress, applyProgress)
       return { ok: true }
     } catch (error) {
       return {

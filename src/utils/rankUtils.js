@@ -584,6 +584,10 @@ export function applyRankedMatchResult({
       nextMmr = previousVisibleTier.minMmr
     }
 
+    // Report what actually changed: demotion protection and the zero floor can
+    // hold the rating, and the RR shown in results and history must match it.
+    appliedRankDelta = nextMmr - normalizedCurrentMmr
+
     const nextVisibleTier = getRankTierFromMmr(nextMmr)
     const wasPromotion = nextVisibleTier.order > previousVisibleTier.order
 

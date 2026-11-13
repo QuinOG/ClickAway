@@ -34,6 +34,19 @@ function toCount(value) {
 // that comes sooner than this, and the server rejects streams that contain one.
 export const MIN_CLICK_INTERVAL_MS = 80
 
+// Most clicks one round may record. The server rejects a longer stream, so the
+// client ends the round when it reaches this (untimed Practice can otherwise run
+// past it and lose the whole session).
+export const MAX_CLICK_EVENTS_BY_MODE_ID = {
+  easy: 800,
+  normal: 400,
+  hard: 300,
+}
+
+export function getMaxClickEvents(modeId) {
+  return MAX_CLICK_EVENTS_BY_MODE_ID[modeId] ?? MAX_CLICK_EVENTS_BY_MODE_ID.normal
+}
+
 export function createRoundSimulation(roundRules = {}) {
   const basePointsPerHit = Number(roundRules.basePointsPerHit) || 1
   const comboStep = Math.max(1, Number(roundRules.comboStep) || 5)

@@ -3,6 +3,7 @@ import toast from "react-hot-toast"
 
 import { updatePlayerProgress } from "../services/clickAwayHttpApiClient.js"
 import { pickProgressIntent } from "./progressIntent.js"
+import { applyProgressResponse, beginProgressRequest, isCurrentSession } from "./progressResponseGuard.js"
 
 const PROGRESS_SYNC_TOAST_ID = "progress-sync"
 
@@ -45,10 +46,17 @@ export function useProgressSync({ isAuthed, applyProgress }) {
 
     const requestEpoch = sessionEpochRef.current
     const intentSequence = ++latestIntentSequenceRef.current
+    const ticket = beginProgressRequest()
 
     persistQueueRef.current = persistQueueRef.current
       .catch(() => null)
       .then(async () => {
+        // Checked before sending, not only after: a save queued by one account
+        // must never be sent once another account has logged in.
+        if (sessionEpochRef.current !== requestEpoch || !isCurrentSession(ticket)) {
+          return null
+        }
+
         const response = await updatePlayerProgress(payload)
         if (
           sessionEpochRef.current !== requestEpoch
@@ -57,7 +65,7 @@ export function useProgressSync({ isAuthed, applyProgress }) {
           return null
         }
 
-        applyProgress(response.progress)
+        await applyProgressResponse(ticket, response.progress, applyProgress)
         return response.progress
       })
       .catch((error) => {

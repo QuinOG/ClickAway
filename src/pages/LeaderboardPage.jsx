@@ -269,7 +269,9 @@ function LeaderboardStandingPanel({
     lead = "Finish placement to receive a global rank."
   }
 
-  const rewardTier = getSeasonRewardTier(currentRankProgress?.mmr)
+  const rewardTier = getSeasonRewardTier(currentRankProgress?.mmr, {
+    isPlaced: Boolean(currentRankProgress) && !currentRankProgress.isPlacement && !currentRankProgress.isUnranked,
+  })
 
   const statItems = [
     {

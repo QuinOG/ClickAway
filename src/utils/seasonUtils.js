@@ -1,13 +1,19 @@
+import { RANK_DIVISIONS, RANK_MAJOR_TIERS } from "./rankUtils.js"
+
+// Each reward tier starts where its named rank starts (Silver I, Gold I, ...), so
+// the reward always matches the division the player has reached. Tier 0 is for
+// players who have not finished placements.
 export const SEASON_REWARD_TIERS = [
   { tier: 0, label: "Unranked", minMmr: 0 },
-  { tier: 1, label: "Bronze", minMmr: 800 },
-  { tier: 2, label: "Silver", minMmr: 1200 },
-  { tier: 3, label: "Gold", minMmr: 1600 },
-  { tier: 4, label: "Platinum", minMmr: 2000 },
-  { tier: 5, label: "Diamond", minMmr: 2400 },
+  ...RANK_MAJOR_TIERS.map((majorTier, index) => ({
+    tier: index + 1,
+    label: majorTier.label,
+    minMmr: RANK_DIVISIONS.find((division) => division.majorTierId === majorTier.id)?.minMmr ?? 0,
+  })),
 ]
 
-export function getSeasonRewardTier(mmr = 0) {
+export function getSeasonRewardTier(mmr = 0, { isPlaced = true } = {}) {
+  if (!isPlaced) return SEASON_REWARD_TIERS[0]
   const normalizedMmr = Math.max(0, Number(mmr) || 0)
   let currentTier = SEASON_REWARD_TIERS[0]
 
