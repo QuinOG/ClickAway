@@ -96,6 +96,21 @@ Open PR: #21 (`sol-bug-pass`, base `main`). It holds all four runs. Before deplo
   - history paging resets when the first page changes;
   - personal best must equal the saved record.
 
+- **Run 6 (fd2ac11):**
+  - INSERT RETURNING on sign-up, and the username race mapped to 409;
+  - unique cross-tab auth announcements;
+  - post-commit build read can't fail the save;
+  - progress reads retry 40001/40P01 with no plain-pool fallback;
+  - a trailing debounced reconcile after every mutation, with truthful refresh status and failed-build retry;
+  - Shop ignores continuations from an old session;
+  - synchronous live-round and Test Range geometry (Freeze/Magnet ordering);
+  - zero-seed ghosts valid;
+  - duel start checks the canonical replay id;
+  - History load generation guard;
+  - Ladder reads in one REPEATABLE READ snapshot;
+  - first placement isn't a win;
+  - plus 27 smaller fixes: Help copy, settings retry, app error boundary, keyboard tabs on Shop and Profile, Results credit gating, labels.
+
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
 - **Interval timer drift in background tabs:** M; needs a deadline-based timer.

@@ -61,12 +61,25 @@ These are where the high-severity bugs and Claude's own leaked fixes came from.
 - each fix under about 60 changed lines, otherwise escalate to a plan;
 - lint and tests must pass.
 
+## Pacing and usage (user, 2026-11-14)
+Usage limits are per 5-hour window. Spread a run across the window rather than spending it in the first hour; a run taking about 5× longer is fine.
+- **Meter:** `node .claude/tools/usage-meter.mjs` (add `--json` for agents).
+  - Codex numbers are exact: the 5-hour and weekly used % from Codex's own logs.
+  - Claude numbers are estimated from transcript token counts against `.claude/tools/usage-budget.json`. Calibrate it from one reading of the Claude usage page: budget = logged tokens ÷ the page's %.
+- **Pacing gate:** run the meter before launching each agent. If the window's used % is more than about 10 points above the % of the window elapsed, don't launch; wait (ScheduleWakeup for long gaps), then check again. Same for the weekly window.
+- **Token-saving rules** (each should keep 70–80% of earlier runs' quality; learning.md tracks yield per agent, and loosens a rule if quality drops below that):
+  - About 6 features per run, chosen by recent high/medium yield and code changed since the last run. Low-yield features rotate in every other run. A feature that missed review goes first.
+  - High reasoning only for risky features (round saving, live round, login, duels). Display-heavy ones (History, Ladder, Profile, Help/menus, Armory tools) use medium.
+  - At most 4 findings per feature agent, one pass, risk-ordered.
+  - No challenger when there are 3 or fewer plans; Claude reviews them directly.
+  - At most 2 feature agents at a time.
+
 ## Defaults (see learning.md for the evidence)
 - **Agents:** Codex `gpt-6.1-sol` with `reasoningEffort: "high"`.
   - Feature agents: `role: "implementation"`, `isolation: "worktree"`, one per feature.
   - Challenger: `role: "review"`.
   - Integrator: `role: "implementation"`, in the shared checkout.
-- **Batch size:** at most 3 feature agents running at once. Start the next as soon as one finishes.
+- **Batch size:** at most 2 feature agents at once, and only while the pacing gate allows it.
 - **Paired review:** dropped for now. A second agent fixing the same feature would conflict, and the challenger now covers the riskiest changes.
 - **Claude usage:**
   - Claude reads summaries and plans, never full reports, unless a summary line is unclear.

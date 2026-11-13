@@ -74,6 +74,9 @@ Score the risk of *changing the code*, not how bad the bug is:
 
 Before finishing, run `npm run lint` and the tests that touch your files; all must pass. If a test encodes behaviour you deliberately changed, update it and say so.
 
+## Budget
+Report and fix at most 4 findings, the highest-value first, in one pass. Don't hunt for more once you have them; note any extra suspects in one line under Cross-feature notes.
+
 ## Outputs (all under {{OUT_DIR}})
 1. **`<SLUG>-summary.md`:** one table row per finding:
 

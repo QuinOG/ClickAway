@@ -9,6 +9,7 @@ Update this after every run (SKILL.md step 8). The run log and lessons here are 
 | 1 | 2026-11-13 | 6 broad × medium | 46 | 37 | 9 deferred (size) | – | ~6 | Several half-right claims (e.g. storage of the selected mode). |
 | 2 | 2026-11-13 | 6 broad × medium, with brief | 17 | 16 | 1 (password at login: compat) | ~6 | 3 | Cross-feature notes caught two shared bugs. |
 | 3 | 2026-11-13 | 12 narrow × high | 39 | 38 | 1 (same compat skip) | ~10 | 7 | Nearly every item proven by execution; no wrong claims. |
+| 6 | 2026-11-14 | 12 narrow × high, Sol fixes 1–6 itself, Sol challenger, Claude approves plans, Sol integrator | 43 (2H 26M 15L) | 43 | 0 | ~10 gaps in run 5's fixes | 2 | First delegated run: Claude read only summaries and challenged plans. 27 auto-fixes, 16 plans (6 revised or simplified). All checks green. Codex 5-hour window hit 82% in about an hour, which led to the pacing rules. |
 | 5 | 2026-11-13 | 12 narrow × high + paired medium on round saving (Help/menus lost to the Codex usage limit) | 34 | 33 | 1 deferred (placement label in History needs a DB column) | ~9 | 3 | Every report carried a run proof. Low-severity items rose; feature set is nearing diminishing returns. |
 | 4 (A/B) | 2026-11-13 | 1 feature (round saving) × medium and × high | 3 + 2 | 4 unique | 0 | – | 1 (high only) | See the A/B result below. |
 
@@ -32,6 +33,9 @@ Token counts are not exposed for child runs; time and steps are the proxy. Earli
 Medium found 3 and high found 3, with 2 shared. Each caught one medium-severity bug the other missed: medium found the season write skipped on a replay failure, high found the inverted snapshot order. That's the same pattern as run 4, so keep the paired rule. Times weren't measured this run.
 
 ## Lessons (newest first)
+- **Run 6:** Delegation worked. Claude's work was 12 summaries, one challenged-plans file and an approvals note, and quality held: every check green, a regression test on each fix. The cost moved to Codex: 14 high-reasoning agents used 82% of a 5-hour window in about an hour. The pacing gate and the token-saving rules came from this.
+- **Run 6:** The challenger earned its cost on a large plan set: it re-ran proofs, caught plans that would recreate another bug (Freeze vs Magnet), and set a safe merge order. Skip it only when there are 3 or fewer plans.
+- **Run 6:** Claude simplified two over-built plans (a full reconciliation queue, and strict version-skew handling). Where the database is already correct, prefer self-healing display fixes over new ordering machinery.
 - **Run 5:** About a quarter of findings were regressions in the previous run's fixes, again. Concurrency-ordering fixes in particular kept leaking: request-start order, then read-start time. When a fix claims an ordering guarantee, ask the reviewer to try to break it with a reordered-I/O harness before it ships.
 - **Run 5:** The browser capture's dev "g" shortcut and missing `/round/complete` mock silently skipped the rank-up screen after a behaviour change. Treat SKIPPED capture steps as failures.
 - **Run 5:** Claude ran ahead of its token pace doing every fix. Effort-S fixes now go to a Codex builder (see SKILL.md).
