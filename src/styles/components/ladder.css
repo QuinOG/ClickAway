@@ -279,3 +279,37 @@
     padding: var(--ca-space-4) calc(var(--ca-space-4) + 3px);
 }
 .leaderboardPageScene .leaderboardNoMatch p { margin: 0; }
+
+/* Phones: the desktop three-column plate left the player column ~28px wide at 320px, so names
+   and rank badges spilled over the rating and off the screen. Stack it instead: rank + player
+   on the first line, rating + Duel on the second. */
+@media (max-width: 600px) {
+    .leaderboardPageScene .ladderPlate {
+        grid-template-columns: 40px minmax(0, 1fr);
+        grid-template-areas: "rank identity" "rank end";
+        gap: var(--ca-space-2) var(--ca-space-3);
+        padding: var(--ca-space-2) var(--ca-space-3);
+    }
+    .leaderboardPageScene .ladderPlate .ladderPlateRank { grid-area: rank; }
+    .leaderboardPageScene .ladderPlate .ladderPlateIdentity {
+        grid-area: identity;
+        flex-wrap: wrap;
+        gap: var(--ca-space-1) var(--ca-space-2) !important;
+        min-width: 0;
+        max-width: 100%;
+    }
+    .leaderboardPageScene .ladderPlate .leaderboardPlayerName {
+        min-width: 0;
+        font-size: 18px !important;
+        overflow-wrap: anywhere;
+    }
+    .leaderboardPageScene .ladderPlate .leaderboardTierBadge { max-width: 100%; }
+    .leaderboardPageScene .ladderPlate .ladderPlateEnd {
+        grid-area: end;
+        display: flex;
+        align-items: center;
+        gap: var(--ca-space-2);
+    }
+    .leaderboardPageScene .ladderPlate .ladderPlateHero { flex: 1 1 auto; min-width: 0; }
+    .leaderboardPageScene .ladderPlate .ladderPlateDuel { flex: 0 0 auto; }
+}
