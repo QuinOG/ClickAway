@@ -5195,3 +5195,11 @@
     .feedbackSettingsSheet .uiDialogHeader { margin: 8px 8px 2px; padding: 14px 14px 14px 76px; }
     .feedbackSettingsSheet .uiDialogHeader::before { left: 14px; width: 52px; height: 52px; }
 }
+
+/* ---- r55 (Sol i54 #3): locked medals read as dark metal reliefs ----------
+ * Locked tiers were double-darkened (tile filter + mount filter) until the rim
+ * details vanished. They are now a lighter gunmetal grey, and the lock badge
+ * sits on the rim's lower-right edge instead of over the medal face. */
+.profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isUnlocked + .isLocked) .achievementMedal { filter: grayscale(1) brightness(0.9) contrast(1.12) drop-shadow(0 -1px 0 rgb(220 232 245 / 45%)) drop-shadow(0 2px 0 #02050b) drop-shadow(0 4px 4px rgb(0 0 0 / 55%)); }
+.profilePageCenter .profileAchievementsSection .achievementTile.isLocked .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: brightness(0.92); }
+.profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isFeaturedBanner) .achievementMedalLock { right: -14px; bottom: -8px; }
