@@ -103,8 +103,8 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
     accuracyPercent: normalizePercentValue(
       entry.accuracyPercent ?? calculateAccuracyPercent(hits, misses)
     ),
-    avgReactionMs: normalizeReactionMetric(entry.avgReactionMs),
-    bestReactionMs: normalizeReactionMetric(entry.bestReactionMs),
+    avgReactionMs: hits > 0 ? normalizeReactionMetric(entry.avgReactionMs) : null,
+    bestReactionMs: hits > 0 ? normalizeReactionMetric(entry.bestReactionMs) : null,
     coinsEarned: normalizeNonNegativeNumber(entry.coinsEarned),
     modeId: String(entry.modeId || entry.difficultyId || ""),
     difficultyId: String(entry.modeId || entry.difficultyId || ""),
@@ -251,6 +251,7 @@ export function buildCareerReactionStats(historyEntries = []) {
   let bestReactionMs = null
 
   rows.forEach((entry) => {
+    if (Number(entry?.hits) === 0) return
     const entryAverageReactionMs = normalizeReactionMetric(entry?.avgReactionMs)
     const entryBestReactionMs = normalizeReactionMetric(entry?.bestReactionMs)
 
