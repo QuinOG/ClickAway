@@ -32,6 +32,8 @@ Excluded: filtering highlights or the trend strip, server filtering, remembering
 
 ## Result
 
+**Reverted (user, 2026-11-13).** This trial fixed a confusion that trial 001 had created, and in doing so it removed the chart's original mode chips. History was restored to its state before this run.
+
 **Classification: accepted locally.** Not shipped, and not validated by players.
 
 Final behavior: a "Mode · score trend and match log" button group (All / Practice / Casual / Ranked, with mode-colored dots and `aria-pressed`) sits above the chart and highlights. The chart's own buttons are gone. A specific mode sets both the chart and the list. With All, the list shows everything and the chart shows the latest round's mode, which the note under the buttons names. On wide screens the group spans the full row, and the chart and highlights move to the row below.

@@ -46,3 +46,10 @@ Independent review: Sol (`gpt-6.1-sol`, medium) ran 7 browser tests of its own a
 5. Two regions have duplicate landmark names (moderate). Unchanged and out of scope.
 
 Limitations: no real devices or players. The page still needs vertical scrolling to reach the controls.
+
+## Follow-up (user review, 2026-11-13): the rest of the Ladder on phones
+
+- **Problem:** On phones, each Ladder row kept its desktop three-column layout. At 320px the player column was about 28px wide, so names and rank badges spilled over the rating and off the screen (for example, your own "Gold II" badge at x 334-413 on a 320 or 390 screen).
+- **Solution:** Below 600px wide, each row stacks: rank and player on the first line (the rank badge wraps under the name when needed), then the rating and Duel button on a second line. This uses the standard spacing steps.
+
+Measured after the change: nothing runs off-screen at 320, 360 or 390, the rating line starts 8px below the player line, Duel buttons are 40px tall, and tablet and desktop rows are unchanged. Rows are taller on phones (145px at 390, up to 173px for your own row). Still open: podium names are shortened with "…" (for example "Kes…" at 320) because the podium columns are 45px wide. Screenshots: `shots/004b/before-ladder-*` and `after-ladder-*`.

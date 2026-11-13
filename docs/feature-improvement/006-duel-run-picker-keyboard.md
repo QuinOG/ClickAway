@@ -29,6 +29,8 @@ Excluded: the Ladder's board tabs (same kind of issue, separate control), visual
 
 ## Result
 
+**Reverted (user, 2026-11-13).** Not kept by the user.
+
 **Classification: unverified.** No independent review was run. Sol's account hit its usage limit, and the user chose to finish the run without a separate review for this trial ("no need for a separate review on this one since we only have claude available"). Not shipped, and not validated by players.
 
 Final behavior: the radio group handles ArrowRight/Down and ArrowLeft/Up (move and select, wrapping) and Home/End. Each run's `tabIndex` is 0 only for the chosen run, or for the first run when none is chosen, and -1 for the rest. Selection reuses the existing click handler, so the score on the line, the send hint and the feedback cue all behave as they do with a click.

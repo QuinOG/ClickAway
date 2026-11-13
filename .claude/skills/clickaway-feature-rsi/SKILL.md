@@ -17,6 +17,13 @@ Inspect repository instructions, working changes, and existing behavior first. K
 
 If the user names a problem, use it. Otherwise inspect a small set of existing player journeys and choose a concrete obstacle with cheap, decisive verification. Compare candidates by player benefit, evidence strength, frequency when known, effort, and risk. Existing behavior and feedback may support a problem; they do not prove how many players experience it. Label inferred demand as a hypothesis. Do not invent feedback, usage measurements, or problems to fill a quota.
 
+**Needed and better, not just working (user, 2026-11-13).** A passing review only shows that a change works. Before building, ask whether the change is wanted and whether the result is better than what is there now. In particular:
+- Prefer problems the user named, or real breakage (clipped, unreachable, wrong information), over features inferred from reading code. Inferred feature additions need the user's OK first.
+- Don't replace or restyle existing working UI to make room for a new idea. In run 1, trial 1 added a match-list filter nobody asked for. Trial 2 then "fixed" the resulting two-control confusion by removing the History chart's original mode chips. The user had both reverted.
+- Never pick a trial whose problem was created by an earlier trial in the same run. Revert or rethink the earlier trial instead.
+- Don't add redundant controls (for example, a Clear search button beside a search box that can already be emptied).
+- New UI follows the spacing standards: the 4px/8px grid, `--ca-space-*` tokens, and text aligned with neighbouring panel content.
+
 Read [learning.md](learning.md) for active lessons, treating them as scoped hypotheses rather than facts about the app.
 
 ## Make an experiment record

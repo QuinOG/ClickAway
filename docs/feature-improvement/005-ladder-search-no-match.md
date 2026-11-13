@@ -56,3 +56,8 @@ Independent review: Sol (`gpt-6.1-sol`, medium).
 Process note: a cancelled duplicate review left its temporary spec `tests/e2e/zz-sol-review-005.spec.js` in the repo. It was moved to the scratchpad and not committed.
 
 Follow-up (server, out of scope): Around Me + search should find your window first and then filter by name (`server/playerMysqlDatabase.js` near line 1505).
+
+## Follow-up (user review, 2026-11-13)
+
+- **Problem:** The Clear search button was redundant (you can just empty the search box), and the message text sat flush against the left edge instead of lining up with the panel above it.
+- **Solution:** Removed Clear search. The message is now inset 16px vertically and 19px horizontally, so its text starts at the same x as the controls panel content (49 at 390 wide, 181 at 1440). Screenshot: `shots/005b/after-search-*`.

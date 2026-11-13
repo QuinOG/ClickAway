@@ -30,6 +30,8 @@ Excluded: server filtering, score/reward rules, archive search, visual redesign,
 
 ## Result
 
+**Reverted (user, 2026-11-13).** The user found the match-list filter unneeded and, together with trial 002, worse than the original chart filter. History was restored to its state before this run.
+
 **Classification: accepted locally.** Not shipped, and not validated by players. Demand is still a hypothesis.
 
 Final behavior: the Full Log section has a "Filter match log" group with All / Practice / Casual / Ranked buttons (`aria-pressed`). The desktop table and the mobile cards both render only matching loaded rounds, in their original order. A polite live status reads "Showing N of M loaded rounds · Mode". When more rounds can be loaded, a hint points to the Load older rounds control. An empty filter shows "No <Mode> rounds in the loaded matches." with a "Show all rounds" button, and loading older rounds stays available. Loading older rounds keeps the selection and de-duplicates rows. A failed load shows an alert, and retrying keeps the selection.
