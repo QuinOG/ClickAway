@@ -45,8 +45,10 @@ export function usePlayerProgressionUpdates({
           earnedXp: response.earnedXp,
           rankDelta: response.rankDelta,
           rankProgress: response.rankProgress ?? null,
-          followUpError: response.followUpError
-            || (applied === "refresh-failed" ? "Your round was saved. Reload to see your updated totals." : ""),
+          followUpError: [
+            response.followUpError,
+            applied === "refresh-failed" ? "Your round was saved. Reload to see your updated totals." : "",
+          ].filter(Boolean).join(" "),
         }
       } catch (error) {
         console.error("Unable to submit round:", error)
