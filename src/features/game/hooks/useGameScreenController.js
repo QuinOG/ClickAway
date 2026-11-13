@@ -33,12 +33,11 @@ import {
   getButtonLabelFontSize,
   getCenteredPosition,
   getComboMultiplier,
-  getNextButtonSize,
-  getRandomPosition,
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
 import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
+  createGeometrySimulation,
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
   SIZE_LOCK_DURATION_MS,
@@ -193,8 +192,7 @@ export function useGameScreenController({
   const goCueTimeoutRef = useRef(null)
   const countdownEndsAtRef = useRef(0)
   const pendingRoundStartRef = useRef(null)
-  const freezeMovementUntilRef = useRef(0)
-  const sizeLockUntilRef = useRef(0)
+  const geometryRef = useRef(null)
   const buttonSpawnedAtRef = useRef(0)
   const reactionTotalMsRef = useRef(0)
   const reactionSampleCountRef = useRef(0)
@@ -477,27 +475,15 @@ export function useGameScreenController({
     setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
-  const randomizeButtonPosition = useCallback((nextButtonSize) => {
-    const arenaElement = arenaRef.current
-    if (!arenaElement) return
-
-    setButtonPosition(getRandomPosition(getPlayfieldRect(arenaElement), nextButtonSize, rngRef.current))
-    markButtonSpawned()
-    setTargetSpawnSequence((currentSequence) => currentSequence + 1)
+  const mirrorGeometry = useCallback((state, spawned = false) => {
+    if (!state) return
+    setButtonSize(state.buttonSize)
+    setButtonPosition(state.position)
+    if (spawned) {
+      markButtonSpawned()
+      setTargetSpawnSequence((sequence) => sequence + 1)
+    }
   }, [markButtonSpawned])
-
-  const queueButtonReposition = useCallback(
-    (nextButtonSize) => {
-      if (getElapsedMs() < freezeMovementUntilRef.current) return
-
-      // The hit already moved the target in the server's replay, so a Freeze used
-      // between the hit and this deferred move must not cancel it.
-      setTimeout(() => {
-        randomizeButtonPosition(nextButtonSize)
-      }, 0)
-    },
-    [getElapsedMs, randomizeButtonPosition]
-  )
 
   const addClickFeedback = useCallback((clientX, clientY, value, type, detail = null) => {
     const arenaElement = arenaRef.current
@@ -578,8 +564,7 @@ export function useGameScreenController({
     )
     setComboSurgeHitsRemaining(0)
     setGuardActiveUntilMs(0)
-    freezeMovementUntilRef.current = 0
-    sizeLockUntilRef.current = 0
+    geometryRef.current = null
     buttonSpawnedAtRef.current = 0
     reactionTotalMsRef.current = 0
     reactionSampleCountRef.current = 0
@@ -834,6 +819,7 @@ export function useGameScreenController({
   // Visual/geometry side effects of a powerup. Score-relevant semantics
   // (charge consumption, combo surge, guard) live in the shared engine.
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs = 0) => {
+    mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
       setTimeLeft((currentTime) =>
         Math.min(roundMode.maxTimeBufferSeconds, currentTime + 2)
@@ -843,9 +829,6 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "size_boost") {
-      setButtonSize((currentButtonSize) => (
-        Math.min(roundMode.initialButtonSize, currentButtonSize + 10)
-      ))
       markButtonSpawned()
       setTargetSpawnSequence((currentSequence) => currentSequence + 1)
       addCenterFeedback("Grow", "power power-size_boost")
@@ -853,18 +836,11 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "freeze_movement") {
-      freezeMovementUntilRef.current = eventTimeMs + FREEZE_MOVEMENT_DURATION_MS
       addCenterFeedback("Freeze", "power power-freeze_movement")
       return
     }
 
     if (powerup.effectType === "magnet_center") {
-      freezeMovementUntilRef.current = eventTimeMs + MAGNET_CENTER_FREEZE_MS
-      setButtonSize((currentButtonSize) => {
-        const nextButtonSize = Math.min(roundMode.initialButtonSize, currentButtonSize + 6)
-        centerButtonPosition(nextButtonSize)
-        return nextButtonSize
-      })
       markButtonSpawned()
       setTargetSpawnSequence((currentSequence) => currentSequence + 1)
       addCenterFeedback("Center", "power power-magnet_center")
@@ -887,7 +863,6 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "size_lock") {
-      sizeLockUntilRef.current = eventTimeMs + SIZE_LOCK_DURATION_MS
       addCenterFeedback("Locked", "power power-size_lock")
       return
     }
@@ -897,9 +872,8 @@ export function useGameScreenController({
     }
   }, [
     addCenterFeedback,
-    centerButtonPosition,
+    mirrorGeometry,
     markButtonSpawned,
-    roundMode.initialButtonSize,
     roundMode.maxTimeBufferSeconds,
   ])
 
@@ -1044,13 +1018,11 @@ export function useGameScreenController({
       })
     })
 
-    setButtonSize((currentButtonSize) => {
-      const nextButtonSize = eventTimeMs < sizeLockUntilRef.current
-        ? currentButtonSize
-        : getNextButtonSize(currentButtonSize, roundMode)
-      queueButtonReposition(nextButtonSize)
-      return nextButtonSize
-    })
+    const geometry = geometryRef.current
+    if (geometry) {
+      const moving = eventTimeMs >= geometry.getState().freezeMovementUntilMs
+      mirrorGeometry(geometry.applyHit(eventTimeMs), moving)
+    }
   }, [
     endCurrentRound,
     addCenterFeedback,
@@ -1058,7 +1030,7 @@ export function useGameScreenController({
     emitFeedback,
     getElapsedMs,
     isPlaying,
-    queueButtonReposition,
+    mirrorGeometry,
     roundStartBestScore,
     roundMode,
     score,
@@ -1163,6 +1135,14 @@ export function useGameScreenController({
           arenaWidth: Math.round(playfieldRect.width),
           arenaHeight: Math.round(playfieldRect.height),
         }
+        geometryRef.current = createGeometrySimulation({
+          roundRules: roundMode,
+          ...arenaDimensionsRef.current,
+          rng: rngRef.current,
+        })
+        const geometry = geometryRef.current.getState()
+        setButtonSize(geometry.buttonSize)
+        setButtonPosition(geometry.position)
       }
 
       setCountdownValue(0)
@@ -1204,7 +1184,7 @@ export function useGameScreenController({
       window.clearTimeout(timeoutId)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [markButtonSpawned, phase])
+  }, [markButtonSpawned, phase, roundMode])
 
   useEffect(() => {
     if (phase === ROUND_PHASE.COUNTDOWN && countdownValue > 0) {
