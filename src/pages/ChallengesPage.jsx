@@ -434,15 +434,42 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
             <fieldset className="duelRunTokens">
               <legend>Stake a run</legend>
               {replays.length > 0 ? (
-                <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
-                  {replays.map((replay) => {
+                <div
+                  className="duelReplayRail"
+                  role="radiogroup"
+                  aria-label="Choose a replay"
+                  onKeyDown={(event) => {
+                    // Standard radio-group keys: arrows move and select (wrapping), Home/End jump.
+                    const radios = Array.from(event.currentTarget.querySelectorAll('[role="radio"]'))
+                    const currentIndex = radios.indexOf(document.activeElement)
+                    if (currentIndex < 0) return
+                    const lastIndex = radios.length - 1
+                    const nextIndex = {
+                      ArrowRight: currentIndex === lastIndex ? 0 : currentIndex + 1,
+                      ArrowDown: currentIndex === lastIndex ? 0 : currentIndex + 1,
+                      ArrowLeft: currentIndex === 0 ? lastIndex : currentIndex - 1,
+                      ArrowUp: currentIndex === 0 ? lastIndex : currentIndex - 1,
+                      Home: 0,
+                      End: lastIndex,
+                    }[event.key]
+                    if (nextIndex === undefined) return
+                    event.preventDefault()
+                    radios[nextIndex].focus()
+                    radios[nextIndex].click()
+                  }}
+                >
+                  {replays.map((replay, index) => {
                     const isSelected = String(replay.id) === String(sendForm.replayId)
+                    const hasSelection = replays.some((candidate) => String(candidate.id) === String(sendForm.replayId))
+                    // One Tab stop for the group: the chosen run, or the first run before any choice.
+                    const isTabStop = isSelected || (!hasSelection && index === 0)
                     return (
                       <button
                         key={replay.id}
                         type="button"
                         role="radio"
                         aria-checked={isSelected}
+                        tabIndex={isTabStop ? 0 : -1}
                         className={`duelReplayCard ${isSelected ? "isSelected" : ""}`}
                         data-mode={String(replay.modeId || "").toLowerCase()}
                         onClick={(event) => {
