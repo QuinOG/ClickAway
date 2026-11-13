@@ -1360,32 +1360,26 @@ export async function createDefaultUserProgress(userId) {
   return buildProgressRecord(pool, userId)
 }
 
-// snapshotAtMs marks when this read began. A read that began later has seen
-// every earlier commit, so the client keeps the newest snapshot rather than
-// whichever response happened to arrive last.
-//
-// All of a read's queries run in one REPEATABLE READ transaction, so they see a
-// single database snapshot, and the timestamp is taken once that snapshot is
-// fixed (its first query has run). If the transaction fails (e.g. a
-// serialization conflict from a legacy backfill), it falls back to a plain read.
+// Read one writable snapshot: legacy progress reads may backfill stats.
+// Timestamps remain a best-effort client hint, not database commit ordering.
 export async function findUserProgressByUserId(userId) {
-  let connection = null
-  try {
-    connection = await pool.getConnection()
-    await connection.beginTransaction()
-    await connection.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-    await connection.query("SELECT 1")
-    const snapshotAtMs = Date.now()
-    const record = await buildProgressRecord(connection, userId)
-    await connection.commit()
-    return record ? { ...record, snapshotAtMs } : record
-  } catch {
-    if (connection) await connection.rollback().catch(() => {})
-    const snapshotAtMs = Date.now()
-    const record = await buildProgressRecord(pool, userId)
-    return record ? { ...record, snapshotAtMs } : record
-  } finally {
-    connection?.release()
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    let connection
+    try {
+      connection = await pool.getConnection()
+      await connection.beginTransaction()
+      await connection.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+      await connection.query("SELECT 1")
+      const snapshotAtMs = Date.now()
+      const record = await buildProgressRecord(connection, userId)
+      await connection.commit()
+      return record ? { ...record, snapshotAtMs } : record
+    } catch (error) {
+      if (connection) await connection.rollback().catch(() => {})
+      if (attempt === 2 || !["40001", "40P01"].includes(error.code)) throw error
+    } finally {
+      connection?.release()
+    }
   }
 }
 
