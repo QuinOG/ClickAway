@@ -50,15 +50,17 @@ export function useShopActions({
       // account is never sent after another account has logged in.
       await waitForPendingProgress?.()
       if (!isCurrentSession(ticket)) {
-        return { ok: false, error: "You switched accounts, so that wasn't sent." }
+        return { ok: false, discarded: true }
       }
       const session = await purchaseShopItem(item.id)
       const outcome = await applyProgressResponse(ticket, session.progress, applyProgress)
+      if (!isCurrentSession(ticket) || outcome === "other-session") return { ok: false, discarded: true }
       if (outcome === "refresh-failed") {
         return { ok: false, error: "Item unlocked, but the Shop couldn't refresh. Reload to see it." }
       }
       return { ok: true }
     } catch (error) {
+      if (!isCurrentSession(ticket)) return { ok: false, discarded: true }
       return {
         ok: false,
         error: error.message || "Could not unlock that item.",
@@ -103,15 +105,17 @@ export function useShopActions({
       // account is never sent after another account has logged in.
       await waitForPendingProgress?.()
       if (!isCurrentSession(ticket)) {
-        return { ok: false, error: "You switched accounts, so that wasn't sent." }
+        return { ok: false, discarded: true }
       }
       const session = await equipShopItem(item.id)
       const outcome = await applyProgressResponse(ticket, session.progress, applyProgress)
+      if (!isCurrentSession(ticket) || outcome === "other-session") return { ok: false, discarded: true }
       if (outcome === "refresh-failed") {
         return { ok: false, error: "Item equipped, but the Shop couldn't refresh. Reload to see it." }
       }
       return { ok: true }
     } catch (error) {
+      if (!isCurrentSession(ticket)) return { ok: false, discarded: true }
       return {
         ok: false,
         error: error.message || "Could not equip that item.",

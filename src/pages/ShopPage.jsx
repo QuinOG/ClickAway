@@ -104,6 +104,11 @@ export default function ShopPage({
 
     try {
       const purchaseResult = await onPurchase?.(item)
+      if (purchaseResult?.discarded) {
+        setActionFeedback(null)
+        signalAction(source, { state: "idle", silent: true })
+        return false
+      }
       if (purchaseResult?.ok) {
         celebrateShopPurchase({ enabled: effectivePreferences.flashes })
         setBalancePulseKey((key) => key + 1)
@@ -141,6 +146,11 @@ export default function ShopPage({
 
     try {
       const equipResult = await onEquip?.(item)
+      if (equipResult?.discarded) {
+        setActionFeedback(null)
+        signalAction(source, { state: "idle", silent: true })
+        return false
+      }
       if (equipResult?.ok) {
         celebrateShopEquip({ enabled: effectivePreferences.flashes })
         setActionFeedback({ kind: "success", message: `${item.name} equipped. Your live loadout is updated.` })
