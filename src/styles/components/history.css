@@ -510,3 +510,31 @@
     .historyRoundCardOutcome > svg { margin: 0 0 0 auto; }
     .historyTrajectoryLegend { font-size: 11px; }
 }
+
+/* Match-log controls are independent of the score-trajectory mode. */
+.historyLogFilters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.historyLogFilterLabel {
+    flex-basis: 100%;
+    font-weight: 700;
+}
+
+.historyLogFilters .secondaryButton[aria-pressed="true"] {
+    border-color: var(--ca-color-accent);
+    box-shadow: inset 0 -3px 0 var(--ca-color-accent);
+}
+
+.historyLogNoMatches {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+}
+
+.historyLogNoMatches p {
+    margin: 0;
+}

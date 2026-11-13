@@ -266,6 +266,7 @@ export default function HistoryPage({
   roundHistory = [],
   totalRoundCount = 0,
 }) {
+  const [logModeFilter, setLogModeFilter] = useState("all")
   const [extraHistoryRows, setExtraHistoryRows] = useState([])
   const [historyPage, setHistoryPage] = useState(1)
   const [hasMoreHistory, setHasMoreHistory] = useState(false)
@@ -284,6 +285,14 @@ export default function HistoryPage({
 
     return mergedRows
   }, [extraHistoryRows, roundHistory])
+
+  const filteredHistoryRows = useMemo(
+    () => logModeFilter === "all"
+      ? historyRows
+      : historyRows.filter((round) => getModeLabelFromHistoryEntry(round).toLowerCase() === logModeFilter),
+    [historyRows, logModeFilter]
+  )
+  const logModeLabel = TRAJECTORY_MODES.find((mode) => mode.id === logModeFilter)?.label ?? "All"
 
   const resolvedTotalRoundCount = Math.max(
     totalRoundCount,
@@ -468,73 +477,108 @@ export default function HistoryPage({
                 <h2 className="historySectionTitle">Full Log</h2>
               </div>
 
-              <div className="historyTableWrap">
-                <table className="table helpTable historyTable">
-                  <thead>
-                    <tr>
-                      <th>Played</th>
-                      <th>Mode</th>
-                      <th className="historyNumericColumn">Score</th>
-                      <th className="historyNumericColumn">Hits</th>
-                      <th className="historyNumericColumn">Misses</th>
-                      <th className="historyNumericColumn">Accuracy</th>
-                      <th className="historyNumericColumn">Coins</th>
-                      <th className="historyNumericColumn">XP</th>
-                      <th className="historyNumericColumn">Rank Result</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historyRows.map((round) => {
-                      const rowMarkers = getRoundMarkers(round, historySnapshot)
-
-                      return (
-                        <tr key={round.id} className="historyTableRow">
-                          <td className="historyPlayedCell">
-                            <div className="historyPlayedPrimary">{getPlayedAtLabel(round)}</div>
-                            {rowMarkers.length > 0 ? (
-                              <div className="historyRowMarkers" aria-label="Round highlights">
-                                {rowMarkers.map((marker) => (
-                                  <span key={marker} className="historyRowMarker">
-                                    {marker}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : null}
-                          </td>
-                          <td>
-                            <span className={`historyModeBadge ${getModeToneClassName(round)}`}>
-                              {getModeLabelFromHistoryEntry(round)}
-                            </span>
-                          </td>
-                          <td className="historyNumericCell historyScoreCell">{formatNumber(round.score)}</td>
-                          <td className="historyNumericCell">{formatNumber(round.hits)}</td>
-                          <td className="historyNumericCell">{formatNumber(round.misses)}</td>
-                          <td className="historyNumericCell historyAccuracyCell">
-                            {formatPercent(round.accuracyPercent)}
-                          </td>
-                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.coinsEarned)}</td>
-                          <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.xpEarned ?? 0)}</td>
-                          <td className="historyNumericCell">
-                            <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>
-                              {getRankResultText(round)}
-                            </span>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="historyRoundDeck" aria-label="Match cards">
-                {historyRows.map((round) => (
-                  <HistoryRoundCard
-                    key={round.id}
-                    round={round}
-                    markers={getRoundMarkers(round, historySnapshot)}
-                  />
+              <div className="historyLogFilters" role="group" aria-label="Filter match log by mode">
+                <span className="historyLogFilterLabel">Filter match log</span>
+                {[{ id: "all", label: "All" }, ...TRAJECTORY_MODES].map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    className="secondaryButton"
+                    aria-pressed={logModeFilter === mode.id}
+                    onClick={() => setLogModeFilter(mode.id)}
+                  >
+                    {mode.label}
+                  </button>
                 ))}
               </div>
+              <p className="historySectionDescription" role="status" aria-live="polite" aria-atomic="true">
+                Showing {formatNumber(filteredHistoryRows.length)} of {formatNumber(historyRows.length)} loaded rounds
+                {logModeFilter === "all" ? " · All modes" : ` · ${logModeLabel}`}
+              </p>
+              {canLoadMoreHistory ? (
+                <p className="historySectionDescription">
+                  Older rounds aren't loaded yet. Use Load older rounds below the list to include them.
+                </p>
+              ) : null}
+
+              {filteredHistoryRows.length === 0 ? (
+                <div className="historyLogNoMatches">
+                  <p>No {logModeLabel} rounds in the loaded matches.</p>
+                  <button type="button" className="secondaryButton" onClick={() => setLogModeFilter("all")}>
+                    Show all rounds
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="historyTableWrap">
+                    <table className="table helpTable historyTable">
+                      <thead>
+                        <tr>
+                          <th>Played</th>
+                          <th>Mode</th>
+                          <th className="historyNumericColumn">Score</th>
+                          <th className="historyNumericColumn">Hits</th>
+                          <th className="historyNumericColumn">Misses</th>
+                          <th className="historyNumericColumn">Accuracy</th>
+                          <th className="historyNumericColumn">Coins</th>
+                          <th className="historyNumericColumn">XP</th>
+                          <th className="historyNumericColumn">Rank Result</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredHistoryRows.map((round) => {
+                          const rowMarkers = getRoundMarkers(round, historySnapshot)
+
+                          return (
+                            <tr key={round.id} className="historyTableRow">
+                              <td className="historyPlayedCell">
+                                <div className="historyPlayedPrimary">{getPlayedAtLabel(round)}</div>
+                                {rowMarkers.length > 0 ? (
+                                  <div className="historyRowMarkers" aria-label="Round highlights">
+                                    {rowMarkers.map((marker) => (
+                                      <span key={marker} className="historyRowMarker">
+                                        {marker}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </td>
+                              <td>
+                                <span className={`historyModeBadge ${getModeToneClassName(round)}`}>
+                                  {getModeLabelFromHistoryEntry(round)}
+                                </span>
+                              </td>
+                              <td className="historyNumericCell historyScoreCell">{formatNumber(round.score)}</td>
+                              <td className="historyNumericCell">{formatNumber(round.hits)}</td>
+                              <td className="historyNumericCell">{formatNumber(round.misses)}</td>
+                              <td className="historyNumericCell historyAccuracyCell">
+                                {formatPercent(round.accuracyPercent)}
+                              </td>
+                              <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.coinsEarned)}</td>
+                              <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.xpEarned ?? 0)}</td>
+                              <td className="historyNumericCell">
+                                <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>
+                                  {getRankResultText(round)}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="historyRoundDeck" aria-label="Match cards">
+                    {filteredHistoryRows.map((round) => (
+                      <HistoryRoundCard
+                        key={round.id}
+                        round={round}
+                        markers={getRoundMarkers(round, historySnapshot)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
               {canLoadMoreHistory ? (
                 <div className="historyPagination">
