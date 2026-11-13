@@ -109,7 +109,10 @@ export function buildAchievementStats({
   let currentStreak = 0
   const rankedRoundsOldestFirst = rounds.filter((round) => isRankedModeEntry(round)).reverse()
   rankedRoundsOldestFirst.forEach((round) => {
-    if (Number(round?.rankDelta) > 0) {
+    const isWin = typeof round?.rankedWin === "boolean"
+      ? round.rankedWin
+      : Number(round?.rankDelta) > 0
+    if (isWin) {
       currentStreak += 1
       maxConsecutiveRankedWins = Math.max(maxConsecutiveRankedWins, currentStreak)
     } else {
