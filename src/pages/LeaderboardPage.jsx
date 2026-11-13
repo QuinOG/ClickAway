@@ -284,7 +284,7 @@ function LeaderboardStandingPanel({
       value: formatNumericValue(currentRankProgress?.mmr),
     },
     {
-      label: "Games",
+      label: "Recent games",
       value: formatNumericValue(normalizedRankedRounds),
     },
   ]
@@ -314,7 +314,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
-      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
+      <p className="leaderboardStandingScope">Current rating &middot; recent Ranked games</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -460,7 +460,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
       </div>
       <div className="leaderboardPodiumHeader">
         <div>
-          <p className="leaderboardSectionEyebrow">Season leaders</p>
+          <p className="leaderboardSectionEyebrow">Board leaders</p>
           <h2>Players to beat</h2>
         </div>
         <Crown weight="duotone" aria-hidden="true" />
@@ -723,7 +723,7 @@ export default function LeaderboardPage({
       <section className="card leaderboardPageCard">
         <CommandHeader
           routeId="ladder"
-          eyebrow="Season ladder"
+          eyebrow="Global ladder"
           title="Climb the field"
           subtitle="See who leads, find your nearest rival, and take the next position."
           status={(

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { beforeEach, expect, test, vi } from "vitest"
@@ -36,4 +36,23 @@ test("placed players without a reaction measurement get reaction guidance", asyn
   await user.click(screen.getByRole("button", { name: "Around Me" }))
   await waitFor(() => expect(screen.getAllByText("Record a reaction time to join this board.")).toHaveLength(2))
   expect(screen.queryByText(/Finish your placement matches/)).toBeNull()
+})
+
+test("standing summary labels loaded history as recent games and avoids season claims", async () => {
+  fetchLeaderboard.mockResolvedValue(result)
+  show({ roundHistory: [{ progressionMode: "ranked", modeId: "hard" }] })
+  const panel = await screen.findByRole("region", { name: "Your leaderboard standing" })
+  await waitFor(() => expect(fetchLeaderboard).toHaveBeenCalled())
+  expect(within(panel).getByText("Recent games")).toBeTruthy()
+  expect(within(panel).queryByText(/this season/)).toBeNull()
+})
+
+test("run 5 Deadeye crest and reward appear for top-ranked players", async () => {
+  fetchLeaderboard.mockResolvedValue(result)
+  show()
+  await screen.findByRole("list", { name: /Ladder sorted/ })
+  expect(document.querySelector('.leaderboardPodiumCrest img').getAttribute("src")).toBe("/ranks/deadeye.svg")
+  expect(document.querySelector('.ladderPlayerHoverCard .profileHoverRankIcon').getAttribute("src")).toBe("/ranks/deadeye.svg")
+  const panel = screen.getByRole("region", { name: "Your leaderboard standing" })
+  expect(within(within(panel).getByText("Reward").closest("article")).getByText("Deadeye")).toBeTruthy()
 })
