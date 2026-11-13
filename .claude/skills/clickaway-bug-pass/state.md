@@ -1,0 +1,88 @@
+# Bug pass state
+
+Open PR: #21 (`sol-bug-pass`, base `main`). It holds all four runs. Before deploying, run migration `012_add_consumed_round_tokens.sql`.
+
+## Fixed (do not re-report)
+- **Run 1 (a94b38a):**
+  - single-use round tokens;
+  - tokenless Casual earns nothing, and the client waits for a token;
+  - a server timer replay including Time Boost;
+  - an issue-time check;
+  - an 80ms client click guard;
+  - "Streak saved" under Second Wind;
+  - duel score taken from the stored replay;
+  - challenge-bound duel tokens;
+  - atomic duel transitions;
+  - delta reward writes, with no inventory rewrite;
+  - string-only auth input and a 72-byte sign-up limit;
+  - a logout retry flag;
+  - Armory charge rating, power-key reset and roving tab fixed;
+  - Shop busy state;
+  - Ladder search ranks computed before filtering;
+  - the Net RR window;
+  - relative times;
+  - per-device selected mode;
+  - Help copy;
+  - Profile null stats.
+- **Run 2 (7215e82):**
+  - migration 012 and verifySchema for `consumed_round_tokens`;
+  - ranked result computed from the locked row;
+  - the connection released before the progress read;
+  - progress saves write only the fields sent (`providedFields`);
+  - `progressResponseGuard.js` (session generation, superseded refetch);
+  - queued saves checked before sending;
+  - login waits for an in-flight logout;
+  - duel start failure shows a retry;
+  - zero-click duel replays;
+  - `appliedRankDelta` reflects the actual change;
+  - season tiers derived from rank divisions;
+  - Practice click cap;
+  - client null reaction;
+  - mode survives logout;
+  - Test Range keyed per mount.
+- **Run 3 (475c43d):**
+  - circle-aware geometry with 2px tolerance and fractional, border-corrected click coordinates;
+  - power-event cap derived from the click cap;
+  - timed rounds wait out `roundEndMs`;
+  - achievements evaluated inside `completeUserRound`, insert-only;
+  - round save status and server-awarded rewards on Results;
+  - multi-level Results;
+  - placement-score label;
+  - server null reaction helper;
+  - auth cookie set last;
+  - cross-tab auth reload;
+  - one auth attempt at a time, with logout winning;
+  - shop ticket taken before the wait, plus a refresh-failed result;
+  - pending Armory edits overlaid on responses;
+  - `active_loadout_slot` only when sent;
+  - swap report starting charges and precise shrink;
+  - Test Range run binding, 80ms guard and end-of-time input stop;
+  - Ladder reverse sort on the server, real ranks during search, legacy ratings hidden, RR gap only on Rating;
+  - standalone duel-completion route removed;
+  - post-duel actions leave the duel;
+  - Duels list fetches all roles;
+  - History pagination at 50, career personal best;
+  - pending-duel badge in the shell;
+  - settings preview cue keeps playing;
+  - Help charge copy;
+  - mobile Armory badge;
+  - accuracy achievements floored;
+  - server-delivered unlock toasts.
+- **Run 4 (eaec0a5):**
+  - geometry required for every server-seeded round, including missing arena dimensions;
+  - unverified (tokenless) rounds don't update lifetime/loadout stats or achievements;
+  - post-commit replay/season/duel/progress-read failures return the saved round with a note;
+  - Results uses the server's rank progress.
+
+## Deferred (with reason)
+- **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
+- **Interval timer drift in background tabs:** M; needs a deadline-based timer.
+- **Resizing the window mid-round:** M; needs a fixed logical playfield.
+- **Season end dates not enforced:** M; needs a season rollover job.
+- **Ladder "this season" labels over all-time stats:** M; needs ranked, season-scoped aggregates, or new labels.
+- **"Rounds this week" capped at 50:** needs a server-computed count.
+- **Ladder reward shown from current rather than peak rating:** needs the API to return season stats.
+- **Armory dialogs lack a focus trap:** M.
+- **Shop category tabs lack arrow keys:** S–M.
+- **Login doesn't apply the 72-byte password limit:** enforcing it would lock out older accounts. Product decision.
+- **Duel race lost if its replay write fails after commit:** the round is reported saved with a note, but the duel stays unsettled. Needs the replay and duel writes inside the round transaction.
