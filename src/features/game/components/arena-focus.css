@@ -1,9 +1,9 @@
-/* A quiet, opaque playfield keeps scenery separate from aiming and feedback. */
+/* A light shade keeps the stadium visible behind targets and feedback. */
 .arena .arenaGameplayBackdrop {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: #08121e;
+  background: rgb(0 0 0 / 15%);
   pointer-events: none;
 }
 

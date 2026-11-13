@@ -11,7 +11,7 @@ This pass audits the remaining source against the current 20-screen capture set.
 - Results: generated gold/silver/bronze performance medals retain the original clean-run and accuracy conditions.
 - Promotion: generated division frame and mirrored cannon sprites retain division-dependent decoration and live confetti.
 - Duel woodwork and Shop booth: generated platform and booth scenery sit around the live controls and preview; see the scenery inventory for prompts.
-- Gameplay: a solid dark, non-interactive layer covers the stadium scenery during aiming. Targets, feedback, countdown and HUD remain above it. Verified the target is hit-testable and a click scores.
+- Gameplay: a non-interactive 15% black shade dims the visible stadium during aiming. Targets, feedback, countdown and HUD remain above it. Verified the target is hit-testable and a click scores.
 
 ## Already illustrated
 
@@ -25,6 +25,6 @@ This pass audits the remaining source against the current 20-screen capture set.
 - Brand marks, pass engraving, curved seal lettering, ticket labels, stamps and numbers: typography or established branding.
 - Tiny settings and navigation control symbols, focus rings, panel borders, dividers and progress tracks: functional UI chrome.
 - Live target skins, hit feedback, countdowns, confetti, stadium lighting and theme tint: gameplay or animation layers.
-- The old arena horizon is hidden by the painted stadium styles, and the live playfield now has an opaque backing; generating a replacement for that hidden artwork would not change the interface.
+- The old arena horizon is hidden by the painted stadium styles; generating a replacement for that hidden artwork would not change the interface.
 
 All artwork changes share one Art rework section and one screenshot table in the PR description. Earlier screenshot tables in art follow-up comments are consolidated into links to that section.
