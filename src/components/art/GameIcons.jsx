@@ -60,6 +60,8 @@ export const FlashpointIcon = art("parts/tempo_flashpoint")
 const RANK_TONES = new Set(["unranked", "bronze", "silver", "gold", "platinum", "diamond"])
 
 export function CrestIcon({ tone = "gold", ...props }) {
+  // Deadeye, the top rank, has its own emblem outside the crest set.
+  if (tone === "deadeye") return <Art src="/ranks/deadeye.svg" {...props} />
   const rank = RANK_TONES.has(tone) ? tone : "gold"
   return <Art src={`/art/ranks/${rank}.png`} {...props} />
 }

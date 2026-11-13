@@ -157,9 +157,11 @@ export default function ArmoryTestRange({
   const [mountId] = useState(() => { rangeMountCounter += 1; return rangeMountCounter })
   const runKey = `${mountId}:${runToken}`
 
-  const historyKey = `${loadoutName}|${modeLabel}`
+  // Keyed by the bay's stable id (names can be copied or renamed).
+  const historyKey = `${roundRules?.loadoutSnapshot?.loadoutId ?? loadoutName}|${modeLabel}`
   const rulesKey = JSON.stringify(roundRules ?? {})
-  const isRunDone = range.phase === RANGE_PHASE.DONE
+  const isRunDone = isOpen
+    && range.phase === RANGE_PHASE.DONE
     && Boolean(range.results)
     && range.completedRunToken === runToken
 

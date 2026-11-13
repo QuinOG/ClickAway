@@ -113,7 +113,7 @@ export default function PlayerHoverCard({
   rankedRounds = null,
 }) {
   const tierName = String(rankProgress?.tierLabel || rankLabel).split(" ")[0].toLowerCase()
-  const tierTone = ["gold", "silver", "bronze", "platinum", "diamond"].includes(tierName) ? tierName : "unranked"
+  const tierTone = ["gold", "silver", "bronze", "platinum", "diamond", "deadeye"].includes(tierName) ? tierName : "unranked"
   const formattedCoins = Number.isFinite(coins) ? coins.toLocaleString() : "0"
   const normalizedLevel = Number.isFinite(level) ? Math.max(1, level) : 1
   const formattedAccuracy = formatPercent(accuracyPercent)

@@ -755,9 +755,12 @@ async function getRoundHistoryCount(executor, userId) {
   return toNonNegativeNumber(rows[0]?.totalCount, 0)
 }
 
+// Rebuilds stats from history only for accounts that predate the stats table
+// (no row yet). An existing row is authoritative even at zero rounds: history
+// can hold unverified rounds that must never count toward stats.
 async function backfillLifetimeStatsFromHistory(executor, userId) {
   const existingStats = await getLifetimeStatsRow(executor, userId)
-  if (existingStats && toNonNegativeNumber(existingStats.totalRounds, 0) > 0) {
+  if (existingStats) {
     return mapLifetimeStatsRow(existingStats)
   }
 
@@ -1357,8 +1360,33 @@ export async function createDefaultUserProgress(userId) {
   return buildProgressRecord(pool, userId)
 }
 
+// snapshotAtMs marks when this read began. A read that began later has seen
+// every earlier commit, so the client keeps the newest snapshot rather than
+// whichever response happened to arrive last.
+//
+// All of a read's queries run in one REPEATABLE READ transaction, so they see a
+// single database snapshot, and the timestamp is taken once that snapshot is
+// fixed (its first query has run). If the transaction fails (e.g. a
+// serialization conflict from a legacy backfill), it falls back to a plain read.
 export async function findUserProgressByUserId(userId) {
-  return buildProgressRecord(pool, userId)
+  let connection = null
+  try {
+    connection = await pool.getConnection()
+    await connection.beginTransaction()
+    await connection.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+    await connection.query("SELECT 1")
+    const snapshotAtMs = Date.now()
+    const record = await buildProgressRecord(connection, userId)
+    await connection.commit()
+    return record ? { ...record, snapshotAtMs } : record
+  } catch {
+    if (connection) await connection.rollback().catch(() => {})
+    const snapshotAtMs = Date.now()
+    const record = await buildProgressRecord(pool, userId)
+    return record ? { ...record, snapshotAtMs } : record
+  } finally {
+    connection?.release()
+  }
 }
 
 export const LEADERBOARD_BOARDS = {
@@ -1762,13 +1790,22 @@ export async function completeUserRound({
       )
     }
 
+    // Settle any one-time legacy backfill before this round's history row exists,
+    // so an unverified round can't be swept into stats by a later rebuild.
+    await backfillLifetimeStatsFromHistory(connection, userId)
+
     insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
       ...historyEntry,
       rankDelta: rankOutcome.appliedRankDelta,
     })
 
     if (countsTowardStats) {
-      const committedHistoryEntry = { ...historyEntry, rankDelta: rankOutcome.appliedRankDelta }
+      const committedHistoryEntry = {
+        ...historyEntry,
+        rankDelta: rankOutcome.appliedRankDelta,
+        // Placement rounds award a placement score, not a ranked win.
+        rankedWin: !rankOutcome.previousRankProgress?.isPlacement && rankOutcome.appliedRankDelta > 0,
+      }
       const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
       let nextLifetimeStats = applyRoundToLifetimeStats(
         existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
@@ -2259,12 +2296,24 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
        ON replay.id = c.replay_id
      LEFT JOIN round_replays opponent_replay
        ON opponent_replay.id = c.opponent_replay_id
-     WHERE ${whereClause}
+     WHERE (${whereClause})
+       AND (
+         c.status IN ('pending', 'accepted')
+         OR c.id IN (
+           SELECT recent.id FROM challenges recent
+           WHERE ${whereClause.replaceAll("c.", "recent.")}
+           ORDER BY recent.created_at DESC, recent.id DESC
+           LIMIT 50
+         )
+       )
      ORDER BY c.created_at DESC, c.id DESC
-     LIMIT 50`,
-    params
+     LIMIT 300`,
+    [...params, ...params]
   )
 
+  // Every duel still waiting on a reply or a race is returned, however old,
+  // plus the 50 most recent for history; otherwise newer duels could push an
+  // actionable one off the list (and off the pending badge).
   return rows.map(mapChallengeRow).filter(Boolean)
 }
 

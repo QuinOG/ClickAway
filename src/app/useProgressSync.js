@@ -76,6 +76,9 @@ export function useProgressSync({ isAuthed, applyProgress }) {
         return response.progress
       })
       .catch((error) => {
+        // The edit was never stored: drop it and show what the server has.
+        settlePendingPreferences(pendingHandle)
+        void applyProgressResponse(beginProgressRequest(), null, applyProgress)
         console.error("Unable to sync player progress:", error)
         toast.error("Couldn't save your progress. Check your connection.", {
           id: PROGRESS_SYNC_TOAST_ID,

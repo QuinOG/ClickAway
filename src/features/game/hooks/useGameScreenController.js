@@ -490,8 +490,9 @@ export function useGameScreenController({
     (nextButtonSize) => {
       if (getElapsedMs() < freezeMovementUntilRef.current) return
 
+      // The hit already moved the target in the server's replay, so a Freeze used
+      // between the hit and this deferred move must not cancel it.
       setTimeout(() => {
-        if (getElapsedMs() < freezeMovementUntilRef.current) return
         randomizeButtonPosition(nextButtonSize)
       }, 0)
     },
@@ -602,6 +603,9 @@ export function useGameScreenController({
     nextDrillId = selectedDrillId
   ) => {
     if (finishedDuelRef.current) onExitDuelRef.current?.()
+    // A duel can't start until its ghost has loaded; starting earlier would run
+    // an ordinary round that can never settle the duel.
+    else if (challengeIdRef.current && !ghostReplayRef.current?.seed) return
     pendingRoundStartRef.current = {
       modeId: nextModeId,
       loadoutId: nextLoadoutId,
@@ -969,13 +973,17 @@ export function useGameScreenController({
     const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
 
     if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
+    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) return
 
     roundEventsRef.current.push({
       type: "hit",
       t: eventTimeMs,
       ...(clickCoordinates ?? {}),
     })
-    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
+    // Untimed Practice ends at the click cap. A timed round keeps running until
+    // its timer expires (ending early would fail the server's timer check);
+    // further clicks are simply not recorded.
+    if (!roundMode.isTimedRound && countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
       endCurrentRound()
     }
     buttonSpawnedAtRef.current = 0
@@ -1064,13 +1072,17 @@ export function useGameScreenController({
     const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
 
     if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
+    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) return
 
     roundEventsRef.current.push({
       type: "miss",
       t: eventTimeMs,
       ...(clickCoordinates ?? {}),
     })
-    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
+    // Untimed Practice ends at the click cap. A timed round keeps running until
+    // its timer expires (ending early would fail the server's timer check);
+    // further clicks are simply not recorded.
+    if (!roundMode.isTimedRound && countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
       endCurrentRound()
     }
 
@@ -1115,6 +1127,7 @@ export function useGameScreenController({
       streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
     )
   }, [
+    roundMode.isTimedRound,
     endCurrentRound,
     roundMode.id,
     addClickFeedback,
@@ -1379,7 +1392,10 @@ export function useGameScreenController({
     function handleKeyDown(event) {
       if (event.repeat) return
       if (import.meta.env.DEV && event.key.toLowerCase() === "g") {
+        // Dev preview shortcut: end without submitting, but treat the round as
+        // saved so the Results and promotion screens can still be previewed.
         hasAwardedRoundRef.current = true
+        setRoundSave({ status: "saved" })
         setTimeLeft(0)
         endCurrentRound()
         return

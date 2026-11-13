@@ -56,7 +56,12 @@ import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
 const app = express()
-app.set("trust proxy", 1)
+// Rate limits key on the client IP. Only trust X-Forwarded-For when a proxy we
+// control sets it (Railway sets RAILWAY_ENVIRONMENT); otherwise anyone reaching
+// the server directly could rotate that header to dodge the login limit.
+// TRUST_PROXY overrides: a hop count (e.g. "1") or "false".
+const TRUST_PROXY = process.env.TRUST_PROXY ?? (process.env.RAILWAY_ENVIRONMENT ? "1" : "false")
+app.set("trust proxy", TRUST_PROXY === "false" ? false : Number(TRUST_PROXY) || TRUST_PROXY)
 const playerStateStore = createPlayerStateStore()
 
 const PORT = Number(process.env.PORT || 4000)
@@ -298,7 +303,13 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
     await playerStateStore.ensurePlayerUser(createdUser)
     response.status(201).json(await createAuthResponse(createdUser, response))
   } catch (error) {
-    handleRouteError(error, response)
+    // The account exists at this point, so say so: retrying sign-up would only
+    // report the name as taken.
+    console.error("Account created, but sign-in after sign-up failed:", error)
+    response.status(503).json({
+      error: "Your account was created, but we couldn't sign you in. Please log in.",
+      code: "account_created",
+    })
   }
 })
 
@@ -841,11 +852,6 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         })
       }
 
-      seasonProgress = await applyUserSeasonProgress(user.id, {
-        rankMmr: nextRankMmr,
-        isRankedRound: progressionMode === "ranked",
-        isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
-      })
 
       // Only a round started for a duel (its token names the challenge) can complete it.
       const challengeId = roundTokenChallengeId
@@ -862,6 +868,18 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     } catch (error) {
       console.error("Round saved, but a follow-up write failed:", error)
       followUpError = "Your round was saved, but its replay or duel result couldn't be stored."
+    }
+
+    // Season credit is independent of the replay, so a replay failure can't skip it.
+    try {
+      seasonProgress = await applyUserSeasonProgress(user.id, {
+        rankMmr: nextRankMmr,
+        isRankedRound: progressionMode === "ranked",
+        isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
+      })
+    } catch (error) {
+      console.error("Round saved, but the season update failed:", error)
+      followUpError = followUpError || "Your round was saved, but its season progress couldn't be updated."
     }
 
     // Read last, after the replay, season and duel writes, so the response is the

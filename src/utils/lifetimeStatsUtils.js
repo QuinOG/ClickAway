@@ -86,6 +86,14 @@ export function normalizeLoadoutStatsEntry(entry = {}) {
 /**
  * Applies one completed round to lifetime counters.
  */
+// A placement round's rankDelta is its placement score, not RR won, so it is
+// never a win. The server marks rounds explicitly (rankedWin); older history
+// without the flag falls back to a positive rankDelta.
+function isRankedWin(round, rankDelta) {
+  if (typeof round?.rankedWin === "boolean") return round.rankedWin
+  return rankDelta > 0
+}
+
 export function applyRoundToLifetimeStats(stats = {}, round = {}) {
   const normalizedStats = normalizeLifetimeStats(stats)
   const hits = toNonNegativeNumber(round.hits) ?? 0
@@ -101,7 +109,7 @@ export function applyRoundToLifetimeStats(stats = {}, round = {}) {
 
   let currentConsecutiveRankedWins = normalizedStats.currentConsecutiveRankedWins
   if (isRanked) {
-    if (rankDelta > 0) {
+    if (isRankedWin(round, rankDelta)) {
       currentConsecutiveRankedWins += 1
     } else {
       currentConsecutiveRankedWins = 0
@@ -159,10 +167,11 @@ export function applyRoundToLoadoutStats(stats = {}, round = {}) {
     return stats
   }
 
+  // The newest name wins, so a renamed build shows its current name.
   const normalizedStats = normalizeLoadoutStatsEntry({
-    loadoutId,
-    loadoutName: round?.loadoutSnapshot?.loadoutName || round?.loadoutName || "Loadout",
     ...stats,
+    loadoutId,
+    loadoutName: round?.loadoutSnapshot?.loadoutName || round?.loadoutName || stats?.loadoutName || "Loadout",
   }) ?? normalizeLoadoutStatsEntry({ loadoutId })
 
   const hits = toNonNegativeNumber(round.hits) ?? 0
@@ -176,7 +185,7 @@ export function applyRoundToLoadoutStats(stats = {}, round = {}) {
     ...normalizedStats,
     totalRounds: normalizedStats.totalRounds + 1,
     rankedRounds: normalizedStats.rankedRounds + (isRanked ? 1 : 0),
-    rankedWins: normalizedStats.rankedWins + (isRanked && rankDelta > 0 ? 1 : 0),
+    rankedWins: normalizedStats.rankedWins + (isRanked && isRankedWin(round, rankDelta) ? 1 : 0),
     bestScore: Math.max(normalizedStats.bestScore, score),
     bestStreak: Math.max(normalizedStats.bestStreak, bestStreak),
     bestRankedStreak: isRanked

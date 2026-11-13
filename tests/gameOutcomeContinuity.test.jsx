@@ -79,10 +79,12 @@ describe("B3 outcome and reward continuity", () => {
 
   test("stages a promotion between the outcome and reward settlement", async () => {
     const user = userEvent.setup()
+    // A promotion is only revealed once the server has confirmed the save.
     renderOutcome({
       allowsCoinRewards: true,
       allowsLevelProgression: true,
       allowsRankProgression: true,
+      roundSaveStatus: "saved",
       roundRankDelta: 24,
       previousRankProgress: {
         tierLabel: "Bronze III",

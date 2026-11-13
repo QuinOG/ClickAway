@@ -123,6 +123,8 @@ export default function GamePage({ onPhaseChange, ...props }) {
         <div className="ghostDuelError" role="alert">
           {ghostLoadError}
         </div>
+      ) : challengeId && replayId && !ghostReplay ? (
+        <div className="ghostDuelError" role="status">Loading your rival's run…</div>
       ) : null}
 
       <GameHud {...game.hudProps} />

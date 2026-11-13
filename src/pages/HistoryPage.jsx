@@ -272,6 +272,18 @@ export default function HistoryPage({
   const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState(false)
   const [historyLoadError, setHistoryLoadError] = useState("")
 
+  // Older pages were fetched relative to the first 50 rounds. When those change
+  // (a new round, or fresh progress from another tab), start paging again;
+  // otherwise a round that slid off the first page could vanish from the log.
+  const baseHistoryKey = (Array.isArray(roundHistory) ? roundHistory : []).map((round) => round.id).join(",")
+  const [pagedForBaseKey, setPagedForBaseKey] = useState(baseHistoryKey)
+  if (pagedForBaseKey !== baseHistoryKey) {
+    setPagedForBaseKey(baseHistoryKey)
+    setExtraHistoryRows([])
+    setHistoryPage(1)
+    setHasMoreHistory(false)
+  }
+
   const historyRows = useMemo(() => {
     const baseRows = Array.isArray(roundHistory) ? roundHistory : []
     const mergedRows = [...baseRows]
@@ -350,7 +362,9 @@ export default function HistoryPage({
       historySnapshot.latestRound
       && historySnapshot.bestScoreRound
       && historySnapshot.latestRound.id === historySnapshot.bestScoreRound.id
-      && (careerBestScore === null || Number(historySnapshot.latestRound.score) >= Number(careerBestScore))
+      // Must equal the saved record: a higher score can only come from a round
+      // that didn't count toward stats (unverified), so it isn't a personal best.
+      && (careerBestScore === null || Number(historySnapshot.latestRound.score) === Number(careerBestScore))
     )
 
     if (isLatestAlsoPeak && cards[0]) {

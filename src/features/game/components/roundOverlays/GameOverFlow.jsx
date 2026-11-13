@@ -80,7 +80,9 @@ export function GameOverFlow({
     projectedRankProgress?.rankOrder > previousRankProgress?.rankOrder
   )
 
-  const showPromotion = isPromotion || isPlacementReveal
+  // Only reveal a promotion the server confirmed: before the save finishes the
+  // rank is an estimate, and a failed save awarded nothing.
+  const showPromotion = roundSaveStatus === "saved" && (isPromotion || isPlacementReveal)
   const showRewards = allowsCoinRewards || allowsLevelProgression || allowsRankProgression
 
   // Performance always lands first. Economy and promotion calculations are
@@ -118,7 +120,9 @@ export function GameOverFlow({
     roundSaveError,
     roundSaveNote,
     // During placements the round earns a placement score, not visible RR.
-    placementLabel: projectedRankProgress?.isPlacement ? projectedRankProgress.tierLabel : null,
+    placementLabel: projectedRankProgress?.isPlacement
+      ? projectedRankProgress.tierLabel
+      : previousRankProgress?.isPlacement ? "Placements complete" : null,
     playerLevel,
     playerXpIntoLevel,
     playerXpToNextLevel,

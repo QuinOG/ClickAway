@@ -11,13 +11,16 @@ import { fetchCurrentUser } from "../services/clickAwayHttpApiClient.js"
 let sessionGeneration = 0
 let requestCounter = 0
 let lastAppliedRequest = 0
-let pendingPreferences = null
+// field -> { value, sequence }: the newest unsaved value of each preference.
+let pendingPreferenceFields = new Map()
 let pendingPreferenceSequence = 0
+let lastAppliedSnapshotAt = 0
 
 export function startNewProgressSession() {
   sessionGeneration += 1
   lastAppliedRequest = requestCounter
-  pendingPreferences = null
+  pendingPreferenceFields = new Map()
+  lastAppliedSnapshotAt = 0
 }
 
 export function beginProgressRequest() {
@@ -33,19 +36,28 @@ export function isCurrentSession(ticket) {
 // clearing them once that save has settled.
 export function markPendingPreferences(fields = {}) {
   pendingPreferenceSequence += 1
-  pendingPreferences = { ...(pendingPreferences ?? {}), ...fields }
+  Object.entries(fields).forEach(([field, value]) => {
+    pendingPreferenceFields.set(field, { value, sequence: pendingPreferenceSequence })
+  })
   return pendingPreferenceSequence
 }
 
-// Clears the pending overlay once the newest pending save has settled.
+// Drops the fields this save still owns (a newer edit of the same field keeps
+// its own). Each save clears only what it wrote, so a failed save's fields stop
+// being laid over later responses.
 export function settlePendingPreferences(sequence) {
-  if (sequence === pendingPreferenceSequence) {
-    pendingPreferences = null
-  }
+  pendingPreferenceFields.forEach((entry, field) => {
+    if (entry.sequence === sequence) pendingPreferenceFields.delete(field)
+  })
 }
 
 function withPendingPreferences(progress) {
-  return pendingPreferences && progress ? { ...progress, ...pendingPreferences } : progress
+  if (!progress || pendingPreferenceFields.size === 0) return progress
+  const overlay = {}
+  pendingPreferenceFields.forEach((entry, field) => {
+    overlay[field] = entry.value
+  })
+  return { ...progress, ...overlay }
 }
 
 // Returns "apply", "superseded" (a newer response already landed) or "other-session".
@@ -60,19 +72,32 @@ export function claimProgressResponse(ticket) {
 // a newer response already landed, this one's snapshot may be missing changes,
 // so the current state is fetched again instead of applying the old snapshot.
 // Returns "applied", "refreshed", "refresh-failed" or "other-session".
+function isOlderSnapshot(progress) {
+  const snapshotAt = Number(progress?.snapshotAtMs) || 0
+  return snapshotAt > 0 && snapshotAt < lastAppliedSnapshotAt
+}
+
+function applySnapshot(progress, applyProgress) {
+  lastAppliedSnapshotAt = Math.max(lastAppliedSnapshotAt, Number(progress?.snapshotAtMs) || 0)
+  applyProgress(withPendingPreferences(progress))
+}
+
 export async function applyProgressResponse(ticket, progress, applyProgress) {
   const claim = claimProgressResponse(ticket)
-  if (claim === "apply") {
-    if (progress) applyProgress(withPendingPreferences(progress))
+  if (claim === "other-session") return "other-session"
+  // Applied directly only when it is the newest for this session and the server
+  // read it no earlier than what is on screen. A missing snapshot (the server
+  // saved but couldn't read progress back) or an older one is fetched fresh.
+  if (claim === "apply" && progress && !isOlderSnapshot(progress)) {
+    applySnapshot(progress, applyProgress)
     return "applied"
   }
-  if (claim !== "superseded") return "other-session"
 
   const refreshTicket = beginProgressRequest()
   try {
     const session = await fetchCurrentUser()
-    if (claimProgressResponse(refreshTicket) === "apply" && session?.progress) {
-      applyProgress(withPendingPreferences(session.progress))
+    if (claimProgressResponse(refreshTicket) === "apply" && session?.progress && !isOlderSnapshot(session.progress)) {
+      applySnapshot(session.progress, applyProgress)
     }
     return "refreshed"
   } catch {

@@ -35,9 +35,17 @@ function clearPendingLogout() {
 // and signup wait for any logout still in flight.
 let inFlightLogout = null
 
+// Login, sign-up and logout all set or clear the shared auth cookie. Running
+// them one at a time across every open tab (Web Locks, where supported) stops
+// one tab's late logout from clearing another tab's fresh login.
+function withAuthLock(task) {
+  const locks = typeof navigator !== "undefined" ? navigator.locks : null
+  return locks?.request ? locks.request("clickaway-auth", task) : task()
+}
+
 function sendLogout() {
   if (!inFlightLogout) {
-    inFlightLogout = logoutUser()
+    inFlightLogout = withAuthLock(() => (hasPendingLogout() ? logoutUser() : Promise.resolve()))
       .then(() => {
         clearPendingLogout()
       })
@@ -83,7 +91,7 @@ async function runAuthAttempt(request) {
   const generation = authGeneration
   try {
     await waitForLogoutToSettle()
-    const response = await request()
+    const response = await withAuthLock(request)
     if (generation !== authGeneration) {
       // Logged out while this was in flight: undo the session it just created.
       markPendingLogout()

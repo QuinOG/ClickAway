@@ -1,4 +1,4 @@
-import { RANK_DIVISIONS, RANK_MAJOR_TIERS } from "./rankUtils.js"
+import { RANK_DIVISIONS, RANK_MAJOR_TIERS, TOP_RANK_MIN_MMR } from "./rankUtils.js"
 
 // Each reward tier starts where its named rank starts (Silver I, Gold I, ...), so
 // the reward always matches the division the player has reached. Tier 0 is for
@@ -10,6 +10,7 @@ export const SEASON_REWARD_TIERS = [
     label: majorTier.label,
     minMmr: RANK_DIVISIONS.find((division) => division.majorTierId === majorTier.id)?.minMmr ?? 0,
   })),
+  { tier: RANK_MAJOR_TIERS.length + 1, label: "Deadeye", minMmr: TOP_RANK_MIN_MMR },
 ]
 
 export function getSeasonRewardTier(mmr = 0, { isPlaced = true } = {}) {

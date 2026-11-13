@@ -189,6 +189,11 @@ export async function installApiMocks(page, {
       return json(route, { progress: currentProgress })
     }
     if (path === "/round/start") return json(route, { roundToken: "e3-round-token", seed: 424242 })
+    // A saved round. Progress comes back null so the client refetches it, and
+    // rank progress is left out so Results keeps its own estimate.
+    if (path === "/round/complete") {
+      return json(route, { progress: null, earnedCoins: 16, earnedXp: 160, rankDelta: 24, replay: null })
+    }
 
     if (path === "/leaderboard") {
       if (dataState === "error") return json(route, { error: "Standings are temporarily unavailable." }, 503)

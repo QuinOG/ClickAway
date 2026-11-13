@@ -230,9 +230,20 @@ export function useArmoryRangeRound({
     return () => window.clearTimeout(timeoutId)
   }, [isActive, phase, randomizeButton, roundRules.initialButtonSize])
 
+  // Closing the range abandons the sample: stop its clock and any pending
+  // finish so a hidden run can't complete and become the comparison baseline.
+  useEffect(() => {
+    if (isActive) return
+    isEndingRef.current = true
+    if (endTimeoutRef.current) {
+      window.clearTimeout(endTimeoutRef.current)
+      endTimeoutRef.current = null
+    }
+  }, [isActive])
+
   // The 10-second sample clock. Always runs so even untimed modes terminate.
   useEffect(() => {
-    if (!isPlaying) return undefined
+    if (!isPlaying || !isActive) return undefined
 
     const intervalId = window.setInterval(() => {
       setTimeLeft((current) => {
@@ -246,7 +257,7 @@ export function useArmoryRangeRound({
     }, TIMER_TICK_MS)
 
     return () => window.clearInterval(intervalId)
-  }, [endRound, isPlaying])
+  }, [endRound, isActive, isPlaying])
 
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()

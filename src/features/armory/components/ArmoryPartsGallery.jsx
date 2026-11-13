@@ -29,6 +29,20 @@ function getPartVisualState({ part, isLocked, isInstalled }) {
 // Shrink is compared at full precision (the profile stat rounds it to two
 // decimals), and starting charges get their own row since no profile stat
 // shows them.
+// Each stat's raw rule value and which direction helps, so "better/worse" is
+// decided by the real change, not by the rounded 1-10 gauge (two different
+// miss costs can share a gauge bucket).
+const RAW_REPORT_VALUES = {
+  size: { rule: "initialButtonSize", higherIsBetter: true },
+  floor: { rule: "minButtonSize", higherIsBetter: true },
+  shrink: { rule: "shrinkFactor", higherIsBetter: true },
+  combo: { rule: "comboStep", higherIsBetter: false },
+  miss: { rule: "missPenalty", higherIsBetter: false },
+  charge: { rule: "powerupAwardMultiplier", higherIsBetter: false },
+  payout: { rule: "scoreMultiplier", higherIsBetter: true },
+  starting: { rule: "startingPowerupCharges", higherIsBetter: true },
+}
+
 function getReportStats(rules) {
   const startingCharges = Number(rules.startingPowerupCharges) || 0
   return [
@@ -36,7 +50,18 @@ function getReportStats(rules) {
       stat.key === "shrink" ? { ...stat, value: `x${Number(rules.shrinkFactor)}` } : stat
     )),
     { key: "starting", label: "Starting charges", rating: Math.min(10, 1 + startingCharges * 3), value: String(startingCharges) },
-  ]
+  ].map((stat) => {
+    const raw = RAW_REPORT_VALUES[stat.key]
+    return raw ? { ...stat, raw: Number(rules[raw.rule]) || 0, higherIsBetter: raw.higherIsBetter } : stat
+  })
+}
+
+function getChangeDirection(from, to) {
+  if (typeof from.raw === "number" && typeof to.raw === "number" && from.raw !== to.raw) {
+    const increased = to.raw > from.raw
+    return increased === Boolean(from.higherIsBetter) ? 1 : -1
+  }
+  return Math.sign(to.rating - from.rating)
 }
 
 function getSwapImpact(currentRules, nextRules) {
@@ -79,7 +104,7 @@ function SwapImpact({ rows, title = "Swap report", fromLabel = "Current", toLabe
         <span role="columnheader">{toLabel}{isPreview ? <em className="armorySwapReportPreview">Preview</em> : null}</span>
       </div>
       {rows.map(({ key, label, from, to }) => {
-        const delta = to.rating - from.rating
+        const delta = getChangeDirection(from, to)
         const tone = delta > 0 ? "isGain" : delta < 0 ? "isLoss" : "isEven"
         const verdict = delta > 0 ? "better" : delta < 0 ? "worse" : "no change"
         return (

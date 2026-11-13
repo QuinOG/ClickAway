@@ -38,14 +38,15 @@ export function usePlayerProgressionUpdates({
           challengeId,
           drillId,
         })
-        await applyProgressResponse(ticket, response.progress, applyProgress)
+        const applied = await applyProgressResponse(ticket, response.progress, applyProgress)
         return {
           ok: true,
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
           rankDelta: response.rankDelta,
           rankProgress: response.rankProgress ?? null,
-          followUpError: response.followUpError ?? "",
+          followUpError: response.followUpError
+            || (applied === "refresh-failed" ? "Your round was saved. Reload to see your updated totals." : ""),
         }
       } catch (error) {
         console.error("Unable to submit round:", error)

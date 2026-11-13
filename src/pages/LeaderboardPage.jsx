@@ -9,7 +9,7 @@ import "../styles/social-menus-art.css"
 
 function getCrestTone(rankLabel = "") {
   const tier = String(rankLabel).split(" ")[0].toLowerCase()
-  return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
+  return ["gold", "silver", "bronze", "platinum", "diamond", "deadeye"].includes(tier) ? tier : "unranked"
 }
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
@@ -603,7 +603,8 @@ export default function LeaderboardPage({
       if (!isLatest()) return false
       setLeaderboardRows(response.rows)
       setTotalPages(response.totalPages)
-      if (!searchQuery) setFieldTotalCount(response.totalCount)
+      // Around Me returns only a window, so it can't tell how big the Ladder is.
+      if (!searchQuery && view !== "aroundMe") setFieldTotalCount(response.totalCount)
       setResultsQuery(searchQuery)
       // A search can leave you out of the results, and the server then omits your rank.
       // Keep your known rank instead of telling a placed player they are unranked.
@@ -806,6 +807,15 @@ export default function LeaderboardPage({
                   Search all players
                 </button>
               ) : null}
+            </div>
+          ) : view === "aroundMe" ? (
+            // Around Me centres on your own standing, which needs a placed rank.
+            <div className="leaderboardStatusCard" role="status" aria-live="polite">
+              <p className="leaderboardStatusTitle">You don't have a Ladder spot yet.</p>
+              <p className="muted">Finish your placement matches to see the players around you.</p>
+              <button type="button" className="secondaryButton" onClick={(event) => handleViewChange("top", event.currentTarget)}>
+                Show top players
+              </button>
             </div>
           ) : (
             <div className="leaderboardStatusCard" role="status" aria-live="polite">

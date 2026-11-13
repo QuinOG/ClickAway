@@ -16,6 +16,18 @@ export class PlayerStateError extends Error {
   }
 }
 
+// The purchase or equip has already committed. If reading progress back fails,
+// report success with no progress (the client refetches) rather than an error
+// for an action that went through.
+async function readProgressAfterCommit(userId) {
+  try {
+    return await findUserProgressByUserId(userId)
+  } catch (error) {
+    console.error("Shop action saved, but reading progress failed:", error)
+    return null
+  }
+}
+
 function buildPlayerProgressResponse(user, progress = {}) {
   return {
     user: {
@@ -126,8 +138,7 @@ export function createPlayerStateStore() {
         connection.release()
       }
 
-      const progress = await findUserProgressByUserId(existingUser.id)
-      return buildPlayerProgressResponse(existingUser, progress)
+      return buildPlayerProgressResponse(existingUser, await readProgressAfterCommit(existingUser.id))
     },
 
     async equipItem({ user, itemId }) {
@@ -179,8 +190,7 @@ export function createPlayerStateStore() {
         connection.release()
       }
 
-      const progress = await findUserProgressByUserId(existingUser.id)
-      return buildPlayerProgressResponse(existingUser, progress)
+      return buildPlayerProgressResponse(existingUser, await readProgressAfterCommit(existingUser.id))
     },
   }
 }
