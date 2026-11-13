@@ -10,6 +10,7 @@ function clamp(value, min, max) {
 }
 
 function toNonNegativeNumber(value) {
+  if (value === null || value === undefined || value === "") return null
   const numericValue = Number(value)
   return Number.isFinite(numericValue) ? Math.max(0, numericValue) : null
 }
@@ -160,8 +161,8 @@ function evaluateMetricAchievement(achievement, playerStats, persistedUnlockedId
     isUnlocked,
     isProgressAvailable,
     progressText: getProgressText(current, target, isProgressAvailable),
-    percentText: isProgressAvailable
-      ? (isUnlocked ? "Unlocked" : `${percent}%`)
+    percentText: isUnlocked ? "Unlocked" : isProgressAvailable
+      ? `${percent}%`
       : "Progress unavailable",
   }
 }
