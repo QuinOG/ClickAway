@@ -1,0 +1,5 @@
+.gameOverCard .roundRewardMedal { object-fit: contain; }
+.rankCeremony .rankCeremonyCannon { background: url('/art/game-results/ceremony-cannon.png') center / contain no-repeat; }
+.rankCeremony .rankCeremonyCannon::before, .rankCeremony .rankCeremonyCannon::after { content: none; }
+.rankCeremony .divisionCrest img.divisionMetalwork { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; z-index: 3; pointer-events: none; }
+.rankCeremony .divisionCrest img.divisionMetalwork-2 { clip-path: polygon(0 0, 36% 0, 36% 20%, 64% 20%, 64% 0, 100% 0, 100% 100%, 0 100%); }

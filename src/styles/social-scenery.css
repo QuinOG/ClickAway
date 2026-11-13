@@ -1,0 +1,25 @@
+.duelFightComposer .duelRunTokens.duelRunTokens {
+  background: url('/art/duels/stake-platform.png') center / 100% 100% no-repeat !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.duelFightComposer .duelRunTokens.duelRunTokens::after { display: none !important; }
+.duelFightComposer .duelLaunchStep.duelLaunchStep { background: #322014 !important; }
+.shopInspectStage.shopInspectStage .shopStageAwning,
+.shopInspectStage.shopInspectStage .shopStageCounter { display: none !important; }
+.shopInspectStage.shopInspectStage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: url('/art/shop/booth-frame.png') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.shopInspectStage .shopSceneryFrame {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: url('/art/shop/booth-frame.png') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+

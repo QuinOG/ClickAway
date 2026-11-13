@@ -702,7 +702,7 @@
     box-shadow: inset 0 -3px 0 rgb(0 0 0 / 28%), 0 3px 0 #0a1322;
 }
 
-.achievementTile .achievementMedalDisc svg.gameIcon {
+.achievementTile .achievementMedalDisc .gameIcon {
     width: 30px;
     height: 30px;
     filter: drop-shadow(0 1px 0 rgb(0 0 0 / 35%));
@@ -717,14 +717,14 @@
         linear-gradient(160deg, #3a4558, #1b2333);
 }
 
-.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon,
-.achievementMedal.isUntouched .achievementMedalDisc svg.gameIcon {
+.achievementMedal.isProgressing .achievementMedalDisc .gameIcon,
+.achievementMedal.isUntouched .achievementMedalDisc .gameIcon {
     filter: grayscale(1) brightness(0.8);
     opacity: 0.7;
 }
 
 .achievementMedal.isProgressing .achievementMedalDisc { border-color: #0a1322; }
-.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon { filter: grayscale(0.55) brightness(0.92); opacity: 0.9; }
+.achievementMedal.isProgressing .achievementMedalDisc .gameIcon { filter: grayscale(0.55) brightness(0.92); opacity: 0.9; }
 
 .achievementMedalLock {
     position: absolute;
@@ -739,7 +739,7 @@
     border: 2px solid #0a1322;
 }
 
-.achievementTile .achievementMedalLock svg.gameIcon { width: 14px; height: 14px; }
+.achievementTile .achievementMedalLock .gameIcon { width: 14px; height: 14px; }
 
 /* Tiles: medal leads, title beside it; unlocked tiles carry their tier colour. */
 .achievementTile .achievementTileHeaderMain { gap: 12px; align-items: center; }
@@ -787,7 +787,7 @@
     border-width: 3px;
 }
 
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc svg.gameIcon { width: 42px; height: 42px; }
+.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc .gameIcon { width: 42px; height: 42px; }
 
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalLock { width: 26px; height: 26px; right: 0; bottom: 0; }
 
@@ -815,8 +815,8 @@
     filter: saturate(0.5) brightness(0.62);
 }
 
-.achievementMedal.isProgressing .achievementMedalDisc svg.gameIcon,
-.achievementMedal.isUntouched .achievementMedalDisc svg.gameIcon { filter: grayscale(0.4); opacity: 0.85; }
+.achievementMedal.isProgressing .achievementMedalDisc .gameIcon,
+.achievementMedal.isUntouched .achievementMedalDisc .gameIcon { filter: grayscale(0.4); opacity: 0.85; }
 
 .achievementMedal.isProgressing { background: conic-gradient(color-mix(in srgb, var(--medal-hi) 80%, transparent) var(--medal-progress, 0%), rgb(255 255 255 / 9%) 0); }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementDescription { text-align: center; }
@@ -857,63 +857,25 @@
     .profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { border-left: 0; padding-left: 0; flex-basis: 100%; }
 }
 
-/* p09: tier silhouettes. Medals grow more ornate as they climb, so a tier
-   reads from its outline, not just its colour. Bronze is a plain disc,
-   silver adds ribbon tails, gold adds an 8-point burst, platinum 12 points
-   and diamond 16 brighter points; masters keep the crown. Locked medals
-   show the same outline, dimmed. Unlocked tiles drop the redundant full bar
-   and percent, leaving the glowing medal, the state chip and the count. */
+/* Each tier adds a small visible ornament around the shared category emblem. */
 .profilePageCenter .achievementMedal { isolation: isolate; }
 .profilePageCenter .achievementMedalDisc { z-index: 2; }
 .profilePageCenter .achievementMedalLock { z-index: 3; }
-
-.profilePageCenter .achievementMedal.tier-silver::before,
-.profilePageCenter .achievementMedal.tier-gold::before,
-.profilePageCenter .achievementMedal.tier-platinum::before,
-.profilePageCenter .achievementMedal.tier-diamond::before {
+.profilePageCenter .achievementMedal::before {
     content: "";
     position: absolute;
-    z-index: -1;
-    left: 50%;
-    bottom: -18px;
-    width: 52%;
-    height: 42%;
-    transform: translateX(-50%);
-    background:
-        linear-gradient(90deg, var(--medal-lo) 0 48%, transparent 48% 52%, var(--medal-lo) 52%),
-        linear-gradient(180deg, var(--medal-hi), var(--medal-lo));
-    background-blend-mode: multiply;
-    clip-path: polygon(0 0, 46% 0, 46% 100%, 23% 78%, 0 100%, 54% 100%, 54% 0, 100% 0, 100% 100%, 77% 78%, 54% 100%, 0 100%);
-    filter: drop-shadow(0 2px 0 #0a1322);
+    z-index: 1;
+    inset: -25%;
+    background: var(--achievement-mount) center / contain no-repeat;
+    pointer-events: none;
 }
-
-.profilePageCenter .achievementMedal.tier-gold::after,
-.profilePageCenter .achievementMedal.tier-platinum::after,
-.profilePageCenter .achievementMedal.tier-diamond::after {
-    --burst-step: 45deg;
-    content: "";
-    position: absolute;
-    z-index: -2;
-    inset: -10px;
-    border-radius: 50%;
-    background: repeating-conic-gradient(from calc(var(--burst-step) / -4), var(--medal-hi) 0 calc(var(--burst-step) / 2), transparent 0 var(--burst-step));
-    -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 79%, #000 96%, transparent 100%);
-    mask: radial-gradient(closest-side, transparent 78%, #000 79%, #000 96%, transparent 100%);
-    opacity: 0.75;
-}
-
-.profilePageCenter .achievementMedal.tier-platinum::after { --burst-step: 30deg; }
-.profilePageCenter .achievementMedal.tier-diamond::after {
-    --burst-step: 22.5deg;
-    inset: -13px;
-    opacity: 0.95;
-    filter: drop-shadow(0 0 4px var(--medal-glow));
-}
-
-.profilePageCenter .achievementMedal.isProgressing::before,
-.profilePageCenter .achievementMedal.isUntouched::before { filter: saturate(0.5) brightness(0.62) drop-shadow(0 2px 0 #0a1322); }
-.profilePageCenter .achievementMedal.isProgressing::after,
-.profilePageCenter .achievementMedal.isUntouched::after { opacity: 0.4; filter: saturate(0.5) brightness(0.7); }
+.profilePageCenter .achievementMedal.tier-bronze { --achievement-mount: url('/art/achievements/bronze-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-silver { --achievement-mount: url('/art/achievements/silver-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-gold { --achievement-mount: url('/art/achievements/gold-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-platinum { --achievement-mount: url('/art/achievements/platinum-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-diamond { --achievement-mount: url('/art/achievements/diamond-medal-v3.png'); }
+.profilePageCenter .achievementMedal.tier-master { --achievement-mount: url('/art/achievements/master-medal-v3.png'); }
+.profilePageCenter .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: saturate(0.6) brightness(0.75); }
 
 /* Clear lock badge on locked medals. */
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalLock {
@@ -925,7 +887,7 @@
 /* Bigger master medallion in the banner. */
 .profilePageCenter .achievementTile.isFeaturedBanner .achievementMedal { width: 64px; height: 64px; box-shadow: 0 0 20px var(--medal-glow); }
 .profilePageCenter .achievementTile.isFeaturedBanner .achievementMedalDisc { width: 52px; height: 52px; }
-.profilePageCenter .achievementTile.isFeaturedBanner .achievementMedalDisc svg.gameIcon { width: 34px; height: 34px; }
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementMedalDisc .gameIcon { width: 34px; height: 34px; }
 
 /* Unlocked tiles: one completion signal set. */
 .profilePageCenter .achievementTile.isUnlocked:not(.isFeaturedBanner) .achievementProgressTrack,
@@ -933,3 +895,8 @@
 .profilePageCenter .achievementTile.isUnlocked:not(.isFeaturedBanner) .achievementProgressMeta { justify-content: center; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementTitle { font-size: 16px; font-weight: 700; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementIconWrap { margin-bottom: 14px; }
+/* Leave room for the illustrated mounts beyond their progress rings. */
+.profileAchievementsSection .achievementsRow { padding-top: 24px; }
+.profilePageCenter .achievementTile.isFeaturedBanner .achievementTileHeaderMain { gap: 24px; }
+.profileAchievementsSection .achievementsRow > .achievementTile { overflow: visible; }
+.profilePageCenter .achievementTile.isFeaturedBanner { overflow: visible; }

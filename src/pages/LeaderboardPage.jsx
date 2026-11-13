@@ -1,10 +1,11 @@
-ï»¿import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Crown, Crosshair, MagnifyingGlass, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
+import "../styles/social-menus-art.css"
 
 function getCrestTone(rankLabel = "") {
   const tier = String(rankLabel).split(" ")[0].toLowerCase()
@@ -197,7 +198,7 @@ function LeaderboardTableSkeleton() {
 
 function formatLadderStat(player, key) {
   if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
-  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "â€”"
+  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
   if (key === "mmr") return formatNumericValue(player.mmr)
   return formatNumericValue(player[key])
 }
@@ -312,7 +313,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
-      <p className="leaderboardStandingScope">Ranked rounds only Â· this season</p>
+      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -343,7 +344,7 @@ function SeasonBanner({ season = null }) {
       <div className="leaderboardSeasonMeter">
         <p className="leaderboardSeasonMeta">
           {season.daysRemaining > 0
-            ? <><strong>{season.daysRemaining} days</strong> remaining Â· {season.progressPercent}% complete</>
+            ? <><strong>{season.daysRemaining} days</strong> remaining · {season.progressPercent}% complete</>
             : "Season ending soon"}
         </p>
         <div className="leaderboardSeasonProgress" aria-hidden="true">
@@ -505,7 +506,7 @@ function NearMeSection({ rows = [], selfRank = null, mmrGap = 0 }) {
             ? `Your global rank is #${formatNumericValue(selfRank)}`
             : "Your rank window"}
           {mmrGap > 0
-            ? ` Â· ${formatNumericValue(mmrGap)} RR to the next spot above`
+            ? ` · ${formatNumericValue(mmrGap)} RR to the next spot above`
             : ""}
         </p>
       </div>
@@ -741,7 +742,7 @@ export default function LeaderboardPage({
           onPageChange={handlePageChange}
           sortControl={!isLoading && !loadError && sortedRows.length > 0 ? (
             <button type="button" className="ladderSortFlip" aria-label={`Sorted by ${activeSortLabel}, flip order`} onClick={() => handleSort(sortConfig.key)}>
-              {sortConfig.direction === "asc" ? "Low to high â–²" : "High to low â–¼"}
+              {sortConfig.direction === "asc" ? "Low to high ?" : "High to low ?"}
             </button>
           ) : null}
         />
