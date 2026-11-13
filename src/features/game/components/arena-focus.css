@@ -32,3 +32,7 @@
   background: rgb(6 12 24 / 88%);
   box-shadow: inset 0 0 0 1px rgba(var(--heat), 0.55), 0 4px 10px rgb(0 0 0 / 45%);
 }
+
+/* r54: two keys charging on the same hit stack instead of overprinting. */
+.clickFeedback.chargeGain ~ .clickFeedback.chargeGain { bottom: 38px; }
+.clickFeedback.chargeGain ~ .clickFeedback.chargeGain ~ .clickFeedback.chargeGain { bottom: 60px; }
