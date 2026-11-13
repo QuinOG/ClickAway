@@ -500,6 +500,21 @@ describe("Armory tool rack (Phase 6)", () => {
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
   })
 
+  test("unrelated drops do not rearrange either power rack", async () => {
+    const props = renderArmory()
+    await openStep(userEvent.setup(), "Powerups")
+    const targets = [
+      document.querySelectorAll(".armoryMachineRackSlot")[2],
+      screen.getByLabelText("Powerup keys").querySelectorAll(".armoryHotbarButton")[2],
+    ]
+    for (const target of targets) {
+      for (const text of ["", "0", "1", "unrelated text"]) {
+        fireEvent.drop(target, { dataTransfer: { getData: (type) => type === "text/plain" ? text : "" } })
+      }
+    }
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+  })
+
   test("dragging a rack key onto another swaps the two tools", async () => {
     const user = userEvent.setup()
     const props = renderArmory()
