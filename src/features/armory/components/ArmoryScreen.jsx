@@ -274,7 +274,7 @@ export default function ArmoryScreen({
                       draggable: true,
                       onDragStart: (event) => {
                         setDraggedKeyIndex(index)
-                        event.dataTransfer.setData("text/plain", String(index))
+                        event.dataTransfer.setData("application/x-clickaway-power-slot", String(index))
                         event.dataTransfer.effectAllowed = "move"
                       },
                       onDragEnd: () => setDraggedKeyIndex(null),
@@ -282,8 +282,9 @@ export default function ArmoryScreen({
                       onDrop: (event) => {
                         event.preventDefault()
                         setDraggedKeyIndex(null)
-                        const fromIndex = Number(event.dataTransfer.getData("text/plain"))
-                        if (Number.isInteger(fromIndex)) hotbarApi.swapPowerSlots(fromIndex, index)
+                        const sourceSlot = event.dataTransfer.getData("application/x-clickaway-power-slot")
+                        const fromIndex = /^[0-2]$/.test(sourceSlot) ? Number(sourceSlot) : -1
+                        if (fromIndex >= 0) hotbarApi.swapPowerSlots(fromIndex, index)
                       },
                     }}
                   />

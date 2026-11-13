@@ -236,14 +236,15 @@ export default function ArmoryMachine({
               onClick={() => machineApi.openPowerKey?.(index)}
               draggable
               onDragStart={(event) => {
-                event.dataTransfer.setData("text/plain", String(index))
+                event.dataTransfer.setData("application/x-clickaway-power-slot", String(index))
                 event.dataTransfer.effectAllowed = "move"
               }}
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault()
-                const fromIndex = Number(event.dataTransfer.getData("text/plain"))
-                if (Number.isInteger(fromIndex) && fromIndex !== index) machineApi.swapPowerSlots?.(fromIndex, index)
+                const sourceSlot = event.dataTransfer.getData("application/x-clickaway-power-slot")
+                const fromIndex = /^[0-2]$/.test(sourceSlot) ? Number(sourceSlot) : -1
+                if (fromIndex >= 0 && fromIndex !== index) machineApi.swapPowerSlots?.(fromIndex, index)
               }}
             >
               <span className="armoryMachineRackKey" aria-hidden="true">{index + 1}</span>
