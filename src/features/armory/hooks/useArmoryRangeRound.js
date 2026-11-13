@@ -2,9 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
-  FREEZE_MOVEMENT_DURATION_MS,
-  MAGNET_CENTER_FREEZE_MS,
-  SIZE_LOCK_DURATION_MS,
+  createGeometrySimulation,
 } from "../../../game/engine/roundGeometry.js"
 import {
   FEEDBACK_LIFETIME_MS,
@@ -17,7 +15,6 @@ import {
   getButtonLabelFontSize,
   getCenteredPosition,
   getComboMultiplier,
-  getNextButtonSize,
   getRandomPosition,
 } from "../../../utils/gameMath.js"
 
@@ -60,8 +57,7 @@ export function useArmoryRangeRound({
   const arenaRef = useRef(null)
   const simulationRef = useRef(null)
   const roundStartTimeRef = useRef(0)
-  const freezeMovementUntilRef = useRef(0)
-  const sizeLockUntilRef = useRef(0)
+  const geometryRef = useRef(null)
   const countdownEndsAtRef = useRef(0)
   const feedbackTimeoutIdsRef = useRef([])
   const endTimeoutRef = useRef(null)
@@ -116,13 +112,26 @@ export function useArmoryRangeRound({
     setButtonPosition(getCenteredPosition(rect, nextSize))
   }, [])
 
-  const randomizeButton = useCallback((nextSize) => {
+  const mirrorGeometry = useCallback((state, spawned = false) => {
+    if (!state) return
+    setButtonSize(state.buttonSize)
+    setButtonPosition(state.position)
+    if (spawned) setTargetSpawnSequence((sequence) => sequence + 1)
+  }, [])
+
+  const initializeGeometry = useCallback(() => {
     const arena = arenaRef.current
     if (!arena) return
     const rect = arena.getBoundingClientRect()
-    setButtonPosition(getRandomPosition(rect, nextSize, rngRef.current))
-    setTargetSpawnSequence((sequence) => sequence + 1)
-  }, [])
+    geometryRef.current = createGeometrySimulation({
+      roundRules,
+      arenaWidth: rect.width,
+      arenaHeight: rect.height,
+      rng: rngRef.current,
+      initialPosition: getRandomPosition(rect, roundRules.initialButtonSize, rngRef.current),
+    })
+    mirrorGeometry(geometryRef.current.getState(), true)
+  }, [mirrorGeometry, roundRules])
 
   const addClickFeedback = useCallback((clientX, clientY, value, type, detail = null) => {
     const arena = arenaRef.current
@@ -179,8 +188,7 @@ export function useArmoryRangeRound({
     }
     rngRef.current = Math.random
     roundStartTimeRef.current = 0
-    freezeMovementUntilRef.current = 0
-    sizeLockUntilRef.current = 0
+    geometryRef.current = null
 
     setPhase(RANGE_PHASE.COUNTDOWN)
     setCountdownValue(READY_COUNTDOWN_START)
@@ -219,7 +227,7 @@ export function useArmoryRangeRound({
         setCountdownValue(0)
         setPhase(RANGE_PHASE.PLAYING)
         setTargetSpawnSequence((sequence) => sequence + 1)
-        randomizeButton(roundRules.initialButtonSize)
+        initializeGeometry()
         return
       }
       setCountdownValue(Math.ceil(remainingMs / TIMER_TICK_MS))
@@ -228,7 +236,7 @@ export function useArmoryRangeRound({
 
     timeoutId = window.setTimeout(tick, TIMER_TICK_MS)
     return () => window.clearTimeout(timeoutId)
-  }, [isActive, phase, randomizeButton, roundRules.initialButtonSize])
+  }, [isActive, phase, initializeGeometry])
 
   // Closing the range abandons the sample: stop its clock and any pending
   // finish so a hidden run can't complete and become the comparison baseline.
@@ -285,18 +293,12 @@ export function useArmoryRangeRound({
       result.grantedPowerups.forEach((powerup) => addCenterFeedback(`Key ${powerup.slotKey} charged`, "positive chargeGain"))
     }
 
-    setButtonSize((currentSize) => {
-      const nextSize = eventTimeMs < sizeLockUntilRef.current
-        ? currentSize
-        : getNextButtonSize(currentSize, roundRules)
-      if (getElapsedMs() >= freezeMovementUntilRef.current) {
-        window.setTimeout(() => {
-          if (getElapsedMs() >= freezeMovementUntilRef.current) randomizeButton(nextSize)
-        }, 0)
-      }
-      return nextSize
-    })
-  }, [addCenterFeedback, addClickFeedback, getElapsedMs, isPlaying, randomizeButton, roundRules])
+    const geometry = geometryRef.current
+    if (geometry) {
+      const moving = eventTimeMs >= geometry.getState().freezeMovementUntilMs
+      mirrorGeometry(geometry.applyHit(eventTimeMs), moving)
+    }
+  }, [addCenterFeedback, addClickFeedback, getElapsedMs, isPlaying, mirrorGeometry])
 
   const handleArenaClick = useCallback((event) => {
     if (!isPlaying || isEndingRef.current || !simulationRef.current) return
@@ -324,23 +326,16 @@ export function useArmoryRangeRound({
   }, [addClickFeedback, getElapsedMs, isPlaying, streak])
 
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs) => {
+    mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
       setTimeLeft((current) => Math.min(roundRules.maxTimeBufferSeconds ?? current + 2, current + 2))
       addCenterFeedback("+2s", "power power-time_boost")
     } else if (powerup.effectType === "size_boost") {
-      setButtonSize((size) => Math.min(roundRules.initialButtonSize, size + 10))
       setTargetSpawnSequence((sequence) => sequence + 1)
       addCenterFeedback("Grow", "power power-size_boost")
     } else if (powerup.effectType === "freeze_movement") {
-      freezeMovementUntilRef.current = eventTimeMs + FREEZE_MOVEMENT_DURATION_MS
       addCenterFeedback("Freeze", "power power-freeze_movement")
     } else if (powerup.effectType === "magnet_center") {
-      freezeMovementUntilRef.current = eventTimeMs + MAGNET_CENTER_FREEZE_MS
-      setButtonSize((size) => {
-        const nextSize = Math.min(roundRules.initialButtonSize, size + 6)
-        centerButton(nextSize)
-        return nextSize
-      })
       setTargetSpawnSequence((sequence) => sequence + 1)
       addCenterFeedback("Center", "power power-magnet_center")
     } else if (powerup.effectType === "combo_surge") {
@@ -350,12 +345,11 @@ export function useArmoryRangeRound({
     } else if (powerup.effectType === "second_wind") {
       addCenterFeedback("Second Wind", "power power-second_wind")
     } else if (powerup.effectType === "size_lock") {
-      sizeLockUntilRef.current = eventTimeMs + SIZE_LOCK_DURATION_MS
       addCenterFeedback("Locked", "power power-size_lock")
     } else if (powerup.effectType === "overclock") {
       addCenterFeedback("Overclock", "power power-overclock")
     }
-  }, [addCenterFeedback, centerButton, roundRules.initialButtonSize, roundRules.maxTimeBufferSeconds])
+  }, [addCenterFeedback, mirrorGeometry, roundRules.maxTimeBufferSeconds])
 
   const handleUsePowerup = useCallback((powerupId) => {
     if (!isPlaying || isEndingRef.current || !simulationRef.current) return

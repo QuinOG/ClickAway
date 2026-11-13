@@ -27,3 +27,27 @@ test("Second Wind keeps a range streak without showing a streak break", () => {
   expect(feedback.type).toBe("miss")
   expect(feedback.detail).toBe("Streak saved")
 })
+
+test.each([['hit', 'freeze_movement'], ['freeze_movement', 'hit'], ['hit', 'magnet_center']])('range geometry is synchronous: %j', (...steps) => {
+  vi.useFakeTimers()
+  vi.spyOn(Math, 'random').mockReturnValue(0.25)
+  const rules = buildRoundRules(DIFFICULTIES[1], { ...DEFAULT_SAVED_LOADOUTS[0], powerupIds: ['freeze_movement', 'magnet_center', 'size_boost'] })
+  rules.startingPowerupCharges = 1
+  const { result, rerender } = renderHook(({ token }) => useArmoryRangeRound({ roundRules: rules, isActive: true, runToken: token }), { initialProps: { token: 1 } })
+  result.current.arenaProps.arenaRef.current = { getBoundingClientRect: () => ({ width: 600, height: 400, left: 0, top: 0 }) }
+  act(() => vi.advanceTimersByTime(3000))
+  expect(result.current.arenaProps.buttonStyle.left).toBe('125px')
+  act(() => {
+    for (const step of steps) {
+      if (step === 'hit') result.current.arenaProps.onButtonClick({ stopPropagation() {}, clientX: 175, clientY: 125 })
+      else result.current.powerupTrayProps.onUsePowerup(step)
+    }
+  })
+  expect(result.current.arenaProps.buttonStyle.left).toBe(steps.includes('magnet_center') ? '250px' : steps[0] === 'hit' ? '126px' : '125px')
+  act(() => vi.advanceTimersByTime(1))
+  expect(result.current.arenaProps.buttonStyle.left).toBe(steps.includes('magnet_center') ? '250px' : steps[0] === 'hit' ? '126px' : '125px')
+  rerender({ token: 2 })
+  act(() => vi.advanceTimersByTime(3000))
+  expect(result.current.arenaProps.buttonStyle.left).toBe('125px')
+  vi.restoreAllMocks()
+})

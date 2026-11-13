@@ -91,6 +91,7 @@ export function createGeometrySimulation({
   arenaWidth,
   arenaHeight,
   rng = Math.random,
+  initialPosition = null,
 } = {}) {
   const initialButtonSize = Number(roundRules.initialButtonSize) || 100
   const powerupsById = Object.fromEntries(
@@ -99,7 +100,7 @@ export function createGeometrySimulation({
   )
 
   let buttonSize = initialButtonSize
-  let position = getCenteredPosition(arenaWidth, arenaHeight, buttonSize)
+  let position = initialPosition ? { ...initialPosition } : getCenteredPosition(arenaWidth, arenaHeight, buttonSize)
   let freezeMovementUntilMs = 0
   let sizeLockUntilMs = 0
 
