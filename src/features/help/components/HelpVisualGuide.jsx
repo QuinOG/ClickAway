@@ -16,7 +16,7 @@ function SceneArt({ name }) {
 const RULES = [
   { id: "hit", tone: "hit", title: "Hit", art: "hit", text: "Click the target. Every hit scores and the target shrinks a little." },
   { id: "combo", tone: "combo", title: "Chain", art: "combo", text: "Keep hitting without missing. Every few hits your multiplier climbs: x2, x3, x4…" },
-  { id: "miss", tone: "miss", title: "Miss", art: "miss", text: "Click empty arena and your streak breaks back to zero. Casual costs 1 point, Ranked 2." },
+  { id: "miss", tone: "miss", title: "Miss", art: "miss", text: "An unprotected miss breaks streak. Base costs: Casual 1 point, Ranked 2; parts and powers can change this." },
 ]
 
 export function HelpRuleCards() {
@@ -116,13 +116,13 @@ export function HelpRoundStrip() {
 const PROGRESSION_CARDS = [
   { id: "xp", tone: "combo", title: "Earn XP", art: "xp", text: "Casual and Ranked rounds pay XP. Levels unlock powers and Armory parts." },
   { id: "coins", tone: "hit", title: "Spend coins", art: "coin-shop", text: "Casual and Ranked pay coins. Spend them on skins in the Shop." },
-  { id: "rank", tone: "hit", title: "Climb ranks", art: "rank", text: "Ranked wins add RR. Fill the bar to move up a division." },
+  { id: "rank", tone: "hit", title: "Climb ranks", art: "rank", text: "After placements, Ranked performance determines RR gains or losses. Fill the bar to move up a division." },
 ]
 
 const ACCOUNT_CARDS = [
   { id: "profile", tone: "hit", title: "Profile", art: "profile", text: "Your competitor card: division, attributes and trophies." },
-  { id: "history", tone: "combo", title: "History", art: "ticket", text: "Every round kept as a ticket with its score and RR change." },
-  { id: "ladder", tone: "hit", title: "Ladder", art: "plates", text: "Season standings. Your plate is lit so you can find yourself." },
+  { id: "history", tone: "combo", title: "History", art: "ticket", text: "Saved rounds show score, rewards, and ranked results. Browse older rounds with the page controls." },
+  { id: "ladder", tone: "hit", title: "Ladder", art: "plates", text: "Compare ranked players across five boards. Use Around Me to find your position." },
 ]
 
 function HelpArtCards({ cards }) {
