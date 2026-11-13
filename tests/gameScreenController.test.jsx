@@ -14,6 +14,36 @@ describe("Game screen controller", () => {
     vi.useRealTimers()
   })
 
+  test("keeps the combo hit cue on the last boosted hit", async () => {
+    vi.useFakeTimers()
+    const loadout = {
+      ...DEFAULT_SAVED_LOADOUTS[0],
+      moduleIds: { ...DEFAULT_SAVED_LOADOUTS[0].moduleIds, powerRigId: "power_reserve" },
+      powerupIds: ["combo_surge", "size_boost", "freeze_movement"],
+    }
+    const { result } = renderHook(() => useGameScreenController({ activeLoadout: loadout }))
+    result.current.arenaProps.arenaRef.current = {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }),
+    }
+    await act(async () => result.current.readyOverlayProps.onStart("normal"))
+    act(() => vi.advanceTimersByTime(3 * TIMER_TICK_MS))
+    act(() => result.current.powerupTrayProps.onUsePowerup("combo_surge"))
+    for (let hit = 0; hit < 4; hit += 1) {
+      act(() => vi.advanceTimersByTime(100))
+      act(() => result.current.arenaProps.onButtonClick({
+        stopPropagation() {}, clientX: 300, clientY: 200,
+      }))
+      const feedback = result.current.arenaProps.clickFeedbackItems.at(-1)
+      expect(feedback.type).toBe("hit comboHit")
+    }
+    expect(result.current.powerupTrayProps.powerupSlots[0].comboSurgeHitsRemaining).toBe(0)
+    act(() => vi.advanceTimersByTime(100))
+    act(() => result.current.arenaProps.onButtonClick({
+      stopPropagation() {}, clientX: 300, clientY: 200,
+    }))
+    expect(result.current.arenaProps.clickFeedbackItems.at(-1).type).toBe("hit")
+  })
+
   test("returns from results to a clean mode lobby without a stale entrance overlay", async () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => useGameScreenController({
