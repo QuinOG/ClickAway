@@ -226,6 +226,7 @@ function LeaderboardStandingPanel({
   totalCount = 0,
   season = null,
   isSearching = false,
+  board = "mmr",
 }) {
   const normalizedRankedRounds = Math.max(0, Number(rankedRounds) || 0)
   const placementMatchesRemaining = Math.max(
@@ -262,6 +263,9 @@ function LeaderboardStandingPanel({
   } else if (currentRankProgress?.isUnranked) {
     title = "Play Ranked to place"
     lead = `Complete ${PLACEMENT_MATCH_COUNT} placement matches to unlock your visible ladder standing.`
+  } else if (!selfRank && board === "reaction") {
+    title = "No reaction time recorded"
+    lead = "Record a reaction time to join this board."
   } else if (!selfRank && isSearching) {
     title = "Your ladder rank"
     lead = "Clear the search to see your rank on this board."
@@ -280,7 +284,7 @@ function LeaderboardStandingPanel({
       value: formatNumericValue(currentRankProgress?.mmr),
     },
     {
-      label: "Games",
+      label: "Recent games",
       value: formatNumericValue(normalizedRankedRounds),
     },
   ]
@@ -310,7 +314,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
-      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
+      <p className="leaderboardStandingScope">Current rating &middot; recent Ranked games</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -456,7 +460,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
       </div>
       <div className="leaderboardPodiumHeader">
         <div>
-          <p className="leaderboardSectionEyebrow">Season leaders</p>
+          <p className="leaderboardSectionEyebrow">Board leaders</p>
           <h2>Players to beat</h2>
         </div>
         <Crown weight="duotone" aria-hidden="true" />
@@ -649,6 +653,8 @@ export default function LeaderboardPage({
     [currentUserId, currentUsername, leaderboardRows]
   )
   const activeSortLabel = getSortLabel(sortConfig.key)
+  const needsReactionTime = board === "reaction" && currentRankProgress
+    && !currentRankProgress.isPlacement && !currentRankProgress.isUnranked && !selfRank
 
   const nearMeData = useMemo(() => {
     if (view !== "aroundMe") return null
@@ -717,7 +723,7 @@ export default function LeaderboardPage({
       <section className="card leaderboardPageCard">
         <CommandHeader
           routeId="ladder"
-          eyebrow="Season ladder"
+          eyebrow="Global ladder"
           title="Climb the field"
           subtitle="See who leads, find your nearest rival, and take the next position."
           status={(
@@ -747,6 +753,7 @@ export default function LeaderboardPage({
             totalCount={fieldTotalCount}
             season={season}
             isSearching={Boolean(resultsQuery)}
+            board={board}
           />
         </div>
 
@@ -788,7 +795,7 @@ export default function LeaderboardPage({
         ) : null}
 
         {!isLoading && !loadError && sortedRows.length === 0 ? (
-          resultsQuery ? (
+          resultsQuery && !(view === "aroundMe" && !selfRank) ? (
             // An empty search result is not an empty Ladder: say what was searched and offer a way back.
             // Around Me only searches the players near your rank, so it says so and offers the full Ladder.
             <div className="leaderboardStatusCard leaderboardNoMatch" role="status" aria-live="polite">
@@ -811,16 +818,16 @@ export default function LeaderboardPage({
           ) : view === "aroundMe" ? (
             // Around Me centres on your own standing, which needs a placed rank.
             <div className="leaderboardStatusCard" role="status" aria-live="polite">
-              <p className="leaderboardStatusTitle">You don't have a Ladder spot yet.</p>
-              <p className="muted">Finish your placement matches to see the players around you.</p>
+              <p className="leaderboardStatusTitle">{needsReactionTime ? "Record a reaction time to join this board." : "You don't have a Ladder spot yet."}</p>
+              <p className="muted">{needsReactionTime ? "Complete a round with a hit to record your reaction time." : "Finish your placement matches to see the players around you."}</p>
               <button type="button" className="secondaryButton" onClick={(event) => handleViewChange("top", event.currentTarget)}>
                 Show top players
               </button>
             </div>
           ) : (
             <div className="leaderboardStatusCard" role="status" aria-live="polite">
-              <p className="leaderboardStatusTitle">No ranked players yet.</p>
-              <p className="muted">Finish your placement matches to start populating the ladder.</p>
+              <p className="leaderboardStatusTitle">{board === "reaction" ? "No reaction times recorded yet." : "No ranked players yet."}</p>
+              <p className="muted">{board === "reaction" ? "Placed players appear here after recording a reaction time." : "Finish your placement matches to start populating the ladder."}</p>
             </div>
           )
         ) : null}
