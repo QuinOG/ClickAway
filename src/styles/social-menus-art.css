@@ -17,8 +17,8 @@
   filter: none;
   z-index: -1;
 }
-.leaderboardPodiumDeck .isRank2 .podiumStep::before { filter: grayscale(1) brightness(1.1); }
-.leaderboardPodiumDeck .isRank3 .podiumStep::before { filter: sepia(.45) saturate(1.1) brightness(.8); }
+.leaderboardPodiumDeck .isRank2 .podiumStep::before { background-image: url('/art/social-menus/podium-silver.png'); }
+.leaderboardPodiumDeck .isRank3 .podiumStep::before { background-image: url('/art/social-menus/podium-bronze.png'); }
 .leaderboardPodiumDeck .leaderboardPodiumPlayer .podiumStep::before {
   display: block;
   inset: 0;
@@ -26,5 +26,5 @@
   transform: none;
   filter: none;
 }
-.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank2 .podiumStep::before { filter: grayscale(1) brightness(1.1); }
-.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank3 .podiumStep::before { filter: sepia(.45) saturate(1.1) brightness(.8); }
+.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank2 .podiumStep::before { background-image: url('/art/social-menus/podium-silver.png'); }
+.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank3 .podiumStep::before { background-image: url('/art/social-menus/podium-bronze.png'); }

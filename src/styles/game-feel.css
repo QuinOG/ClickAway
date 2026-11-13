@@ -5134,3 +5134,13 @@
 
 /* Ratchet i51: the featured part fills its preview badge (generated emblems carry their own padding) */
 .armoryPartFeatureGlyph .gameArt { width: 68% !important; height: 68% !important; object-fit: contain; }
+
+/* ---- r53 (Sol i52 #3): installed parts fill their bench mounts ------------
+ * The part art rendered at 30px inside 96-116px mounts. Each part now fills
+ * over half its mount's inner width; labels sit outside the mounts. */
+.armoryMachine .armoryMachineRigMount > .gameArt { width: 60px !important; height: 60px !important; object-fit: contain; }
+.armoryMachine .armoryMachineRigMount.mount-streakLens > .gameArt { width: 50px !important; height: 50px !important; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig > .gameArt { width: 56px !important; height: 56px !important; transform: translateY(-8px); }
+
+/* r53 (Sol i52 #5): the unlocked part fills the rig's socket */
+.gameOverSpotlight .gameOverNextUnlockIcon > img.gameArt:not(.gameOverUnlockRig) { width: 70px !important; height: 70px !important; transform: translateY(-9px); }
