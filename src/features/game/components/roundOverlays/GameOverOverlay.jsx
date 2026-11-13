@@ -281,6 +281,7 @@ export function GameOverOverlay({
   const [isWorkshopNoteDismissed, setIsWorkshopNoteDismissed] = useState(false)
 
   const isPracticeMode = !allowsCoinRewards && !allowsLevelProgression && !allowsRankProgression
+  const isRoundSaved = roundSaveStatus === "saved"
   const hasCleanRun = misses === 0
   const isNewBestScore = score > bestScore
   const resolvedLoadoutPresentation = useMemo(
@@ -390,7 +391,7 @@ export function GameOverOverlay({
         ) : null}
       </MotionDiv>
 
-      {allowsCoinRewards || allowsLevelProgression || allowsRankProgression ? (
+      {isRoundSaved && (allowsCoinRewards || allowsLevelProgression || allowsRankProgression) ? (
         <MotionDiv
           className="gameOverRewards"
           aria-label="Round rewards"
@@ -441,7 +442,7 @@ export function GameOverOverlay({
         </MotionDiv>
 
         {isPracticeMode ? (
-          <p className="gameOverPracticeNote">Practice result recorded. No economy or rank was changed.</p>
+          <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No economy or rank was changed.</p>
         ) : null}
 
         {nearestAchievement ? (
@@ -478,7 +479,7 @@ export function GameOverOverlay({
         ) : null}
       </div>
 
-      {allowsLevelProgression ? (
+      {isRoundSaved && allowsLevelProgression ? (
         <MotionDiv
           className="gameOverSpotlight"
           initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.9 }}
