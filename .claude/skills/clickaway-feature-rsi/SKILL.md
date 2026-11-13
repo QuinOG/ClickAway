@@ -43,6 +43,8 @@ Implement the smallest complete improvement. Do not prescribe a feature when sim
 
 **Visual changes get before/after screenshots (user, 2026-11-12).** Before editing, capture the affected route with `ROUTE=<route id> OUT=docs/feature-improvement/shots/NNN/before npx playwright test tests/e2e/zz-feature-shot.spec.js --workers=1` (writes desktop 1440 and mobile 390 shots; `CLICK=<button name>` clicks one control first). After the change, capture `after` (and any state-specific shots), commit them with the code, and post a before/after PR comment (`python .claude/skills/clickaway-rsi/step_comment.py`). Check layout with measured element positions rather than by reading screenshots.
 
+**Before/after images must show the change (user, 2026-11-13).** Whole-page shots squeezed into narrow table columns made every pair look the same. For the PR, capture close-ups of just the part that changed with `tests/e2e/zz-feature-crop.spec.js` (`ROUTE`, `W`, `H`, optional `SELECTOR`, `FILL`, `OUT`). For the "before", temporarily restore the old version of the changed file (`git show <ref>:<file> > <file>`), then `git checkout HEAD -- <file>`. Use `<img width="420">` so the shots render at a readable size. Leave out rows where nothing changed, and say "desktop unchanged" in text instead. Look at one pair yourself before posting to confirm the difference is visible.
+
 Keep claims tied to evidence. Automated component interactions, browser interactions, reviewer judgments, and actual player feedback are different kinds of evidence. Do not describe a simulated task as a real user study or claim time savings without measurement. Screenshots may support layout checks but cannot establish working behavior.
 
 ## Independent task review
