@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { beforeEach, expect, test, vi } from "vitest"
@@ -23,4 +23,17 @@ test("unplaced Around Me keeps placement guidance during a search", async () => 
   await user.click(screen.getByRole("button", { name: "Around Me" }))
   expect(await screen.findByText("You don't have a Ladder spot yet.")).toBeTruthy()
   expect(screen.queryByText(/Around Me found no players/)).toBeNull()
+})
+
+test("placed players without a reaction measurement get reaction guidance", async () => {
+  fetchLeaderboard.mockImplementation(async ({ board } = {}) => board === "reaction"
+    ? { ...result, rows: [], selfRank: null } : result)
+  const user = userEvent.setup()
+  show()
+  await screen.findByRole("list", { name: /Ladder sorted/ })
+  await user.click(screen.getByRole("tab", { name: "Reaction" }))
+  await screen.findByText("No reaction time recorded")
+  await user.click(screen.getByRole("button", { name: "Around Me" }))
+  await waitFor(() => expect(screen.getAllByText("Record a reaction time to join this board.")).toHaveLength(2))
+  expect(screen.queryByText(/Finish your placement matches/)).toBeNull()
 })
