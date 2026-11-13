@@ -19,3 +19,14 @@ test('raw ghost predicate rejects missing or invalid seeds before normalization'
   expect(isValidGhostReplay(null)).toBe(false)
   expect(isValidGhostReplay({ id: 2, modeId: 'normal', seed: 0 })).toBe(true)
 })
+
+test.each([undefined, 3])('duel refuses missing/mismatched canonical replay %s', async replayId => {
+  vi.useFakeTimers()
+  requestRoundStart.mockResolvedValueOnce({ seed: 0, roundToken: 'token', replayId })
+  const { result } = renderHook(() => useGameScreenController({ savedLoadouts: DEFAULT_SAVED_LOADOUTS, activeLoadout: DEFAULT_SAVED_LOADOUTS[0], challengeId: 1, ghostReplay: { id: 2, seed: 0, modeId: 'normal' }, autoStartGhostDuel: true }))
+  await act(async () => vi.advanceTimersByTimeAsync(1))
+  expect(result.current.phase).toBe('ready')
+  expect(result.current.duelStartError).toBe("This duel link doesn't match its rival run")
+  act(() => vi.advanceTimersByTime(3000))
+  expect(result.current.phase).toBe('ready')
+})

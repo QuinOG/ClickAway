@@ -97,6 +97,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     stopFeedback()
   }, [game.phase, stopFeedback])
 
+  const duelError = ghostLoadError || game.duelStartError
   let activeOverlay = null
   const entranceOverlay = game.entranceOverlayProps
     ? <CountdownOverlay key="round-entrance" {...game.entranceOverlayProps} />
@@ -121,9 +122,9 @@ export default function GamePage({ onPhaseChange, ...props }) {
 
   return (
     <div className={game.gameScreenClassName}>
-      {ghostLoadError ? (
+      {duelError ? (
         <div className="ghostDuelError" role="alert">
-          {ghostLoadError}
+          {duelError}
           <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button>
           <button type="button" onClick={() => setSearchParams({}, { replace: true })}>Leave duel</button>
         </div>

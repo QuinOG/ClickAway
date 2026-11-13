@@ -658,6 +658,7 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
   // A duel race uses the challenged ghost's seed, so the run can be stored as a
   // replay and compared with the challenger's on the same targets.
   let seed = createRoundSeed()
+  let replayId = null
   const challengeId = Number(request.body?.challengeId) || null
   if (challengeId) {
     try {
@@ -673,6 +674,7 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
         return
       }
       seed = challenge.replaySeed
+      replayId = challenge.replayId
     } catch (error) {
       handleRouteError(error, response)
       return
@@ -684,7 +686,7 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
     JWT_SECRET
   )
 
-  response.json({ roundToken, seed })
+  response.json({ roundToken, seed, ...(challengeId ? { replayId } : {}) })
 })
 
 app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, response) => {

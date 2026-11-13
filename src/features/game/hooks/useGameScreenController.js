@@ -687,8 +687,15 @@ export function useGameScreenController({
       // Without the challenge token the race could never settle the duel, so a
       // failed request stops at Ready with the error and a retry, like Ranked.
       requestRoundStart(nextModeId, { challengeId: duelChallengeId })
-        .then(({ roundToken, seed }) => {
-          if (roundNonceRef.current !== startedRoundNonce) return
+        .then(({ roundToken, seed, replayId }) => {
+          if (roundNonceRef.current !== startedRoundNonce
+            || challengeIdRef.current !== duelChallengeId
+            || ghostReplayRef.current !== activeGhostReplay) return
+          if (Number(replayId) !== activeGhostReplay.id || !replayId || activeGhostReplay.modeId !== nextModeId) {
+            setRoundStartStatus("error")
+            setRoundStartError("This duel link doesn't match its rival run")
+            return
+          }
           if (!roundToken) {
             setRoundStartStatus("error")
             setRoundStartError("The server did not start this duel. Please try again.")
@@ -698,7 +705,9 @@ export function useGameScreenController({
           beginCountdown()
         })
         .catch((error) => {
-          if (roundNonceRef.current !== startedRoundNonce) return
+          if (roundNonceRef.current !== startedRoundNonce
+            || challengeIdRef.current !== duelChallengeId
+            || ghostReplayRef.current !== activeGhostReplay) return
           setRoundStartStatus("error")
           setRoundStartError(error?.message || "Unable to start this duel. Check your connection and try again.")
         })
@@ -1227,7 +1236,11 @@ export function useGameScreenController({
   }, [getElapsedMs, isPlaying, playerLevel])
 
   useEffect(() => {
-    if (!autoStartGhostDuel || !isValidGhostReplay(ghostReplay)) return undefined
+    if (!isValidGhostReplay(ghostReplay)) {
+      autoStartedChallengeRef.current = null
+      return undefined
+    }
+    if (!autoStartGhostDuel) return undefined
     if (phase !== ROUND_PHASE.READY) return undefined
     // Start each duel automatically only once: returning to Ready or cancelling
     // must not launch it again.
@@ -1522,6 +1535,7 @@ export function useGameScreenController({
     phase,
     allowsCoinRewards,
     gameScreenClassName,
+    duelStartError: challengeId && roundStartError === "This duel link doesn't match its rival run" ? roundStartError : "",
     hudProps: {
       score,
       ghostScore: ghostReplay ? ghostScore : null,
