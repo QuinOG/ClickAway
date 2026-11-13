@@ -236,8 +236,8 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 32px;
-    padding: 4px 10px;
+    min-height: 40px;
+    padding: 6px 12px;
     border: 2px solid #040912;
     border-radius: 999px;
     background: linear-gradient(180deg, #2a3d5c, #16233a);
@@ -253,3 +253,17 @@
 .ladderPlateDuel svg { width: 14px; height: 14px; color: var(--ca-mode-pressure); }
 .ladderPlateDuel:hover { border-color: var(--ca-mode-pressure-line); }
 .ladderPlateDuel:focus-visible { outline: 2px solid var(--ca-color-accent); outline-offset: 3px; }
+
+/* Feature trial 004: on phones the five board tabs were forced into one row wider than the
+   screen, pushing Accuracy, Reaction and Around Me off the edge. Let the panel shrink and
+   wrap the tabs into rows that fit. */
+@media (max-width: 600px) {
+    .leaderboardPageScene .leaderboardControls,
+    .leaderboardPageScene .leaderboardControls > * { min-width: 0; max-width: 100%; }
+    .leaderboardPageScene .leaderboardControls .leaderboardBoardTabs {
+        grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    }
+    .leaderboardPageScene .leaderboardControls .leaderboardSearchField { flex: 1 1 100%; min-width: 0; }
+    .leaderboardPageScene .leaderboardControls .leaderboardViewToggle { flex: 1 1 auto; }
+    .leaderboardPageScene .leaderboardControls .leaderboardViewToggle .secondaryButton { flex: 1 1 0; }
+}
