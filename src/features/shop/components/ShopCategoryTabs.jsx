@@ -29,11 +29,23 @@ export default function ShopCategoryTabs({
     if (isStuck) sentinelRef.current?.scrollIntoView({ block: "start", behavior: "smooth" })
   }
 
+  function handleKeyDown(event, index) {
+    const nextIndex = event.key === "ArrowRight" ? (index + 1) % tabs.length
+      : event.key === "ArrowLeft" ? (index - 1 + tabs.length) % tabs.length
+        : event.key === "Home" ? 0
+          : event.key === "End" ? tabs.length - 1 : null
+    if (nextIndex === null) return
+    event.preventDefault()
+    const nextTab = event.currentTarget.parentElement.querySelectorAll('[role="tab"]')[nextIndex]
+    nextTab.focus()
+    handleSelect(tabs[nextIndex].id, nextTab)
+  }
+
   return (
     <>
       <span ref={sentinelRef} className="shopTabRailSentinel" aria-hidden="true" />
       <div className={`shopTabRail${isStuck ? " isStuck" : ""}`} role="tablist" aria-label="Shop categories">
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const isActive = tab.id === activeCategoryId
 
           return (
@@ -43,6 +55,8 @@ export default function ShopCategoryTabs({
               type="button"
               className={`shopTab ${isActive ? "active" : ""}`}
               aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
+              onKeyDown={(event) => handleKeyDown(event, index)}
               onClick={(event) => handleSelect(tab.id, event.currentTarget)}
             >
               <span className="shopTabSignal" aria-hidden="true" />
