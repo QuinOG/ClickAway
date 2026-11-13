@@ -117,7 +117,9 @@ export function FeedbackPreferencesProvider({ children }) {
       }
     }
     const handleStorageChange = (event) => {
-      if (event.key !== FEEDBACK_PREFERENCES_STORAGE_KEY) return
+      // clear() sends a null key rather than a separate event for each setting.
+      if (event.key !== null && event.key !== FEEDBACK_PREFERENCES_STORAGE_KEY) return
+      if (event.storageArea && event.storageArea !== window.localStorage) return
 
       try {
         const nextPreferences = event.newValue
