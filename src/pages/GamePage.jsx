@@ -10,7 +10,7 @@ import PowerupTray from "../features/game/components/PowerupTray.jsx"
 import { CountdownOverlay, GameOverFlow, ReadyOverlay } from "../features/game/components/gameRoundOverlayExports.jsx"
 import { useGameScreenController } from "../features/game/hooks/useGameScreenController.js"
 import { fetchReplay } from "../services/clickAwayHttpApiClient.js"
-import { normalizeReplayRecord } from "../utils/replayUtils.js"
+import { isValidGhostReplay, normalizeReplayRecord } from "../utils/replayUtils.js"
 
 const MotionDiv = motion.div
 
@@ -49,9 +49,10 @@ export default function GamePage({ onPhaseChange, ...props }) {
       try {
         const response = await fetchReplay(replayId)
         if (isCancelled) return
+        if (!isValidGhostReplay(response?.replay)) throw new Error("Unable to load a valid ghost replay. Please retry.")
         setLoadState({
           replayId,
-          replay: normalizeReplayRecord(response?.replay),
+          replay: normalizeReplayRecord(response.replay),
           error: "",
         })
       } catch (error) {
@@ -78,7 +79,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     ...props,
     ghostReplay,
     challengeId,
-    autoStartGhostDuel: Boolean(replayId && challengeId && ghostReplay?.seed),
+    autoStartGhostDuel: Boolean(replayId && challengeId && isValidGhostReplay(ghostReplay)),
     onExitDuel: () => setSearchParams({}, { replace: true }),
     emitFeedback,
     allowScreenShake: effectivePreferences.screenShake,

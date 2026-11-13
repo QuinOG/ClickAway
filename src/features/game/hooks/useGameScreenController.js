@@ -43,7 +43,7 @@ import {
   SIZE_LOCK_DURATION_MS,
 } from "../../../game/engine/roundGeometry.js"
 import { createRandomSeed, createSeededRng } from "../../../game/engine/seededRng.js"
-import { computeGhostScoreAtElapsed } from "../../../utils/replayUtils.js"
+import { computeGhostScoreAtElapsed, isValidGhostReplay } from "../../../utils/replayUtils.js"
 import { requestRoundStart } from "../../../services/clickAwayHttpApiClient.js"
 import { calculateRoundXp } from "../../../utils/progressionUtils.js"
 import {
@@ -590,7 +590,7 @@ export function useGameScreenController({
     if (finishedDuelRef.current) onExitDuelRef.current?.()
     // A duel can't start until its ghost has loaded; starting earlier would run
     // an ordinary round that can never settle the duel.
-    else if (challengeIdRef.current && !ghostReplayRef.current?.seed) return
+    else if (challengeIdRef.current && !isValidGhostReplay(ghostReplayRef.current)) return
     pendingRoundStartRef.current = {
       modeId: nextModeId,
       loadoutId: nextLoadoutId,
@@ -643,7 +643,7 @@ export function useGameScreenController({
       nextRoundMode.allowsRankProgression === true
       || nextRoundMode.allowsCoinRewards === true
       || nextRoundMode.allowsLevelProgression === true
-    ) && !activeGhostReplay?.seed
+    ) && !isValidGhostReplay(activeGhostReplay)
 
     const beginCountdown = () => {
       setRoundStartBestScore(playerBestScore)
@@ -672,7 +672,7 @@ export function useGameScreenController({
 
     setGhostScore(0)
 
-    if (activeGhostReplay?.seed) {
+    if (isValidGhostReplay(activeGhostReplay)) {
       // A duel race asks for a token bound to the challenge, so the run is stored
       // as a replay and settles the duel. A ghost race outside a duel runs unrewarded.
       const duelChallengeId = finishedDuelRef.current ? null : challengeIdRef.current
@@ -1227,7 +1227,7 @@ export function useGameScreenController({
   }, [getElapsedMs, isPlaying, playerLevel])
 
   useEffect(() => {
-    if (!autoStartGhostDuel || !ghostReplay?.seed) return undefined
+    if (!autoStartGhostDuel || !isValidGhostReplay(ghostReplay)) return undefined
     if (phase !== ROUND_PHASE.READY) return undefined
     // Start each duel automatically only once: returning to Ready or cancelling
     // must not launch it again.
