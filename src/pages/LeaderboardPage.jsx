@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react"
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Crown, Crosshair, MagnifyingGlass, Sword, Trophy } from "@phosphor-icons/react"
 
@@ -359,6 +359,7 @@ function LeaderboardControls({
   onBoardChange,
   search,
   onSearchChange,
+  searchInputRef,
   view,
   onViewChange,
   page,
@@ -387,6 +388,7 @@ function LeaderboardControls({
         <label className="gfField leaderboardSearchField">
           <span className="gfFieldCap" aria-hidden="true"><MagnifyingGlass weight="bold" /></span>
           <input
+            ref={searchInputRef}
             type="search"
             className="leaderboardSearchInput"
             placeholder="Search players"
@@ -548,11 +550,19 @@ export default function LeaderboardPage({
   const [board, setBoard] = useState("mmr")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
-  const [totalCount, setTotalCount] = useState(0)
+  // Size of the whole Ladder, kept from the last unsearched load so a search with no
+  // matches doesn't make the field look empty.
+  const [fieldTotalCount, setFieldTotalCount] = useState(0)
+  // The search the shown rows belong to; messages use this rather than the box text,
+  // which changes before new results arrive.
+  const [resultsQuery, setResultsQuery] = useState("")
   const [selfRank, setSelfRank] = useState(null)
   const [season, setSeason] = useState(null)
   const [searchInput, setSearchInput] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const searchInputRef = useRef(null)
+  // Only the newest request may update the page, so a slow older search can't replace newer results.
+  const latestLoadRef = useRef(0)
   const [view, setView] = useState("top")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
@@ -574,6 +584,9 @@ export default function LeaderboardPage({
       return false
     }
 
+    const loadId = latestLoadRef.current + 1
+    latestLoadRef.current = loadId
+    const isLatest = () => latestLoadRef.current === loadId
     setIsLoading(true)
     setLoadError("")
 
@@ -584,18 +597,23 @@ export default function LeaderboardPage({
         search: searchQuery,
         view,
       })
+      if (!isLatest()) return false
       setLeaderboardRows(response.rows)
       setTotalPages(response.totalPages)
-      setTotalCount(response.totalCount)
-      setSelfRank(response.selfRank)
+      if (!searchQuery) setFieldTotalCount(response.totalCount)
+      setResultsQuery(searchQuery)
+      // A search can leave you out of the results, and the server then omits your rank.
+      // Keep your known rank instead of telling a placed player they are unranked.
+      if (!searchQuery || response.selfRank != null) setSelfRank(response.selfRank)
       setSeason(response.season)
       return true
     } catch (error) {
+      if (!isLatest()) return false
       setLeaderboardRows([])
       setLoadError(error.message || "Unable to load leaderboard.")
       return false
     } finally {
-      setIsLoading(false)
+      if (isLatest()) setIsLoading(false)
     }
   }, [board, isAuthed, page, searchQuery, view])
 
@@ -702,7 +720,7 @@ export default function LeaderboardPage({
           status={(
             <span className="leaderboardFieldCount">
               <Trophy weight="fill" aria-hidden="true" />
-              <strong>{formatNumericValue(totalCount)}</strong>
+              <strong>{formatNumericValue(fieldTotalCount)}</strong>
               <small>ranked</small>
             </span>
           )}
@@ -724,7 +742,7 @@ export default function LeaderboardPage({
             currentLeaderboardStats={currentLeaderboardStats}
             rankedRounds={rankedRounds.length}
             selfRank={selfRank}
-            totalCount={totalCount}
+            totalCount={fieldTotalCount}
             season={season}
           />
         </div>
@@ -734,6 +752,7 @@ export default function LeaderboardPage({
           onBoardChange={handleBoardChange}
           search={searchInput}
           onSearchChange={setSearchInput}
+          searchInputRef={searchInputRef}
           view={view}
           onViewChange={handleViewChange}
           page={page}
@@ -767,10 +786,44 @@ export default function LeaderboardPage({
         ) : null}
 
         {!isLoading && !loadError && sortedRows.length === 0 ? (
-          <div className="leaderboardStatusCard" role="status" aria-live="polite">
-            <p className="leaderboardStatusTitle">No ranked players yet.</p>
-            <p className="muted">Finish your placement matches to start populating the ladder.</p>
-          </div>
+          resultsQuery ? (
+            // An empty search result is not an empty Ladder: say what was searched and offer a way back.
+            // Around Me only searches the players near your rank, so it says so and offers the full Ladder.
+            <div className="leaderboardStatusCard leaderboardNoMatch" role="status" aria-live="polite">
+              <p className="leaderboardStatusTitle">
+                {view === "aroundMe"
+                  ? <>Around Me found no players matching “{resultsQuery}”.</>
+                  : <>No players match “{resultsQuery}”.</>}
+              </p>
+              <p className="muted">
+                {view === "aroundMe"
+                  ? "Around Me only searches a small window of players near your rank. Search all players to look across the whole Ladder, or clear the search."
+                  : "Check the spelling, or clear the search to see the full Ladder."}
+              </p>
+              <div className="leaderboardNoMatchActions">
+                {view === "aroundMe" ? (
+                  <button type="button" className="secondaryButton" onClick={(event) => handleViewChange("top", event.currentTarget)}>
+                    Search all players
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="secondaryButton"
+                  onClick={() => {
+                    setSearchInput("")
+                    searchInputRef.current?.focus()
+                  }}
+                >
+                  Clear search
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="leaderboardStatusCard" role="status" aria-live="polite">
+              <p className="leaderboardStatusTitle">No ranked players yet.</p>
+              <p className="muted">Finish your placement matches to start populating the ladder.</p>
+            </div>
+          )
         ) : null}
 
         {nearMeData ? (

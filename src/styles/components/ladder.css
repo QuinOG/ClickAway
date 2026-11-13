@@ -267,3 +267,7 @@
     .leaderboardPageScene .leaderboardControls .leaderboardViewToggle { flex: 1 1 auto; }
     .leaderboardPageScene .leaderboardControls .leaderboardViewToggle .secondaryButton { flex: 1 1 0; }
 }
+
+/* Feature trial 005: the no-match message names the search, so long text must wrap. */
+.leaderboardNoMatch .leaderboardStatusTitle { overflow-wrap: anywhere; }
+.leaderboardNoMatchActions { display: flex; flex-wrap: wrap; gap: 8px; }
