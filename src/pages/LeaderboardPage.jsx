@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Crown, Crosshair, MagnifyingGlass, Trophy } from "@phosphor-icons/react"
+import { Link, useNavigate } from "react-router-dom"
+import { Crown, Crosshair, MagnifyingGlass, Sword, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
@@ -845,9 +845,21 @@ export default function LeaderboardPage({
                         </div>
                       ))}
                     </dl>
-                    <div className="ladderPlateHero">
-                      <strong>{heroStat.value}</strong>
-                      <small>{heroStat.label}</small>
+                    <div className="ladderPlateEnd">
+                      <div className="ladderPlateHero">
+                        <strong>{heroStat.value}</strong>
+                        <small>{heroStat.label}</small>
+                      </div>
+                      {!isCurrentUser ? (
+                        <Link
+                          className="ladderPlateDuel"
+                          to={`/challenges?rival=${encodeURIComponent(player.username)}`}
+                          aria-label={`Challenge ${player.username} to a ghost duel`}
+                        >
+                          <Sword weight="fill" aria-hidden="true" />
+                          Duel
+                        </Link>
+                      ) : null}
                     </div>
                   </li>
                 )
