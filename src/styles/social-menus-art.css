@@ -1,0 +1,30 @@
+/* The rank remains live text above the illustrated podium face. */
+.leaderboardPodiumDeck .podiumStep {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  isolation: isolate;
+}
+.leaderboardPodiumDeck .podiumStep::before {
+  display: block;
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: auto;
+  border: 0;
+  transform: none;
+  background: url('/art/social-menus/podium-gold.png') center / 100% 100% no-repeat;
+  filter: none;
+  z-index: -1;
+}
+.leaderboardPodiumDeck .isRank2 .podiumStep::before { filter: grayscale(1) brightness(1.1); }
+.leaderboardPodiumDeck .isRank3 .podiumStep::before { filter: sepia(.45) saturate(1.1) brightness(.8); }
+.leaderboardPodiumDeck .leaderboardPodiumPlayer .podiumStep::before {
+  display: block;
+  inset: 0;
+  width: auto;
+  transform: none;
+  filter: none;
+}
+.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank2 .podiumStep::before { filter: grayscale(1) brightness(1.1); }
+.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank3 .podiumStep::before { filter: sepia(.45) saturate(1.1) brightness(.8); }

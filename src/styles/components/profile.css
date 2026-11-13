@@ -650,7 +650,7 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
     filter: drop-shadow(0 3px 0 rgb(0 0 0 / 30%));
 }
 
-.profilePageCenter .profileInstrumentEmblem svg.gameIcon { width: 44px; height: 44px; }
+.profilePageCenter .profileInstrumentEmblem .gameIcon { width: 44px; height: 44px; }
 
 .profilePageCenter .profileSignalBand {
     gap: 12px;
@@ -710,7 +710,7 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
 }
 
-.profilePageCenter .profilePanelEmblem svg.gameIcon { width: 36px; height: 36px; }
+.profilePageCenter .profilePanelEmblem .gameIcon { width: 36px; height: 36px; }
 
 @media (max-width: 760px) {
     .profilePageCenter .profileSignalBand { gap: 8px; }

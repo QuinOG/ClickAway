@@ -1,0 +1,17 @@
+/* A light shade keeps the stadium visible behind targets and feedback. */
+.arena .arenaGameplayBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgb(0 0 0 / 15%);
+  pointer-events: none;
+}
+
+.arena .arenaStage::before,
+.arena .arenaStage::after {
+  display: none;
+}
+
+.arena .arenaStage > :is(.arenaStreakMark, .arenaFinalCount, .arenaCorner) {
+  z-index: 1;
+}

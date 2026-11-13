@@ -1,0 +1,30 @@
+.arenaWorldPlate {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.arenaWorldLighting { position: absolute; inset: 0; overflow: hidden; }
+.arenaWorldLighting .awaBulb {
+  position: absolute;
+  left: 4%;
+  top: 3%;
+  width: 12%;
+  height: 17%;
+  background: radial-gradient(ellipse, rgb(255 216 138 / 28%), transparent 70%);
+}
+.arenaWorldLighting .awaBulb:nth-child(2) { left: 43%; top: 10%; width: 14%; }
+.arenaWorldLighting .awaBulb:nth-child(3) { left: 84%; }
+
+.arenaWorldArt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--stadium-tint, transparent);
+  mix-blend-mode: color;
+}
+.theme-sunset .arenaWorldArt { --stadium-tint: rgb(225 100 55 / 28%); }
+.theme-forest .arenaWorldArt { --stadium-tint: rgb(45 190 100 / 28%); }
+.theme-arcade .arenaWorldArt { --stadium-tint: rgb(160 60 235 / 28%); }

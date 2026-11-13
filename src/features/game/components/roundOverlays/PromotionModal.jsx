@@ -1,3 +1,4 @@
+import "./roundResultsArt.css"
 import { CrestIcon } from "../../../../components/art/GameIcons.jsx"
 import {
   cancelCelebrationEffects,
@@ -99,20 +100,8 @@ function getCrestToneFromLabel(label = "") {
 
 function DivisionMetalwork({ label }) {
   const division = RANK_DIVISIONS.find((rank) => rank.label === label)?.division
-  if (!division) return null
-  return (
-    <svg className="divisionMetalwork" viewBox="0 0 100 100" aria-hidden="true">
-      {division >= 2 && <g className="divisionMetalworkWings">
-        <path d="M20 54 L6 43 L12 58 L22 64 M80 54 L94 43 L88 58 L78 64" />
-        <path d="M17 61 L9 57 L15 68 L24 71 M83 61 L91 57 L85 68 L76 71" />
-      </g>}
-      {division >= 3 && <g className="divisionMetalworkCrown">
-        <path d="M32 21 L29 10 L41 16 L50 5 L59 16 L71 10 L68 21 Z" />
-        <path d="M46 16 L50 11 L54 16 L50 21 Z" className="divisionMetalworkGem" />
-        <path d="M30 76 L50 86 L70 76 M34 81 L50 90 L66 81" fill="none" />
-      </g>}
-    </svg>
-  )
+  if (!division || division < 2) return null
+  return <img className={`divisionMetalwork divisionMetalwork-${division}`} src="/art/game-results/division-frame.png" alt="" aria-hidden="true" />
 }
 
 const LADDER_WINDOW = 7
@@ -224,8 +213,8 @@ export default function PromotionModal({
       animate="visible"
       exit="exit"
     >
-      <div className="rankCeremonyCannon isLeft" aria-hidden="true"><i /><b /></div>
-      <div className="rankCeremonyCannon isRight" aria-hidden="true"><i /><b /></div>
+      <div className="rankCeremonyCannon isLeft" aria-hidden="true" />
+      <div className="rankCeremonyCannon isRight" aria-hidden="true" />
       <MotionDiv variants={itemVariants}>
         <p className="gameOverPromotionEyebrow">
           {isPlacementReveal ? "Placement Complete" : "Rank Promotion"}

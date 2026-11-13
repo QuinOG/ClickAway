@@ -1,10 +1,11 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Crown, Crosshair, MagnifyingGlass, Sword, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
+import "../styles/social-menus-art.css"
 
 function getCrestTone(rankLabel = "") {
   const tier = String(rankLabel).split(" ")[0].toLowerCase()
@@ -756,7 +757,7 @@ export default function LeaderboardPage({
           onPageChange={handlePageChange}
           sortControl={!isLoading && !loadError && sortedRows.length > 0 ? (
             <button type="button" className="ladderSortFlip" aria-label={`Sorted by ${activeSortLabel}, flip order`} onClick={() => handleSort(sortConfig.key)}>
-              {sortConfig.direction === "asc" ? "Low to high ▲" : "High to low ▼"}
+              {sortConfig.direction === "asc" ? "Low to high ?" : "High to low ?"}
             </button>
           ) : null}
         />
@@ -788,8 +789,8 @@ export default function LeaderboardPage({
             <div className="leaderboardStatusCard leaderboardNoMatch" role="status" aria-live="polite">
               <p className="leaderboardStatusTitle">
                 {view === "aroundMe"
-                  ? <>Around Me found no players matching “{resultsQuery}”.</>
-                  : <>No players match “{resultsQuery}”.</>}
+                  ? <>Around Me found no players matching â€œ{resultsQuery}â€.</>
+                  : <>No players match â€œ{resultsQuery}â€.</>}
               </p>
               <p className="muted">
                 {view === "aroundMe"

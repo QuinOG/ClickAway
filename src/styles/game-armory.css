@@ -31,7 +31,7 @@
     filter: drop-shadow(0 2px 0 rgb(0 0 0 / 40%));
 }
 
-.armoryMachineHousingGlyph svg.gameIcon { width: 38px; height: 38px; }
+.armoryMachineHousingGlyph .gameIcon { width: 38px; height: 38px; }
 .armoryMachineHousingSlot { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.04em; }
 
 /* Conduits read as energy lines into the core. */
@@ -39,7 +39,7 @@
 
 /* Power rack: illustrated keys. */
 .armoryMachineRackGlyph { display: grid; }
-.armoryMachineRackGlyph svg.gameIcon { width: 28px; height: 28px; }
+.armoryMachineRackGlyph .gameIcon { width: 28px; height: 28px; }
 
 .armoryMachineRackSlot {
     border: 0;
@@ -95,9 +95,9 @@
     box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
 }
 
-.armoryPartGlyph svg.gameIcon,
-.armoryLaneTabIcon svg.gameIcon,
-.armoryLanePanelIcon svg.gameIcon { width: 30px; height: 30px; }
+.armoryPartGlyph .gameIcon,
+.armoryLaneTabIcon .gameIcon,
+.armoryLanePanelIcon .gameIcon { width: 30px; height: 30px; }
 
 .armoryPartGlyph,
 .armoryLaneTabIcon,

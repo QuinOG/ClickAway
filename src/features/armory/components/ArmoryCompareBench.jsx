@@ -15,7 +15,9 @@ function GhostMachine({ label, loadout, presentation, isGhost = false }) {
         <div className="armoryCompareRigMechanics" aria-hidden="true">
           <span className="armoryCompareRigConnector left" /><span className="armoryCompareRigConnector right" /><span className="armoryCompareRigConnector top" />
           <span className="armoryCompareRigBase" />
-          <span className="armoryCompareRigHub"><span className="armoryCompareRigCore" style={{ width: targetSize, height: targetSize }}>+</span></span>
+          <span className="armoryCompareRigHub"><span className="armoryCompareRigCore" style={{ width: targetSize, height: targetSize }}>
+            <img className="armoryCompareRigTarget" src="/art/compare/hub-target.png" alt="" width="320" height="320" decoding="async" />
+          </span></span>
           {presentation.moduleStack.map((module) => <span key={module.slotId} className={`armoryCompareRigModule slot-${module.slotId}`}><PartEmblem partId={module.moduleId} slotId={module.slotId} size={32} /></span>)}
         </div>
         <div className="armoryCompareRigLabels">{presentation.moduleStack.map((module) => <span key={module.slotId} className={`armoryCompareRigModuleLabel slot-${module.slotId}`}><b>{module.slotLabel}</b><br />{module.label}</span>)}</div>

@@ -108,7 +108,7 @@ function MoreTileLink({ route, pendingDuelCount, onNavigate }) {
       onClick={(event) => { signalAction(event.currentTarget, { silent: true }); onNavigate?.(event) }}
       onPointerEnter={() => prefetchRouteModule(route.path)} onFocus={() => prefetchRouteModule(route.path)}>
       {({ isActive }) => <>
-        {route.id === "history" ? <span className="mobileMoreHistoryClock" aria-hidden="true"><span className="navItemIcon"><RouteIcon route={route} active={isActive} illustrated size={26} /></span></span> : <span className="navItemIcon"><RouteIcon route={route} active={isActive} illustrated size={36} /></span>}
+        <span className="navItemIcon">{route.id === "help" ? <img className="gameIcon gameArt" src="/art/nav/help-book.png" alt="" aria-hidden="true" width="40" height="40" decoding="async" /> : <RouteIcon route={route} active={isActive} illustrated size={36} />}</span>
         <span className="mobileMoreCategory">{category}</span>
         <span className="navItemLabel">{route.label}</span>
         {route.id === "duels" ? <PendingBadge count={pendingDuelCount} /> : null}
