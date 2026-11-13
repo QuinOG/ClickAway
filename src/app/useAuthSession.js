@@ -75,9 +75,15 @@ let authGeneration = 0
 // they reload so they never keep showing (and saving as) the previous player.
 const AUTH_CHANGE_KEY = "clickaway.auth-change"
 
+let authAnnouncementPrefix
+let authAnnouncementSequence = 0
+
 function announceAuthChange() {
   try {
-    localStorage.setItem(AUTH_CHANGE_KEY, String(Date.now()))
+    authAnnouncementPrefix ??= `${Date.now()}-${Math.random()}-${Math.random()}`
+    const value = globalThis.crypto?.randomUUID?.()
+      ?? `${authAnnouncementPrefix}-${++authAnnouncementSequence}`
+    localStorage.setItem(AUTH_CHANGE_KEY, value)
   } catch {
     // Storage unavailable; other tabs pick up the change on their next load.
   }
