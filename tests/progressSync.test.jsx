@@ -1,7 +1,9 @@
 import { act, render, renderHook, waitFor } from "@testing-library/react"
 import { useEffect } from "react"
-import { describe, expect, test, vi } from "vitest"
+import { afterEach, describe, expect, test, vi } from "vitest"
 
+import toast from "react-hot-toast"
+import { startNewProgressSession } from "../src/app/progressResponseGuard.js"
 import { useProgressSync } from "../src/app/useProgressSync.js"
 import { fetchCurrentUser, updatePlayerProgress } from "../src/services/clickAwayHttpApiClient.js"
 
@@ -9,6 +11,9 @@ vi.mock("../src/services/clickAwayHttpApiClient.js", () => ({
   updatePlayerProgress: vi.fn(),
   fetchCurrentUser: vi.fn(),
 }))
+
+vi.mock("react-hot-toast", () => ({ default: { error: vi.fn() } }))
+afterEach(() => startNewProgressSession())
 
 function ProgressSyncHarness({ applyProgress, onReady }) {
   const progressSync = useProgressSync({ isAuthed: true, applyProgress })
@@ -77,4 +82,32 @@ test("failed save queue waits for reconciliation and drops its optimistic overla
   await save
   await result.current.waitForPendingProgress()
   expect(apply).toHaveBeenLastCalledWith({ activeLoadoutId: "loadout_1" })
+})
+
+
+test("failed reconciliation is visible and a later explicit save can recover", async () => {
+  const applyProgress = vi.fn()
+  updatePlayerProgress.mockRejectedValueOnce(Error("offline"))
+  fetchCurrentUser.mockRejectedValueOnce(Error("offline"))
+  const { result } = renderHook(() => useProgressSync({ isAuthed: true, applyProgress }))
+  await result.current.persistIntent({ activeLoadoutId: "loadout_2" })
+  expect(toast.error.mock.calls.some(([message]) => message.includes("Build not saved, retry"))).toBe(true)
+  updatePlayerProgress.mockResolvedValueOnce({ progress: { activeLoadoutId: "loadout_2" } })
+  await result.current.persistIntent({ activeLoadoutId: "loadout_2" })
+  expect(applyProgress).toHaveBeenLastCalledWith({ activeLoadoutId: "loadout_2" })
+})
+
+test("old-session failed saves never reconcile or announce an error", async () => {
+  let rejectSave
+  updatePlayerProgress.mockReturnValueOnce(new Promise((_, reject) => { rejectSave = reject }))
+  const applyProgress = vi.fn()
+  const { result } = renderHook(() => useProgressSync({ isAuthed: true, applyProgress }))
+  const pending = result.current.persistIntent({ activeLoadoutId: "loadout_2" })
+  await waitFor(() => expect(rejectSave).toBeDefined())
+  startNewProgressSession()
+  rejectSave(Error("old account offline"))
+  await pending
+  expect(fetchCurrentUser).not.toHaveBeenCalled()
+  expect(applyProgress).not.toHaveBeenCalled()
+  expect(toast.error).not.toHaveBeenCalled()
 })
