@@ -121,7 +121,16 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
 export function formatPlayedAtLabel(playedDate) {
   const now = new Date()
   const elapsedMs = Math.max(0, now.getTime() - playedDate.getTime())
-  const elapsedHours = elapsedMs / (1000 * 60 * 60)
+  const elapsedMinutes = elapsedMs / (1000 * 60)
+  const elapsedHours = elapsedMinutes / 60
+
+  if (elapsedMinutes < 1) {
+    return "Just now"
+  }
+
+  if (elapsedHours < 1) {
+    return formatRelativeTime(elapsedMinutes, "minute")
+  }
 
   if (elapsedHours < 24) {
     return formatRelativeTime(elapsedHours, "hour")

@@ -6,7 +6,7 @@ import { ROUND_END_SETTLE_MS, TIMER_TICK_MS } from "../src/constants/gameConstan
 import { useGameScreenController } from "../src/features/game/hooks/useGameScreenController.js"
 
 vi.mock("../src/services/clickAwayHttpApiClient.js", () => ({
-  requestRoundStart: vi.fn(() => Promise.resolve({ roundToken: null, seed: 12345 })),
+  requestRoundStart: vi.fn(() => Promise.resolve({ roundToken: "test-round-token", seed: 12345 })),
 }))
 
 describe("Game screen controller", () => {
@@ -14,7 +14,7 @@ describe("Game screen controller", () => {
     vi.useRealTimers()
   })
 
-  test("returns from results to a clean mode lobby without a stale entrance overlay", () => {
+  test("returns from results to a clean mode lobby without a stale entrance overlay", async () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => useGameScreenController({
       selectedModeId: "normal",
@@ -22,7 +22,8 @@ describe("Game screen controller", () => {
       activeLoadoutId: ACTIVE_LOADOUT_ID_DEFAULT,
     }))
 
-    act(() => {
+    // Casual is reward-bearing, so the countdown starts once the round token arrives.
+    await act(async () => {
       result.current.readyOverlayProps.onStart("normal")
     })
     expect(result.current.entranceOverlayProps?.startStatus).toBe("countdown")

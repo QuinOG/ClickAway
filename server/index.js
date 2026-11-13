@@ -22,7 +22,9 @@ import {
 import {
   createUser,
   completeUserRound,
+  RoundAlreadySubmittedError,
   createChallenge,
+  findChallengeById,
   findChallengesForUser,
   findCurrentSeason,
   findLeaderboardPage,
@@ -47,7 +49,7 @@ import {
 import { calculateRoundRewards, simulateRound } from "./roundRewards.js"
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
-import { sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
+import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import {
   evaluateAchievements,
@@ -219,7 +221,7 @@ function clampProgressBounds(progress = {}) {
 }
 
 function handleRouteError(error, response) {
-  if (error instanceof PlayerStateError) {
+  if (error instanceof PlayerStateError || error instanceof RoundAlreadySubmittedError) {
     response.status(error.status).json({ error: error.message })
     return
   }
@@ -283,7 +285,7 @@ app.get("/api/health", (_request, response) => {
 
 app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
   const username = sanitizeUsername(request.body?.username)
-  const password = String(request.body?.password || "")
+  const password = sanitizePassword(request.body?.password)
 
   const usernameError = validateUsername(username)
   if (usernameError) {
@@ -320,7 +322,7 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
 
 app.post("/api/auth/login", authRateLimiter, async (request, response) => {
   const username = sanitizeUsername(request.body?.username)
-  const password = String(request.body?.password || "")
+  const password = sanitizePassword(request.body?.password)
 
   if (!username || !password) {
     response.status(400).json({ error: "Username and password are required." })
@@ -587,7 +589,6 @@ app.post("/api/challenges/:challengeId/complete", requireAuth, async (request, r
 
   try {
     const opponentReplayId = Number(request.body?.opponentReplayId)
-    const opponentScore = Number(request.body?.opponentScore) || 0
 
     if (!opponentReplayId) {
       response.status(400).json({ error: "opponentReplayId is required." })
@@ -598,7 +599,6 @@ app.post("/api/challenges/:challengeId/complete", requireAuth, async (request, r
       challengeId: Number(request.params.challengeId),
       userId: user.id,
       opponentReplayId,
-      opponentScore,
     })
 
     if (!result.ok) {
@@ -670,6 +670,7 @@ app.post("/api/shop/equip", requireAuth, async (request, response) => {
 // server cannot reconstruct yet), so they are display-only stats: sanitized to
 // plausible bounds and never fed into rewards or rank.
 const MAX_REACTION_MS = 60_000
+const ROUND_SUBMIT_CLOCK_SLACK_MS = 5_000
 
 function sanitizeReactionMs(value) {
   const n = Number(value)
@@ -677,7 +678,7 @@ function sanitizeReactionMs(value) {
   return Math.min(MAX_REACTION_MS, Math.round(n))
 }
 
-app.post("/api/round/start", requireAuth, roundRateLimiter, (request, response) => {
+app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, response) => {
   const modeId = String(request.body?.modeId || "")
   const mode = getDifficultyById(modeId)
   if (!mode || mode.id !== modeId) {
@@ -685,9 +686,32 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, (request, response) 
     return
   }
 
-  const seed = createRoundSeed()
+  // A duel race uses the challenged ghost's seed, so the run can be stored as a
+  // replay and compared with the challenger's on the same targets.
+  let seed = createRoundSeed()
+  const challengeId = Number(request.body?.challengeId) || null
+  if (challengeId) {
+    try {
+      const challenge = await findChallengeById(challengeId)
+      if (
+        !challenge
+        || challenge.opponentUserId !== Number(request.auth.userId)
+        || challenge.status !== "accepted"
+        || challenge.modeId !== modeId
+        || challenge.replaySeed === null
+      ) {
+        response.status(400).json({ error: "That duel cannot be raced right now." })
+        return
+      }
+      seed = challenge.replaySeed
+    } catch (error) {
+      handleRouteError(error, response)
+      return
+    }
+  }
+
   const roundToken = signRoundToken(
-    { userId: request.auth.userId, modeId, seed },
+    { userId: request.auth.userId, modeId, seed, challengeId },
     JWT_SECRET
   )
 
@@ -714,9 +738,12 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     return
   }
 
-  // Round tokens are optional for non-ranked modes during rollout, but when
-  // present they must verify — a forged/expired token means a tampering client.
+  // A token is what makes a round reward-bearing: it is single-use and binds the
+  // seed, mode and start time. Non-ranked rounds without one (for example a
+  // ghost-duel race seeded from a replay) are still recorded, but earn nothing.
   let roundSeed = null
+  let roundTokenId = null
+  let roundTokenChallengeId = null
   if (roundToken) {
     const tokenCheck = verifyRoundToken(String(roundToken), {
       userId: request.auth.userId,
@@ -728,7 +755,17 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       return
     }
 
+    // The last event cannot be later than the time that has passed since the
+    // token was issued (plus clock slack); otherwise the stream was fabricated.
+    const lastEventMs = Array.isArray(events) && events.length > 0 ? Number(events[events.length - 1]?.t) || 0 : 0
+    if (lastEventMs > Date.now() - tokenCheck.issuedAtMs + ROUND_SUBMIT_CLOCK_SLACK_MS) {
+      response.status(400).json({ error: "Round was submitted before it could have finished." })
+      return
+    }
+
     roundSeed = tokenCheck.seed
+    roundTokenId = tokenCheck.roundId
+    roundTokenChallengeId = tokenCheck.challengeId
   }
 
   try {
@@ -753,14 +790,16 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
     const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
 
-    const { earnedCoins, earnedXp, progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } =
-      calculateRoundRewards({
-        modeId,
-        hits,
-        misses,
-        score,
-        bestStreak,
-      })
+    const calculatedRewards = calculateRoundRewards({
+      modeId,
+      hits,
+      misses,
+      score,
+      bestStreak,
+    })
+    const { progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } = calculatedRewards
+    const earnedCoins = roundTokenId ? calculatedRewards.earnedCoins : 0
+    const earnedXp = roundTokenId ? calculatedRewards.earnedXp : 0
 
     const rankOutcome = applyRankedMatchResult({
       currentMmr: currentProgress.rankMmr,
@@ -799,25 +838,19 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
 
     const { progress } = await completeUserRound({
       userId: user.id,
-      coins: nextCoins,
-      levelXp: nextLevelXp,
+      earnedCoins,
+      earnedXp,
+      maxCoins: MAX_COINS,
+      maxXp: MAX_XP,
+      roundTokenId,
       rankMmr: nextRankMmr,
       rankedState: rankOutcome.nextRankedState,
-      ownedItemIds: currentProgress.ownedItemIds,
-      equippedButtonSkinId: currentProgress.equippedButtonSkinId,
-      equippedArenaThemeId: currentProgress.equippedArenaThemeId,
-      equippedProfileImageId: currentProgress.equippedProfileImageId,
-      activeLoadoutId: currentProgress.activeLoadoutId,
-      savedLoadouts: currentProgress.savedLoadouts,
-      selectedModeId: modeId,
       unlockedAchievementIds: resolveUnlockedAchievementIds({
         ...currentProgress,
         coins: nextCoins,
         levelXp: nextLevelXp,
         lifetimeStats: nextLifetimeStats,
       }),
-      buildWalkthrough: currentProgress.buildWalkthrough,
-      seenUnlockPartIds: currentProgress.seenUnlockPartIds,
       historyEntry,
     })
 
@@ -843,14 +876,14 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       isRankedRound: progressionMode === "ranked",
     })
 
-    const challengeId = Number(request.body?.challengeId) || null
+    // Only a round started for a duel (its token names the challenge) can complete it.
+    const challengeId = roundTokenChallengeId
     let completedChallenge = null
     if (challengeId && replay?.id) {
       const completion = await completeChallenge({
         challengeId,
         userId: user.id,
         opponentReplayId: replay.id,
-        opponentScore: score,
       })
       if (completion.ok) {
         completedChallenge = completion.challenge

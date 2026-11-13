@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Crown, Crosshair, MagnifyingGlass, Trophy } from "@phosphor-icons/react"
 
@@ -553,7 +553,14 @@ export default function LeaderboardPage({
     return () => window.clearTimeout(timeoutId)
   }, [searchInput])
 
+  // Only the newest request may update the board, so a slow response for an old
+  // filter, search or page cannot replace the rows for the current one.
+  const requestGenerationRef = useRef(0)
   const loadLeaderboard = useCallback(async () => {
+    const generation = requestGenerationRef.current + 1
+    requestGenerationRef.current = generation
+    const isCurrent = () => requestGenerationRef.current === generation
+
     if (!isAuthed) {
       setLeaderboardRows([])
       setLoadError("You must be logged in to view the leaderboard.")
@@ -571,6 +578,7 @@ export default function LeaderboardPage({
         search: searchQuery,
         view,
       })
+      if (!isCurrent()) return false
       setLeaderboardRows(response.rows)
       setTotalPages(response.totalPages)
       setTotalCount(response.totalCount)
@@ -578,11 +586,12 @@ export default function LeaderboardPage({
       setSeason(response.season)
       return true
     } catch (error) {
+      if (!isCurrent()) return false
       setLeaderboardRows([])
       setLoadError(error.message || "Unable to load leaderboard.")
       return false
     } finally {
-      setIsLoading(false)
+      if (isCurrent()) setIsLoading(false)
     }
   }, [board, isAuthed, page, searchQuery, view])
 

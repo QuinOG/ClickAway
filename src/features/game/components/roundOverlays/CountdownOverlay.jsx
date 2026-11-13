@@ -69,7 +69,7 @@ export function CountdownOverlay({
           <strong>{isWaiting ? "Securing your round" : "Round not secured"}</strong>
           <p>{isWaiting
             ? "Waiting for a server token. The countdown starts only when the round is verified."
-            : (startError || "The Ranked server did not issue a round token.")}</p>
+            : (startError || "The server did not issue a round token.")}</p>
           {isWaiting ? <span className="roundTokenProgress" aria-hidden="true" /> : null}
           <div className="roundTokenActions">
             {isError ? <button type="button" onClick={onRetry}>Retry</button> : null}

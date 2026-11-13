@@ -47,7 +47,6 @@ export default function ShopPage({
     (ownedCount, count) => ownedCount + count,
     0
   )
-  const collectionPercent = totalItems > 0 ? Math.round((totalOwnedCount / totalItems) * 100) : 0
   const tabs = useMemo(
     () => [
       {
@@ -174,9 +173,6 @@ export default function ShopPage({
         <ShopHeroHeader
           playerName={playerName}
           coins={coins}
-          totalOwnedCount={totalOwnedCount}
-          totalItems={totalItems}
-          collectionPercent={collectionPercent}
           buttonSkin={equippedButtonSkin}
           arenaTheme={equippedArenaTheme}
           profileImage={equippedProfileImage}
@@ -184,6 +180,7 @@ export default function ShopPage({
           selectedItem={selectedItem}
           selectedItemStatus={selectedItemStatus}
           isSubmitting={pendingItemId === selectedItem.id}
+          isBusy={Boolean(pendingItemId) && pendingItemId !== selectedItem.id}
           onPurchase={handlePurchase}
           onEquip={handleEquip}
           onShowEquipped={() => selectEquippedItemForType(selectedItem.type)}
@@ -222,6 +219,7 @@ export default function ShopPage({
                     ownedItemIds={ownedItems}
                     isSelected={item.id === selectedItem.id}
                     isSubmitting={pendingItemId === item.id}
+                    isShopBusy={Boolean(pendingItemId) && pendingItemId !== item.id}
                     onSelect={(selectedItemValue, source) => {
                       setSelectedItemId(selectedItemValue.id)
                       setActionFeedback(null)

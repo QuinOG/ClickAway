@@ -37,6 +37,7 @@ import {
   getFrontendItemIdByDbItemId,
   getMappedShopItemById,
 } from "./serverShopCatalogIdMappings.js"
+import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 
 const DEFAULT_PROGRESS = {
   coins: 0,
@@ -336,6 +337,16 @@ export async function initializeSchema() {
   )`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_replays_user_played ON round_replays (user_id, played_at)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_replays_visibility_score ON round_replays (visibility, score)`)
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS consumed_round_tokens (
+    token_id varchar(64) NOT NULL,
+    user_id bigint NOT NULL,
+    consumed_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (token_id),
+    CONSTRAINT fk_consumed_round_tokens_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`)
+  await pool.query(`DELETE FROM consumed_round_tokens WHERE consumed_at < now() - interval '2 days'`)
 
   await pool.query(`CREATE TABLE IF NOT EXISTS challenges (
     id bigint GENERATED ALWAYS AS IDENTITY,
@@ -1208,36 +1219,6 @@ async function buildProgressRecord(executor, userId) {
   }
 }
 
-async function syncUserCollection(executor, userId, progress) {
-  const ownedItemIds = new Set(progress.ownedItemIds)
-
-  ;[
-    progress.equippedButtonSkinId,
-    progress.equippedArenaThemeId,
-    progress.equippedProfileImageId,
-  ].forEach((itemId) => {
-    const mappedItem = getMappedShopItemById(itemId)
-    if (mappedItem && !mappedItem.builtIn) {
-      ownedItemIds.add(mappedItem.frontendItemId)
-    }
-  })
-
-  await executor.query("DELETE FROM user_collection WHERE user_id = ?", [userId])
-
-  const rows = Array.from(ownedItemIds)
-    .map((itemId) => getMappedShopItemById(itemId))
-    .filter(Boolean)
-    .map((mappedItem) => [userId, mappedItem.collectionType, mappedItem.dbItemId])
-
-  if (rows.length > 0) {
-    const { clause, params } = buildValuesClause(rows)
-    await executor.query(
-      `INSERT INTO user_collection (user_id, item_type, item_id) VALUES ${clause}`,
-      params
-    )
-  }
-}
-
 async function syncUserLoadouts(executor, userId, progress) {
   await executor.query("DELETE FROM user_loadouts WHERE user_id = ?", [userId])
 
@@ -1491,13 +1472,19 @@ async function queryRankedLeaderboardRows({
         ON ls.user_id = u.id
       WHERE u.placement_matches_played >= ?
         ${reactionFilter}
-        ${normalizedSearch ? "AND LOWER(u.username) LIKE ?" : ""}
     ),
     ranked_ladder AS (
       SELECT
         ranked_players.*,
         RANK() OVER (ORDER BY ${orderClause}) AS rank
       FROM ranked_players
+    ),
+    -- Search narrows the rows shown, after ranks are computed over everyone,
+    -- so a searched player keeps their real ladder position.
+    filtered_ladder AS (
+      SELECT *
+      FROM ranked_ladder
+      ${normalizedSearch ? "WHERE LOWER(username) LIKE ?" : ""}
     )`
 
   const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
@@ -1531,7 +1518,7 @@ async function queryRankedLeaderboardRows({
     const [rows] = await pool.query(
       `${baseCte}
        SELECT *
-       FROM ranked_ladder
+       FROM filtered_ladder
        WHERE rank BETWEEN ? AND ?
        ORDER BY rank ASC`,
       [PLACEMENT_MATCH_COUNT, ...searchParams, minRank, maxRank]
@@ -1540,7 +1527,7 @@ async function queryRankedLeaderboardRows({
     const [[countRow]] = await pool.query(
       `${baseCte}
        SELECT COUNT(*) AS totalCount
-       FROM ranked_ladder`,
+       FROM filtered_ladder`,
       [PLACEMENT_MATCH_COUNT, ...searchParams]
     )
 
@@ -1562,7 +1549,7 @@ async function queryRankedLeaderboardRows({
   const [rows] = await pool.query(
     `${baseCte}
      SELECT *
-     FROM ranked_ladder
+     FROM filtered_ladder
      ORDER BY rank ASC
      LIMIT ? OFFSET ?`,
     [PLACEMENT_MATCH_COUNT, ...searchParams, normalizedLimit, offset]
@@ -1571,7 +1558,7 @@ async function queryRankedLeaderboardRows({
   const [[countRow]] = await pool.query(
     `${baseCte}
      SELECT COUNT(*) AS totalCount
-     FROM ranked_ladder`,
+     FROM filtered_ladder`,
     [PLACEMENT_MATCH_COUNT, ...searchParams]
   )
 
@@ -1665,22 +1652,28 @@ export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_P
   }
 }
 
+export class RoundAlreadySubmittedError extends Error {
+  constructor() {
+    super("This round has already been submitted.")
+    this.name = "RoundAlreadySubmittedError"
+    this.status = 409
+  }
+}
+
+// Round completion only adds what the round earned. Coins and XP are applied as
+// deltas to the row locked inside this transaction, and inventory, equipment,
+// loadouts and walkthrough state are left alone, so a purchase, equip or
+// loadout edit that commits while the round is being validated is never undone.
 export async function completeUserRound({
   userId,
-  coins,
-  levelXp,
+  earnedCoins = 0,
+  earnedXp = 0,
+  maxCoins = Number.MAX_SAFE_INTEGER,
+  maxXp = Number.MAX_SAFE_INTEGER,
+  roundTokenId = null,
   rankMmr,
   rankedState,
-  ownedItemIds,
-  equippedButtonSkinId,
-  equippedArenaThemeId,
-  equippedProfileImageId,
-  activeLoadoutId,
-  savedLoadouts,
-  selectedModeId,
   unlockedAchievementIds,
-  buildWalkthrough,
-  seenUnlockPartIds,
   historyEntry,
 }) {
   const connection = await pool.getConnection()
@@ -1693,9 +1686,20 @@ export async function completeUserRound({
       throw new Error(`User ${userId} was not found.`)
     }
 
-    const buttonSkin = getMappedShopItemById(equippedButtonSkinId)
-    const arenaTheme = getMappedShopItemById(equippedArenaThemeId)
-    const profileImage = getMappedShopItemById(equippedProfileImageId)
+    if (roundTokenId) {
+      const [claim] = await connection.execute(
+        `INSERT INTO consumed_round_tokens (token_id, user_id)
+         VALUES (?, ?)
+         ON CONFLICT (token_id) DO NOTHING`,
+        [String(roundTokenId), userId]
+      )
+      if (!claim.affectedRows) {
+        throw new RoundAlreadySubmittedError()
+      }
+    }
+
+    const coins = Math.min(maxCoins, Math.max(0, (Number(userRow.coins) || 0) + (Number(earnedCoins) || 0)))
+    const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + (Number(earnedXp) || 0)))
 
     await connection.execute(
       `UPDATE users
@@ -1704,13 +1708,7 @@ export async function completeUserRound({
            mmr = ?,
            rank_system_version = ?,
            placement_matches_played = ?,
-           demotion_protection_rounds = ?,
-           current_button_skin_id = ?,
-           current_arena_theme_id = ?,
-           current_profile_theme_id = ?,
-           active_loadout_slot = ?,
-           build_walkthrough_status = ?,
-           seen_unlock_part_ids_json = ?
+           demotion_protection_rounds = ?
        WHERE id = ?`,
       [
         coins,
@@ -1719,12 +1717,6 @@ export async function completeUserRound({
         rankedState.rankSystemVersion,
         rankedState.placementMatchesPlayed,
         rankedState.demotionProtectionRounds,
-        buttonSkin?.dbItemId ?? null,
-        arenaTheme?.dbItemId ?? null,
-        profileImage?.dbItemId ?? null,
-        activeLoadoutId,
-        buildWalkthrough.status,
-        JSON.stringify(normalizeSeenUnlockPartIds(seenUnlockPartIds)),
         userId,
       ]
     )
@@ -1780,20 +1772,10 @@ export async function completeUserRound({
       levelXp,
       rankMmr,
       rankedState,
-      ownedItemIds,
-      equippedButtonSkinId,
-      equippedArenaThemeId,
-      equippedProfileImageId,
-      activeLoadoutId,
-      savedLoadouts,
-      selectedModeId,
       unlockedAchievementIds,
-      buildWalkthrough,
       roundHistory: [insertedHistoryEntry],
     })
 
-    await syncUserCollection(connection, userId, normalizedProgress)
-    await syncUserLoadouts(connection, userId, normalizedProgress)
     await syncUnlockedAchievements(connection, userId, normalizedProgress)
 
     await connection.commit()
@@ -1830,15 +1812,13 @@ export async function saveUserProgress({ userId, ...progress }) {
     const arenaTheme = getMappedShopItemById(normalizedProgress.equippedArenaThemeId)
     const profileImage = getMappedShopItemById(normalizedProgress.equippedProfileImageId)
 
+    // Only client-owned preferences are written here. Coins, XP, rank and the
+    // owned-item collection are server-owned (rounds and purchases change them in
+    // their own transactions), so writing them back from the caller's earlier
+    // read could undo a purchase or a round that committed in between.
     await connection.execute(
       `UPDATE users
-       SET coins = ?,
-           xp = ?,
-           mmr = ?,
-           rank_system_version = ?,
-           placement_matches_played = ?,
-           demotion_protection_rounds = ?,
-           current_button_skin_id = ?,
+       SET current_button_skin_id = ?,
            current_arena_theme_id = ?,
            current_profile_theme_id = ?,
            active_loadout_slot = ?,
@@ -1846,12 +1826,6 @@ export async function saveUserProgress({ userId, ...progress }) {
            seen_unlock_part_ids_json = ?
        WHERE id = ?`,
       [
-        normalizedProgress.coins,
-        normalizedProgress.levelXp,
-        normalizedProgress.rankMmr,
-        normalizedProgress.rankedState.rankSystemVersion,
-        normalizedProgress.rankedState.placementMatchesPlayed,
-        normalizedProgress.rankedState.demotionProtectionRounds,
         buttonSkin?.dbItemId ?? null,
         arenaTheme?.dbItemId ?? null,
         profileImage?.dbItemId ?? null,
@@ -1862,7 +1836,6 @@ export async function saveUserProgress({ userId, ...progress }) {
       ]
     )
 
-    await syncUserCollection(connection, userId, normalizedProgress)
     await syncUserLoadouts(connection, userId, normalizedProgress)
     await syncUnlockedAchievements(connection, userId, normalizedProgress)
 
@@ -1943,6 +1916,7 @@ function mapChallengeRow(row = {}) {
     respondedAt: row.respondedAt ?? null,
     completedAt: row.completedAt ?? null,
     replayScore: toNonNegativeNumber(row.replayScore, 0),
+    replaySeed: row.replaySeed === null || row.replaySeed === undefined ? null : Number(row.replaySeed) >>> 0,
     opponentReplayScore: row.opponentReplayScore === null || row.opponentReplayScore === undefined
       ? null
       : toNonNegativeNumber(row.opponentReplayScore, 0),
@@ -1974,10 +1948,8 @@ export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound =
   }
 
   const normalizedMmr = toNonNegativeNumber(rankMmr, 0)
-  const rewardTier = Math.min(
-    5,
-    Math.floor(normalizedMmr / 400)
-  )
+  // Same thresholds the Ladder shows (src/utils/seasonUtils.js).
+  const rewardTier = getSeasonRewardTier(normalizedMmr).tier
 
   await pool.execute(
     `INSERT INTO user_season_stats (user_id, season_id, ranked_rounds, peak_mmr, reward_tier)
@@ -2183,6 +2155,7 @@ export async function findChallengeById(challengeId) {
        c.responded_at AS respondedAt,
        c.completed_at AS completedAt,
        replay.score AS replayScore,
+       replay.seed AS replaySeed,
        opponent_replay.score AS opponentReplayScore
      FROM challenges c
      INNER JOIN round_replays replay
@@ -2256,21 +2229,28 @@ export async function respondToChallenge({
   }
 
   const nextStatus = action === "accept" ? "accepted" : "declined"
-  await pool.execute(
+  // Conditional on the status read above, so overlapping requests cannot both
+  // apply (for example a late decline overwriting an accepted or finished duel).
+  const [result] = await pool.execute(
     `UPDATE challenges
      SET status = ?, responded_at = CURRENT_TIMESTAMP
-     WHERE id = ?`,
-    [nextStatus, challengeId]
+     WHERE id = ? AND opponent_user_id = ? AND status = 'pending'`,
+    [nextStatus, challengeId, userId]
   )
+  if (!result.affectedRows) {
+    return { ok: false, reason: "Challenge is no longer pending." }
+  }
 
   return { ok: true, challenge: await findChallengeById(challengeId) }
 }
 
+// The opponent's score always comes from their stored replay, which must be
+// their own run of the challenged ghost (same mode and seed). The status change
+// is conditional, so a duel can only be completed once.
 export async function completeChallenge({
   challengeId,
   userId,
   opponentReplayId,
-  opponentScore = 0,
 } = {}) {
   const challenge = await findChallengeById(challengeId)
   if (!challenge) {
@@ -2283,17 +2263,33 @@ export async function completeChallenge({
     return { ok: false, reason: "Challenge must be accepted before completing." }
   }
 
-  const challengerWon = toNonNegativeNumber(challenge.replayScore, 0) > toNonNegativeNumber(opponentScore, 0)
+  const opponentReplay = await findReplayById(opponentReplayId)
+  if (
+    !opponentReplay
+    || opponentReplay.id === challenge.replayId
+    || Number(opponentReplay.userId) !== Number(userId)
+    || opponentReplay.modeId !== challenge.modeId
+    || challenge.replaySeed === null
+    || (Number(opponentReplay.seed) >>> 0) !== challenge.replaySeed
+  ) {
+    return { ok: false, reason: "That run does not race this challenge's ghost." }
+  }
 
-  await pool.execute(
+  const opponentScore = toNonNegativeNumber(opponentReplay.score, 0)
+  const challengerWon = toNonNegativeNumber(challenge.replayScore, 0) > opponentScore
+
+  const [result] = await pool.execute(
     `UPDATE challenges
      SET status = 'completed',
          opponent_replay_id = ?,
          challenger_won = ?,
          completed_at = CURRENT_TIMESTAMP
-     WHERE id = ?`,
-    [opponentReplayId, challengerWon, challengeId]
+     WHERE id = ? AND status = 'accepted'`,
+    [opponentReplay.id, challengerWon, challengeId]
   )
+  if (!result.affectedRows) {
+    return { ok: false, reason: "Challenge was already completed." }
+  }
 
   return { ok: true, challenge: await findChallengeById(challengeId), challengerWon }
 }

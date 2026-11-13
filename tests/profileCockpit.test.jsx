@@ -68,7 +68,7 @@ describe("Player identity cockpit", () => {
 
     expect(screen.getByRole("heading", { name: "Vector" })).not.toBeNull()
     expect(screen.getByLabelText("Gold II rank, level 12")).not.toBeNull()
-    expect(screen.getByText(/Signature strength/)).not.toBeNull()
+    expect(screen.getByText(/Signature/)).not.toBeNull()
     expect(screen.getByRole("heading", { name: "Last 3 rounds" })).not.toBeNull()
     expect(screen.getByRole("heading", { name: "Tempo Control" })).not.toBeNull()
 

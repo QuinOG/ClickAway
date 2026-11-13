@@ -10,7 +10,7 @@ import {
   UserFocus,
   X,
 } from "@phosphor-icons/react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
@@ -170,7 +170,13 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   const [sendSuccess, setSendSuccess] = useState("")
   const [isSending, setIsSending] = useState(false)
 
+  // Only the newest request may update the list (switching filters quickly).
+  const requestGenerationRef = useRef(0)
   const loadChallenges = useCallback(async () => {
+    const generation = requestGenerationRef.current + 1
+    requestGenerationRef.current = generation
+    const isCurrent = () => requestGenerationRef.current === generation
+
     setIsLoading(true)
     setLoadError("")
     try {
@@ -178,16 +184,18 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
         fetchChallenges({ role: filter === "all" ? "all" : filter }),
         fetchUserReplays({ limit: 10 }),
       ])
+      if (!isCurrent()) return false
       setChallenges(Array.isArray(challengeResponse?.challenges) ? challengeResponse.challenges : [])
       setReplays(Array.isArray(replayResponse?.replays) ? replayResponse.replays : [])
       return true
     } catch (error) {
+      if (!isCurrent()) return false
       setChallenges([])
       setReplays([])
       setLoadError(error.message || "Unable to load challenges.")
       return false
     } finally {
-      setIsLoading(false)
+      if (isCurrent()) setIsLoading(false)
     }
   }, [filter])
 

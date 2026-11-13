@@ -14,7 +14,9 @@ export function buildHistorySnapshot(roundHistory = []) {
   const rows = Array.isArray(roundHistory) ? roundHistory : []
   const recentRounds = rows.slice(0, 10)
   const rankedRounds = rows.filter((round) => isRankedModeEntry(round))
-  const recentRankedRounds = rankedRounds.slice(0, 10)
+  // Ranked rounds inside the same recent window, so "Net RR" covers the same
+  // "Last N rounds" the strip is labelled with.
+  const recentRankedRounds = recentRounds.filter((round) => isRankedModeEntry(round))
 
   let bestScore = 0
   let bestStreak = 0

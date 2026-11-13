@@ -1,4 +1,6 @@
 // Shared 1-10 ratings for a build's round rules (spec sheet, lobby build card).
+// powerupAwardMultiplier scales the hits needed per charge, so lower is faster
+// and rates higher.
 export function getRating(value, low, high, invert = false) {
   const ratio = Math.min(1, Math.max(0, (Number(value) - low) / (high - low)))
   return Math.max(1, Math.round((invert ? 1 - ratio : ratio) * 10))
@@ -16,7 +18,7 @@ export function getProfileStats(roundRules) {
     { key: "shrink", label: "Shrink control", rating: getRating(roundRules.shrinkFactor, 0.9, 1), value: `x${Number(roundRules.shrinkFactor).toFixed(2)}` },
     { key: "combo", label: "Combo speed", rating: getRating(roundRules.comboStep, 2, 9, true), value: `every ${roundRules.comboStep}` },
     { key: "miss", label: "Miss forgiveness", rating: getRating(roundRules.missPenalty, 0, 5, true), value: roundRules.missPenalty > 0 ? `-${roundRules.missPenalty}` : "0" },
-    { key: "charge", label: "Charge rate", rating: getRating(roundRules.powerupAwardMultiplier, 0.5, 1.6), value: `x${Number(roundRules.powerupAwardMultiplier).toFixed(2)}` },
+    { key: "charge", label: "Charge rate", rating: getRating(roundRules.powerupAwardMultiplier, 0.5, 1.6, true), value: `x${Number(roundRules.powerupAwardMultiplier).toFixed(2)}` },
     { key: "payout", label: "Score payout", rating: getRating(roundRules.scoreMultiplier, 0.7, 1.3), value: formatPayout(roundRules.scoreMultiplier) },
   ]
 }

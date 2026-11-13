@@ -40,7 +40,9 @@ describe("Shop item state machine", () => {
 
     expect(card.dataset.shopState).toBe(state)
     expect(card.classList.contains(`shopItemCard-${state}`)).toBe(true)
-    expect(card.querySelector(".shopItemStateTag svg")).not.toBeNull()
+    // The equipped card shows its state through the Equipped button, not a tag.
+    if (state === "equipped") expect(card.querySelector(".shopItemStateTag")).toBeNull()
+    else expect(card.querySelector(".shopItemStateTag svg")).not.toBeNull()
   })
 
   test("selection is independent from ownership state and drives the preview control", () => {
@@ -76,7 +78,6 @@ describe("Shop preview-to-action continuity", () => {
     )
 
     expect(screen.getByLabelText(/Selected preview with Test Skin/)).not.toBeNull()
-    expect(screen.getByRole("progressbar", { name: "Collection progress" }).getAttribute("aria-valuenow")).toBe("3")
 
     await user.click(screen.getByRole("button", { name: /Unlock for 100 coins/ }))
     expect(onPurchase).toHaveBeenCalledWith(baseItem)

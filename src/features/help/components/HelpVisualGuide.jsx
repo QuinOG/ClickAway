@@ -114,7 +114,7 @@ export function HelpRoundStrip() {
 }
 
 const PROGRESSION_CARDS = [
-  { id: "xp", tone: "combo", title: "Earn XP", art: "xp", text: "Every round pays XP. Levels unlock powers and Armory parts." },
+  { id: "xp", tone: "combo", title: "Earn XP", art: "xp", text: "Casual and Ranked rounds pay XP. Levels unlock powers and Armory parts." },
   { id: "coins", tone: "hit", title: "Spend coins", art: "coin-shop", text: "Casual and Ranked pay coins. Spend them on skins in the Shop." },
   { id: "rank", tone: "hit", title: "Climb ranks", art: "rank", text: "Ranked wins add RR. Fill the bar to move up a division." },
 ]

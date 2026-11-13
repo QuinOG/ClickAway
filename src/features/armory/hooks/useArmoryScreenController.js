@@ -139,7 +139,12 @@ export function useArmoryScreenController({
 
   useEffect(() => {
     setNameDraft(activeLoadout?.name ?? "")
+  }, [activeLoadout?.name])
 
+  // Switching to a different loadout starts on key 1. Edits to the same loadout
+  // (installs, swaps, renames) keep the key being edited.
+  const activeLoadoutKey = activeLoadout?.id ?? null
+  useEffect(() => {
     // Skip the initial run so a ?powerSlot= deep link isn't clobbered on mount.
     if (!hasSyncedActiveLoadoutRef.current) {
       hasSyncedActiveLoadoutRef.current = true
@@ -147,7 +152,7 @@ export function useArmoryScreenController({
     }
 
     setEditingPowerSlotIndex(0)
-  }, [activeLoadout])
+  }, [activeLoadoutKey])
 
   const selectedModuleSlot = useMemo(
     () => MODULE_SLOTS.find((slot) => slot.id === activeModuleSlotId) ?? MODULE_SLOTS[0] ?? null,

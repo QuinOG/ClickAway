@@ -3,14 +3,11 @@ import {
   normalizeLoadoutSnapshotForLevel,
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
-import { replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
+import { MIN_CLICK_INTERVAL_MS, replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
 import { validateRoundGeometry } from "../src/game/engine/roundGeometry.js"
 import { calculateRoundCoins } from "../src/utils/roundRewards.js"
 import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
-
-// Minimum milliseconds between any two clicks — below this is inhuman/scripted.
-const MIN_CLICK_INTERVAL_MS = 80
 
 // Server-only safety ceiling on how many click events a single round submission
 // may contain. Independent of the elapsed-time check below — this just bounds
@@ -79,15 +76,34 @@ function validateEventStream(events, mode) {
     return { valid: false, reason: "Too many powerup events." }
   }
 
-  // A round can't legitimately span longer than the mode's timer plus the most
-  // generous time-extension powerup ceiling. Without this, a client could submit
-  // a full-length event stream compressed into (or stretched past) a shorter
-  // window than the timer allows and inflate score/coins/XP/rank.
-  if (mode.isTimedRound && events.length > 0) {
-    const maxElapsedMs = mode.maxTimeBufferSeconds * 1000
-    const elapsedMs = events[events.length - 1].t
-    if (elapsedMs > maxElapsedMs) {
-      return { valid: false, reason: "Round duration exceeds the mode's time limit." }
+  return { valid: true }
+}
+
+// The client's timer starts at durationSeconds; each Time Boost adds 2 seconds
+// to the time remaining, capped at maxTimeBufferSeconds remaining. Replaying that
+// rule gives the latest legal moment for every event, so a round cannot run past
+// its timer, and legitimately boosted rounds are not rejected.
+const TIME_BOOST_MS = 2000
+const ROUND_DEADLINE_GRACE_MS = 1000
+
+function validateRoundDeadline(roundRules, mode, events) {
+  if (!mode.isTimedRound) return { valid: true }
+
+  const bufferMs = (Number(roundRules.maxTimeBufferSeconds ?? mode.maxTimeBufferSeconds) || 0) * 1000
+  let deadlineMs = (Number(roundRules.durationSeconds ?? mode.durationSeconds) || 0) * 1000
+  const timeBoostIds = new Set(
+    (Array.isArray(roundRules.equippedPowerups) ? roundRules.equippedPowerups : [])
+      .filter((powerup) => powerup?.effectType === "time_boost")
+      .map((powerup) => powerup.id)
+  )
+
+  for (const event of events) {
+    if (event.t > deadlineMs + ROUND_DEADLINE_GRACE_MS) {
+      return { valid: false, reason: "Round events continue past the timer." }
+    }
+    if (event.type === ROUND_EVENT_TYPES.POWERUP && timeBoostIds.has(event.powerupId)) {
+      const remainingMs = Math.max(0, deadlineMs - event.t)
+      deadlineMs = event.t + Math.min(bufferMs, remainingMs + TIME_BOOST_MS)
     }
   }
 
@@ -134,6 +150,9 @@ export function simulateRound(events, modeId, {
 
   const replay = replayRoundEvents(roundRules, events)
   if (!replay.valid) return replay
+
+  const deadlineCheck = validateRoundDeadline(roundRules, mode, events)
+  if (!deadlineCheck.valid) return deadlineCheck
 
   if (mode.allowsRankProgression) {
     if (roundSeed === null || roundSeed === undefined) {

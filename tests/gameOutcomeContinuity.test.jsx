@@ -61,7 +61,7 @@ describe("B3 outcome and reward continuity", () => {
     })
 
     expect(screen.getByRole("heading", { name: "Round Complete" })).not.toBeNull()
-    expect(screen.getByRole("img", { name: "Hit signature: 24 hits and 3 misses" })).not.toBeNull()
+    expect(screen.getByText("24 hits · 3 misses")).not.toBeNull()
     expect(screen.getByLabelText("Personal best comparison").textContent).toContain("New best by 18")
     expect(screen.queryByRole("heading", { name: "Rewards Settled" })).toBeNull()
     expect(screen.getByLabelText("Round rewards").textContent).toContain("+18")

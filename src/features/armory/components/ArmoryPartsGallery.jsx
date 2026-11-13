@@ -131,9 +131,17 @@ export default function ArmoryPartsGallery({
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
   // Roving tabindex: one gallery tab stop; arrows walk the unlocked parts.
   const [rovingPartId, setRovingPartId] = useState(null)
-  const tabStopPartId = rovingPartId ?? installedPartId
 
   const unlockedParts = parts.filter((part) => playerLevel >= part.unlockLevel)
+  // The gallery is reused across lanes, so a remembered part may not be in this
+  // lane: fall back to the installed part, then the first unlocked one, so one
+  // card always stays reachable by Tab.
+  const isUnlockedHere = (partId) => unlockedParts.some((part) => part.id === partId)
+  const tabStopPartId = isUnlockedHere(rovingPartId)
+    ? rovingPartId
+    : isUnlockedHere(installedPartId)
+      ? installedPartId
+      : unlockedParts[0]?.id ?? null
   // One candidate is always featured large with its trade-off: whatever the
   // player points at, else the first unlocked part they could swap in.
   const [hoveredPartId, setHoveredPartId] = useState(null)
@@ -259,7 +267,6 @@ export default function ArmoryPartsGallery({
           <button
             type="button"
             className="primaryButton armoryPartFeatureInstall"
-            tabIndex={-1}
             onClick={() => installPart(featuredPart.id)}
           >
             Install {featuredPart.label}

@@ -16,7 +16,7 @@ import {
 import { getModeLabelFromHistoryEntry, isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
-import { ArmoryIcon, BoltIcon, FlameIcon, StopwatchIcon, TargetIcon, TrophyIcon } from "../components/art/GameIcons.jsx"
+import { ArmoryIcon, FlameIcon, StopwatchIcon, TargetIcon, TrophyIcon } from "../components/art/GameIcons.jsx"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankImageSrc,
@@ -72,16 +72,10 @@ function getRankMetaText(rankProgress = {}) {
 function buildRecentForm(roundHistory = []) {
   const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
   const scores = recentRounds.map((round) => toNumber(round.score))
-  const maxScore = Math.max(...scores, 1)
-  const minScore = scores.length > 0 ? Math.min(...scores) : 0
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
     score: scores[index],
     mode: getModeLabelFromHistoryEntry(round),
-    receiptNumber: Math.min(roundHistory.length, 7) - index,
-    height: Math.max(12, Math.round((scores[index] / maxScore) * 100)),
-    // 0.2–1: where this run sits between the worst and best of the window.
-    rise: 0.2 + (maxScore > minScore ? ((scores[index] - minScore) / (maxScore - minScore)) * 0.8 : 0.8),
     rankDelta: toNumber(round.rankDelta),
     isRanked: isRankedModeEntry(round),
   }))
@@ -210,8 +204,9 @@ export default function ProfilePage({
       (achievement) => achievement.categoryKey === selectedCategoryKey && achievement.type === "metric"
     )
 
-  const profileStats = buildProfileStatsFromLifetime(lifetimeStats, roundHistory)
-  const reactionStats = buildCareerReactionStatsFromLifetime(lifetimeStats)
+  const safeLifetimeStats = lifetimeStats ?? {}
+  const profileStats = buildProfileStatsFromLifetime(safeLifetimeStats, roundHistory)
+  const reactionStats = buildCareerReactionStatsFromLifetime(safeLifetimeStats)
   const recentForm = buildRecentForm(roundHistory)
   const strongestTrait = getStrongestTrait(profileStats, reactionStats)
   const signatureBuild = (Array.isArray(loadoutStats) ? loadoutStats : [])

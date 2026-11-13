@@ -30,6 +30,10 @@ function toCount(value) {
  * randomness. Event times are caller-provided milliseconds since round start,
  * so replaying the same rules + event sequence always produces the same totals.
  */
+// Minimum milliseconds between two recorded clicks. The client drops a click
+// that comes sooner than this, and the server rejects streams that contain one.
+export const MIN_CLICK_INTERVAL_MS = 80
+
 export function createRoundSimulation(roundRules = {}) {
   const basePointsPerHit = Number(roundRules.basePointsPerHit) || 1
   const comboStep = Math.max(1, Number(roundRules.comboStep) || 5)

@@ -386,7 +386,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(within(instruments).getByText("100px")).not.toBeNull()
     // The featured candidate is previewed beside the current value, so the
     // shrink pace can appear twice (current and "→ candidate").
-    expect(within(instruments).getAllByText(/% \/ hit/).length).toBeGreaterThan(0)
+    expect(within(instruments).getAllByText(/%\s*\/\s*hit/).length).toBeGreaterThan(0)
   })
 
   test("part cards expose available, installed, and locked states", async () => {

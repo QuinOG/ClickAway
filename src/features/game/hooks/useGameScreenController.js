@@ -37,7 +37,7 @@ import {
   getRandomPosition,
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
-import { createRoundSimulation } from "../../../game/engine/roundEngine.js"
+import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
@@ -121,6 +121,19 @@ function buildPowerupChargeState(equippedPowerups = [], startingCharges = 0) {
 
 function getResolvedLoadout(savedLoadouts = [], activeLoadoutId = "", activeLoadout = null) {
   return activeLoadout ?? getLoadoutById(savedLoadouts, activeLoadoutId)
+}
+
+
+// A second click inside MIN_CLICK_INTERVAL_MS (a double-click or bounce) is
+// ignored, matching the server, which would otherwise reject the whole round.
+function isTooSoonAfterLastClick(events, eventTimeMs) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index]
+    if (event.type === "hit" || event.type === "miss") {
+      return eventTimeMs - event.t < MIN_CLICK_INTERVAL_MS
+    }
+  }
+  return false
 }
 
 export function useGameScreenController({
@@ -609,8 +622,13 @@ export function useGameScreenController({
     roundTokenRef.current = null
     arenaDimensionsRef.current = null
     const activeGhostReplay = ghostReplayRef.current
-    const requiresRoundToken = nextRoundMode.allowsRankProgression === true
-      && !activeGhostReplay?.seed
+    // Reward-bearing rounds wait for a server token: without one the server
+    // records the round but pays nothing.
+    const requiresRoundToken = (
+      nextRoundMode.allowsRankProgression === true
+      || nextRoundMode.allowsCoinRewards === true
+      || nextRoundMode.allowsLevelProgression === true
+    ) && !activeGhostReplay?.seed
 
     const beginCountdown = () => {
       setRoundStartBestScore(playerBestScore)
@@ -640,8 +658,28 @@ export function useGameScreenController({
     setGhostScore(0)
 
     if (activeGhostReplay?.seed) {
-      applyRoundSeed(activeGhostReplay.seed)
-      beginCountdown()
+      // A duel race asks for a token bound to the challenge, so the run is stored
+      // as a replay and settles the duel. Without one it still runs, unrewarded.
+      const duelChallengeId = challengeIdRef.current
+      if (!duelChallengeId) {
+        applyRoundSeed(activeGhostReplay.seed)
+        beginCountdown()
+        return
+      }
+
+      setRoundStartStatus("requesting")
+      setPhase(ROUND_PHASE.READY)
+      requestRoundStart(nextModeId, { challengeId: duelChallengeId })
+        .then(({ roundToken, seed }) => {
+          if (roundNonceRef.current !== startedRoundNonce) return
+          applyRoundSeed(roundToken ? seed : activeGhostReplay.seed, roundToken ?? null)
+          beginCountdown()
+        })
+        .catch(() => {
+          if (roundNonceRef.current !== startedRoundNonce) return
+          applyRoundSeed(activeGhostReplay.seed)
+          beginCountdown()
+        })
       return
     }
 
@@ -653,7 +691,7 @@ export function useGameScreenController({
           if (roundNonceRef.current !== startedRoundNonce) return
           if (!roundToken) {
             setRoundStartStatus("error")
-            setRoundStartError("The Ranked server did not issue a round token. Please try again.")
+            setRoundStartError("The server did not issue a round token. Please try again.")
             return
           }
           applyRoundSeed(seed, roundToken)
@@ -663,7 +701,7 @@ export function useGameScreenController({
           if (roundNonceRef.current !== startedRoundNonce) return
           setRoundStartStatus("error")
           setRoundStartError(
-            error?.message || "Unable to reach the Ranked server. Check your connection and try again."
+            error?.message || "Unable to reach the server. Check your connection and try again."
           )
         })
       return
@@ -896,6 +934,8 @@ export function useGameScreenController({
     const arenaElement = arenaRef.current
     const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
 
+    if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
+
     roundEventsRef.current.push({
       type: "hit",
       t: eventTimeMs,
@@ -985,6 +1025,8 @@ export function useGameScreenController({
     const arenaElement = arenaRef.current
     const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
 
+    if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
+
     roundEventsRef.current.push({
       type: "miss",
       t: eventTimeMs,
@@ -1002,10 +1044,14 @@ export function useGameScreenController({
       return
     }
 
+    // Second Wind can absorb the streak reset, so read the outcome, not the old streak.
+    const streakBroken = streak > 0 && result.streak === 0
+    const streakSaved = streak > 0 && result.streak > 0
+
     triggerScreenShake()
     emitFeedback?.(FEEDBACK_EVENTS.MISS, { eventId: feedbackEventId })
     // A miss supersedes any streak celebration still on screen.
-    if (streak > 0) {
+    if (streakBroken) {
       setClickFeedbackItems((currentItems) => currentItems.filter((item) => !String(item.type).includes("milestone")))
     }
 
@@ -1014,8 +1060,8 @@ export function useGameScreenController({
         event.clientX,
         event.clientY,
         `-${result.penaltyApplied}`,
-        streak > 0 ? "streakBreak" : "miss",
-        streak > 0 ? `${streak} streak lost` : null
+        streakBroken ? "streakBreak" : "miss",
+        streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
       )
       return
     }
@@ -1024,8 +1070,8 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       "Miss",
-      streak > 0 ? "streakBreak" : "miss",
-      streak > 0 ? `${streak} streak lost` : null
+      streakBroken ? "streakBreak" : "miss",
+      streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
     )
   }, [
     addClickFeedback,
