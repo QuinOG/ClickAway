@@ -5203,3 +5203,17 @@
 .profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isUnlocked + .isLocked) .achievementMedal { filter: grayscale(1) brightness(0.9) contrast(1.12) drop-shadow(0 -1px 0 rgb(220 232 245 / 45%)) drop-shadow(0 2px 0 #02050b) drop-shadow(0 4px 4px rgb(0 0 0 / 55%)); }
 .profilePageCenter .profileAchievementsSection .achievementTile.isLocked .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: brightness(0.92); }
 .profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isFeaturedBanner) .achievementMedalLock { right: -14px; bottom: -8px; }
+
+/* ---- Round 56: History outcome seals (win / loss / no stakes) --------- */
+.historyRoundDeck .historyRoundCardOutcome::before { content: ''; position: absolute; left: 50%; top: 50%; width: 104px; height: 104px; transform: translate(-50%, -50%); background: center / contain no-repeat; filter: drop-shadow(0 3px 2px rgb(2 5 10 / 70%)); z-index: 0; pointer-events: none; }
+.historyRoundDeck .historyRoundCardOutcome:has(.isPositive)::before { background-image: url('/art/history/seal-victory.png'); }
+.historyRoundDeck .historyRoundCardOutcome:has(.isNegative)::before { background-image: url('/art/history/seal-defeat.png'); }
+.historyRoundDeck .historyRoundCardOutcome:has(.isNeutral)::before { background-image: url('/art/history/seal-even.png'); width: 92px; height: 92px; opacity: .85; }
+.historyRoundDeck .historyRoundCardOutcome > * { position: relative; z-index: 1; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge { transform: none; border: 0 !important; border-radius: 4px !important; padding: 3px 8px !important; background: #070d18 !important; box-shadow: inset 0 1px 2px #000, 0 0 0 1px rgb(255 255 255 / 10%) !important; opacity: 1; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isPositive { color: #8ff5c6; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNegative { color: #ffb4a6; }
+.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNeutral { color: #c9d6de; }
+.historyRoundDeck .historyRoundCardOutcome small { padding: 1px 5px; border-radius: 3px; background: #070d18e6; }
+.historyRoundDeck .historyRoundCard:has(.historyRankBadge.isPositive)::after { border-right-color: #c99a3a !important; }
+.historyRoundDeck .historyRoundCard:has(.historyRankBadge.isNegative)::after { border-right: 3px solid #7a2a24 !important; }
