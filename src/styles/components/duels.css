@@ -352,3 +352,13 @@
     .duelPage .duelCommandSurface .challengeTargetLine { margin: 6px 0; }
     .duelPage .duelCommandSurface .challengeVersusSide { width: 60px; height: 60px; }
 }
+
+/* Feature trial 003: says where a pre-filled rival came from. */
+.duelLadderRivalNote {
+    margin: 4px 0 0;
+    color: var(--ca-color-ink-muted);
+    font-size: var(--ca-type-body-sm);
+    text-align: center;
+}
+.duelLadderRivalNote:focus { outline: none; }
+.duelLadderRivalNote { color: var(--ca-color-accent-soft); font-weight: 600; }

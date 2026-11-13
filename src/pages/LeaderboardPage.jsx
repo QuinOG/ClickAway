@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Crown, Crosshair, MagnifyingGlass, Trophy } from "@phosphor-icons/react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { Crown, Crosshair, MagnifyingGlass, Sword, Trophy } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
 import { CrestIcon, CrownIcon } from "../components/art/GameIcons.jsx"
@@ -198,7 +198,7 @@ function LeaderboardTableSkeleton() {
 
 function formatLadderStat(player, key) {
   if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
-  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "�"
+  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
   if (key === "mmr") return formatNumericValue(player.mmr)
   return formatNumericValue(player[key])
 }
@@ -313,7 +313,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
-      <p className="leaderboardStandingScope">Ranked rounds only � this season</p>
+      <p className="leaderboardStandingScope">Ranked rounds only · this season</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -344,7 +344,7 @@ function SeasonBanner({ season = null }) {
       <div className="leaderboardSeasonMeter">
         <p className="leaderboardSeasonMeta">
           {season.daysRemaining > 0
-            ? <><strong>{season.daysRemaining} days</strong> remaining � {season.progressPercent}% complete</>
+            ? <><strong>{season.daysRemaining} days</strong> remaining · {season.progressPercent}% complete</>
             : "Season ending soon"}
         </p>
         <div className="leaderboardSeasonProgress" aria-hidden="true">
@@ -506,7 +506,7 @@ function NearMeSection({ rows = [], selfRank = null, mmrGap = 0 }) {
             ? `Your global rank is #${formatNumericValue(selfRank)}`
             : "Your rank window"}
           {mmrGap > 0
-            ? ` � ${formatNumericValue(mmrGap)} RR to the next spot above`
+            ? ` · ${formatNumericValue(mmrGap)} RR to the next spot above`
             : ""}
         </p>
       </div>
@@ -549,11 +549,18 @@ export default function LeaderboardPage({
   const [board, setBoard] = useState("mmr")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
-  const [totalCount, setTotalCount] = useState(0)
+  // Size of the whole Ladder, kept from the last unsearched load so a search with no
+  // matches doesn't make the field look empty.
+  const [fieldTotalCount, setFieldTotalCount] = useState(0)
+  // The search the shown rows belong to; messages use this rather than the box text,
+  // which changes before new results arrive.
+  const [resultsQuery, setResultsQuery] = useState("")
   const [selfRank, setSelfRank] = useState(null)
   const [season, setSeason] = useState(null)
   const [searchInput, setSearchInput] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  // Only the newest request may update the page, so a slow older search can't replace newer results.
+  const latestLoadRef = useRef(0)
   const [view, setView] = useState("top")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
@@ -575,6 +582,9 @@ export default function LeaderboardPage({
       return false
     }
 
+    const loadId = latestLoadRef.current + 1
+    latestLoadRef.current = loadId
+    const isLatest = () => latestLoadRef.current === loadId
     setIsLoading(true)
     setLoadError("")
 
@@ -585,18 +595,23 @@ export default function LeaderboardPage({
         search: searchQuery,
         view,
       })
+      if (!isLatest()) return false
       setLeaderboardRows(response.rows)
       setTotalPages(response.totalPages)
-      setTotalCount(response.totalCount)
-      setSelfRank(response.selfRank)
+      if (!searchQuery) setFieldTotalCount(response.totalCount)
+      setResultsQuery(searchQuery)
+      // A search can leave you out of the results, and the server then omits your rank.
+      // Keep your known rank instead of telling a placed player they are unranked.
+      if (!searchQuery || response.selfRank != null) setSelfRank(response.selfRank)
       setSeason(response.season)
       return true
     } catch (error) {
+      if (!isLatest()) return false
       setLeaderboardRows([])
       setLoadError(error.message || "Unable to load leaderboard.")
       return false
     } finally {
-      setIsLoading(false)
+      if (isLatest()) setIsLoading(false)
     }
   }, [board, isAuthed, page, searchQuery, view])
 
@@ -703,7 +718,7 @@ export default function LeaderboardPage({
           status={(
             <span className="leaderboardFieldCount">
               <Trophy weight="fill" aria-hidden="true" />
-              <strong>{formatNumericValue(totalCount)}</strong>
+              <strong>{formatNumericValue(fieldTotalCount)}</strong>
               <small>ranked</small>
             </span>
           )}
@@ -725,7 +740,7 @@ export default function LeaderboardPage({
             currentLeaderboardStats={currentLeaderboardStats}
             rankedRounds={rankedRounds.length}
             selfRank={selfRank}
-            totalCount={totalCount}
+            totalCount={fieldTotalCount}
             season={season}
           />
         </div>
@@ -768,10 +783,32 @@ export default function LeaderboardPage({
         ) : null}
 
         {!isLoading && !loadError && sortedRows.length === 0 ? (
-          <div className="leaderboardStatusCard" role="status" aria-live="polite">
-            <p className="leaderboardStatusTitle">No ranked players yet.</p>
-            <p className="muted">Finish your placement matches to start populating the ladder.</p>
-          </div>
+          resultsQuery ? (
+            // An empty search result is not an empty Ladder: say what was searched and offer a way back.
+            // Around Me only searches the players near your rank, so it says so and offers the full Ladder.
+            <div className="leaderboardStatusCard leaderboardNoMatch" role="status" aria-live="polite">
+              <p className="leaderboardStatusTitle">
+                {view === "aroundMe"
+                  ? <>Around Me found no players matching â€œ{resultsQuery}â€.</>
+                  : <>No players match â€œ{resultsQuery}â€.</>}
+              </p>
+              <p className="muted">
+                {view === "aroundMe"
+                  ? "Around Me only searches a small window of players near your rank. Search all players to look across the whole Ladder."
+                  : "Check the spelling, or clear the search box to see the full Ladder."}
+              </p>
+              {view === "aroundMe" ? (
+                <button type="button" className="secondaryButton" onClick={(event) => handleViewChange("top", event.currentTarget)}>
+                  Search all players
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <div className="leaderboardStatusCard" role="status" aria-live="polite">
+              <p className="leaderboardStatusTitle">No ranked players yet.</p>
+              <p className="muted">Finish your placement matches to start populating the ladder.</p>
+            </div>
+          )
         ) : null}
 
         {nearMeData ? (
@@ -846,9 +883,21 @@ export default function LeaderboardPage({
                         </div>
                       ))}
                     </dl>
-                    <div className="ladderPlateHero">
-                      <strong>{heroStat.value}</strong>
-                      <small>{heroStat.label}</small>
+                    <div className="ladderPlateEnd">
+                      <div className="ladderPlateHero">
+                        <strong>{heroStat.value}</strong>
+                        <small>{heroStat.label}</small>
+                      </div>
+                      {!isCurrentUser ? (
+                        <Link
+                          className="ladderPlateDuel"
+                          to={`/challenges?rival=${encodeURIComponent(player.username)}`}
+                          aria-label={`Challenge ${player.username} to a ghost duel`}
+                        >
+                          <Sword weight="fill" aria-hidden="true" />
+                          Duel
+                        </Link>
+                      ) : null}
                     </div>
                   </li>
                 )
