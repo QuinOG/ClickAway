@@ -31,7 +31,7 @@ beforeEach(() => {
 })
 
 describe("Ladder search with no matches", () => {
-  test("says no players match the search, without placement advice, and clears back to the full Ladder", async () => {
+  test("says no players match the search, without placement advice, and emptying the box restores the full Ladder", async () => {
     const user = userEvent.setup()
     renderLadder()
     await waitFor(() => expect(ladderNames()).toEqual(["Nova", "Orbit", "Vector"]))
@@ -41,9 +41,8 @@ describe("Ladder search with no matches", () => {
     expect(screen.queryByText(/No ranked players yet/)).toBeNull()
     expect(screen.queryByText(/Finish your placement matches/)).toBeNull()
 
-    await user.click(screen.getByRole("button", { name: "Clear search" }))
-    expect(searchBox().value).toBe("")
-    expect(document.activeElement).toBe(searchBox())
+    expect(screen.queryByRole("button", { name: "Clear search" })).toBeNull()
+    await user.clear(searchBox())
     await waitFor(() => expect(ladderNames()).toEqual(["Nova", "Orbit", "Vector"]))
   })
 

@@ -270,4 +270,12 @@
 
 /* Feature trial 005: the no-match message names the search, so long text must wrap. */
 .leaderboardNoMatch .leaderboardStatusTitle { overflow-wrap: anywhere; }
-.leaderboardNoMatchActions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Inset the message so its text lines up with the controls panel content above it
+   (that panel has a 3px border plus 16px padding). */
+.leaderboardPageScene .leaderboardNoMatch {
+    display: grid;
+    justify-items: start;
+    gap: var(--ca-space-2);
+    padding: var(--ca-space-4) calc(var(--ca-space-4) + 3px);
+}
+.leaderboardPageScene .leaderboardNoMatch p { margin: 0; }

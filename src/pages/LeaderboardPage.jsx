@@ -359,7 +359,6 @@ function LeaderboardControls({
   onBoardChange,
   search,
   onSearchChange,
-  searchInputRef,
   view,
   onViewChange,
   page,
@@ -388,7 +387,6 @@ function LeaderboardControls({
         <label className="gfField leaderboardSearchField">
           <span className="gfFieldCap" aria-hidden="true"><MagnifyingGlass weight="bold" /></span>
           <input
-            ref={searchInputRef}
             type="search"
             className="leaderboardSearchInput"
             placeholder="Search players"
@@ -560,7 +558,6 @@ export default function LeaderboardPage({
   const [season, setSeason] = useState(null)
   const [searchInput, setSearchInput] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
-  const searchInputRef = useRef(null)
   // Only the newest request may update the page, so a slow older search can't replace newer results.
   const latestLoadRef = useRef(0)
   const [view, setView] = useState("top")
@@ -752,7 +749,6 @@ export default function LeaderboardPage({
           onBoardChange={handleBoardChange}
           search={searchInput}
           onSearchChange={setSearchInput}
-          searchInputRef={searchInputRef}
           view={view}
           onViewChange={handleViewChange}
           page={page}
@@ -797,26 +793,14 @@ export default function LeaderboardPage({
               </p>
               <p className="muted">
                 {view === "aroundMe"
-                  ? "Around Me only searches a small window of players near your rank. Search all players to look across the whole Ladder, or clear the search."
-                  : "Check the spelling, or clear the search to see the full Ladder."}
+                  ? "Around Me only searches a small window of players near your rank. Search all players to look across the whole Ladder."
+                  : "Check the spelling, or clear the search box to see the full Ladder."}
               </p>
-              <div className="leaderboardNoMatchActions">
-                {view === "aroundMe" ? (
-                  <button type="button" className="secondaryButton" onClick={(event) => handleViewChange("top", event.currentTarget)}>
-                    Search all players
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  className="secondaryButton"
-                  onClick={() => {
-                    setSearchInput("")
-                    searchInputRef.current?.focus()
-                  }}
-                >
-                  Clear search
+              {view === "aroundMe" ? (
+                <button type="button" className="secondaryButton" onClick={(event) => handleViewChange("top", event.currentTarget)}>
+                  Search all players
                 </button>
-              </div>
+              ) : null}
             </div>
           ) : (
             <div className="leaderboardStatusCard" role="status" aria-live="polite">
