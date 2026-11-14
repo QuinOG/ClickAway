@@ -160,7 +160,8 @@ export default function Navbar({
   isOffline = false,
   onOpenSettings,
 }) {
-  const { pathname } = useLocation()
+  const location = useLocation()
+  const { pathname } = location
   const identityPopoverId = `shell-player-${useId().replaceAll(":", "")}`
   const identityWrapRef = useRef(null)
   const identityTriggerRef = useRef(null)
@@ -168,6 +169,13 @@ export default function Navbar({
   const moreTriggerRef = useRef(null)
   const [identityOpenPath, setIdentityOpenPath] = useState(null)
   const [moreOpenPath, setMoreOpenPath] = useState(null)
+  const [menuLocation, setMenuLocation] = useState(location)
+  // Dismiss menus permanently when navigation or live play hides them.
+  if (menuLocation !== location || (isCollapsed && (identityOpenPath || moreOpenPath))) {
+    setMenuLocation(location)
+    setIdentityOpenPath(null)
+    setMoreOpenPath(null)
+  }
   const isIdentityOpen = !isCollapsed && identityOpenPath === pathname
   const isMoreOpen = !isCollapsed && moreOpenPath === pathname
   const mobileNavigation = getMobileNavigationState(pathname)
@@ -238,7 +246,7 @@ export default function Navbar({
             to={isAuthed ? APP_ROUTE.PLAY : APP_ROUTE.LOGIN}
             onPointerEnter={() => isAuthed && prefetchRouteModule(APP_ROUTE.PLAY)}
             onFocus={() => isAuthed && prefetchRouteModule(APP_ROUTE.PLAY)}
-            aria-label={isAuthed ? "ClickAway — go to Play" : "ClickAway — go to log in"}
+            aria-label={isAuthed ? "ClickAway â€” go to Play" : "ClickAway â€” go to log in"}
           >
             <span className="brandLogo" aria-hidden="true">
               <img className="brandLogoImage" src="/brand/clickaway-mark.svg" alt="" width="128" height="128" decoding="async" />
@@ -323,7 +331,7 @@ export default function Navbar({
                 <CompactAvatar username={playerUsername} profileImage={equippedProfileImage} />
                 <span className="shellIdentityText">
                   <span className="shellIdentityName">
-                    {isIdentityLoading ? "Loading player…" : playerUsername}
+                    {isIdentityLoading ? "Loading playerâ€¦" : playerUsername}
                   </span>
                   <span className="shellIdentityRank">
                     {isOffline ? "Offline" : resolvedRankLabel}
