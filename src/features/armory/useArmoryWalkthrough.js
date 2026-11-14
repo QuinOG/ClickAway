@@ -63,6 +63,16 @@ export function useArmoryWalkthrough({
     spotlightLayoutKey,
   ])
 
+  // On phones the Armory is far taller than the screen, so bring each step's
+  // target to the top; the tour card is pinned to the bottom of the screen.
+  const targetId = currentWalkthroughStep?.targetId ?? null
+  useEffect(() => {
+    if (!isWalkthroughVisible || !targetId || window.innerWidth > 820) return
+    const targets = { machine: machineRef, nameplate: nameplateRef, passives: passiveLaneRef, hotbar: hotbarEditorRef, review: reviewPanelRef }
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
+    targets[targetId]?.current?.scrollIntoView?.({ block: "start", behavior: reduceMotion ? "auto" : "smooth" })
+  }, [hotbarEditorRef, isWalkthroughVisible, machineRef, nameplateRef, passiveLaneRef, reviewPanelRef, targetId])
+
   useEffect(() => {
     if (!isWalkthroughVisible) return undefined
 
