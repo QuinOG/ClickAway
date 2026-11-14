@@ -101,3 +101,21 @@ test("passes untimed Practice rules to the power tray", () => {
   const { result } = renderHook(() => useGameScreenController({ selectedModeId: "easy", activeLoadout: DEFAULT_SAVED_LOADOUTS[0] }))
   expect(result.current.powerupTrayProps.isTimedRound).toBe(false)
 })
+
+test.each([[0, "Miss"], [1, "-1"]])("shows actual score loss from %i points", async (startingHits, expected) => {
+  vi.useFakeTimers()
+  try {
+    const { result, unmount } = renderHook(() => useGameScreenController({ activeLoadout: DEFAULT_SAVED_LOADOUTS[0] }))
+    result.current.arenaProps.arenaRef.current = { getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }) }
+    await act(async () => result.current.readyOverlayProps.onStart("hard"))
+    act(() => vi.advanceTimersByTime(3000))
+    if (startingHits) {
+      act(() => result.current.arenaProps.onButtonClick({ stopPropagation() {}, clientX: 300, clientY: 200 }))
+      act(() => vi.advanceTimersByTime(100))
+    }
+    act(() => result.current.arenaProps.onArenaClick({ clientX: 0, clientY: 0 }))
+    expect(result.current.hudProps.score).toBe(0)
+    expect(result.current.arenaProps.clickFeedbackItems.at(-1).value).toBe(expected)
+    unmount()
+  } finally { vi.useRealTimers() }
+})
