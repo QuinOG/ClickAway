@@ -110,6 +110,12 @@ export async function verifySchema() {
     )
   }
 
+  const [columns] = await pool.query(`SELECT column_name AS columnName
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'round_history'
+      AND column_name = 'rank_result_kind'`)
+  if (!columns.length) throw new Error("Supabase schema is incomplete. Missing round_history.rank_result_kind; apply migration 013.")
+
   console.log("Supabase schema verified.")
 }
 
@@ -229,6 +235,7 @@ export async function initializeSchema() {
   await addColumnIfMissing("users", "active_loadout_slot", "varchar(60) DEFAULT NULL")
   await addColumnIfMissing("users", "build_walkthrough_status", "varchar(60) NOT NULL DEFAULT 'not_started'")
   await addColumnIfMissing("users", "seen_unlock_part_ids_json", "jsonb DEFAULT NULL")
+  await addColumnIfMissing("round_history", "rank_result_kind", "varchar(10) DEFAULT NULL CHECK (rank_result_kind IN ('rr', 'placement'))")
   await addColumnIfMissing("round_history", "avg_reaction_ms", "int DEFAULT NULL")
   await addColumnIfMissing("round_history", "best_reaction_ms", "int DEFAULT NULL")
   await addColumnIfMissing("round_history", "loadout_name", "varchar(100) DEFAULT NULL")
@@ -389,22 +396,47 @@ export async function initializeSchema() {
 }
 
 async function ensureActiveSeason() {
-  const [rows] = await pool.query(
-    "SELECT id FROM seasons WHERE status = 'active' LIMIT 1"
-  )
-  if (rows.length > 0) {
-    return
+  await findCurrentSeason()
+}
+
+// One transaction lock also covers the empty-table seed and season-stat writes.
+// Rating, placements and career records carry over; season counters start empty.
+async function withCurrentSeason(work) {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    await connection.query("SELECT pg_advisory_xact_lock(72431901)")
+    const [[clock]] = await connection.query("SELECT clock_timestamp() AS now")
+    const now = new Date(clock.now)
+    const [rows] = await connection.query(`SELECT id, slug, name, status,
+      starts_at AS startsAt, ends_at AS endsAt FROM seasons
+      ORDER BY starts_at DESC, id DESC LIMIT 1 FOR UPDATE`)
+    let season = rows[0]
+    if (!season) {
+      const [created] = await connection.query(`INSERT INTO seasons (slug, name, starts_at, ends_at, status)
+        VALUES (?, ?, ?, ?, 'active') RETURNING id, slug, name, status, starts_at AS startsAt, ends_at AS endsAt`,
+      ["season-1", "Season 1", now, new Date(now.getTime() + 90 * 86400000)])
+      season = created[0]
+    }
+    while (new Date(season.endsAt) <= now) {
+      const duration = new Date(season.endsAt) - new Date(season.startsAt)
+      if (!(duration > 0)) throw new Error("Season duration must be positive.")
+      await connection.query("UPDATE seasons SET status = 'ended' WHERE id = ?", [season.id])
+      const number = (Number(String(season.slug).match(/(\d+)$/)?.[1]) || Number(season.id)) + 1
+      const [created] = await connection.query(`INSERT INTO seasons (slug, name, starts_at, ends_at, status)
+        VALUES (?, ?, ?, ?, 'active') RETURNING id, slug, name, status, starts_at AS startsAt, ends_at AS endsAt`,
+      [`season-${number}`, `Season ${number}`, new Date(season.endsAt), new Date(new Date(season.endsAt).getTime() + duration)])
+      season = created[0]
+    }
+    const result = await work(connection, mapSeasonRow(season))
+    await connection.commit()
+    return result
+  } catch (error) {
+    await connection.rollback().catch(() => {})
+    throw error
+  } finally {
+    connection.release()
   }
-
-  const startsAt = new Date()
-  const endsAt = new Date(startsAt)
-  endsAt.setDate(endsAt.getDate() + 90)
-
-  await pool.query(
-    `INSERT INTO seasons (slug, name, starts_at, ends_at, status)
-     VALUES (?, ?, ?, ?, 'active')`,
-    ["season-1", "Season 1", startsAt, endsAt]
-  )
 }
 
 function toNonNegativeNumber(value, fallback = 0) {
@@ -526,6 +558,7 @@ function normalizeRoundHistoryEntry(entry = {}, index = 0) {
     coinsEarned: toNonNegativeNumber(entry.coinsEarned, 0),
     xpEarned: toNonNegativeNumber(entry.xpEarned, 0),
     rankDelta: Number.isFinite(Number(entry.rankDelta)) ? Number(entry.rankDelta) : 0,
+    rankResultKind: ["rr", "placement"].includes(entry.rankResultKind) ? entry.rankResultKind : null,
     accuracyPercent: totalAttempts > 0 ? (hits / totalAttempts) * 100 : 0,
     loadoutSnapshot,
   }
@@ -637,6 +670,7 @@ function buildHistoryEntry(row) {
     progressionMode: String(row.progressionMode || DEFAULT_PROGRESSION_MODE),
     xpEarned: toNonNegativeNumber(row.xpEarned, 0),
     rankDelta: Number.isFinite(Number(row.rankDelta)) ? Number(row.rankDelta) : 0,
+    rankResultKind: ["rr", "placement"].includes(row.rankResultKind) ? row.rankResultKind : null,
     loadoutSnapshot,
   }
 }
@@ -744,6 +778,12 @@ async function getLoadoutStatsRows(executor, userId) {
     .filter(Boolean)
 }
 
+async function getWeeklyRoundCount(executor, userId) {
+  const [[weekly]] = await executor.query(`SELECT COUNT(*) AS roundsThisWeek FROM round_history
+    WHERE user_id = ? AND played_at >= now() - interval '7 days' AND played_at <= now()`, [userId])
+  return toNonNegativeNumber(weekly?.roundsThisWeek, 0)
+}
+
 async function getRoundHistoryCount(executor, userId) {
   const [rows] = await executor.query(
     `SELECT COUNT(*) AS totalCount
@@ -778,6 +818,7 @@ async function backfillLifetimeStatsFromHistory(executor, userId) {
        coins_earned AS coinsEarned,
        xp_earned AS xpEarned,
        rank_delta AS rankDelta,
+       rank_result_kind AS rankResultKind,
        loadout_name AS loadoutName,
        loadout_id AS loadoutId,
        tempo_core_id AS tempoCoreId,
@@ -902,6 +943,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
        coins_earned,
        xp_earned,
        rank_delta,
+       rank_result_kind,
        loadout_name,
        loadout_id,
        tempo_core_id,
@@ -911,7 +953,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
        powerup_slot_2_id,
        powerup_slot_3_id,
        played_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      RETURNING id`,
     [
       userId,
@@ -926,6 +968,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
       normalizedEntry.coinsEarned,
       normalizedEntry.xpEarned,
       normalizedEntry.rankDelta,
+      normalizedEntry.rankResultKind,
       normalizedEntry.loadoutSnapshot?.loadoutName || null,
       normalizedEntry.loadoutSnapshot?.loadoutId || null,
       normalizedEntry.loadoutSnapshot?.moduleIds?.tempoCoreId || null,
@@ -951,6 +994,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
     coinsEarned: normalizedEntry.coinsEarned,
     xpEarned: normalizedEntry.xpEarned,
     rankDelta: normalizedEntry.rankDelta,
+    rankResultKind: normalizedEntry.rankResultKind,
     loadoutName: normalizedEntry.loadoutSnapshot?.loadoutName,
     loadoutId: normalizedEntry.loadoutSnapshot?.loadoutId,
     tempoCoreId: normalizedEntry.loadoutSnapshot?.moduleIds?.tempoCoreId,
@@ -1121,6 +1165,7 @@ async function buildProgressRecord(executor, userId) {
        coins_earned AS coinsEarned,
        xp_earned AS xpEarned,
        rank_delta AS rankDelta,
+       rank_result_kind AS rankResultKind,
        loadout_name AS loadoutName,
        loadout_id AS loadoutId,
        tempo_core_id AS tempoCoreId,
@@ -1180,6 +1225,7 @@ async function buildProgressRecord(executor, userId) {
   const normalizedRoundHistory = historyRows.map(buildHistoryEntry)
   const totalRoundCount = await getRoundHistoryCount(executor, userId)
   const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
+  lifetimeStats.roundsThisWeek = await getWeeklyRoundCount(executor, userId)
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
     rankMmr: userRow.mmr,
@@ -1675,6 +1721,7 @@ export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_P
        coins_earned AS coinsEarned,
        xp_earned AS xpEarned,
        rank_delta AS rankDelta,
+       rank_result_kind AS rankResultKind,
        loadout_name AS loadoutName,
        loadout_id AS loadoutId,
        tempo_core_id AS tempoCoreId,
@@ -1807,6 +1854,9 @@ export async function completeUserRound({
     insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
       ...historyEntry,
       rankDelta: rankOutcome.appliedRankDelta,
+      rankResultKind: historyEntry?.progressionMode === 'ranked'
+        ? (rankOutcome.previousRankProgress?.isUnranked || rankOutcome.previousRankProgress?.isPlacement ? 'placement' : 'rr')
+        : null,
     })
 
     if (countsTowardStats) {
@@ -2030,59 +2080,41 @@ function mapChallengeRow(row = {}) {
   }
 }
 
-export async function findCurrentSeason() {
-  const [rows] = await pool.query(
-    `SELECT
-       id,
-       slug,
-       name,
-       status,
-       starts_at AS startsAt,
-       ends_at AS endsAt
-     FROM seasons
-     WHERE status = 'active'
-     ORDER BY starts_at DESC
-     LIMIT 1`
-  )
+async function readUserSeasonStats(connection, userId, seasonId) {
+  const [[stats]] = await connection.query(`SELECT ranked_rounds AS rankedRounds,
+    peak_mmr AS peakMmr, reward_tier AS rewardTier FROM user_season_stats
+    WHERE user_id = ? AND season_id = ? LIMIT 1`, [userId, seasonId])
+  return {
+    rankedRounds: toNonNegativeNumber(stats?.rankedRounds, 0),
+    peakMmr: toNonNegativeNumber(stats?.peakMmr, 0),
+    rewardTier: toNonNegativeNumber(stats?.rewardTier, 0),
+  }
+}
 
-  return mapSeasonRow(rows[0])
+export async function findCurrentSeason(userId = null) {
+  return withCurrentSeason(async (connection, season) => ({
+    ...season,
+    ...(userId ? { stats: await readUserSeasonStats(connection, userId, season.id) } : {}),
+  }))
 }
 
 export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound = false, isPlaced = true } = {}) {
-  const season = await findCurrentSeason()
-  if (!season?.id || !isRankedRound) {
-    return null
-  }
-
-  const normalizedMmr = toNonNegativeNumber(rankMmr, 0)
-  // Same thresholds the Ladder shows (src/utils/seasonUtils.js).
-  // During placements the rating is a hidden running total, not a rank yet.
-  const rewardTier = getSeasonRewardTier(normalizedMmr, { isPlaced }).tier
-
-  await pool.execute(
-    `INSERT INTO user_season_stats (user_id, season_id, ranked_rounds, peak_mmr, reward_tier)
-     VALUES (?, ?, 1, ?, ?)
-     ON CONFLICT (user_id, season_id) DO UPDATE SET
-       ranked_rounds = user_season_stats.ranked_rounds + 1,
-       peak_mmr = GREATEST(user_season_stats.peak_mmr, EXCLUDED.peak_mmr),
-       reward_tier = GREATEST(user_season_stats.reward_tier, EXCLUDED.reward_tier)`,
-    [userId, season.id, normalizedMmr, rewardTier]
-  )
-
-  const [[statsRow]] = await pool.query(
-    `SELECT ranked_rounds AS rankedRounds, peak_mmr AS peakMmr, reward_tier AS rewardTier
-     FROM user_season_stats
-     WHERE user_id = ? AND season_id = ?
-     LIMIT 1`,
-    [userId, season.id]
-  )
-
-  return {
-    season,
-    rankedRounds: toNonNegativeNumber(statsRow?.rankedRounds, 0),
-    peakMmr: toNonNegativeNumber(statsRow?.peakMmr, 0),
-    rewardTier: toNonNegativeNumber(statsRow?.rewardTier, 0),
-  }
+  if (!isRankedRound) return null
+  return withCurrentSeason(async (connection, season) => {
+    // Hidden placement totals must not inflate a later placed season peak.
+    const normalizedMmr = isPlaced ? toNonNegativeNumber(rankMmr, 0) : 0
+    const rewardTier = getSeasonRewardTier(normalizedMmr, { isPlaced }).tier
+    await connection.execute(
+      `INSERT INTO user_season_stats (user_id, season_id, ranked_rounds, peak_mmr, reward_tier)
+       VALUES (?, ?, 1, ?, ?)
+       ON CONFLICT (user_id, season_id) DO UPDATE SET
+         ranked_rounds = user_season_stats.ranked_rounds + 1,
+         peak_mmr = GREATEST(user_season_stats.peak_mmr, EXCLUDED.peak_mmr),
+         reward_tier = GREATEST(user_season_stats.reward_tier, EXCLUDED.reward_tier)`,
+      [userId, season.id, normalizedMmr, rewardTier]
+    )
+    return { season, ...await readUserSeasonStats(connection, userId, season.id) }
+  })
 }
 
 export async function insertRoundReplay({

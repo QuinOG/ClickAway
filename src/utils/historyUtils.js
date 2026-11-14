@@ -111,6 +111,7 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
     progressionMode: String(entry.progressionMode || ""),
     xpEarned: normalizeNonNegativeNumber(entry.xpEarned),
     rankDelta: Number.isFinite(Number(entry.rankDelta)) ? Number(entry.rankDelta) : 0,
+    rankResultKind: ["rr", "placement"].includes(entry.rankResultKind) ? entry.rankResultKind : null,
     loadoutSnapshot,
   }
 }

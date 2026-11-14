@@ -51,6 +51,7 @@ export function normalizeSeasonRecord(season = {}) {
     status: String(season.status || "active"),
     startsAt,
     endsAt,
+    stats: season.stats ?? { rankedRounds: 0, peakMmr: 0, rewardTier: 0 },
     daysRemaining,
     progressPercent,
   }

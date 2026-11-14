@@ -44,3 +44,18 @@ project-scoped Supabase MCP connection on `2026-07-13`. The environment classifi
   columns, so `001_add_round_reaction_metrics.sql` is only for older databases.
 - The repo does not currently track migration application in the database itself.
   Update this file when a migration is applied in a real environment.
+
+## Migration 013 and seasons
+
+Apply `013_add_rank_result_kind.sql` before deploying with DB_AUTO_MIGRATE=false.
+Pending; not applied to any remote database. initializeSchema adds the same nullable,
+checked column; verifySchema requires it. No tables or grants are added. NULL rows
+retain legacy History labels. New ranked rounds record placement versus RR.
+
+Season reads and ranked season writes serialize under a transaction advisory lock.
+Expired seasons end and contiguous equal-duration successors are created lazily,
+including elapsed seasons after downtime. Rating, placement and career records carry
+over unchanged. Each season starts with zero rounds, peak and reward until Ranked
+is played; only placed ratings contribute to peaks/rewards. Leaderboard records
+remain explicitly all-time. Weekly rounds count all history in the last seven days
+on the server, independent of pagination. No replay format or validation changes.

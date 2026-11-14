@@ -75,3 +75,16 @@ test.each(['resolve', 'reject'])('obsolete page %s cannot change a refreshed gen
   expect(screen.getByRole('button', { name: 'Load older rounds' }).disabled).toBe(false)
   unmount()
 })
+
+test("placement points are labelled separately while legacy rows retain RR", () => {
+  const history = [
+    { ...rounds("placement")[0], progressionMode: "ranked", rankResultKind: "placement", rankDelta: 120 },
+    { ...rounds("rr")[0], progressionMode: "ranked", rankResultKind: "rr", rankDelta: 14 },
+    { ...rounds("legacy")[0], progressionMode: "ranked", rankResultKind: null, rankDelta: 9 },
+  ]
+  render(<MemoryRouter><HistoryPage roundHistory={history} /></MemoryRouter>)
+  expect(screen.getAllByText("+120 placement points").length).toBeGreaterThan(0)
+  expect(screen.queryByText("+120 RR")).toBeNull()
+  expect(screen.getAllByText("+14 RR").length).toBeGreaterThan(0)
+  expect(screen.getAllByText("+9 RR").length).toBeGreaterThan(0)
+})
