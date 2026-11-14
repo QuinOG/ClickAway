@@ -43,7 +43,7 @@ test("standing summary uses server season rounds rather than loaded history", as
   show({ roundHistory: [{ progressionMode: "ranked", modeId: "hard" }] })
   const panel = await screen.findByRole("region", { name: "Your leaderboard standing" })
   await waitFor(() => expect(fetchLeaderboard).toHaveBeenCalled())
-  expect(within(panel).getByText("Ranked this season")).toBeTruthy()
+  expect(within(panel).getByText("This season")).toBeTruthy()
   expect(within(panel).getByText("83")).toBeTruthy()
 })
 
