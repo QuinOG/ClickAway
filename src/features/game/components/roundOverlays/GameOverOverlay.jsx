@@ -195,7 +195,8 @@ function NextUnlock({ level, xpIntoLevel, earned }) {
   return (
     <Link
       className={`gameOverNextUnlock ${justUnlocked ? "isUnlocked" : ""}`}
-      to="/armory"
+      // Lands where the part is installed: the powerup keys, or the part's lane.
+      to={nextPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(nextPart.slotId)}`}
       aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
     >
       <span className="gameOverNextUnlockIcon" aria-hidden="true">

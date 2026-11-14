@@ -173,3 +173,9 @@ describe("next-round goal", () => {
     expect(screen.queryByText(/off your best|One more round/)).toBeNull()
   })
 })
+
+test("an unlocked powerup's Equip opens the Armory's powerup keys", () => {
+  renderOutcome({ playerLevel: 1, playerXpIntoLevel: 0, playerXpToNextLevel: 100, roundXpEarned: 160, allowsCoinRewards: true, allowsLevelProgression: true })
+  const link = screen.getByLabelText(/Unlocked Magnet Center/)
+  expect(link.getAttribute("href")).toBe("/armory?step=hotbar&powerSlot=1")
+})
