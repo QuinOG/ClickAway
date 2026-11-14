@@ -75,7 +75,7 @@ function CompareNumbers({ activeRules, ghostRules }) {
         <span className={`armoryCompareInstrumentDelta ${tone}`}>{diff === 0 ? "Same" : `${sign}${Math.abs(diff).toFixed(active.digits)}${active.suffix}`}</span>
         <dl className="armoryCompareInstrumentValues">{[active, ghost].map((item, index) => <div key={index}>
           <dt>{index ? "Ghost" : "Active"}</dt><dd>{item.text}</dd>
-          <span className="armoryCompareInstrumentGauge" aria-label="Bars relative to this pair">{Array.from({ length: 10 }, (_, i) => <i key={i} aria-hidden="true" className={`${i < counts[index] ? "filled" : ""} ${i >= counts[1-index] ? tone : ""}`} />)}</span>
+          <span className="armoryCompareInstrumentGauge" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i key={i} aria-hidden="true" className={`${i < counts[index] ? "filled" : ""} ${i >= counts[1-index] ? tone : ""}`} />)}</span>
         </div>)}</dl>
       </section>
     })}
@@ -155,13 +155,13 @@ export default function ArmoryCompareBench({
   ghostPresentation,
   modePresentations,
 }) {
-  useOverlayDismiss(isOpen, onClose)
+  const dialogRef = useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   return (
     <>
       <div className="armoryCompareScrim" onClick={onClose} aria-hidden="true" />
-      <section className="armoryCompareBench armoryCompareWorkshop" role="dialog" aria-label="Compare bench">
+      <section className="armoryCompareBench armoryCompareWorkshop" ref={dialogRef} tabIndex={-1} aria-modal="true" role="dialog" aria-label="Compare bench">
         <header className="armoryCompareHeader">
           <div>
             <p className="armoryCompareEyebrow">Compare Bench · {modeLabel}</p>

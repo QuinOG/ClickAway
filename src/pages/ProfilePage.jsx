@@ -289,7 +289,7 @@ export default function ProfilePage({
                 <i style={{ width: `${Math.max(0, Math.min(100, levelProgressPercent))}%` }} />
               </span>
             </div>
-            <div className="profileHeaderResources" aria-label="Player resources and actions">
+            <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
               <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
               <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
             </div>
