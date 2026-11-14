@@ -1582,6 +1582,7 @@ export function useGameScreenController({
       activeEffect: activatedPowerup?.durationMs > 0 ? activatedPowerup.effectType : null,
     },
     powerupTrayProps: {
+      isTimedRound: displayMode.isTimedRound !== false,
       powerupSlots,
       streak,
       isPlaying,

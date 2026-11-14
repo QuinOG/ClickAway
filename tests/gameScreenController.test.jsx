@@ -96,3 +96,8 @@ test.each([["magnet_center", 400], ["freeze_movement", 1000]])("clears %s active
     unmount()
   } finally { vi.useRealTimers() }
 })
+
+test("passes untimed Practice rules to the power tray", () => {
+  const { result } = renderHook(() => useGameScreenController({ selectedModeId: "easy", activeLoadout: DEFAULT_SAVED_LOADOUTS[0] }))
+  expect(result.current.powerupTrayProps.isTimedRound).toBe(false)
+})
