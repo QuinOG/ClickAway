@@ -1750,3 +1750,10 @@
     font-weight: 800;
     color: #ffd76a;
 }
+
+/* Phones: the unlock card stacks so the part's name and label fit instead of running off the card. */
+@media (max-width: 600px) {
+    .gameOverSpotlight a.gameOverNextUnlock { grid-template-columns: minmax(0, 1fr); justify-items: center; row-gap: var(--ca-space-2, 8px); text-align: center; }
+    .gameOverSpotlight a.gameOverNextUnlock .gameOverNextUnlockCopy { align-self: center; justify-items: center; text-align: center; }
+    .gameOverSpotlight a.gameOverNextUnlock .gameOverNextUnlockCopy strong { white-space: normal; font-size: 28px; }
+}
