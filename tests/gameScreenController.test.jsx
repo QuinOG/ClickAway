@@ -161,3 +161,31 @@ test.each([
   act(() => result.current.gameOverOverlayProps.onChooseMode())
   expect(result.current.readyOverlayProps.sessionStats.netRR).toBe(expectedNetRR)
 })
+
+test.each([
+  ["a brand-new player", { playerRecentRounds: [] }, true],
+  ["a player with rounds", { playerRecentRounds: [{ score: 10 }] }, false],
+  ["a new player opening a duel link", { playerRecentRounds: [], challengeId: 4 }, false],
+])("first-round coach for %s", (_label, props, expectsCoach) => {
+  const onModeChange = vi.fn()
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status: "not_started" },
+    selectedModeId: "hard",
+    onModeChange,
+    playerLevel: 1,
+    seenUnlockPartIds: [],
+    lifetimeStats: {},
+    ...props,
+  }))
+  const ready = result.current.readyOverlayProps
+  expect(ready.onboardingCoach?.title ?? null).toBe(expectsCoach ? "Your first round" : null)
+  if (expectsCoach) {
+    expect(ready.onboardingCoach.startLabel).toBe("Play")
+    expect(ready.showArmoryWalkthroughBadge).toBe(false)
+    expect(ready.canChangeMode).toBe(false)
+    expect(onModeChange).toHaveBeenCalledWith("normal")
+  } else {
+    expect(onModeChange).not.toHaveBeenCalledWith("normal")
+  }
+})

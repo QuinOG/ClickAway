@@ -10,6 +10,12 @@ import { AUTHENTICATED_ROUTES, gotoRoute, installApiMocks } from "./fixtures.js"
 
 const ROUTE = process.env.ROUTE || "history"
 const OUT = process.env.OUT || `test-results/feature-shot/${ROUTE}`
+// NEW_PLAYER=1 captures a brand-new account (no rounds, level 1, onboarding not started).
+const NEW_PLAYER_PROGRESS = {
+  coins: 0, levelXp: 0, rankMmr: 0, roundHistory: [], totalRoundCount: 0, loadoutStats: [],
+  rankedState: { rankSystemVersion: 4, placementMatchesPlayed: 0, placementScoreTotal: 0, demotionProtectionRounds: 0, consecutiveRankedWins: 0 },
+  lifetimeStats: {}, unlockedAchievementIds: [], buildWalkthrough: { status: "not_started" }, seenUnlockPartIds: [],
+}
 const PREFS = { masterVolume: 0.7, sfxVolume: 0.75, muted: true, reduceMotion: true, screenShake: false, flashes: false, haptics: false, feedbackIntensity: "standard" }
 
 // EXTRA=<label>:<width>x<height> adds one more size, e.g. EXTRA=laptop:1024x700.
@@ -26,9 +32,11 @@ for (const [label, width, height] of SIZES) {
     const context = await browser.newContext({ viewport: { width, height }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173", reducedMotion: "reduce" })
     const page = await context.newPage()
     await page.clock.install({ time: new Date("2026-07-12T16:00:00.000Z") })
-    await installApiMocks(page)
+    await installApiMocks(page, process.env.NEW_PLAYER ? { progressOverrides: NEW_PLAYER_PROGRESS } : {})
     await page.addInitScript((prefs) => localStorage.setItem("clickaway.feedback-preferences.v1", JSON.stringify(prefs)), PREFS)
-    await gotoRoute(page, AUTHENTICATED_ROUTES.find((route) => route.id === ROUTE))
+    const route = AUTHENTICATED_ROUTES.find((entry) => entry.id === ROUTE)
+    // HEADING=<text> when the page heading differs for this state (e.g. a new player).
+    await gotoRoute(page, process.env.HEADING ? { ...route, heading: process.env.HEADING } : route)
     await page.waitForTimeout(800)
     if (process.env.CLICK) await page.getByRole("button", { name: process.env.CLICK, exact: true }).first().click()
     if (process.env.FILL) {

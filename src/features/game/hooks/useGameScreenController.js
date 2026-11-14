@@ -294,8 +294,10 @@ export function useGameScreenController({
 
   const isPlaying = phase === ROUND_PHASE.PLAYING && !isRoundEnding
   const buildWalkthroughStatus = buildWalkthrough?.status ?? null
-  const gameOnboardingStep = getGameOnboardingStep(buildWalkthroughStatus)
-  const isGameOnboardingActive = isGameOnboardingStatus(buildWalkthroughStatus)
+  // A duel link takes priority over the first-round coach.
+  const isNewPlayer = playerRecentRounds.length === 0 && !challengeId
+  const gameOnboardingStep = getGameOnboardingStep(buildWalkthroughStatus, { isNewPlayer })
+  const isGameOnboardingActive = isGameOnboardingStatus(buildWalkthroughStatus, { isNewPlayer })
   const canChangeMode = (phase === ROUND_PHASE.READY || phase === ROUND_PHASE.GAME_OVER)
     && !isGameOnboardingActive
   const isTimedRound = roundMode.isTimedRound !== false
@@ -1629,15 +1631,20 @@ export function useGameScreenController({
       playerBestScore,
       recentRounds: playerRecentRounds,
       activeLoadoutPresentation: previewLoadoutPresentation,
-      showArmoryWalkthroughBadge: shouldShowArmoryOnboardingBadge(buildWalkthroughStatus)
-        || hasUnseenUnlockedParts(playerLevel, seenUnlockPartIds),
+      // Nothing pulls a brand-new player away from their first round.
+      showArmoryWalkthroughBadge: !isNewPlayer && (
+        shouldShowArmoryOnboardingBadge(buildWalkthroughStatus)
+        || hasUnseenUnlockedParts(playerLevel, seenUnlockPartIds)
+      ),
       onboardingCoach: gameOnboardingStep
         ? {
-            stepLabel: `Step ${gameOnboardingStep.stepNumber} of 3`,
+            stepLabel: gameOnboardingStep.stepNumber ? `Step ${gameOnboardingStep.stepNumber} of 3` : null,
             title: gameOnboardingStep.title,
             instruction: gameOnboardingStep.instruction,
             note: gameOnboardingStep.note,
             startLabel: gameOnboardingStep.startLabel,
+            // The first round shows only its own mode; the locked ones are noise.
+            singleMode: gameOnboardingStep.stepNumber === null,
           }
         : null,
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,

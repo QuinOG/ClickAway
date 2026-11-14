@@ -508,7 +508,8 @@ export function ReadyOverlay({
           </div>
           {onboardingCoach ? (
             <div className="readyOnboardingCoach" aria-label="First session onboarding">
-              <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span>
+              {onboardingCoach.stepLabel ? <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span> : null}
+              {onboardingCoach.instruction ? <p className="readyOnboardingCoachNote">{onboardingCoach.instruction}</p> : null}
               {onboardingCoach.note ? <p className="readyOnboardingCoachNote">{onboardingCoach.note}</p> : null}
             </div>
           ) : null}
@@ -526,7 +527,7 @@ export function ReadyOverlay({
 
         <div className="lobbyModeSelector">
           <div className="lobbyModeRail" aria-label="Choose a game mode">
-            {lobbyModes.map((mode) => (
+            {(onboardingCoach?.singleMode ? lobbyModes.filter((mode) => mode.id === selectedMode?.id) : lobbyModes).map((mode) => (
               <ModeChoice
                 key={mode.id}
                 mode={mode}

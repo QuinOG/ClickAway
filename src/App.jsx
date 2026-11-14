@@ -212,7 +212,8 @@ export default function App() {
     return <SessionLoadingScreen />
   }
 
-  const showArmoryUnlockBadge = hasUnseenUnlockedParts(levelProgress.level, seenUnlockPartIds)
+  // Hidden until the first round, so a new player's first stop is the game.
+  const showArmoryUnlockBadge = totalRoundCount > 0 && hasUnseenUnlockedParts(levelProgress.level, seenUnlockPartIds)
 
   return (
     <MotionConfig reducedMotion={getMotionConfigPreference(preferences)}>

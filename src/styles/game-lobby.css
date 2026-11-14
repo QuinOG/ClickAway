@@ -639,3 +639,9 @@
 .lobbyStageSpec i { gap: 3px; }
 .readyCard.arenaLobby .lobbyStageLoadout { row-gap: 12px; padding: 14px 18px 16px; }
 .lobbyStageLoadout strong { font-size: 18px; }
+
+/* The lobby hides its own lead text for space, but onboarding coach text must show. */
+.readyCard.arenaLobby .arenaLobbyHeader .readyOnboardingCoach p {
+    position: static; display: block; width: auto; height: auto;
+    overflow: visible; clip-path: none; white-space: normal;
+}
