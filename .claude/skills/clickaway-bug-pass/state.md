@@ -1,6 +1,6 @@
 # Bug pass state
 
-Open PR: run 7 on `bug-pass-7` (see below). Runs 1–6 merged to main in PR #21 (2026-11-13). Before deploying, run migration `012_add_consumed_round_tokens.sql`. Next run: branch from main and open a new PR.
+Open PR: #23 on `bug-pass-7` (runs 7 and 8). Runs 1–6 merged to main in PR #21 (2026-11-13). Before deploying, run migration `012_add_consumed_round_tokens.sql`. Next run: branch from main and open a new PR.
 
 ## Fixed (do not re-report)
 - **Run 1 (a94b38a):**
@@ -118,6 +118,13 @@ Open PR: run 7 on `bug-pass-7` (see below). Runs 1–6 merged to main in PR #21 
   - Magnet/Freeze cue ends on time, Practice Time Boost disabled, miss feedback matches the score;
   - duel link missing its replay offers Leave, leaving clears a failed start.
 
+- **Run 8 (d41046f):**
+  - cancelling a failed duel start leaves the duel; no duels with private replays;
+  - duel send/accept/finish report success when only the read-back fails;
+  - explicit logout always reaches the server, even with storage blocked;
+  - Armory compare shows starting charges;
+  - the More menu stays closed after Back or a round.
+
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
 - **Interval timer drift in background tabs:** M; needs a deadline-based timer.
@@ -132,6 +139,5 @@ Open PR: run 7 on `bug-pass-7` (see below). Runs 1–6 merged to main in PR #21 
 - **History labels placement points as RR:** needs a nullable `rank_result_kind` column on round_history (both startup paths, migration 013 and verifySchema). Plan it with other schema work.
 - **Existing accounts with stats inflated by unverified rounds:** a one-off repair would be needed; history doesn't record verification.
 - **Grow can push an edge target a few pixels off the arena:** the clamp changes the geometry the server checks clicks against; needs versioned replay geometry so old ghosts keep their paths.
-- **Duels review cut short in run 7** (Codex usage limit). Review Duels first next run.
 - **Browser suite fails about 28 checks on main** (release-matrix layout/accessibility, visual-cohesion screenshots): stale since the art rounds. Not a bug-pass item; needs a snapshot refresh and a look at the layout checks.
 - **Duel race lost if its replay write fails after commit:** the round is reported saved with a note, but the duel stays unsettled. Needs the replay and duel writes inside the round transaction.
