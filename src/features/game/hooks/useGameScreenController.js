@@ -1336,7 +1336,18 @@ export function useGameScreenController({
         drillId: activeDrillIdRef.current,
       }))()
       if (challengeIdRef.current) finishedDuelRef.current = true
+      const countsTowardRR = roundMode.allowsRankProgression === true
       Promise.resolve(roundSaveResult).then((result) => {
+        // Session Net RR counts only what the server awarded, once per round,
+        // even if the save lands after the next round has started. Placement
+        // scores aren't RR.
+        const previousRank = result?.rankProgress?.previous
+        if (result?.ok === true && countsTowardRR && !previousRank?.isPlacement && !previousRank?.isUnranked) {
+          const awarded = Number(result.rankDelta)
+          if (Number.isFinite(awarded) && awarded !== 0) {
+            setSessionStats((previousStats) => ({ ...previousStats, netRR: previousStats.netRR + awarded }))
+          }
+        }
         if (roundNonceRef.current !== savingRoundNonce) return
         setRoundSave(result?.ok === true
           ? { status: "saved", outcome: result }
@@ -1349,11 +1360,7 @@ export function useGameScreenController({
       setSessionStats((previousStats) => ({
         rounds: previousStats.rounds + 1,
         bestScore: Math.max(previousStats.bestScore, score),
-        netRR: previousStats.netRR + (
-          roundMode.allowsRankProgression === true
-            ? projectedRankOutcome.appliedRankDelta
-            : 0
-        ),
+        netRR: previousStats.netRR,
       }))
 
       const nextOnboardingStatus = getNextOnboardingStatusAfterRound(
@@ -1376,7 +1383,6 @@ export function useGameScreenController({
     onBuildWalkthroughChange,
     onRoundComplete,
     phase,
-    projectedRankOutcome.appliedRankDelta,
     roundMode.allowsCoinRewards,
     roundMode.allowsLevelProgression,
     roundMode.allowsRankProgression,
