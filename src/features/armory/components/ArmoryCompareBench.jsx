@@ -155,13 +155,13 @@ export default function ArmoryCompareBench({
   ghostPresentation,
   modePresentations,
 }) {
-  useOverlayDismiss(isOpen, onClose)
+  const dialogRef = useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   return (
     <>
       <div className="armoryCompareScrim" onClick={onClose} aria-hidden="true" />
-      <section className="armoryCompareBench armoryCompareWorkshop" role="dialog" aria-label="Compare bench">
+      <section className="armoryCompareBench armoryCompareWorkshop" ref={dialogRef} tabIndex={-1} aria-modal="true" role="dialog" aria-label="Compare bench">
         <header className="armoryCompareHeader">
           <div>
             <p className="armoryCompareEyebrow">Compare Bench · {modeLabel}</p>
