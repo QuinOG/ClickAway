@@ -75,7 +75,7 @@ function CompareNumbers({ activeRules, ghostRules }) {
         <span className={`armoryCompareInstrumentDelta ${tone}`}>{diff === 0 ? "Same" : `${sign}${Math.abs(diff).toFixed(active.digits)}${active.suffix}`}</span>
         <dl className="armoryCompareInstrumentValues">{[active, ghost].map((item, index) => <div key={index}>
           <dt>{index ? "Ghost" : "Active"}</dt><dd>{item.text}</dd>
-          <span className="armoryCompareInstrumentGauge" aria-label="Bars relative to this pair">{Array.from({ length: 10 }, (_, i) => <i key={i} aria-hidden="true" className={`${i < counts[index] ? "filled" : ""} ${i >= counts[1-index] ? tone : ""}`} />)}</span>
+          <span className="armoryCompareInstrumentGauge" aria-hidden="true">{Array.from({ length: 10 }, (_, i) => <i key={i} aria-hidden="true" className={`${i < counts[index] ? "filled" : ""} ${i >= counts[1-index] ? tone : ""}`} />)}</span>
         </div>)}</dl>
       </section>
     })}
