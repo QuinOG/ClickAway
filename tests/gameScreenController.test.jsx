@@ -77,4 +77,24 @@ describe("Game screen controller", () => {
     expect(result.current.entranceOverlayProps).toBeNull()
     expect(result.current.readyOverlayProps.selectedModeId).toBe("normal")
   })
+
+  test.each(["throw", "reject", "missing", "undefined"])("reports %s save callbacks as failed", async (failure) => {
+    vi.useFakeTimers()
+    const onRoundComplete = failure === "missing" ? undefined : vi.fn(() => {
+      if (failure === "throw") throw new Error("Save interrupted")
+      if (failure === "reject") return Promise.reject(new Error("Save interrupted"))
+      return undefined
+    })
+    const { result } = renderHook(() => useGameScreenController({ onRoundComplete, activeLoadout: DEFAULT_SAVED_LOADOUTS[0] }))
+    result.current.arenaProps.arenaRef.current = {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }),
+    }
+    await act(async () => result.current.readyOverlayProps.onStart("normal"))
+    act(() => vi.advanceTimersByTime(3 * TIMER_TICK_MS))
+    act(() => result.current.hudProps.onEndRound())
+    act(() => vi.advanceTimersByTime(ROUND_END_SETTLE_MS))
+    await act(async () => vi.advanceTimersByTimeAsync(1))
+    expect(result.current.gameOverOverlayProps.roundSaveStatus).toBe("failed")
+    expect(result.current.gameOverOverlayProps.roundSaveError).toBeTruthy()
+  })
 })

@@ -1310,7 +1310,7 @@ export function useGameScreenController({
 
       const savingRoundNonce = roundNonceRef.current
       setRoundSave({ status: "saving" })
-      const roundSaveResult = onRoundComplete?.({
+      const roundSaveResult = (async () => onRoundComplete?.({
         clicksScored: hits,
         hits,
         misses,
@@ -1332,13 +1332,16 @@ export function useGameScreenController({
         arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
         challengeId: finishedDuelRef.current ? null : challengeIdRef.current,
         drillId: activeDrillIdRef.current,
-      })
+      }))()
       if (challengeIdRef.current) finishedDuelRef.current = true
       Promise.resolve(roundSaveResult).then((result) => {
         if (roundNonceRef.current !== savingRoundNonce) return
-        setRoundSave(result && result.ok === false
-          ? { status: "failed", error: result.error }
-          : { status: "saved", outcome: result?.ok ? result : null })
+        setRoundSave(result?.ok === true
+          ? { status: "saved", outcome: result }
+          : { status: "failed", error: result?.error || "The server did not confirm this round was saved." })
+      }).catch((error) => {
+        if (roundNonceRef.current !== savingRoundNonce) return
+        setRoundSave({ status: "failed", error: error?.message || "Unable to save this round." })
       })
 
       setSessionStats((previousStats) => ({
