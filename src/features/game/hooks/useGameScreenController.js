@@ -931,7 +931,7 @@ export function useGameScreenController({
     activationCueTimeoutRef.current = window.setTimeout(() => {
       setActivatedPowerup(null)
       activationCueTimeoutRef.current = null
-    }, Math.max(1100, activeDurationMs))
+    }, activeDurationMs || 1100)
     applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
 

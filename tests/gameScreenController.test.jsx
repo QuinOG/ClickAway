@@ -78,3 +78,21 @@ describe("Game screen controller", () => {
     expect(result.current.readyOverlayProps.selectedModeId).toBe("normal")
   })
 })
+
+// Feedback must describe the simulation rather than the minimum cue lifetime.
+test.each([["magnet_center", 400], ["freeze_movement", 1000]])("clears %s active feedback at expiry", async (powerupId, duration) => {
+  vi.useFakeTimers()
+  try {
+    const loadout = { ...DEFAULT_SAVED_LOADOUTS[0], moduleIds: { ...DEFAULT_SAVED_LOADOUTS[0].moduleIds, powerRigId: "power_reserve" }, powerupIds: [powerupId, "size_boost", "time_boost"] }
+    const { result, unmount } = renderHook(() => useGameScreenController({ activeLoadout: loadout }))
+    await act(async () => result.current.readyOverlayProps.onStart("normal"))
+    act(() => vi.advanceTimersByTime(3000))
+    act(() => result.current.powerupTrayProps.onUsePowerup(powerupId))
+    expect(result.current.arenaProps.activeEffect).toBe(powerupId)
+    act(() => vi.advanceTimersByTime(duration - 1))
+    expect(result.current.arenaProps.activeEffect).toBe(powerupId)
+    act(() => vi.advanceTimersByTime(1))
+    expect(result.current.arenaProps.activeEffect).toBeNull()
+    unmount()
+  } finally { vi.useRealTimers() }
+})
