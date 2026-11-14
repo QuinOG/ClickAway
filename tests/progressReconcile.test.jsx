@@ -42,3 +42,13 @@ test('refresh statuses describe actual application and session changes', async (
   expect(await applyProgressResponse(beginProgressRequest(), null, apply)).toBe('refreshed')
   expect(apply).toHaveBeenCalledOnce()
 })
+test('an in-flight reconcile never rolls back a newer applied snapshot', async () => {
+  const apply = vi.fn(); const read = deferred()
+  fetchCurrentUser.mockReturnValueOnce(read.promise)
+  settleProgressMutation(beginProgressRequest(), apply)
+  await vi.advanceTimersByTimeAsync(300)
+  await applyProgressResponse(beginProgressRequest(), { coins: 200, snapshotAtMs: 200 }, apply)
+  read.resolve({ progress: { coins: 100, snapshotAtMs: 100 } })
+  await vi.advanceTimersByTimeAsync(1)
+  expect(apply.mock.calls.map(([p]) => p.coins)).toEqual([200])
+})
