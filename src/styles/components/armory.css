@@ -3785,3 +3785,17 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         transform: none;
     }
 }
+
+/* Wide screens: when the step points at the right-hand column, the card moves left. */
+@media (min-width: 821px) {
+    .armoryWalkthroughPanel.isLeft { left: 20px; right: auto; }
+}
+
+/* Phones and tablets: room below the content while the tour runs, so anything
+   under the pinned card can be scrolled up above it. */
+@media (max-width: 820px) {
+    .armoryPage:has(.armoryWalkthroughOverlay) { padding-bottom: 50vh; }
+    /* Compact card: the step's instruction stays, the secondary note goes. */
+    .armoryWalkthroughPanel { gap: var(--ca-space-2, 8px); padding: 14px 16px; }
+    .armoryWalkthroughPanel .armoryWalkthroughNote { display: none; }
+}

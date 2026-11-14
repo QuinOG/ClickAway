@@ -70,7 +70,11 @@ export function useArmoryWalkthrough({
     if (!isWalkthroughVisible || !targetId || window.innerWidth > 820) return
     const targets = { machine: machineRef, nameplate: nameplateRef, passives: passiveLaneRef, hotbar: hotbarEditorRef, review: reviewPanelRef }
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
-    targets[targetId]?.current?.scrollIntoView?.({ block: "start", behavior: reduceMotion ? "auto" : "smooth" })
+    const target = targets[targetId]?.current
+    if (!target?.scrollIntoView) return
+    // Clears the fixed app header so the step's top controls stay visible.
+    target.style.scrollMarginTop = "80px"
+    target.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" })
   }, [hotbarEditorRef, isWalkthroughVisible, machineRef, nameplateRef, passiveLaneRef, reviewPanelRef, targetId])
 
   useEffect(() => {
