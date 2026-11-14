@@ -774,6 +774,7 @@ export function useGameScreenController({
   ])
 
   const cancelPendingRoundStart = useCallback(() => {
+    if (challengeIdRef.current) onExitDuelRef.current?.()
     roundNonceRef.current += 1
     pendingRoundStartRef.current = null
     roundTokenRef.current = null
