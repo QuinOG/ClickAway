@@ -1643,8 +1643,9 @@ export function useGameScreenController({
             instruction: gameOnboardingStep.instruction,
             note: gameOnboardingStep.note,
             startLabel: gameOnboardingStep.startLabel,
-            // The first round shows only its own mode; the locked ones are noise.
-            singleMode: gameOnboardingStep.stepNumber === null,
+            // Coached rounds lock the mode, so only that mode's card is shown;
+            // the locked ones are noise and push Start off small screens.
+            singleMode: true,
           }
         : null,
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,

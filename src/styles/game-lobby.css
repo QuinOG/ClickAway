@@ -645,3 +645,11 @@
     position: static; display: block; width: auto; height: auto;
     overflow: visible; clip-path: none; white-space: normal;
 }
+
+/* Phones: the stat tiles were squeezed beside the emblem, clipping "Pressure". */
+@media (max-width: 600px) {
+    /* The emblem only occupies the card's top, so the stat row can use the full width. */
+    .lobbyModeRail .lobbyModeBrief { margin-left: -56px; }
+    .lobbyModeRail .lobbyModeBriefStat { padding: 8px 6px; }
+    .lobbyModeBriefStat small { letter-spacing: 0.04em; }
+}

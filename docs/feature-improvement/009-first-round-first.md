@@ -25,3 +25,9 @@ Excluded: the Armory tour itself, Practice/Casual coaching content, rewards. Rep
 - Mode locked to Casual, single mode card, "Play" button; badges hidden until a round exists (lobby and nav).
 - Coach text made visible (`game-lobby.css`); the repeated "First round" label dropped.
 - Checks: unit (onboarding steps), controller tests (new player / returning / duel link), lint. Shots: shots/009/after-*.
+
+## Review (Sol, pass with issues) and repair 1
+- Confirmed: Play fully on screen at 1440 and 390 with no scrolling; first round completes; no Armory pull before it; returning players and real duel links unaffected; badges and the Armory tour appear after the first round.
+- Regression caused here: making coach text visible pushed Start below the fold on phones for the Practice and Casual coaching steps. Repair: every coached step shows only its own (locked) mode card. Measured Start bottoms at 390×844: 610, 697, 657 (nav starts at 784).
+- Already there, fixed in the same repair: "Pressure" was clipped on the selected mode card on phones (tiles were 48px wide beside the emblem). The stat row now uses the card's full width; all three tiles measured inside the card.
+- Already there, not fixed: on phones the Armory tour's second step puts its controls far below the screen. More visible now that the tour follows the first round; a candidate for the next trial.
