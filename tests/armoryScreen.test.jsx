@@ -677,6 +677,22 @@ describe("Armory bay wall", () => {
 })
 
 describe("Armory compare bench (Phase 8)", () => {
+  test("compares starting charges separately from power cadence", async () => {
+    const user = userEvent.setup()
+    const savedLoadouts = DEFAULT_SAVED_LOADOUTS.map((loadout, index) => ({
+      ...loadout,
+      moduleIds: { ...loadout.moduleIds, powerRigId: index === 1 ? "power_reserve" : "power_balanced" },
+    }))
+    renderArmory({ savedLoadouts })
+    await user.click(within(getBayWall()).getAllByRole("button", { name: "Compare with active" })[0])
+    const bench = screen.getByRole("dialog", { name: "Compare bench" })
+    const row = within(bench).getByText("Starting Charges").closest(".armoryCompareInstrument")
+    expect(within(row).getByText("0 per power")).not.toBeNull()
+    expect(within(row).getByText("1 per power")).not.toBeNull()
+    expect(row.querySelector(".armoryCompareInstrumentDelta").textContent).toBe("+1 per power")
+    expect(row.querySelector(".armoryCompareInstrumentDelta").className).toContain("is-gain")
+  })
+
   test("comparing a bay against the active build shows both machines and paired instruments", async () => {
     const user = userEvent.setup()
     renderArmory()
@@ -689,7 +705,7 @@ describe("Armory compare bench (Phase 8)", () => {
     expect(within(bench).getAllByText("Loadout 1").length).toBeGreaterThan(0)
     expect(within(bench).getAllByText(otherLoadout.name).length).toBeGreaterThan(0)
     expect(bench.querySelectorAll(".armoryCompareMachine")).toHaveLength(2)
-    expect(within(bench).getByLabelText("Exact rules, active versus ghost").querySelectorAll(".armoryCompareInstrument").length).toBe(7)
+    expect(within(bench).getByLabelText("Exact rules, active versus ghost").querySelectorAll(".armoryCompareInstrument").length).toBe(8)
 
     // Purely derived: no persistence, no history writes.
     expect(screen.queryByText("Loadout")).toBeNull()
