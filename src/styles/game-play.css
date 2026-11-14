@@ -1739,3 +1739,14 @@
         radial-gradient(ellipse 18% 46% at 73% 12%, rgba(var(--heat), calc(0.1 + var(--heat-strength) * 0.12)), transparent 70%),
         radial-gradient(ellipse 18% 46% at 90% 18%, rgba(var(--heat), calc(0.12 + var(--heat-strength) * 0.12)), transparent 70%);
 }
+
+/* The one goal the next round can reach, right above Play Again. */
+.gameOverActions:has(.gameOverNextGoal) { flex-wrap: wrap; row-gap: var(--ca-space-2, 8px) !important; }
+.gameOverNextGoal {
+    flex-basis: 100%;
+    margin: 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffd76a;
+}

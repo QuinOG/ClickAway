@@ -29,10 +29,13 @@ if (process.env.EXTRA) {
 for (const [label, width, height] of SIZES) {
   test(`feature shot: ${ROUTE} ${label}`, async ({ browser }) => {
     test.skip(!process.env.OUT, "capture tool; set OUT to run")
-    const context = await browser.newContext({ viewport: { width, height }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173", reducedMotion: "reduce" })
+    const context = await browser.newContext({ viewport: { width, height }, colorScheme: "dark", baseURL: process.env.SHOT_BASE_URL || "http://127.0.0.1:4173", reducedMotion: "reduce" })
     const page = await context.newPage()
     await page.clock.install({ time: new Date("2026-07-12T16:00:00.000Z") })
-    await installApiMocks(page, process.env.NEW_PLAYER ? { progressOverrides: NEW_PLAYER_PROGRESS } : {})
+    // BEST=<score> sets the personal best (for Results comparisons).
+    const progressOverrides = process.env.NEW_PLAYER ? { ...NEW_PLAYER_PROGRESS } : {}
+    if (process.env.BEST) progressOverrides.lifetimeStats = { ...(progressOverrides.lifetimeStats ?? {}), bestSingleScore: Number(process.env.BEST) }
+    await installApiMocks(page, { progressOverrides })
     await page.addInitScript((prefs) => localStorage.setItem("clickaway.feedback-preferences.v1", JSON.stringify(prefs)), PREFS)
     const route = AUTHENTICATED_ROUTES.find((entry) => entry.id === ROUTE)
     // HEADING=<text> when the page heading differs for this state (e.g. a new player).
@@ -47,6 +50,20 @@ for (const [label, width, height] of SIZES) {
     if (process.env.LINK) {
       await page.getByRole("link", { name: process.env.LINK, exact: true }).first().click()
       await page.waitForLoadState("networkidle")
+    }
+    // PLAY_ROUND=1 starts the selected mode, lands 16 hits and ends the round (dev "g"), then shoots Results.
+    if (process.env.PLAY_ROUND) {
+      await page.locator(".arenaLobby .primaryButton, .arenaLobby button.readyStartButton").last().click()
+      await page.waitForTimeout(3900)
+      for (let i = 0; i < 16; i += 1) {
+        await page.locator(".arena .bigCircleButton").first().click({ force: true, timeout: 1000 }).catch(() => {})
+        await page.waitForTimeout(110)
+      }
+      await page.keyboard.press("g")
+      await page.waitForTimeout(2600)
+      await page.screenshot({ path: `${OUT}-${label}.png` })
+      await context.close()
+      return
     }
     await page.waitForTimeout(400)
     const fullHeight = await page.evaluate(() => {

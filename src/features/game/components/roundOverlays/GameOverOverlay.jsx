@@ -22,6 +22,7 @@ import {
 } from "../../../../services/celebrationEffects.js"
 import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
 import { getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
+import { getNextRoundGoal } from "../../../../utils/nextRoundGoal.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -293,6 +294,18 @@ export function GameOverOverlay({
     [loadoutPresentation, loadoutSnapshot, selectedModeId]
   )
 
+  // Waits for the save so the XP it counts is what the server awarded.
+  const nextRoundGoal = isRoundSaved && !isPracticeMode
+    ? getNextRoundGoal({
+      score,
+      bestScore,
+      countsLevelProgress: allowsLevelProgression,
+      level: playerLevel,
+      xpIntoLevel: playerXpIntoLevel,
+      earnedXp: roundXpEarned,
+    })
+    : null
+
   const tone = getGameOverTone({ hits, misses, accuracy, bestStreak })
   const nearestAchievement = useMemo(() => {
     if (!achievementStats || Object.keys(achievementStats).length === 0) return null
@@ -501,6 +514,9 @@ export function GameOverOverlay({
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.72, duration: 0.24 }}
       >
+        {nextRoundGoal ? (
+          <p className="gameOverNextGoal" data-goal={nextRoundGoal.kind}>{nextRoundGoal.text}</p>
+        ) : null}
         <button
           ref={primaryActionRef}
           className="primaryButton primaryButton-lg"
