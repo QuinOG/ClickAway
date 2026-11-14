@@ -36,6 +36,14 @@ const COMPARE_ROWS = [
   { label: "Miss Cost", better: "lower" },
   { label: "Power Tempo", better: "lower" },
   {
+    label: "Starting Charges",
+    better: "higher",
+    metric: (rules) => {
+      const value = Number(rules.startingPowerupCharges) || 0
+      return { value, text: `${value} per power`, digits: 0, suffix: " per power" }
+    },
+  },
+  {
     label: "Min Target",
     better: "higher",
     metric: (rules) => ({ value: Number(rules.minButtonSize) || 0, text: `${Number(rules.minButtonSize) || 0}px`, digits: 0, suffix: "px" }),
