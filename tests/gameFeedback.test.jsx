@@ -93,3 +93,9 @@ describe("Phase 3 game feedback", () => {
     expect(screen.getByRole("button", { name: "Precision target" }).classList.contains("imageFallback")).toBe(true)
   })
 })
+
+test("does not offer Time Boost in untimed Practice", () => {
+  const { container } = render(<PowerupTray powerupSlots={powerupSlots} isPlaying isTimedRound={false} />)
+  expect(screen.getByRole("button", { name: /Time \+2s: No timer/ }).disabled).toBe(true)
+  expect(container.querySelector(".powerupCoach").textContent).not.toContain("Time +2s ready")
+})

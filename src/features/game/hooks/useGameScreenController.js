@@ -931,7 +931,7 @@ export function useGameScreenController({
     activationCueTimeoutRef.current = window.setTimeout(() => {
       setActivatedPowerup(null)
       activationCueTimeoutRef.current = null
-    }, Math.max(1100, activeDurationMs))
+    }, activeDurationMs || 1100)
     applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
 
@@ -1068,7 +1068,9 @@ export function useGameScreenController({
       endCurrentRound()
     }
 
+    const scoreBeforeMiss = simulationRef.current.getState().score
     const result = simulationRef.current.applyMiss(eventTimeMs)
+    const scoreLost = scoreBeforeMiss - result.score
     syncSimulationState(result)
 
     const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
@@ -1090,11 +1092,11 @@ export function useGameScreenController({
       setClickFeedbackItems((currentItems) => currentItems.filter((item) => !String(item.type).includes("milestone")))
     }
 
-    if (result.penaltyApplied > 0) {
+    if (scoreLost > 0) {
       addClickFeedback(
         event.clientX,
         event.clientY,
-        `-${result.penaltyApplied}`,
+        `-${scoreLost}`,
         streakBroken ? "streakBreak" : "miss",
         streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
       )
@@ -1585,6 +1587,7 @@ export function useGameScreenController({
       activeEffect: activatedPowerup?.durationMs > 0 ? activatedPowerup.effectType : null,
     },
     powerupTrayProps: {
+      isTimedRound: displayMode.isTimedRound !== false,
       powerupSlots,
       streak,
       isPlaying,
