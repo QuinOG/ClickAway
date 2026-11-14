@@ -127,7 +127,10 @@ export default function GamePage({ onPhaseChange, ...props }) {
         <div className="ghostDuelError" role="alert">
           {duelError}
           {replayId ? <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button> : null}
-          <button type="button" onClick={() => setSearchParams({}, { replace: true })}>Leave duel</button>
+          <button type="button" onClick={() => {
+            game.entranceOverlayProps?.onCancel?.()
+            setSearchParams({}, { replace: true })
+          }}>Leave duel</button>
         </div>
       ) : challengeId && replayId && !ghostReplay ? (
         <div className="ghostDuelError" role="status">Loading your rival's run…</div>
