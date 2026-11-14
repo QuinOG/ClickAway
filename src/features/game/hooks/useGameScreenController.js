@@ -1,3 +1,5 @@
+import { createRoundClock } from "../../../game/engine/roundClock.js"
+import { measurePlayfield, mapPlayfieldClick } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import {
@@ -72,22 +74,7 @@ import { buildWorkshopNote, selectLoadoutStatsEntry } from "../../../utils/armor
 const PLAYFIELD_BOTTOM_RESERVE_PX = 52
 
 function getPlayfieldRect(arenaElement) {
-  const arenaRect = arenaElement.getBoundingClientRect()
-  return { width: arenaRect.width, height: Math.max(0, arenaRect.height - PLAYFIELD_BOTTOM_RESERVE_PX) }
-}
-
-function getArenaClickCoordinates(event, arenaElement) {
-  if (!arenaElement) return null
-
-  // Measured from inside the arena's border (where the target is positioned),
-  // and kept to two decimals: rounding to whole pixels could push an edge hit
-  // outside the target in the server's replay.
-  const arenaRect = arenaElement.getBoundingClientRect()
-  const toPlayfield = (value) => Math.round(value * 100) / 100
-  return {
-    x: toPlayfield(event.clientX - arenaRect.left - (arenaElement.clientLeft || 0)),
-    y: toPlayfield(event.clientY - arenaRect.top - (arenaElement.clientTop || 0)),
-  }
+  return measurePlayfield(arenaElement, PLAYFIELD_BOTTOM_RESERVE_PX)
 }
 
 function buildGameScreenClassName(atmosphereTier, isShakeActive) {
@@ -185,6 +172,9 @@ export function useGameScreenController({
   allowScreenShake = true,
 }) {
   const arenaRef = useRef(null)
+  const [logicalDimensions, setLogicalDimensions] = useState(null)
+  const clockRef = useRef(null)
+  const endingRef = useRef(false)
   const feedbackTimeoutIdsRef = useRef([])
   const hasAwardedRoundRef = useRef(false)
   const shakeTimeoutRef = useRef(null)
@@ -453,7 +443,7 @@ export function useGameScreenController({
   // Milliseconds since the round started playing — the canonical timebase for
   // every recorded event (and therefore for the server replay).
   const getElapsedMs = useCallback(() => (
-    roundStartTimeRef.current > 0 ? Date.now() - roundStartTimeRef.current : 0
+    clockRef.current?.elapsedMs() ?? 0
   ), [])
 
   const triggerScreenShake = useCallback(() => {
@@ -572,6 +562,8 @@ export function useGameScreenController({
     setBestReactionMs(null)
     setIsShakeActive(false)
     setIsRoundEnding(false)
+    endingRef.current = false
+    clockRef.current = null
     setIsGoCueVisible(false)
     if (goCueTimeoutRef.current) {
       window.clearTimeout(goCueTimeoutRef.current)
@@ -636,6 +628,7 @@ export function useGameScreenController({
     const startedRoundNonce = roundNonceRef.current
     roundTokenRef.current = null
     arenaDimensionsRef.current = null
+    setLogicalDimensions(null)
     const activeGhostReplay = finishedDuelRef.current ? null : ghostReplayRef.current
     // Reward-bearing rounds wait for a server token: without one the server
     // records the round but pays nothing.
@@ -774,6 +767,7 @@ export function useGameScreenController({
   ])
 
   const cancelPendingRoundStart = useCallback(() => {
+    if (challengeIdRef.current) onExitDuelRef.current?.()
     roundNonceRef.current += 1
     pendingRoundStartRef.current = null
     roundTokenRef.current = null
@@ -814,7 +808,8 @@ export function useGameScreenController({
   }, [onModeChange, resetRoundState, resolvedLoadout, resolvedSelectedMode])
 
   const endCurrentRound = useCallback(() => {
-    if (phase !== ROUND_PHASE.PLAYING || isRoundEnding) return
+    if (phase !== ROUND_PHASE.PLAYING || endingRef.current) return
+    endingRef.current = true
 
     clearRoundEndTimeout()
     setIsRoundEnding(true)
@@ -823,16 +818,15 @@ export function useGameScreenController({
       setIsRoundEnding(false)
       roundEndTimeoutRef.current = null
     }, ROUND_END_SETTLE_MS)
-  }, [clearRoundEndTimeout, isRoundEnding, phase])
+  }, [clearRoundEndTimeout, phase])
 
   // Visual/geometry side effects of a powerup. Score-relevant semantics
   // (charge consumption, combo surge, guard) live in the shared engine.
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs = 0) => {
     mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
-      setTimeLeft((currentTime) =>
-        Math.min(roundMode.maxTimeBufferSeconds, currentTime + 2)
-      )
+      clockRef.current?.boost()
+      setTimeLeft(clockRef.current?.secondsLeft() ?? 0)
       addCenterFeedback("+2s", "power power-time_boost")
       return
     }
@@ -883,12 +877,17 @@ export function useGameScreenController({
     addCenterFeedback,
     mirrorGeometry,
     markButtonSpawned,
-    roundMode.maxTimeBufferSeconds,
   ])
 
   const tryUsePowerup = useCallback((powerup) => {
     if (!powerup || !isPlaying || !simulationRef.current) return
 
+    if (endingRef.current) return
+    if (roundMode.isTimedRound && clockRef.current?.remainingMs() <= 0) {
+      setTimeLeft(0)
+      endCurrentRound()
+      return
+    }
     const eventTimeMs = getElapsedMs()
     const outcome = simulationRef.current.applyPowerup(powerup.id, eventTimeMs)
 
@@ -931,9 +930,9 @@ export function useGameScreenController({
     activationCueTimeoutRef.current = window.setTimeout(() => {
       setActivatedPowerup(null)
       activationCueTimeoutRef.current = null
-    }, Math.max(1100, activeDurationMs))
+    }, activeDurationMs || 1100)
     applyPowerupPresentation(powerup, eventTimeMs)
-  }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, getElapsedMs, isPlaying])
+  }, [addCenterFeedback, applyPowerupPresentation, emitFeedback, endCurrentRound, getElapsedMs, isPlaying, roundMode.isTimedRound])
 
   const tryUsePowerupKey = useCallback((key) => {
     tryUsePowerup(roundMode.equippedPowerups.find((item) => item.slotKey === key))
@@ -947,13 +946,19 @@ export function useGameScreenController({
     event.stopPropagation()
     if (!isPlaying || !simulationRef.current) return
 
+    if (endingRef.current) return
+    if (roundMode.isTimedRound && clockRef.current?.remainingMs() <= 0) {
+      setTimeLeft(0)
+      endCurrentRound()
+      return
+    }
     const eventTimeMs = getElapsedMs()
     const hitReactionMs = buttonSpawnedAtRef.current > 0
       ? Math.max(0, Math.round(performance.now() - buttonSpawnedAtRef.current))
       : null
 
     const arenaElement = arenaRef.current
-    const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
+    const clickCoordinates = mapPlayfieldClick(event, arenaElement, arenaDimensionsRef.current, PLAYFIELD_BOTTOM_RESERVE_PX)
 
     if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
     if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) return
@@ -1049,9 +1054,15 @@ export function useGameScreenController({
   const handleArenaClick = useCallback((event) => {
     if (!isPlaying || !simulationRef.current) return
 
+    if (endingRef.current) return
+    if (roundMode.isTimedRound && clockRef.current?.remainingMs() <= 0) {
+      setTimeLeft(0)
+      endCurrentRound()
+      return
+    }
     const eventTimeMs = getElapsedMs()
     const arenaElement = arenaRef.current
-    const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
+    const clickCoordinates = mapPlayfieldClick(event, arenaElement, arenaDimensionsRef.current, PLAYFIELD_BOTTOM_RESERVE_PX)
 
     if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
     if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) return
@@ -1068,7 +1079,9 @@ export function useGameScreenController({
       endCurrentRound()
     }
 
+    const scoreBeforeMiss = simulationRef.current.getState().score
     const result = simulationRef.current.applyMiss(eventTimeMs)
+    const scoreLost = scoreBeforeMiss - result.score
     syncSimulationState(result)
 
     const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
@@ -1090,11 +1103,11 @@ export function useGameScreenController({
       setClickFeedbackItems((currentItems) => currentItems.filter((item) => !String(item.type).includes("milestone")))
     }
 
-    if (result.penaltyApplied > 0) {
+    if (scoreLost > 0) {
       addClickFeedback(
         event.clientX,
         event.clientY,
-        `-${result.penaltyApplied}`,
+        `-${scoreLost}`,
         streakBroken ? "streakBreak" : "miss",
         streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
       )
@@ -1135,15 +1148,17 @@ export function useGameScreenController({
 
     const activateRound = () => {
       roundStartTimeRef.current = Date.now()
+      clockRef.current = createRoundClock(roundMode.durationSeconds, roundMode.maxTimeBufferSeconds)
       countdownEndsAtRef.current = 0
 
       const arenaElement = arenaRef.current
       if (arenaElement) {
         const playfieldRect = getPlayfieldRect(arenaElement)
         arenaDimensionsRef.current = {
-          arenaWidth: Math.round(playfieldRect.width),
-          arenaHeight: Math.round(playfieldRect.height),
+          arenaWidth: Math.floor(playfieldRect.width),
+          arenaHeight: Math.floor(playfieldRect.height),
         }
+        setLogicalDimensions(arenaDimensionsRef.current)
         geometryRef.current = createGeometrySimulation({
           roundRules: roundMode,
           ...arenaDimensionsRef.current,
@@ -1265,18 +1280,22 @@ export function useGameScreenController({
   useEffect(() => {
     if (!isPlaying || !isTimedRound) return
 
-    const roundTimerInterval = setInterval(() => {
-      setTimeLeft((currentTime) => {
-        if (currentTime <= 1) {
-          clearInterval(roundTimerInterval)
-          endCurrentRound()
-          return 0
-        }
-        return currentTime - 1
-      })
-    }, TIMER_TICK_MS)
-
-    return () => clearInterval(roundTimerInterval)
+    let timerId
+    const syncClock = () => {
+      window.clearTimeout(timerId)
+      const remaining = clockRef.current?.secondsLeft() ?? 0
+      setTimeLeft(remaining)
+      if (remaining <= 0) endCurrentRound()
+      else timerId = window.setTimeout(syncClock, Math.min(TIMER_TICK_MS, clockRef.current.remainingMs()))
+    }
+    document.addEventListener("visibilitychange", syncClock)
+    window.addEventListener("focus", syncClock)
+    syncClock()
+    return () => {
+      window.clearTimeout(timerId)
+      document.removeEventListener("visibilitychange", syncClock)
+      window.removeEventListener("focus", syncClock)
+    }
   }, [endCurrentRound, isPlaying, isTimedRound])
 
   useEffect(() => {
@@ -1310,7 +1329,7 @@ export function useGameScreenController({
 
       const savingRoundNonce = roundNonceRef.current
       setRoundSave({ status: "saving" })
-      const roundSaveResult = onRoundComplete?.({
+      const roundSaveResult = (async () => onRoundComplete?.({
         clicksScored: hits,
         hits,
         misses,
@@ -1332,23 +1351,33 @@ export function useGameScreenController({
         arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
         challengeId: finishedDuelRef.current ? null : challengeIdRef.current,
         drillId: activeDrillIdRef.current,
-      })
+      }))()
       if (challengeIdRef.current) finishedDuelRef.current = true
+      const countsTowardRR = roundMode.allowsRankProgression === true
       Promise.resolve(roundSaveResult).then((result) => {
+        // Session Net RR counts only what the server awarded, once per round,
+        // even if the save lands after the next round has started. Placement
+        // scores aren't RR.
+        const previousRank = result?.rankProgress?.previous
+        if (result?.ok === true && countsTowardRR && !previousRank?.isPlacement && !previousRank?.isUnranked) {
+          const awarded = Number(result.rankDelta)
+          if (Number.isFinite(awarded) && awarded !== 0) {
+            setSessionStats((previousStats) => ({ ...previousStats, netRR: previousStats.netRR + awarded }))
+          }
+        }
         if (roundNonceRef.current !== savingRoundNonce) return
-        setRoundSave(result && result.ok === false
-          ? { status: "failed", error: result.error }
-          : { status: "saved", outcome: result?.ok ? result : null })
+        setRoundSave(result?.ok === true
+          ? { status: "saved", outcome: result }
+          : { status: "failed", error: result?.error || "The server did not confirm this round was saved." })
+      }).catch((error) => {
+        if (roundNonceRef.current !== savingRoundNonce) return
+        setRoundSave({ status: "failed", error: error?.message || "Unable to save this round." })
       })
 
       setSessionStats((previousStats) => ({
         rounds: previousStats.rounds + 1,
         bestScore: Math.max(previousStats.bestScore, score),
-        netRR: previousStats.netRR + (
-          roundMode.allowsRankProgression === true
-            ? projectedRankOutcome.appliedRankDelta
-            : 0
-        ),
+        netRR: previousStats.netRR,
       }))
 
       const nextOnboardingStatus = getNextOnboardingStatusAfterRound(
@@ -1371,7 +1400,6 @@ export function useGameScreenController({
     onBuildWalkthroughChange,
     onRoundComplete,
     phase,
-    projectedRankOutcome.appliedRankDelta,
     roundMode.allowsCoinRewards,
     roundMode.allowsLevelProgression,
     roundMode.allowsRankProgression,
@@ -1566,6 +1594,8 @@ export function useGameScreenController({
     arenaProps: {
       arenaRef,
       arenaThemeClass,
+      logicalDimensions,
+      bottomReserve: PLAYFIELD_BOTTOM_RESERVE_PX,
       onArenaClick: handleArenaClick,
       buttonStyle,
       onButtonClick: handleButtonClick,
@@ -1582,6 +1612,7 @@ export function useGameScreenController({
       activeEffect: activatedPowerup?.durationMs > 0 ? activatedPowerup.effectType : null,
     },
     powerupTrayProps: {
+      isTimedRound: displayMode.isTimedRound !== false,
       powerupSlots,
       streak,
       isPlaying,

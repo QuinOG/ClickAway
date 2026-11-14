@@ -1,6 +1,6 @@
 # Bug pass state
 
-Open PR: #21 (`sol-bug-pass`, base `main`). It holds all four runs. Before deploying, run migration `012_add_consumed_round_tokens.sql`.
+Open PR: #23 on `bug-pass-7` (runs 7 and 8). Runs 1–6 merged to main in PR #21 (2026-11-13). Before deploying, run migrations `012_add_consumed_round_tokens.sql` and `013_add_rank_result_kind.sql`. Next run: branch from main and open a new PR.
 
 ## Fixed (do not re-report)
 - **Run 1 (a94b38a):**
@@ -111,18 +111,30 @@ Open PR: #21 (`sol-bug-pass`, base `main`). It holds all four runs. Before deplo
   - first placement isn't a win;
   - plus 27 smaller fixes: Help copy, settings retry, app error boundary, keyboard tabs on Shop and Profile, Results credit gating, labels.
 
+- **Run 7 (bug-pass-7):**
+  - Results never stuck on saving or shown saved without confirmation;
+  - reconcile reads never roll back a newer snapshot;
+  - session Net RR from the server's award only, no placement points;
+  - Magnet/Freeze cue ends on time, Practice Time Boost disabled, miss feedback matches the score;
+  - duel link missing its replay offers Leave, leaving clears a failed start.
+
+- **Run 8 (d41046f):**
+  - cancelling a failed duel start leaves the duel; no duels with private replays;
+  - duel send/accept/finish report success when only the read-back fails;
+  - explicit logout always reaches the server, even with storage blocked;
+  - Armory compare shows starting charges;
+  - the More menu stays closed after Back or a round.
+
+- **Work round 9 (29f25e4, not a bug pass):**
+  - deadline-based round clock (live round and Test Range) and a fixed logical playfield per round;
+  - season rollover under an advisory lock, season-scoped Ladder stats, reward from peak, server weekly round count;
+  - `rank_result_kind` on round_history (migration 013);
+  - Armory dialog focus trap, Profile/Compare Bench accessibility;
+  - release-matrix and visual-cohesion suites passing (112 checks), snapshots refreshed.
+
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
-- **Interval timer drift in background tabs:** M; needs a deadline-based timer.
-- **Resizing the window mid-round:** M; needs a fixed logical playfield.
-- **Season end dates not enforced:** M; needs a season rollover job.
-- **Ladder "this season" labels over all-time stats:** M; needs ranked, season-scoped aggregates, or new labels.
-- **"Rounds this week" capped at 50:** needs a server-computed count.
-- **Ladder reward shown from current rather than peak rating:** needs the API to return season stats.
-- **Armory dialogs lack a focus trap:** M.
-- **Shop category tabs lack arrow keys:** S–M.
 - **Login doesn't apply the 72-byte password limit:** enforcing it would lock out older accounts. Product decision.
-- **History labels placement points as RR:** needs a nullable `rank_result_kind` column on round_history (both startup paths, migration 013 and verifySchema). Plan it with other schema work.
 - **Existing accounts with stats inflated by unverified rounds:** a one-off repair would be needed; history doesn't record verification.
-- **Help, menus and settings were not reviewed in run 5** (Codex usage limit, resets 2026-11-18). Review this feature first next run.
+- **Grow can push an edge target a few pixels off the arena:** the clamp changes the geometry the server checks clicks against; needs versioned replay geometry so old ghosts keep their paths.
 - **Duel race lost if its replay write fails after commit:** the round is reported saved with a note, but the duel stays unsettled. Needs the replay and duel writes inside the round transaction.

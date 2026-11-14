@@ -127,6 +127,9 @@ export function settleProgressMutation(ticket, applyProgress) {
       const session = await fetchCurrentUser()
       if (!isCurrentSession(refreshTicket) || generation !== reconcileGeneration) return
       if (!session?.progress) throw new Error("Missing progress")
+      // A response that landed while this read was in flight may already show a
+      // newer snapshot; never roll it back.
+      if (isOlderSnapshot(session.progress)) return
       lastAppliedRequest = Math.max(lastAppliedRequest, refreshTicket.request)
       applySnapshot(session.progress, applyProgress)
     } catch {

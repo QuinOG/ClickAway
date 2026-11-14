@@ -57,6 +57,7 @@ function getRankResultText(round = {}) {
   if (!isRankedModeEntry(round)) return "No change"
 
   const normalizedDelta = Number(round.rankDelta) || 0
+  if (round.rankResultKind === "placement") return `${formatRankDelta(normalizedDelta)} placement points`
   if (normalizedDelta === 0) return "Even"
 
   return `${formatRankDelta(normalizedDelta)} RR`

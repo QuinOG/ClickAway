@@ -10,7 +10,11 @@ function getFilledSegments({ charges, streak, awardEvery }) {
   return Math.floor((streak % safeAwardEvery) / hitsPerSegment)
 }
 
-function getPowerupState(powerup, charges) {
+function getPowerupState(powerup, charges, isTimedRound) {
+  if (!isTimedRound && powerup.effectType === "time_boost") {
+    return { label: "No timer", tone: "idle" }
+  }
+
   if (powerup.effectType === "combo_surge" && powerup.comboSurgeHitsRemaining > 0) {
     return {
       label: `${powerup.comboSurgeHitsRemaining} hits left`,
@@ -42,10 +46,12 @@ export default function PowerupTray({
   powerupSlots = [],
   streak = 0,
   isPlaying = false,
+  isTimedRound = true,
   activatedPowerup = null,
   onUsePowerup,
 }) {
-  const readyPowerup = powerupSlots.find((powerup) => (powerup.charges ?? 0) > 0)
+  const isUsable = (powerup) => isTimedRound || powerup.effectType !== "time_boost"
+  const readyPowerup = powerupSlots.find((powerup) => isUsable(powerup) && (powerup.charges ?? 0) > 0)
   const coachMessage = activatedPowerup?.id
     ? `${activatedPowerup.label} activated — watch the arena cue.`
     : readyPowerup && isPlaying
@@ -60,12 +66,12 @@ export default function PowerupTray({
         const isActive = powerup.effectType === "combo_surge"
           ? powerup.comboSurgeHitsRemaining > 0
           : powerup.effectType === "guard_charge" && powerup.isGuardActive
-        const canUse = isPlaying && charges > 0
+        const canUse = isPlaying && isUsable(powerup) && charges > 0
         const isRecentlyActivated = activatedPowerup?.id === powerup.id
         const isTimedActive = isRecentlyActivated && activatedPowerup.durationMs > 0
         const powerupState = isTimedActive
           ? { label: "Active", tone: "active" }
-          : getPowerupState({ ...powerup, isPlaying }, charges)
+          : getPowerupState({ ...powerup, isPlaying }, charges, isTimedRound)
         const filledSegments = getFilledSegments({
           charges,
           streak,

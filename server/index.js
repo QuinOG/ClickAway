@@ -413,7 +413,7 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
         view,
         reverse,
       }),
-      findCurrentSeason(),
+      findCurrentSeason(user.id),
     ])
 
     response.json({
@@ -434,7 +434,7 @@ app.get("/api/seasons/current", requireAuth, async (request, response) => {
 
   try {
     response.json({
-      season: await findCurrentSeason(),
+      season: await findCurrentSeason(user.id),
     })
   } catch (error) {
     handleRouteError(error, response)
@@ -530,6 +530,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
     const replay = await findReplayById(replayId)
     if (!replay || replay.userId !== user.id) {
       response.status(400).json({ error: "Replay not found or does not belong to you." })
+      return
+    }
+
+    if (replay.visibility === "private") {
+      response.status(400).json({ error: "Private runs cannot be used for duels. Choose a public run." })
       return
     }
 

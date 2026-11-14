@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from "react"
+import { measurePlayfield } from "../../../game/engine/roundPlayfield.js"
 import MovingButton from "../../../components/MovingButton.jsx"
 import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import ClickFeedbackLayer from "./ClickFeedbackLayer.jsx"
@@ -5,6 +7,8 @@ import "./arena-focus.css"
 
 export default function GameArena({
   arenaRef,
+  logicalDimensions = null,
+  bottomReserve = 0,
   arenaThemeClass,
   onArenaClick,
   buttonStyle,
@@ -22,6 +26,23 @@ export default function GameArena({
   finalSeconds = null,
   activeEffect = null,
 }) {
+  const playfieldRef = useRef(null)
+  useLayoutEffect(() => {
+    if (!logicalDimensions || !arenaRef.current || !playfieldRef.current) return undefined
+    const arena = arenaRef.current
+    const syncScale = () => {
+      const display = measurePlayfield(arena, bottomReserve)
+      playfieldRef.current.style.transform = `scale(${display.width / logicalDimensions.arenaWidth}, ${display.height / logicalDimensions.arenaHeight})`
+    }
+    syncScale()
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(syncScale)
+    observer?.observe(arena)
+    window.addEventListener("resize", syncScale)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener("resize", syncScale)
+    }
+  }, [arenaRef, bottomReserve, logicalDimensions])
   const isFinalSeconds = finalSeconds !== null
   return (
     <div
@@ -63,20 +84,26 @@ export default function GameArena({
         <span className="arenaCorner isBL" />
         <span className="arenaCorner isBR" />
       </div>
-      {isTargetVisible ? (
-        <MovingButton
-          key={`target-spawn-${targetSpawnSequence}`}
-          style={buttonStyle}
-          onClick={onButtonClick}
-          disabled={isButtonDisabled}
-          label={buttonLabel}
-          labelFontSize={buttonLabelFontSize}
-          skinClass={buttonSkinClass}
-          skinImageSrc={buttonSkinImageSrc}
-          skinImageScale={buttonSkinImageScale}
-        />
-      ) : null}
+      <div ref={playfieldRef} style={logicalDimensions ? {
+        position: "absolute", left: 0, top: 0,
+        width: logicalDimensions.arenaWidth, height: logicalDimensions.arenaHeight,
+        transformOrigin: "top left", pointerEvents: "none",
+      } : { display: "contents" }}>
+        {isTargetVisible ? (
+          <MovingButton
+            key={`target-spawn-${targetSpawnSequence}`}
+            style={{ ...buttonStyle, pointerEvents: "auto" }}
+            onClick={onButtonClick}
+            disabled={isButtonDisabled}
+            label={buttonLabel}
+            labelFontSize={buttonLabelFontSize}
+            skinClass={buttonSkinClass}
+            skinImageSrc={buttonSkinImageSrc}
+            skinImageScale={buttonSkinImageScale}
+          />
+        ) : null}
 
+      </div>
       <ClickFeedbackLayer clickFeedbackItems={clickFeedbackItems} />
       {roundOverlay}
     </div>

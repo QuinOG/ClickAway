@@ -70,7 +70,7 @@ const WALL_TABS = [{ id: "all", label: "All" }, ...MODULE_SLOTS.map((slot) => ({
 
 export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeLoadout }) {
   const [activeTab, setActiveTab] = useState("all")
-  useOverlayDismiss(isOpen, onClose)
+  const dialogRef = useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   const allParts = [...PASSIVE_LOADOUT_MODULES, ...LOADOUT_POWERUPS]
@@ -87,7 +87,7 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
   return (
     <>
       <div className="armoryUnlockWallScrim" onClick={onClose} aria-hidden="true" />
-      <section className="armoryUnlockWall unlockWallRebuild" role="dialog" aria-label="Unlock wall">
+      <section className="armoryUnlockWall unlockWallRebuild" ref={dialogRef} tabIndex={-1} aria-modal="true" role="dialog" aria-label="Unlock wall">
         <header className="armoryUnlockWallHeader">
           <div>
             <p className="armoryUnlockWallEyebrow">Unlock Wall</p>

@@ -76,7 +76,7 @@ export default function ArmorySpecSheet({
   presentation,
   loadoutStats = null,
 }) {
-  useOverlayDismiss(isOpen, onClose)
+  const dialogRef = useOverlayDismiss(isOpen, onClose)
   if (!isOpen) return null
 
   const { roundRules } = presentation
@@ -84,7 +84,7 @@ export default function ArmorySpecSheet({
   return (
     <>
       <div className="armorySpecSheetScrim" onClick={onClose} aria-hidden="true" />
-      <aside className="armorySpecSheet specSheetClipboard" role="dialog" aria-label="Build spec sheet">
+      <aside className="armorySpecSheet specSheetClipboard" ref={dialogRef} tabIndex={-1} aria-modal="true" role="dialog" aria-label="Build spec sheet">
         <div className="specSheetClip" aria-hidden="true" />
         <header className="armorySpecSheetHeader">
           <div>

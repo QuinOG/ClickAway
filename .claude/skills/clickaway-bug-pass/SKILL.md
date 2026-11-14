@@ -63,7 +63,7 @@ These are where the high-severity bugs and Claude's own leaked fixes came from.
 
 ## Pacing and usage (user, 2026-11-14)
 Usage limits are per 5-hour window. Spread a run across the window rather than spending it in the first hour; a run taking about 5× longer is fine.
-- **Meter:** `node .claude/tools/usage-meter.mjs` (add `--json` for agents).
+- **Meter:** `node .claude/tools/usage-meter.mjs` (add `--json` for agents). Codex numbers are exact; Claude numbers are estimates from `usage-budget.json`. Resets don't need recalibration. If the Claude estimate is off by more than about 15 points from the usage page, re-read the page and update the budgets and the two reset anchors (`claudeSessionResetAt`, `claudeWeeklyResetAt`).
   - Codex numbers are exact: the 5-hour and weekly used % from Codex's own logs.
   - Claude numbers are estimated from transcript token counts against `.claude/tools/usage-budget.json`. Calibrate it from one reading of the Claude usage page: budget = logged tokens ÷ the page's %.
 - **Pacing gate:** run the meter before launching each agent. If the window's used % is more than about 10 points above the % of the window elapsed, don't launch; wait (ScheduleWakeup for long gaps), then check again. Same for the weekly window.
