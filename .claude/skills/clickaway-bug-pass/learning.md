@@ -11,6 +11,7 @@ Update this after every run (SKILL.md step 8). The run log and lessons here are 
 | 3 | 2026-11-13 | 12 narrow × high | 39 | 38 | 1 (same compat skip) | ~10 | 7 | Nearly every item proven by execution; no wrong claims. |
 | 6 | 2026-11-14 | 12 narrow × high, Sol fixes 1–6 itself, Sol challenger, Claude approves plans, Sol integrator | 43 (2H 26M 15L) | 43 | 0 | ~10 gaps in run 5's fixes | 2 | First delegated run: Claude read only summaries and challenged plans. 27 auto-fixes, 16 plans (6 revised or simplified). All checks green. Codex 5-hour window hit 82% in about an hour, which led to the pacing rules. |
 | 5 | 2026-11-13 | 12 narrow × high + paired medium on round saving (Help/menus lost to the Codex usage limit) | 34 | 33 | 1 deferred (placement label in History needs a DB column) | ~9 | 3 | Every report carried a run proof. Low-severity items rose; feature set is nearing diminishing returns. |
+| 7 | 2026-11-13 | 3 narrow × high (small run, pacing gate overridden by the user) | 9 | 8 | 1 deferred (Grow clamp changes server geometry) | 2 (run 6 reconcile and session RR) | 0 | Codex hit its limit; Live round and Round saving finished, Duels stopped after 2 fixes. Claude reviewed 3 plans directly (no challenger) and integrated. All checks green; the browser suite fails 28 checks on main too. |
 | 4 (A/B) | 2026-11-13 | 1 feature (round saving) × medium and × high | 3 + 2 | 4 unique | 0 | – | 1 (high only) | See the A/B result below. |
 
 ## Reviewer cost (wall time from `recentRuns`, steps = `itemCount`)
@@ -33,6 +34,8 @@ Token counts are not exposed for child runs; time and steps are the proxy. Earli
 Medium found 3 and high found 3, with 2 shared. Each caught one medium-severity bug the other missed: medium found the season write skipped on a replay failure, high found the inverted snapshot order. That's the same pattern as run 4, so keep the paired rule. Times weren't measured this run.
 
 ## Lessons (newest first)
+- **Run 7:** Launching at 84% of the Codex window cost the Duels review partway through. When the gate is overridden, start the most valuable feature alone first. Claude integrating a small run (3 branches, 2 plans) worked well when Claude was under pace.
+- **Run 7:** The browser suite (release-matrix, visual-cohesion) already fails about 28 checks on main, and a few are flaky. The skill's browser step is only the `zz-app.spec.js` capture; don't run the full suite during a bug pass. It also writes stray screenshots into the repo.
 - **Run 6:** Delegation worked. Claude's work was 12 summaries, one challenged-plans file and an approvals note, and quality held: every check green, a regression test on each fix. The cost moved to Codex: 14 high-reasoning agents used 82% of a 5-hour window in about an hour. The pacing gate and the token-saving rules came from this.
 - **Run 6:** The challenger earned its cost on a large plan set: it re-ran proofs, caught plans that would recreate another bug (Freeze vs Magnet), and set a safe merge order. Skip it only when there are 3 or fewer plans.
 - **Run 6:** Claude simplified two over-built plans (a full reconciliation queue, and strict version-skew handling). Where the database is already correct, prefer self-healing display fixes over new ordering machinery.
