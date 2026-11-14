@@ -13,10 +13,10 @@ function getAttempts(round = {}) {
 export function buildHistorySnapshot(roundHistory = []) {
   const rows = Array.isArray(roundHistory) ? roundHistory : []
   const recentRounds = rows.slice(0, 10)
-  const rankedRounds = rows.filter((round) => isRankedModeEntry(round))
+  const rankedRounds = rows.filter((round) => isRankedModeEntry(round) && round.rankResultKind !== "placement")
   // Ranked rounds inside the same recent window, so "Net RR" covers the same
   // "Last N rounds" the strip is labelled with.
-  const recentRankedRounds = recentRounds.filter((round) => isRankedModeEntry(round))
+  const recentRankedRounds = recentRounds.filter((round) => isRankedModeEntry(round) && round.rankResultKind !== "placement")
 
   let bestScore = 0
   let bestStreak = 0
@@ -56,7 +56,7 @@ export function buildHistorySnapshot(roundHistory = []) {
       cleanestRound = round
     }
 
-    if (isRankedModeEntry(round) && rankDelta > bestRankGain) {
+    if (isRankedModeEntry(round) && round.rankResultKind !== "placement" && rankDelta > bestRankGain) {
       bestRankGain = rankDelta
       bestRankGainRound = round
     }

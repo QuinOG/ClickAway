@@ -59,6 +59,7 @@ export function normalizeLifetimeStats(stats = {}) {
     reactionRounds: toNonNegativeNumber(stats.reactionRounds) ?? 0,
     totalReactionMs: toNonNegativeNumber(stats.totalReactionMs) ?? 0,
     bestReactionMs,
+    roundsThisWeek: toNonNegativeNumber(stats.roundsThisWeek) ?? 0,
     drillStats: normalizeDrillStats(stats.drillStats),
   }
 }
@@ -264,19 +265,9 @@ export function buildPlayerLeaderboardStatsFromLifetime(lifetimeStats = {}) {
   }
 }
 
-export function buildProfileStatsFromLifetime(lifetimeStats = {}, roundHistory = []) {
+export function buildProfileStatsFromLifetime(lifetimeStats = {}) {
   const normalizedLifetimeStats = normalizeLifetimeStats(lifetimeStats)
-  const now = Date.now()
-  let roundsThisWeek = 0
-
-  ;(Array.isArray(roundHistory) ? roundHistory : []).forEach((round) => {
-    if (!round?.playedAtIso) return
-
-    const playedAt = new Date(round.playedAtIso).getTime()
-    if (!Number.isNaN(playedAt) && now - playedAt <= 7 * 24 * 60 * 60 * 1000) {
-      roundsThisWeek += 1
-    }
-  })
+  const roundsThisWeek = normalizedLifetimeStats.roundsThisWeek
 
   const totalAttempts = normalizedLifetimeStats.totalHits + normalizedLifetimeStats.totalMisses
 

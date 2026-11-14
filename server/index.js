@@ -413,7 +413,7 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
         view,
         reverse,
       }),
-      findCurrentSeason(),
+      findCurrentSeason(user.id),
     ])
 
     response.json({
@@ -434,7 +434,7 @@ app.get("/api/seasons/current", requireAuth, async (request, response) => {
 
   try {
     response.json({
-      season: await findCurrentSeason(),
+      season: await findCurrentSeason(user.id),
     })
   } catch (error) {
     handleRouteError(error, response)

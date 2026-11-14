@@ -274,8 +274,8 @@ function LeaderboardStandingPanel({
     lead = "Finish placement to receive a global rank."
   }
 
-  const rewardTier = getSeasonRewardTier(currentRankProgress?.mmr, {
-    isPlaced: Boolean(currentRankProgress) && !currentRankProgress.isPlacement && !currentRankProgress.isUnranked,
+  const rewardTier = getSeasonRewardTier(season?.stats?.peakMmr, {
+    isPlaced: Number(season?.stats?.rewardTier) > 0,
   })
 
   const statItems = [
@@ -284,8 +284,8 @@ function LeaderboardStandingPanel({
       value: formatNumericValue(currentRankProgress?.mmr),
     },
     {
-      label: "Recent games",
-      value: formatNumericValue(normalizedRankedRounds),
+      label: season ? "Ranked this season" : "Recent games",
+      value: formatNumericValue(season ? season.stats?.rankedRounds : normalizedRankedRounds),
     },
   ]
 
@@ -314,7 +314,7 @@ function LeaderboardStandingPanel({
         </div>
       </div>
 
-      <p className="leaderboardStandingScope">Current rating &middot; recent Ranked games</p>
+      <p className="leaderboardStandingScope">Current rating &middot; season Ranked games</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
           <article key={item.label} className="leaderboardStandingStat">
@@ -736,6 +736,7 @@ export default function LeaderboardPage({
         />
 
         <SeasonBanner season={season} />
+        <p className="leaderboardStandingScope">Rating carries across seasons. Score, streak, accuracy and reaction records are all-time.</p>
 
         <div className="leaderboardTopRow">
           {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
