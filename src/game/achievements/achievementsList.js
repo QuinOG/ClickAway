@@ -1,5 +1,6 @@
 function getMetricNumber(stats = {}, metricKey = "") {
   const rawValue = stats?.[metricKey]
+  if (rawValue === null || rawValue === undefined || rawValue === "") return null
   const numericValue = Number(rawValue)
   return Number.isFinite(numericValue) ? Math.max(0, numericValue) : null
 }

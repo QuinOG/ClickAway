@@ -222,6 +222,7 @@ export default function ArmoryScreen({
               </div>
 
               <ArmoryPartsGallery
+                key={`${activeLoadout.id}:${passiveApi.selectedModuleSlot.id}`}
                 tone={passiveApi.selectedModuleSlot.id}
                 galleryLabel={`${passiveApi.selectedModuleSlot.label} parts`}
                 parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
@@ -273,7 +274,7 @@ export default function ArmoryScreen({
                       draggable: true,
                       onDragStart: (event) => {
                         setDraggedKeyIndex(index)
-                        event.dataTransfer.setData("text/plain", String(index))
+                        event.dataTransfer.setData("application/x-clickaway-power-slot", String(index))
                         event.dataTransfer.effectAllowed = "move"
                       },
                       onDragEnd: () => setDraggedKeyIndex(null),
@@ -281,8 +282,9 @@ export default function ArmoryScreen({
                       onDrop: (event) => {
                         event.preventDefault()
                         setDraggedKeyIndex(null)
-                        const fromIndex = Number(event.dataTransfer.getData("text/plain"))
-                        if (Number.isInteger(fromIndex)) hotbarApi.swapPowerSlots(fromIndex, index)
+                        const sourceSlot = event.dataTransfer.getData("application/x-clickaway-power-slot")
+                        const fromIndex = /^[0-2]$/.test(sourceSlot) ? Number(sourceSlot) : -1
+                        if (fromIndex >= 0) hotbarApi.swapPowerSlots(fromIndex, index)
                       },
                     }}
                   />
@@ -294,6 +296,7 @@ export default function ArmoryScreen({
               </p>
 
               <ArmoryPartsGallery
+                key={`${activeLoadout.id}:power:${hotbarApi.editingPowerSlotIndex}`}
                 tone="power"
                 galleryLabel="Powerups"
                 parts={powerParts}
@@ -359,9 +362,9 @@ export default function ArmoryScreen({
                     size on a lane, with its floor and the round's rules pinned
                     around it. */}
                 <div
-                  className={`armoryRangeScene${selectedMode.missPenalty > 0 ? "" : " isFreeMiss"}`}
+                  className={`armoryRangeScene${rangeRules.missPenalty > 0 ? "" : " isFreeMiss"}`}
                   role="img"
-                  aria-label={`Range preview: the target starts at ${rangeRules.initialButtonSize}px, shrinks ${rangeShrink.replace(" / hit", " per hit")} to a ${rangeRules.minButtonSize}px floor, and ${selectedMode.missPenalty > 0 ? `each miss costs ${selectedMode.missPenalty}` : "misses are free"}.`}
+                  aria-label={`Range preview: the target starts at ${rangeRules.initialButtonSize}px, shrinks ${rangeShrink.replace(" / hit", " per hit")} to a ${rangeRules.minButtonSize}px floor, and ${rangeRules.missPenalty > 0 ? `each miss costs ${rangeRules.missPenalty}` : "misses are free"}.`}
                   style={{ "--range-start": `${rangeRules.initialButtonSize}px`, "--range-floor": `${rangeRules.minButtonSize}px` }}
                 >
                   <span className="armoryRangeLane" aria-hidden="true" />
@@ -372,7 +375,7 @@ export default function ArmoryScreen({
                   <span className="armoryRangeTag is-start" aria-hidden="true"><small>Starts at</small><b>{rangeRules.initialButtonSize}px</b></span>
                   <span className="armoryRangeTag is-floor" aria-hidden="true"><small>Shrinks to</small><b>{rangeRules.minButtonSize}px</b></span>
                   <span className="armoryRangeTag is-shrink" aria-hidden="true"><small>Per hit</small><b>−{rangeShrink.replace(" / hit", "")}</b></span>
-                  <span className="armoryRangeTag is-miss" aria-hidden="true"><small>Per miss</small><b>{selectedMode.missPenalty > 0 ? `−${selectedMode.missPenalty} pt` : "Free"}</b></span>
+                  <span className="armoryRangeTag is-miss" aria-hidden="true"><small>Per miss</small><b>{rangeRules.missPenalty > 0 ? `−${rangeRules.missPenalty} pt` : "Free"}</b></span>
                 </div>
                 <button type="button" className="primaryButton armoryRangeLaunchButton" aria-label="Start test run" onClick={rangeApi.open}>
                   <span className="armoryRangeLaunchRing" aria-hidden="true"><b>10</b><small>sec</small></span>

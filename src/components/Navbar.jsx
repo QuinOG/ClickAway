@@ -117,24 +117,6 @@ function MoreTileLink({ route, pendingDuelCount, onNavigate }) {
   )
 }
 
-function NavGroup({ label, routes, pendingDuelCount, showArmoryUnlockBadge }) {
-  return (
-    <div className="navGroup">
-      <span className="navGroupLabel">{label}</span>
-      <div className="navGroupLinks">
-        {routes.map((route) => (
-          <ShellNavLink
-            key={route.id}
-            route={route}
-            pendingDuelCount={pendingDuelCount}
-            showArmoryUnlockBadge={showArmoryUnlockBadge}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function CompactAvatar({ username, profileImage }) {
   const hasImage = Boolean(profileImage?.imageSrc)
   const className = [
@@ -384,7 +366,7 @@ export default function Navbar({
         >
           <div className="mobileDockInner">
             {MOBILE_DOCK_ROUTES.map((route) => (
-              <ShellNavLink key={route.id} route={route} className="mobileDockItem" />
+              <ShellNavLink key={route.id} route={route} className="mobileDockItem" pendingDuelCount={pendingDuelCount} showArmoryUnlockBadge={showArmoryUnlockBadge} />
             ))}
             <button
               ref={moreTriggerRef}

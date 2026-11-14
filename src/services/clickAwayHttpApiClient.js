@@ -52,9 +52,8 @@ export async function loginUser({ username, password }) {
 export async function logoutUser() {
   try {
     await apiClient.post("/auth/logout")
-  } catch {
-    // Logging out is best-effort: even if this request fails, the caller clears
-    // local session state, and the cookie will simply expire on its own.
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Unable to log out."))
   }
 }
 
@@ -73,6 +72,7 @@ export async function fetchLeaderboard({
   limit,
   search = "",
   view = "top",
+  reverse = false,
 } = {}) {
   try {
     const response = await apiClient.get("/leaderboard", {
@@ -80,6 +80,7 @@ export async function fetchLeaderboard({
         board,
         page,
         view,
+        ...(reverse ? { order: "reverse" } : {}),
         ...(limit ? { limit } : {}),
         ...(search ? { search } : {}),
       },
@@ -181,9 +182,9 @@ export async function equipShopItem(itemId) {
   }
 }
 
-export async function requestRoundStart(modeId) {
+export async function requestRoundStart(modeId, { challengeId = null } = {}) {
   try {
-    const response = await apiClient.post("/round/start", { modeId })
+    const response = await apiClient.post("/round/start", challengeId ? { modeId, challengeId } : { modeId })
     return response.data
   } catch (error) {
     throw new Error(getErrorMessage(error, "Unable to start round."))

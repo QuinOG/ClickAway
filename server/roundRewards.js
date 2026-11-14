@@ -3,28 +3,21 @@ import {
   normalizeLoadoutSnapshotForLevel,
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
-import { replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
+import { getMaxClickEvents, MIN_CLICK_INTERVAL_MS, replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
 import { validateRoundGeometry } from "../src/game/engine/roundGeometry.js"
 import { calculateRoundCoins } from "../src/utils/roundRewards.js"
 import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
 
-// Minimum milliseconds between any two clicks — below this is inhuman/scripted.
-const MIN_CLICK_INTERVAL_MS = 80
-
-// Server-only safety ceiling on how many click events a single round submission
-// may contain. Independent of the elapsed-time check below — this just bounds
-// payload/CPU cost.
-const MAX_CLICK_EVENTS_BY_MODE_ID = {
-  easy: 800,
-  normal: 400,
-  hard: 300,
-}
-
 // Powerup activations are keyboard/UI actions, not clicks, so they are exempt
-// from the click-interval check but still capped: charges are earned at best
-// once per hit, so activations can never legitimately outnumber hits.
-const MAX_POWERUP_EVENTS = 100
+// from the click-interval check. The replay already refuses any activation
+// without an earned charge; this ceiling only bounds payload size. Charges are
+// earned at most once per hit plus a few starting charges, so it follows the
+// mode's click cap.
+const STARTING_CHARGE_ALLOWANCE = 20
+function getMaxPowerupEvents(modeId) {
+  return getMaxClickEvents(modeId) + STARTING_CHARGE_ALLOWANCE
+}
 
 function clamp(value) {
   const n = Number.isFinite(value) ? value : 0
@@ -41,8 +34,7 @@ function isClickEvent(event) {
 }
 
 function validateEventStream(events, mode) {
-  const maxClickEvents = MAX_CLICK_EVENTS_BY_MODE_ID[mode.id]
-    ?? MAX_CLICK_EVENTS_BY_MODE_ID.normal
+  const maxClickEvents = getMaxClickEvents(mode.id)
 
   if (!Array.isArray(events)) return { valid: false, reason: "Events must be an array." }
 
@@ -75,23 +67,43 @@ function validateEventStream(events, mode) {
   }
 
   if (clickCount > maxClickEvents) return { valid: false, reason: "Too many events." }
-  if (powerupCount > MAX_POWERUP_EVENTS) {
+  if (powerupCount > getMaxPowerupEvents(mode.id)) {
     return { valid: false, reason: "Too many powerup events." }
   }
 
-  // A round can't legitimately span longer than the mode's timer plus the most
-  // generous time-extension powerup ceiling. Without this, a client could submit
-  // a full-length event stream compressed into (or stretched past) a shorter
-  // window than the timer allows and inflate score/coins/XP/rank.
-  if (mode.isTimedRound && events.length > 0) {
-    const maxElapsedMs = mode.maxTimeBufferSeconds * 1000
-    const elapsedMs = events[events.length - 1].t
-    if (elapsedMs > maxElapsedMs) {
-      return { valid: false, reason: "Round duration exceeds the mode's time limit." }
+  return { valid: true }
+}
+
+// The client's timer starts at durationSeconds; each Time Boost adds 2 seconds
+// to the time remaining, capped at maxTimeBufferSeconds remaining. Replaying that
+// rule gives the latest legal moment for every event, so a round cannot run past
+// its timer, and legitimately boosted rounds are not rejected.
+const TIME_BOOST_MS = 2000
+const ROUND_DEADLINE_GRACE_MS = 1000
+
+function validateRoundDeadline(roundRules, mode, events) {
+  if (!mode.isTimedRound) return { valid: true, roundEndMs: null }
+
+  const bufferMs = (Number(roundRules.maxTimeBufferSeconds ?? mode.maxTimeBufferSeconds) || 0) * 1000
+  let deadlineMs = (Number(roundRules.durationSeconds ?? mode.durationSeconds) || 0) * 1000
+  const timeBoostIds = new Set(
+    (Array.isArray(roundRules.equippedPowerups) ? roundRules.equippedPowerups : [])
+      .filter((powerup) => powerup?.effectType === "time_boost")
+      .map((powerup) => powerup.id)
+  )
+
+  for (const event of events) {
+    if (event.t > deadlineMs + ROUND_DEADLINE_GRACE_MS) {
+      return { valid: false, reason: "Round events continue past the timer." }
+    }
+    if (event.type === ROUND_EVENT_TYPES.POWERUP && timeBoostIds.has(event.powerupId)) {
+      const remainingMs = Math.max(0, deadlineMs - event.t)
+      deadlineMs = event.t + Math.min(bufferMs, remainingMs + TIME_BOOST_MS)
     }
   }
 
-  return { valid: true }
+  // When the timer actually ran out, counting every Time Boost used.
+  return { valid: true, roundEndMs: deadlineMs }
 }
 
 /**
@@ -135,23 +147,18 @@ export function simulateRound(events, modeId, {
   const replay = replayRoundEvents(roundRules, events)
   if (!replay.valid) return replay
 
-  if (mode.allowsRankProgression) {
-    if (roundSeed === null || roundSeed === undefined) {
-      return { valid: false, reason: "Ranked rounds require a round seed." }
-    }
+  const deadlineCheck = validateRoundDeadline(roundRules, mode, events)
+  if (!deadlineCheck.valid) return deadlineCheck
 
-    const geometryCheck = validateRoundGeometry(roundRules, events, {
-      seed: roundSeed,
-      arenaWidth,
-      arenaHeight,
-    })
-    if (!geometryCheck.valid) return geometryCheck
-  } else if (
-    roundSeed !== null
-    && roundSeed !== undefined
-    && arenaWidth !== null
-    && arenaHeight !== null
-  ) {
+  const hasRoundSeed = roundSeed !== null && roundSeed !== undefined
+  if (mode.allowsRankProgression && !hasRoundSeed) {
+    return { valid: false, reason: "Ranked rounds require a round seed." }
+  }
+
+  // Any server-seeded round has its click positions checked, whatever the mode.
+  // Leaving out the arena size used to skip this for Casual; it now fails the
+  // check instead (validateRoundGeometry rejects missing dimensions).
+  if (hasRoundSeed) {
     const geometryCheck = validateRoundGeometry(roundRules, events, {
       seed: roundSeed,
       arenaWidth,
@@ -167,6 +174,7 @@ export function simulateRound(events, modeId, {
     score: replay.score,
     bestStreak: replay.bestStreak,
     loadoutSnapshot: normalizedSnapshot,
+    roundEndMs: deadlineCheck.roundEndMs,
   }
 }
 

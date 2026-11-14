@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto"
+
 import jwt from "jsonwebtoken"
 
 // Round tokens bind a server-issued RNG seed to a user + mode at round start.
@@ -10,13 +12,18 @@ export function createRoundSeed() {
   return Math.floor(Math.random() * 0xffffffff) >>> 0
 }
 
-export function signRoundToken({ userId, modeId, seed }, jwtSecret) {
+export function signRoundToken({ userId, modeId, seed, challengeId = null }, jwtSecret) {
   return jwt.sign(
     {
       sub: String(userId),
       modeId,
       seed,
       purpose: "round",
+      // Each token can complete exactly one round; the server records this id
+      // when the round's rewards are written.
+      roundId: randomUUID(),
+      // Set when the round races a duel ghost; the seed is then the ghost's.
+      challengeId: challengeId ?? null,
     },
     jwtSecret,
     { expiresIn: ROUND_TOKEN_EXPIRY }
@@ -24,7 +31,7 @@ export function signRoundToken({ userId, modeId, seed }, jwtSecret) {
 }
 
 /**
- * Verifies a submitted round token. Returns `{ valid, seed }` on success or
+ * Verifies a submitted round token. Returns `{ valid, seed, roundId, issuedAtMs }` on success or
  * `{ valid: false, reason }` when the token is forged, expired, or belongs to
  * a different user/mode.
  */
@@ -46,5 +53,15 @@ export function verifyRoundToken(token, { userId, modeId }, jwtSecret) {
     return { valid: false, reason: "Round token was issued for a different mode." }
   }
 
-  return { valid: true, seed: Number(payload.seed) >>> 0 }
+  if (typeof payload.roundId !== "string" || !payload.roundId) {
+    return { valid: false, reason: "Invalid round token." }
+  }
+
+  return {
+    valid: true,
+    seed: Number(payload.seed) >>> 0,
+    roundId: payload.roundId,
+    issuedAtMs: Number(payload.iat) * 1000,
+    challengeId: Number(payload.challengeId) || null,
+  }
 }

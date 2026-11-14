@@ -176,32 +176,51 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   const [filter, setFilter] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
+  const [replayLoadError, setReplayLoadError] = useState("")
   const [respondingChallengeId, setRespondingChallengeId] = useState(null)
   const [sendForm, setSendForm] = useState({ opponentUsername: ladderRival, replayId: "", message: "" })
   const [sendError, setSendError] = useState("")
   const [sendSuccess, setSendSuccess] = useState("")
   const [isSending, setIsSending] = useState(false)
 
+  // Only the newest request may update the list (switching filters quickly).
+  const requestGenerationRef = useRef(0)
   const loadChallenges = useCallback(async () => {
+    const generation = requestGenerationRef.current + 1
+    requestGenerationRef.current = generation
+    const isCurrent = () => requestGenerationRef.current === generation
+
     setIsLoading(true)
     setLoadError("")
+    setReplayLoadError("")
     try {
-      const [challengeResponse, replayResponse] = await Promise.all([
-        fetchChallenges({ role: filter === "all" ? "all" : filter }),
+      const [challengeResponse, replayResponse] = await Promise.allSettled([
+        // Always fetch every role, so the incoming count stays right on any tab.
+        fetchChallenges({ role: "all" }),
         fetchUserReplays({ limit: 10 }),
       ])
-      setChallenges(Array.isArray(challengeResponse?.challenges) ? challengeResponse.challenges : [])
-      setReplays(Array.isArray(replayResponse?.replays) ? replayResponse.replays : [])
-      return true
+      if (!isCurrent()) return false
+      setChallenges(challengeResponse.status === "fulfilled" && Array.isArray(challengeResponse.value?.challenges)
+        ? challengeResponse.value.challenges : [])
+      setReplays(replayResponse.status === "fulfilled" && Array.isArray(replayResponse.value?.replays)
+        ? replayResponse.value.replays : [])
+      if (challengeResponse.status === "rejected") {
+        setLoadError(challengeResponse.reason?.message || "Unable to load challenges.")
+      }
+      if (replayResponse.status === "rejected") {
+        setReplayLoadError(replayResponse.reason?.message || "Unable to load your runs.")
+      }
+      return challengeResponse.status === "fulfilled"
     } catch (error) {
+      if (!isCurrent()) return false
       setChallenges([])
       setReplays([])
       setLoadError(error.message || "Unable to load challenges.")
       return false
     } finally {
-      setIsLoading(false)
+      if (isCurrent()) setIsLoading(false)
     }
-  }, [filter])
+  }, [])
 
   useEffect(() => {
     loadChallenges()
@@ -228,6 +247,11 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
     ).length,
     [challenges, currentUserId]
   )
+  const visibleChallenges = useMemo(() => {
+    if (filter === "incoming") return challenges.filter((challenge) => challenge.opponentUserId === currentUserId)
+    if (filter === "outgoing") return challenges.filter((challenge) => challenge.challengerUserId === currentUserId)
+    return challenges
+  }, [challenges, currentUserId, filter])
 
   const selectedReplay = useMemo(
     () => replays.find((replay) => String(replay.id) === String(sendForm.replayId)) ?? null,
@@ -297,7 +321,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           eyebrow="Ghost network"
           title="Duel command"
           subtitle="Lock a rival. Choose your run. Put a score on the line."
-          status={pendingIncomingCount > 0 ? null : (
+          status={pendingIncomingCount > 0 || isLoading || loadError ? null : (
             <span className="duelNetworkStatus"><i /> Network clear</span>
           )}
         />
@@ -364,7 +388,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
             </div>
           ) : null}
 
-          {!isLoading && !loadError && challenges.length === 0 ? (
+          {!isLoading && !loadError && visibleChallenges.length === 0 ? (
             <div className="duelRadarState" role="status">
               <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
               <strong>No rival signals</strong>
@@ -373,7 +397,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           ) : null}
 
           <div className="challengeList">
-            {challenges.map((challenge) => (
+            {visibleChallenges.map((challenge) => (
               <ChallengeCard
                 key={challenge.id}
                 challenge={challenge}
@@ -434,7 +458,14 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
             <fieldset className="duelRunTokens">
               <legend>Stake a run</legend>
-              {replays.length > 0 ? (
+              {replayLoadError ? (
+                <div role="alert">
+                  <p>{replayLoadError}</p>
+                  <button type="button" className="secondaryButton" onClick={loadChallenges}>Retry runs</button>
+                </div>
+              ) : isLoading ? (
+                <p role="status">Loading your runs?</p>
+              ) : replays.length > 0 ? (
                 <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
                   {replays.map((replay) => {
                     const isSelected = String(replay.id) === String(sendForm.replayId)

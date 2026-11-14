@@ -117,7 +117,7 @@ export default function GameHud({
               <span className="hudContextLabel">vs {ghostUsername || "Rival"}</span>
               <span>You {score.toLocaleString()}</span>
               <span>Ghost {Number(ghostScore || 0).toLocaleString()}</span>
-              {ghostTargetScore ? <span>Target {Number(ghostTargetScore).toLocaleString()}</span> : null}
+              {ghostTargetScore !== null ? <span>Target {Number(ghostTargetScore).toLocaleString()}</span> : null}
               <span className={ghostLead ? "isAhead" : "isBehind"}>
                 {ghostLead ? "Ahead" : "Behind"} {formatSignedDelta(ghostDelta)}
               </span>

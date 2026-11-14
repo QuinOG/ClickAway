@@ -6,7 +6,7 @@ import { ROUND_END_SETTLE_MS, TIMER_TICK_MS } from "../src/constants/gameConstan
 import { useGameScreenController } from "../src/features/game/hooks/useGameScreenController.js"
 
 vi.mock("../src/services/clickAwayHttpApiClient.js", () => ({
-  requestRoundStart: vi.fn(() => Promise.resolve({ roundToken: null, seed: 12345 })),
+  requestRoundStart: vi.fn(() => Promise.resolve({ roundToken: "test-round-token", seed: 12345 })),
 }))
 
 describe("Game screen controller", () => {
@@ -14,7 +14,37 @@ describe("Game screen controller", () => {
     vi.useRealTimers()
   })
 
-  test("returns from results to a clean mode lobby without a stale entrance overlay", () => {
+  test("keeps the combo hit cue on the last boosted hit", async () => {
+    vi.useFakeTimers()
+    const loadout = {
+      ...DEFAULT_SAVED_LOADOUTS[0],
+      moduleIds: { ...DEFAULT_SAVED_LOADOUTS[0].moduleIds, powerRigId: "power_reserve" },
+      powerupIds: ["combo_surge", "size_boost", "freeze_movement"],
+    }
+    const { result } = renderHook(() => useGameScreenController({ activeLoadout: loadout }))
+    result.current.arenaProps.arenaRef.current = {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }),
+    }
+    await act(async () => result.current.readyOverlayProps.onStart("normal"))
+    act(() => vi.advanceTimersByTime(3 * TIMER_TICK_MS))
+    act(() => result.current.powerupTrayProps.onUsePowerup("combo_surge"))
+    for (let hit = 0; hit < 4; hit += 1) {
+      act(() => vi.advanceTimersByTime(100))
+      act(() => result.current.arenaProps.onButtonClick({
+        stopPropagation() {}, clientX: 300, clientY: 200,
+      }))
+      const feedback = result.current.arenaProps.clickFeedbackItems.at(-1)
+      expect(feedback.type).toBe("hit comboHit")
+    }
+    expect(result.current.powerupTrayProps.powerupSlots[0].comboSurgeHitsRemaining).toBe(0)
+    act(() => vi.advanceTimersByTime(100))
+    act(() => result.current.arenaProps.onButtonClick({
+      stopPropagation() {}, clientX: 300, clientY: 200,
+    }))
+    expect(result.current.arenaProps.clickFeedbackItems.at(-1).type).toBe("hit")
+  })
+
+  test("returns from results to a clean mode lobby without a stale entrance overlay", async () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => useGameScreenController({
       selectedModeId: "normal",
@@ -22,7 +52,8 @@ describe("Game screen controller", () => {
       activeLoadoutId: ACTIVE_LOADOUT_ID_DEFAULT,
     }))
 
-    act(() => {
+    // Casual is reward-bearing, so the countdown starts once the round token arrives.
+    await act(async () => {
       result.current.readyOverlayProps.onStart("normal")
     })
     expect(result.current.entranceOverlayProps?.startStatus).toBe("countdown")

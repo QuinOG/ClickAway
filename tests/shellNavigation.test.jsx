@@ -47,7 +47,7 @@ describe("Application shell navigation", () => {
     expect(moreTrigger.getAttribute("aria-current")).toBe("page")
     await user.click(moreTrigger)
 
-    const moreSheet = screen.getByRole("dialog", { name: "More destinations" })
+    const moreSheet = screen.getByRole("dialog", { name: "More" })
     const historyLink = within(moreSheet).getByRole("link", { name: "History" })
     expect(historyLink.getAttribute("aria-current")).toBe("page")
   })

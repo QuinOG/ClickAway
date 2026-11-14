@@ -58,3 +58,11 @@ export function normalizeReplayRecord(replay = {}) {
     playedAt: replay.playedAt ?? replay.playedAtIso ?? null,
   }
 }
+
+// Check transport data before normalization can turn missing/invalid seeds into 0.
+export function isValidGhostReplay(replay) {
+  return Boolean(replay)
+    && Number.isInteger(replay.id) && replay.id > 0
+    && ["easy", "normal", "hard"].includes(replay.modeId)
+    && Number.isInteger(replay.seed) && replay.seed >= 0 && replay.seed <= 0xffffffff
+}

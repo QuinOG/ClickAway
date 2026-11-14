@@ -26,10 +26,48 @@ function getPartVisualState({ part, isLocked, isInstalled }) {
 
 // What a swap does to the build's measured rules: each stat that changes,
 // with its current and proposed values.
+// Shrink is compared at full precision (the profile stat rounds it to two
+// decimals), and starting charges get their own row since no profile stat
+// shows them.
+// Each stat's raw rule value and which direction helps, so "better/worse" is
+// decided by the real change, not by the rounded 1-10 gauge (two different
+// miss costs can share a gauge bucket).
+const RAW_REPORT_VALUES = {
+  size: { rule: "initialButtonSize", higherIsBetter: true },
+  floor: { rule: "minButtonSize", higherIsBetter: true },
+  shrink: { rule: "shrinkFactor", higherIsBetter: true },
+  combo: { rule: "comboStep", higherIsBetter: false },
+  miss: { rule: "missPenalty", higherIsBetter: false },
+  charge: { rule: "powerupAwardMultiplier", higherIsBetter: false },
+  payout: { rule: "scoreMultiplier", higherIsBetter: true },
+  starting: { rule: "startingPowerupCharges", higherIsBetter: true },
+}
+
+function getReportStats(rules) {
+  const startingCharges = Number(rules.startingPowerupCharges) || 0
+  return [
+    ...getProfileStats(rules).map((stat) => (
+      stat.key === "shrink" ? { ...stat, value: `x${Number(rules.shrinkFactor)}` } : stat
+    )),
+    { key: "starting", label: "Starting charges", rating: Math.min(10, 1 + startingCharges * 3), value: String(startingCharges) },
+  ].map((stat) => {
+    const raw = RAW_REPORT_VALUES[stat.key]
+    return raw ? { ...stat, raw: Number(rules[raw.rule]) || 0, higherIsBetter: raw.higherIsBetter } : stat
+  })
+}
+
+function getChangeDirection(from, to) {
+  if (typeof from.raw === "number" && typeof to.raw === "number" && from.raw !== to.raw) {
+    const increased = to.raw > from.raw
+    return increased === Boolean(from.higherIsBetter) ? 1 : -1
+  }
+  return Math.sign(to.rating - from.rating)
+}
+
 function getSwapImpact(currentRules, nextRules) {
   if (!currentRules || !nextRules) return []
-  const nextByKey = Object.fromEntries(getProfileStats(nextRules).map((stat) => [stat.key, stat]))
-  return getProfileStats(currentRules).flatMap((stat) => {
+  const nextByKey = Object.fromEntries(getReportStats(nextRules).map((stat) => [stat.key, stat]))
+  return getReportStats(currentRules).flatMap((stat) => {
     const next = nextByKey[stat.key]
     if (!next || next.value === stat.value) return []
     return [{ key: stat.key, label: stat.label, from: stat, to: next }]
@@ -46,12 +84,14 @@ const REPORT_LABELS = {
   miss: "Miss cost",
   charge: "Charge rate",
   payout: "Score payout",
+  starting: "Starting charges",
 }
 
 function formatReportValue(key, value) {
   if (key === "miss") return value === "0" ? "0 points" : `${value.replace("-", "")} point${value === "-1" ? "" : "s"}`
   if (key === "combo") return `${value.replace("every ", "")} hits`
   if (key === "shrink") return `${((1 - Number(value.replace("x", ""))) * 100).toFixed(1)}% / hit`
+  if (key === "starting") return `${value} per power`
   return value
 }
 
@@ -64,7 +104,7 @@ function SwapImpact({ rows, title = "Swap report", fromLabel = "Current", toLabe
         <span role="columnheader">{toLabel}{isPreview ? <em className="armorySwapReportPreview">Preview</em> : null}</span>
       </div>
       {rows.map(({ key, label, from, to }) => {
-        const delta = to.rating - from.rating
+        const delta = getChangeDirection(from, to)
         const tone = delta > 0 ? "isGain" : delta < 0 ? "isLoss" : "isEven"
         const verdict = delta > 0 ? "better" : delta < 0 ? "worse" : "no change"
         return (
@@ -131,9 +171,17 @@ export default function ArmoryPartsGallery({
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
   // Roving tabindex: one gallery tab stop; arrows walk the unlocked parts.
   const [rovingPartId, setRovingPartId] = useState(null)
-  const tabStopPartId = rovingPartId ?? installedPartId
 
   const unlockedParts = parts.filter((part) => playerLevel >= part.unlockLevel)
+  // The gallery is reused across lanes, so a remembered part may not be in this
+  // lane: fall back to the installed part, then the first unlocked one, so one
+  // card always stays reachable by Tab.
+  const isUnlockedHere = (partId) => unlockedParts.some((part) => part.id === partId)
+  const tabStopPartId = isUnlockedHere(rovingPartId)
+    ? rovingPartId
+    : isUnlockedHere(installedPartId)
+      ? installedPartId
+      : unlockedParts[0]?.id ?? null
   // One candidate is always featured large with its trade-off: whatever the
   // player points at, else the first unlocked part they could swap in.
   const [hoveredPartId, setHoveredPartId] = useState(null)
@@ -259,7 +307,6 @@ export default function ArmoryPartsGallery({
           <button
             type="button"
             className="primaryButton armoryPartFeatureInstall"
-            tabIndex={-1}
             onClick={() => installPart(featuredPart.id)}
           >
             Install {featuredPart.label}

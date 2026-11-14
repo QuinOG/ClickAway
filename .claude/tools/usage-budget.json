@@ -1,0 +1,8 @@
+{
+  "calibratedAt": "2026-11-13T23:56:59.242Z",
+  "calibrationNote": "From the Claude usage page: session 69% used (resets 1h54m), weekly 10% used (resets 4d0h). Budgets are tokens per 100%; recalibrate only if limits change or the estimate drifts.",
+  "claudeFiveHourBudget": 47676833,
+  "claudeWeeklyBudget": 2442634617,
+  "claudeWeeklyResetAt": "2026-11-17T23:56:59.242000Z",
+  "claudeSessionResetAt": "2026-11-14T01:50:59.242000Z"
+}

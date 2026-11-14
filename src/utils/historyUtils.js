@@ -47,6 +47,8 @@ function formatRelativeTime(value, unit) {
 }
 
 function normalizeReactionMetric(value) {
+  // A round with no hits has no reaction time; Number(null) would make it 0ms.
+  if (value === null || value === undefined || value === "") return null
   const numericValue = Number(value)
   if (!Number.isFinite(numericValue) || numericValue < 0) {
     return null
@@ -101,8 +103,8 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
     accuracyPercent: normalizePercentValue(
       entry.accuracyPercent ?? calculateAccuracyPercent(hits, misses)
     ),
-    avgReactionMs: normalizeReactionMetric(entry.avgReactionMs),
-    bestReactionMs: normalizeReactionMetric(entry.bestReactionMs),
+    avgReactionMs: hits > 0 ? normalizeReactionMetric(entry.avgReactionMs) : null,
+    bestReactionMs: hits > 0 ? normalizeReactionMetric(entry.bestReactionMs) : null,
     coinsEarned: normalizeNonNegativeNumber(entry.coinsEarned),
     modeId: String(entry.modeId || entry.difficultyId || ""),
     difficultyId: String(entry.modeId || entry.difficultyId || ""),
@@ -121,7 +123,16 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
 export function formatPlayedAtLabel(playedDate) {
   const now = new Date()
   const elapsedMs = Math.max(0, now.getTime() - playedDate.getTime())
-  const elapsedHours = elapsedMs / (1000 * 60 * 60)
+  const elapsedMinutes = elapsedMs / (1000 * 60)
+  const elapsedHours = elapsedMinutes / 60
+
+  if (elapsedMinutes < 1) {
+    return "Just now"
+  }
+
+  if (elapsedHours < 1) {
+    return formatRelativeTime(elapsedMinutes, "minute")
+  }
 
   if (elapsedHours < 24) {
     return formatRelativeTime(elapsedHours, "hour")
@@ -240,6 +251,7 @@ export function buildCareerReactionStats(historyEntries = []) {
   let bestReactionMs = null
 
   rows.forEach((entry) => {
+    if (Number(entry?.hits) === 0) return
     const entryAverageReactionMs = normalizeReactionMetric(entry?.avgReactionMs)
     const entryBestReactionMs = normalizeReactionMetric(entry?.bestReactionMs)
 

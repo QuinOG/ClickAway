@@ -38,10 +38,8 @@ export function useAchievementSync({
       reconciledIdsRef.current = new Set(mergedIds)
     }
 
-    if (mergedIds === unlockedAchievementIds) {
-      return
-    }
-
+    // Unlocks usually arrive from the server already in the list, so announce
+    // anything not seen this session before deciding whether the list changed.
     if (!isSessionHydration) {
       mergedIds.forEach((id) => {
         if (!reconciledIdsRef.current.has(id)) {
@@ -61,7 +59,9 @@ export function useAchievementSync({
       ])
     }
 
-    setUnlockedAchievementIds(mergedIds)
+    if (mergedIds !== unlockedAchievementIds) {
+      setUnlockedAchievementIds(mergedIds)
+    }
   }, [
     setUnlockedAchievementIds,
     unlockedAchievementIds,

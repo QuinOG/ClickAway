@@ -15,9 +15,15 @@ import { normalizeSeenUnlockPartIds } from "../src/utils/unlockWallUtils.js"
 import { ACHIEVEMENTS } from "../src/game/achievements/achievementsList.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import {
+  evaluateAchievements,
+  getUnlockedAchievementIds,
+} from "../src/game/achievements/evaluateAchievements.js"
+import {
+  applyRankedMatchResult,
   buildDefaultRankedState,
   PLACEMENT_MATCH_COUNT,
   migrateLegacyRankData,
+  RANK_SYSTEM_VERSION,
 } from "../src/utils/rankUtils.js"
 import {
   DEFAULT_LIFETIME_STATS,
@@ -25,6 +31,7 @@ import {
   HISTORY_PAGE_SIZE,
   applyRoundToLifetimeStats,
   applyRoundToLoadoutStats,
+  buildAchievementStatsFromLifetime,
   buildLifetimeStatsFromRounds,
   normalizeLifetimeStats,
   normalizeLoadoutStatsEntry,
@@ -37,6 +44,7 @@ import {
   getFrontendItemIdByDbItemId,
   getMappedShopItemById,
 } from "./serverShopCatalogIdMappings.js"
+import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 
 const DEFAULT_PROGRESS = {
   coins: 0,
@@ -69,6 +77,7 @@ const REQUIRED_DATABASE_TABLES = [
   "arena_themes",
   "button_skins",
   "challenges",
+  "consumed_round_tokens",
   "profile_images",
   "round_history",
   "round_replays",
@@ -337,6 +346,16 @@ export async function initializeSchema() {
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_replays_user_played ON round_replays (user_id, played_at)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_replays_visibility_score ON round_replays (visibility, score)`)
 
+  await pool.query(`CREATE TABLE IF NOT EXISTS consumed_round_tokens (
+    token_id varchar(64) NOT NULL,
+    user_id bigint NOT NULL,
+    consumed_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (token_id),
+    CONSTRAINT fk_consumed_round_tokens_user
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  )`)
+  await pool.query(`DELETE FROM consumed_round_tokens WHERE consumed_at < now() - interval '2 days'`)
+
   await pool.query(`CREATE TABLE IF NOT EXISTS challenges (
     id bigint GENERATED ALWAYS AS IDENTITY,
     challenger_user_id bigint NOT NULL,
@@ -394,6 +413,8 @@ function toNonNegativeNumber(value, fallback = 0) {
 }
 
 function toNullableNonNegativeNumber(value) {
+  // Missing stays missing: Number(null) would turn "no measurement" into 0.
+  if (value === null || value === undefined || value === "") return null
   const numericValue = Number(value)
   return Number.isFinite(numericValue) && numericValue >= 0
     ? Math.round(numericValue)
@@ -607,8 +628,9 @@ function buildHistoryEntry(row) {
     misses,
     bestStreak: toNonNegativeNumber(row.bestStreak, 0),
     accuracyPercent: hits + misses > 0 ? (hits / (hits + misses)) * 100 : 0,
-    avgReactionMs: toNullableNonNegativeNumber(row.avgReactionMs),
-    bestReactionMs: toNullableNonNegativeNumber(row.bestReactionMs),
+    // A round with no hits has no reaction time; older rows stored 0 for it.
+    avgReactionMs: hits > 0 ? toNullableNonNegativeNumber(row.avgReactionMs) : null,
+    bestReactionMs: hits > 0 ? toNullableNonNegativeNumber(row.bestReactionMs) : null,
     coinsEarned: toNonNegativeNumber(row.coinsEarned, 0),
     modeId: String(row.modeId || DEFAULT_PROGRESS.selectedModeId),
     difficultyId: String(row.modeId || DEFAULT_PROGRESS.selectedModeId),
@@ -733,9 +755,12 @@ async function getRoundHistoryCount(executor, userId) {
   return toNonNegativeNumber(rows[0]?.totalCount, 0)
 }
 
+// Rebuilds stats from history only for accounts that predate the stats table
+// (no row yet). An existing row is authoritative even at zero rounds: history
+// can hold unverified rounds that must never count toward stats.
 async function backfillLifetimeStatsFromHistory(executor, userId) {
   const existingStats = await getLifetimeStatsRow(executor, userId)
-  if (existingStats && toNonNegativeNumber(existingStats.totalRounds, 0) > 0) {
+  if (existingStats) {
     return mapLifetimeStatsRow(existingStats)
   }
 
@@ -1208,36 +1233,6 @@ async function buildProgressRecord(executor, userId) {
   }
 }
 
-async function syncUserCollection(executor, userId, progress) {
-  const ownedItemIds = new Set(progress.ownedItemIds)
-
-  ;[
-    progress.equippedButtonSkinId,
-    progress.equippedArenaThemeId,
-    progress.equippedProfileImageId,
-  ].forEach((itemId) => {
-    const mappedItem = getMappedShopItemById(itemId)
-    if (mappedItem && !mappedItem.builtIn) {
-      ownedItemIds.add(mappedItem.frontendItemId)
-    }
-  })
-
-  await executor.query("DELETE FROM user_collection WHERE user_id = ?", [userId])
-
-  const rows = Array.from(ownedItemIds)
-    .map((itemId) => getMappedShopItemById(itemId))
-    .filter(Boolean)
-    .map((mappedItem) => [userId, mappedItem.collectionType, mappedItem.dbItemId])
-
-  if (rows.length > 0) {
-    const { clause, params } = buildValuesClause(rows)
-    await executor.query(
-      `INSERT INTO user_collection (user_id, item_type, item_id) VALUES ${clause}`,
-      params
-    )
-  }
-}
-
 async function syncUserLoadouts(executor, userId, progress) {
   await executor.query("DELETE FROM user_loadouts WHERE user_id = ?", [userId])
 
@@ -1274,33 +1269,29 @@ async function syncUserLoadouts(executor, userId, progress) {
   )
 }
 
-async function syncUnlockedAchievements(executor, userId, progress) {
-  await executor.query("DELETE FROM user_achievement_progress WHERE user_id = ?", [userId])
-
-  if (progress.unlockedAchievementIds.length === 0) {
-    return
-  }
+async function addUnlockedAchievements(executor, userId, achievementIds = []) {
+  const ids = Array.from(new Set(achievementIds.map(String)))
+  if (ids.length === 0) return
 
   const [rows] = await executor.query(
     `SELECT id
      FROM achievements_catalog
      WHERE id = ANY(?)`,
-    [progress.unlockedAchievementIds]
+    [ids]
   )
-
   const insertRows = rows.map((row) => [userId, row.id, new Date()])
+  if (insertRows.length === 0) return
 
-  if (insertRows.length > 0) {
-    const { clause, params } = buildValuesClause(insertRows)
-    await executor.query(
-      `INSERT INTO user_achievement_progress (
-         user_id,
-         achievement_id,
-         unlocked_at
-       ) VALUES ${clause}`,
-      params
-    )
-  }
+  const { clause, params } = buildValuesClause(insertRows)
+  await executor.query(
+    `INSERT INTO user_achievement_progress (
+       user_id,
+       achievement_id,
+       unlocked_at
+     ) VALUES ${clause}
+     ON CONFLICT (user_id, achievement_id) DO NOTHING`,
+    params
+  )
 }
 
 export async function findUserByUsername(username) {
@@ -1335,7 +1326,7 @@ export async function createUser({ username, passwordHash, role = "player" }) {
        role,
        build_walkthrough_status
      ) VALUES (?, ?, ?, ?)
-     RETURNING id`,
+     RETURNING id, username, password_hash AS passwordHash, role`,
     [
       String(username || "").trim(),
       String(passwordHash || ""),
@@ -1344,7 +1335,7 @@ export async function createUser({ username, passwordHash, role = "player" }) {
     ]
   )
 
-  return findUserById(result.insertId)
+  return mapUserRow(result.rows[0])
 }
 
 export async function updateUserPassword({ id, passwordHash }) {
@@ -1369,8 +1360,27 @@ export async function createDefaultUserProgress(userId) {
   return buildProgressRecord(pool, userId)
 }
 
+// Read one writable snapshot: legacy progress reads may backfill stats.
+// Timestamps remain a best-effort client hint, not database commit ordering.
 export async function findUserProgressByUserId(userId) {
-  return buildProgressRecord(pool, userId)
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    let connection
+    try {
+      connection = await pool.getConnection()
+      await connection.beginTransaction()
+      await connection.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+      await connection.query("SELECT 1")
+      const snapshotAtMs = Date.now()
+      const record = await buildProgressRecord(connection, userId)
+      await connection.commit()
+      return record ? { ...record, snapshotAtMs } : record
+    } catch (error) {
+      if (connection) await connection.rollback().catch(() => {})
+      if (attempt === 2 || !["40001", "40P01"].includes(error.code)) throw error
+    } finally {
+      connection?.release()
+    }
+  }
 }
 
 export const LEADERBOARD_BOARDS = {
@@ -1447,13 +1457,30 @@ function mapLeaderboardRow(row = {}) {
   }
 }
 
-async function queryRankedLeaderboardRows({
+async function queryRankedLeaderboardRows(options = {}) {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    await connection.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+    const result = await readRankedLeaderboardRows(connection, options)
+    await connection.commit()
+    return result
+  } catch (error) {
+    await connection.rollback().catch(() => {})
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
+async function readRankedLeaderboardRows(connection, {
   board = LEADERBOARD_BOARDS.MMR,
   page = 1,
   limit = LEADERBOARD_DEFAULT_LIMIT,
   search = "",
   userId = null,
   view = "top",
+  reverse = false,
 } = {}) {
   const normalizedBoard = Object.values(LEADERBOARD_BOARDS).includes(board)
     ? board
@@ -1490,20 +1517,29 @@ async function queryRankedLeaderboardRows({
       LEFT JOIN user_lifetime_stats ls
         ON ls.user_id = u.id
       WHERE u.placement_matches_played >= ?
+        -- Players still on an old rank system are unplaced until they replay
+        -- placements (Profile shows them that way), so they aren't ranked here.
+        AND u.rank_system_version = ${Number(RANK_SYSTEM_VERSION)}
         ${reactionFilter}
-        ${normalizedSearch ? "AND LOWER(u.username) LIKE ?" : ""}
     ),
     ranked_ladder AS (
       SELECT
         ranked_players.*,
         RANK() OVER (ORDER BY ${orderClause}) AS rank
       FROM ranked_players
+    ),
+    -- Search narrows the rows shown, after ranks are computed over everyone,
+    -- so a searched player keeps their real ladder position.
+    filtered_ladder AS (
+      SELECT *
+      FROM ranked_ladder
+      ${normalizedSearch ? "WHERE LOWER(username) LIKE ?" : ""}
     )`
 
   const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
 
   if (view === "aroundMe" && userId) {
-    const [[selfRow]] = await pool.query(
+    const [[selfRow]] = await connection.query(
       `${baseCte}
        SELECT rank
        FROM ranked_ladder
@@ -1528,19 +1564,19 @@ async function queryRankedLeaderboardRows({
     const minRank = Math.max(1, selfRank - LEADERBOARD_AROUND_WINDOW)
     const maxRank = selfRank + LEADERBOARD_AROUND_WINDOW
 
-    const [rows] = await pool.query(
+    const [rows] = await connection.query(
       `${baseCte}
        SELECT *
-       FROM ranked_ladder
+       FROM filtered_ladder
        WHERE rank BETWEEN ? AND ?
        ORDER BY rank ASC`,
       [PLACEMENT_MATCH_COUNT, ...searchParams, minRank, maxRank]
     )
 
-    const [[countRow]] = await pool.query(
+    const [[countRow]] = await connection.query(
       `${baseCte}
        SELECT COUNT(*) AS totalCount
-       FROM ranked_ladder`,
+       FROM filtered_ladder`,
       [PLACEMENT_MATCH_COUNT, ...searchParams]
     )
 
@@ -1559,19 +1595,19 @@ async function queryRankedLeaderboardRows({
   }
 
   const offset = (normalizedPage - 1) * normalizedLimit
-  const [rows] = await pool.query(
+  const [rows] = await connection.query(
     `${baseCte}
      SELECT *
-     FROM ranked_ladder
-     ORDER BY rank ASC
+     FROM filtered_ladder
+     ORDER BY rank ${reverse ? "DESC" : "ASC"}
      LIMIT ? OFFSET ?`,
     [PLACEMENT_MATCH_COUNT, ...searchParams, normalizedLimit, offset]
   )
 
-  const [[countRow]] = await pool.query(
+  const [[countRow]] = await connection.query(
     `${baseCte}
      SELECT COUNT(*) AS totalCount
-     FROM ranked_ladder`,
+     FROM filtered_ladder`,
     [PLACEMENT_MATCH_COUNT, ...searchParams]
   )
 
@@ -1580,7 +1616,7 @@ async function queryRankedLeaderboardRows({
 
   let selfRank = null
   if (userId) {
-    const [[selfRow]] = await pool.query(
+    const [[selfRow]] = await connection.query(
       `${baseCte}
        SELECT rank
        FROM ranked_ladder
@@ -1665,25 +1701,39 @@ export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_P
   }
 }
 
+export class RoundAlreadySubmittedError extends Error {
+  constructor() {
+    super("This round has already been submitted.")
+    this.name = "RoundAlreadySubmittedError"
+    this.status = 409
+  }
+}
+
+// Round completion only adds what the round earned. Coins and XP are applied as
+// deltas to the row locked inside this transaction, and inventory, equipment,
+// loadouts and walkthrough state are left alone, so a purchase, equip or
+// loadout edit that commits while the round is being validated is never undone.
 export async function completeUserRound({
   userId,
-  coins,
-  levelXp,
-  rankMmr,
-  rankedState,
-  ownedItemIds,
-  equippedButtonSkinId,
-  equippedArenaThemeId,
-  equippedProfileImageId,
-  activeLoadoutId,
-  savedLoadouts,
-  selectedModeId,
-  unlockedAchievementIds,
-  buildWalkthrough,
-  seenUnlockPartIds,
+  earnedCoins = 0,
+  earnedXp = 0,
+  maxCoins = Number.MAX_SAFE_INTEGER,
+  maxXp = Number.MAX_SAFE_INTEGER,
+  roundTokenId = null,
+  maxMmr = Number.MAX_SAFE_INTEGER,
+  // Inputs for the ranked result. It is calculated here from the locked row, so
+  // two rounds finishing together both count, and a non-ranked round never
+  // writes rank. The fallback state is used only for legacy rank-system rows.
+  rankInputs = {},
+  fallbackRankState = {},
+  // Only server-started rounds count toward lifetime and loadout stats and
+  // achievements. Unverified rounds are kept in history but can't be farmed.
+  countsTowardStats = true,
   historyEntry,
 }) {
   const connection = await pool.getConnection()
+  let rankOutcome = null
+  let insertedHistoryEntry = null
 
   try {
     await connection.beginTransaction()
@@ -1693,125 +1743,164 @@ export async function completeUserRound({
       throw new Error(`User ${userId} was not found.`)
     }
 
-    const buttonSkin = getMappedShopItemById(equippedButtonSkinId)
-    const arenaTheme = getMappedShopItemById(equippedArenaThemeId)
-    const profileImage = getMappedShopItemById(equippedProfileImageId)
-
-    await connection.execute(
-      `UPDATE users
-       SET coins = ?,
-           xp = ?,
-           mmr = ?,
-           rank_system_version = ?,
-           placement_matches_played = ?,
-           demotion_protection_rounds = ?,
-           current_button_skin_id = ?,
-           current_arena_theme_id = ?,
-           current_profile_theme_id = ?,
-           active_loadout_slot = ?,
-           build_walkthrough_status = ?,
-           seen_unlock_part_ids_json = ?
-       WHERE id = ?`,
-      [
-        coins,
-        levelXp,
-        rankMmr,
-        rankedState.rankSystemVersion,
-        rankedState.placementMatchesPlayed,
-        rankedState.demotionProtectionRounds,
-        buttonSkin?.dbItemId ?? null,
-        arenaTheme?.dbItemId ?? null,
-        profileImage?.dbItemId ?? null,
-        activeLoadoutId,
-        buildWalkthrough.status,
-        JSON.stringify(normalizeSeenUnlockPartIds(seenUnlockPartIds)),
-        userId,
-      ]
-    )
-
-    const insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, historyEntry)
-
-    const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
-    let nextLifetimeStats = applyRoundToLifetimeStats(
-      existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
-      historyEntry
-    )
-    if (historyEntry?.drillId) {
-      nextLifetimeStats = {
-        ...nextLifetimeStats,
-        drillStats: applyRoundToDrillStats(
-          nextLifetimeStats.drillStats,
-          historyEntry.drillId,
-          historyEntry
-        ),
+    if (roundTokenId) {
+      const [claim] = await connection.execute(
+        `INSERT INTO consumed_round_tokens (token_id, user_id)
+         VALUES (?, ?)
+         ON CONFLICT (token_id) DO NOTHING`,
+        [String(roundTokenId), userId]
+      )
+      if (!claim.affectedRows) {
+        throw new RoundAlreadySubmittedError()
       }
     }
-    await persistLifetimeStats(connection, userId, nextLifetimeStats)
 
-    const loadoutId = historyEntry?.loadoutSnapshot?.loadoutId
-    if (loadoutId) {
-      const [existingLoadoutRows] = await connection.query(
-        `SELECT
-           loadout_id AS loadoutId,
-           loadout_name AS loadoutName,
-           total_rounds AS totalRounds,
-           ranked_rounds AS rankedRounds,
-           ranked_wins AS rankedWins,
-           best_score AS bestScore,
-           best_streak AS bestStreak,
-           best_ranked_streak AS bestRankedStreak,
-           total_hits AS totalHits,
-           total_misses AS totalMisses
-         FROM user_loadout_stats
-         WHERE user_id = ? AND loadout_id = ?
-         LIMIT 1
-         FOR UPDATE`,
-        [userId, loadoutId]
+    const coins = Math.min(maxCoins, Math.max(0, (Number(userRow.coins) || 0) + (Number(earnedCoins) || 0)))
+    const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + (Number(earnedXp) || 0)))
+
+    const isCurrentRankSystem = Number(userRow.rankSystemVersion) === RANK_SYSTEM_VERSION
+    rankOutcome = applyRankedMatchResult({
+      currentMmr: isCurrentRankSystem ? Number(userRow.mmr) || 0 : fallbackRankState.currentMmr,
+      currentRankedState: isCurrentRankSystem
+        ? {
+          rankSystemVersion: RANK_SYSTEM_VERSION,
+          placementMatchesPlayed: Number(userRow.placementMatchesPlayed) || 0,
+          demotionProtectionRounds: Number(userRow.demotionProtectionRounds) || 0,
+        }
+        : fallbackRankState.currentRankedState,
+      hasRankedHistory: Boolean(rankInputs.hasRankedHistory),
+      baseRankDelta: rankInputs.baseRankDelta,
+      placementMatchScore: rankInputs.placementMatchScore,
+      allowsRankProgression: Boolean(rankInputs.allowsRankProgression),
+    })
+    const rankMmr = Math.min(maxMmr, Math.max(0, Number(rankOutcome.nextMmr) || 0))
+    const rankedState = rankOutcome.nextRankedState
+    rankOutcome = { ...rankOutcome, nextMmr: rankMmr }
+
+    await connection.execute(
+      `UPDATE users SET coins = ?, xp = ? WHERE id = ?`,
+      [coins, levelXp, userId]
+    )
+
+    if (rankInputs.allowsRankProgression) {
+      await connection.execute(
+        `UPDATE users
+         SET mmr = ?,
+             rank_system_version = ?,
+             placement_matches_played = ?,
+             demotion_protection_rounds = ?
+         WHERE id = ?`,
+        [
+          rankMmr,
+          rankedState.rankSystemVersion,
+          rankedState.placementMatchesPlayed,
+          rankedState.demotionProtectionRounds,
+          userId,
+        ]
       )
-      const nextLoadoutStats = applyRoundToLoadoutStats(
-        existingLoadoutRows[0] ? mapLoadoutStatsRow(existingLoadoutRows[0]) : {},
-        historyEntry
-      )
-      await persistLoadoutStats(connection, userId, nextLoadoutStats)
     }
 
-    const normalizedProgress = normalizeProgressInput({
-      coins,
-      levelXp,
-      rankMmr,
-      rankedState,
-      ownedItemIds,
-      equippedButtonSkinId,
-      equippedArenaThemeId,
-      equippedProfileImageId,
-      activeLoadoutId,
-      savedLoadouts,
-      selectedModeId,
-      unlockedAchievementIds,
-      buildWalkthrough,
-      roundHistory: [insertedHistoryEntry],
+    // Settle any one-time legacy backfill before this round's history row exists,
+    // so an unverified round can't be swept into stats by a later rebuild.
+    await backfillLifetimeStatsFromHistory(connection, userId)
+
+    insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
+      ...historyEntry,
+      rankDelta: rankOutcome.appliedRankDelta,
     })
 
-    await syncUserCollection(connection, userId, normalizedProgress)
-    await syncUserLoadouts(connection, userId, normalizedProgress)
-    await syncUnlockedAchievements(connection, userId, normalizedProgress)
+    if (countsTowardStats) {
+      const committedHistoryEntry = {
+        ...historyEntry,
+        rankDelta: rankOutcome.appliedRankDelta,
+        // Placement rounds award a placement score, not a ranked win.
+        rankedWin: !rankOutcome.previousRankProgress?.isUnranked && !rankOutcome.previousRankProgress?.isPlacement && rankOutcome.appliedRankDelta > 0,
+      }
+      const existingLifetimeStatsRow = await getLifetimeStatsRow(connection, userId, { forUpdate: true })
+      let nextLifetimeStats = applyRoundToLifetimeStats(
+        existingLifetimeStatsRow ? mapLifetimeStatsRow(existingLifetimeStatsRow) : DEFAULT_LIFETIME_STATS,
+        committedHistoryEntry
+      )
+      if (committedHistoryEntry?.drillId) {
+        nextLifetimeStats = {
+          ...nextLifetimeStats,
+          drillStats: applyRoundToDrillStats(
+            nextLifetimeStats.drillStats,
+            committedHistoryEntry.drillId,
+            committedHistoryEntry
+          ),
+        }
+      }
+      await persistLifetimeStats(connection, userId, nextLifetimeStats)
+
+      const loadoutId = committedHistoryEntry?.loadoutSnapshot?.loadoutId
+      if (loadoutId) {
+        const [existingLoadoutRows] = await connection.query(
+          `SELECT
+             loadout_id AS loadoutId,
+             loadout_name AS loadoutName,
+             total_rounds AS totalRounds,
+             ranked_rounds AS rankedRounds,
+             ranked_wins AS rankedWins,
+             best_score AS bestScore,
+             best_streak AS bestStreak,
+             best_ranked_streak AS bestRankedStreak,
+             total_hits AS totalHits,
+             total_misses AS totalMisses
+           FROM user_loadout_stats
+           WHERE user_id = ? AND loadout_id = ?
+           LIMIT 1
+           FOR UPDATE`,
+          [userId, loadoutId]
+        )
+        const nextLoadoutStats = applyRoundToLoadoutStats(
+          existingLoadoutRows[0] ? mapLoadoutStatsRow(existingLoadoutRows[0]) : {},
+          committedHistoryEntry
+        )
+        await persistLoadoutStats(connection, userId, nextLoadoutStats)
+      }
+
+      // Achievements are worked out here from the totals this transaction just
+      // wrote, and only ever added, so two rounds finishing together can't erase
+      // each other's unlocks or miss a threshold their combined totals reached.
+      const [unlockedRows] = await connection.query(
+        "SELECT achievement_id AS achievementId FROM user_achievement_progress WHERE user_id = ?",
+        [userId]
+      )
+      const evaluatedAchievements = evaluateAchievements(
+        buildAchievementStatsFromLifetime({
+          lifetimeStats: nextLifetimeStats,
+          levelProgress: getLevelProgress(levelXp),
+          coins,
+        }),
+        { persistedUnlockedIds: unlockedRows.map((row) => String(row.achievementId)) }
+      )
+      await addUnlockedAchievements(connection, userId, getUnlockedAchievementIds(evaluatedAchievements))
+    }
 
     await connection.commit()
-
-    const progress = await findUserProgressByUserId(userId)
-    return {
-      progress,
-      historyEntry: insertedHistoryEntry,
-    }
   } catch (error) {
     await connection.rollback()
     throw error
   } finally {
     connection.release()
   }
+
+  // The caller reads progress once its follow-up writes are done; reading it
+  // here as well could fail after the commit and report a saved round as lost.
+  return {
+    historyEntry: insertedHistoryEntry,
+    rankOutcome,
+  }
 }
 
-export async function saveUserProgress({ userId, ...progress }) {
+// Saves only the preferences the client actually sent: loadouts, active loadout,
+// walkthrough state and seen unlocks. Fields that were not sent keep their stored
+// values, so an unrelated save from another tab can't roll back a newer edit.
+// Coins, XP, rank, the collection, equipped cosmetics and achievements are owned
+// by rounds, purchases and equips, and are never written here.
+export async function saveUserProgress({ userId, providedFields = [], ...progress }) {
+  const provided = new Set(providedFields)
   const connection = await pool.getConnection()
 
   try {
@@ -1826,45 +1915,31 @@ export async function saveUserProgress({ userId, ...progress }) {
       ...DEFAULT_PROGRESS,
       ...progress,
     })
-    const buttonSkin = getMappedShopItemById(normalizedProgress.equippedButtonSkinId)
-    const arenaTheme = getMappedShopItemById(normalizedProgress.equippedArenaThemeId)
-    const profileImage = getMappedShopItemById(normalizedProgress.equippedProfileImageId)
 
-    await connection.execute(
-      `UPDATE users
-       SET coins = ?,
-           xp = ?,
-           mmr = ?,
-           rank_system_version = ?,
-           placement_matches_played = ?,
-           demotion_protection_rounds = ?,
-           current_button_skin_id = ?,
-           current_arena_theme_id = ?,
-           current_profile_theme_id = ?,
-           active_loadout_slot = ?,
-           build_walkthrough_status = ?,
-           seen_unlock_part_ids_json = ?
-       WHERE id = ?`,
-      [
-        normalizedProgress.coins,
-        normalizedProgress.levelXp,
-        normalizedProgress.rankMmr,
-        normalizedProgress.rankedState.rankSystemVersion,
-        normalizedProgress.rankedState.placementMatchesPlayed,
-        normalizedProgress.rankedState.demotionProtectionRounds,
-        buttonSkin?.dbItemId ?? null,
-        arenaTheme?.dbItemId ?? null,
-        profileImage?.dbItemId ?? null,
-        normalizedProgress.activeLoadoutId,
-        normalizedProgress.buildWalkthrough.status,
-        JSON.stringify(normalizedProgress.seenUnlockPartIds),
-        userId,
-      ]
-    )
+    const assignments = []
+    const values = []
+    if (provided.has("activeLoadoutId")) {
+      assignments.push("active_loadout_slot = ?")
+      values.push(normalizedProgress.activeLoadoutId)
+    }
+    if (provided.has("buildWalkthrough")) {
+      assignments.push("build_walkthrough_status = ?")
+      values.push(normalizedProgress.buildWalkthrough.status)
+    }
+    if (provided.has("seenUnlockPartIds")) {
+      assignments.push("seen_unlock_part_ids_json = ?")
+      values.push(JSON.stringify(normalizedProgress.seenUnlockPartIds))
+    }
+    if (assignments.length > 0) {
+      await connection.execute(
+        `UPDATE users SET ${assignments.join(", ")} WHERE id = ?`,
+        [...values, userId]
+      )
+    }
 
-    await syncUserCollection(connection, userId, normalizedProgress)
-    await syncUserLoadouts(connection, userId, normalizedProgress)
-    await syncUnlockedAchievements(connection, userId, normalizedProgress)
+    if (provided.has("savedLoadouts")) {
+      await syncUserLoadouts(connection, userId, normalizedProgress)
+    }
 
     await connection.commit()
   } catch (error) {
@@ -1874,7 +1949,12 @@ export async function saveUserProgress({ userId, ...progress }) {
     connection.release()
   }
 
-  return findUserProgressByUserId(userId)
+  try {
+    return await findUserProgressByUserId(userId)
+  } catch {
+    // The write committed; only the follow-up read failed.
+    return null
+  }
 }
 
 function mapSeasonRow(row = {}) {
@@ -1943,6 +2023,7 @@ function mapChallengeRow(row = {}) {
     respondedAt: row.respondedAt ?? null,
     completedAt: row.completedAt ?? null,
     replayScore: toNonNegativeNumber(row.replayScore, 0),
+    replaySeed: row.replaySeed === null || row.replaySeed === undefined ? null : Number(row.replaySeed) >>> 0,
     opponentReplayScore: row.opponentReplayScore === null || row.opponentReplayScore === undefined
       ? null
       : toNonNegativeNumber(row.opponentReplayScore, 0),
@@ -1967,17 +2048,16 @@ export async function findCurrentSeason() {
   return mapSeasonRow(rows[0])
 }
 
-export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound = false } = {}) {
+export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound = false, isPlaced = true } = {}) {
   const season = await findCurrentSeason()
   if (!season?.id || !isRankedRound) {
     return null
   }
 
   const normalizedMmr = toNonNegativeNumber(rankMmr, 0)
-  const rewardTier = Math.min(
-    5,
-    Math.floor(normalizedMmr / 400)
-  )
+  // Same thresholds the Ladder shows (src/utils/seasonUtils.js).
+  // During placements the rating is a hidden running total, not a rank yet.
+  const rewardTier = getSeasonRewardTier(normalizedMmr, { isPlaced }).tier
 
   await pool.execute(
     `INSERT INTO user_season_stats (user_id, season_id, ranked_rounds, peak_mmr, reward_tier)
@@ -2183,6 +2263,7 @@ export async function findChallengeById(challengeId) {
        c.responded_at AS respondedAt,
        c.completed_at AS completedAt,
        replay.score AS replayScore,
+       replay.seed AS replaySeed,
        opponent_replay.score AS opponentReplayScore
      FROM challenges c
      INNER JOIN round_replays replay
@@ -2230,12 +2311,23 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
        ON replay.id = c.replay_id
      LEFT JOIN round_replays opponent_replay
        ON opponent_replay.id = c.opponent_replay_id
-     WHERE ${whereClause}
-     ORDER BY c.created_at DESC, c.id DESC
-     LIMIT 50`,
-    params
+     WHERE (${whereClause})
+       AND (
+         c.status IN ('pending', 'accepted')
+         OR c.id IN (
+           SELECT recent.id FROM challenges recent
+           WHERE ${whereClause.replaceAll("c.", "recent.")}
+           ORDER BY recent.created_at DESC, recent.id DESC
+           LIMIT 50
+         )
+       )
+     ORDER BY c.created_at DESC, c.id DESC`,
+    [...params, ...params]
   )
 
+  // Every duel still waiting on a reply or a race is returned, however old,
+  // plus the 50 most recent for history; otherwise newer duels could push an
+  // actionable one off the list (and off the pending badge).
   return rows.map(mapChallengeRow).filter(Boolean)
 }
 
@@ -2256,21 +2348,28 @@ export async function respondToChallenge({
   }
 
   const nextStatus = action === "accept" ? "accepted" : "declined"
-  await pool.execute(
+  // Conditional on the status read above, so overlapping requests cannot both
+  // apply (for example a late decline overwriting an accepted or finished duel).
+  const [result] = await pool.execute(
     `UPDATE challenges
      SET status = ?, responded_at = CURRENT_TIMESTAMP
-     WHERE id = ?`,
-    [nextStatus, challengeId]
+     WHERE id = ? AND opponent_user_id = ? AND status = 'pending'`,
+    [nextStatus, challengeId, userId]
   )
+  if (!result.affectedRows) {
+    return { ok: false, reason: "Challenge is no longer pending." }
+  }
 
   return { ok: true, challenge: await findChallengeById(challengeId) }
 }
 
+// The opponent's score always comes from their stored replay, which must be
+// their own run of the challenged ghost (same mode and seed). The status change
+// is conditional, so a duel can only be completed once.
 export async function completeChallenge({
   challengeId,
   userId,
   opponentReplayId,
-  opponentScore = 0,
 } = {}) {
   const challenge = await findChallengeById(challengeId)
   if (!challenge) {
@@ -2283,17 +2382,33 @@ export async function completeChallenge({
     return { ok: false, reason: "Challenge must be accepted before completing." }
   }
 
-  const challengerWon = toNonNegativeNumber(challenge.replayScore, 0) > toNonNegativeNumber(opponentScore, 0)
+  const opponentReplay = await findReplayById(opponentReplayId)
+  if (
+    !opponentReplay
+    || opponentReplay.id === challenge.replayId
+    || Number(opponentReplay.userId) !== Number(userId)
+    || opponentReplay.modeId !== challenge.modeId
+    || challenge.replaySeed === null
+    || (Number(opponentReplay.seed) >>> 0) !== challenge.replaySeed
+  ) {
+    return { ok: false, reason: "That run does not race this challenge's ghost." }
+  }
 
-  await pool.execute(
+  const opponentScore = toNonNegativeNumber(opponentReplay.score, 0)
+  const challengerWon = toNonNegativeNumber(challenge.replayScore, 0) > opponentScore
+
+  const [result] = await pool.execute(
     `UPDATE challenges
      SET status = 'completed',
          opponent_replay_id = ?,
          challenger_won = ?,
          completed_at = CURRENT_TIMESTAMP
-     WHERE id = ?`,
-    [opponentReplayId, challengerWon, challengeId]
+     WHERE id = ? AND status = 'accepted'`,
+    [opponentReplay.id, challengerWon, challengeId]
   )
+  if (!result.affectedRows) {
+    return { ok: false, reason: "Challenge was already completed." }
+  }
 
   return { ok: true, challenge: await findChallengeById(challengeId), challengerWon }
 }

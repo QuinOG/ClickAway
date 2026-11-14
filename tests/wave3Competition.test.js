@@ -43,10 +43,12 @@ describe("replayUtils", () => {
 
 describe("seasonUtils", () => {
   it("maps mmr to the highest unlocked reward tier", () => {
-    assert.equal(getSeasonRewardTier(500).label, "Unranked")
-    assert.equal(getSeasonRewardTier(850).label, "Bronze")
-    assert.equal(getSeasonRewardTier(1700).label, "Gold")
-    assert.equal(getSeasonRewardTier(2500).label, "Diamond")
+    // Reward tiers follow the named ranks: Silver I starts at 300, Diamond I at 1200.
+    assert.equal(getSeasonRewardTier(500, { isPlaced: false }).label, "Unranked")
+    assert.equal(getSeasonRewardTier(150).label, "Bronze")
+    assert.equal(getSeasonRewardTier(300).label, "Silver")
+    assert.equal(getSeasonRewardTier(900).label, "Platinum")
+    assert.equal(getSeasonRewardTier(1250).label, "Diamond")
   })
 
   it("normalizes season progress metadata", () => {

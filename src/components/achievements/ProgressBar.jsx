@@ -11,12 +11,13 @@ export default function ProgressBar({
   progressText = "",
   percentText = "",
 }) {
-  const normalizedPercent = isUnavailable
+  const showUnavailable = isUnavailable && !isUnlocked
+  const normalizedPercent = showUnavailable
     ? 0
     : (isUnlocked ? 100 : clampPercent(percent))
 
   return (
-    <div className={`achievementProgress ${isUnavailable ? "isUnavailable" : ""}`}>
+    <div className={`achievementProgress ${showUnavailable ? "isUnavailable" : ""}`}>
       <div className="achievementProgressTrack" aria-hidden="true">
         <span
           className={`achievementProgressFill ${isUnlocked ? "isUnlocked" : ""}`}
@@ -25,7 +26,7 @@ export default function ProgressBar({
       </div>
       <div className="achievementProgressMeta">
         <span className="achievementProgressText">{progressText}</span>
-        <strong className="achievementPercentText">{isUnavailable ? "N/A" : percentText}</strong>
+        <strong className="achievementPercentText">{showUnavailable ? "N/A" : percentText}</strong>
       </div>
     </div>
   )

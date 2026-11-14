@@ -10,7 +10,7 @@ import PowerupTray from "../features/game/components/PowerupTray.jsx"
 import { CountdownOverlay, GameOverFlow, ReadyOverlay } from "../features/game/components/gameRoundOverlayExports.jsx"
 import { useGameScreenController } from "../features/game/hooks/useGameScreenController.js"
 import { fetchReplay } from "../services/clickAwayHttpApiClient.js"
-import { normalizeReplayRecord } from "../utils/replayUtils.js"
+import { isValidGhostReplay, normalizeReplayRecord } from "../utils/replayUtils.js"
 
 const MotionDiv = motion.div
 
@@ -26,9 +26,10 @@ export default function GamePage({ onPhaseChange, ...props }) {
     emitFeedback,
     stopFeedback,
   } = useFeedbackPreferences()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const challengeId = Number(searchParams.get("challengeId")) || null
   const replayId = Number(searchParams.get("replayId")) || null
+  const [ghostLoadAttempt, setGhostLoadAttempt] = useState(0)
   const [loadState, setLoadState] = useState({
     replayId: null,
     replay: null,
@@ -48,9 +49,10 @@ export default function GamePage({ onPhaseChange, ...props }) {
       try {
         const response = await fetchReplay(replayId)
         if (isCancelled) return
+        if (!isValidGhostReplay(response?.replay)) throw new Error("Unable to load a valid ghost replay. Please retry.")
         setLoadState({
           replayId,
-          replay: normalizeReplayRecord(response?.replay),
+          replay: normalizeReplayRecord(response.replay),
           error: "",
         })
       } catch (error) {
@@ -68,7 +70,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     return () => {
       isCancelled = true
     }
-  }, [replayId])
+  }, [replayId, ghostLoadAttempt])
 
   const ghostReplay = loadState.replayId === replayId ? loadState.replay : null
   const ghostLoadError = loadState.replayId === replayId ? loadState.error : ""
@@ -77,7 +79,8 @@ export default function GamePage({ onPhaseChange, ...props }) {
     ...props,
     ghostReplay,
     challengeId,
-    autoStartGhostDuel: Boolean(replayId && challengeId && ghostReplay?.seed),
+    autoStartGhostDuel: Boolean(replayId && challengeId && isValidGhostReplay(ghostReplay)),
+    onExitDuel: () => setSearchParams({}, { replace: true }),
     emitFeedback,
     allowScreenShake: effectivePreferences.screenShake,
   })
@@ -94,6 +97,7 @@ export default function GamePage({ onPhaseChange, ...props }) {
     stopFeedback()
   }, [game.phase, stopFeedback])
 
+  const duelError = ghostLoadError || game.duelStartError
   let activeOverlay = null
   const entranceOverlay = game.entranceOverlayProps
     ? <CountdownOverlay key="round-entrance" {...game.entranceOverlayProps} />
@@ -118,10 +122,14 @@ export default function GamePage({ onPhaseChange, ...props }) {
 
   return (
     <div className={game.gameScreenClassName}>
-      {ghostLoadError ? (
+      {duelError ? (
         <div className="ghostDuelError" role="alert">
-          {ghostLoadError}
+          {duelError}
+          <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button>
+          <button type="button" onClick={() => setSearchParams({}, { replace: true })}>Leave duel</button>
         </div>
+      ) : challengeId && replayId && !ghostReplay ? (
+        <div className="ghostDuelError" role="status">Loading your rival's run…</div>
       ) : null}
 
       <GameHud {...game.hudProps} />

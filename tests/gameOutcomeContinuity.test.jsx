@@ -23,6 +23,7 @@ const baseProps = {
   playerXpToNextLevel: 70,
   roundXpEarned: 42,
   roundCoinsEarned: 18,
+  roundSaveStatus: "saved",
   onRematch: vi.fn(),
   onChooseMode: vi.fn(),
 }
@@ -53,6 +54,32 @@ afterEach(() => {
 })
 
 describe("B3 outcome and reward continuity", () => {
+  test.each(["saving", "failed"])("keeps promotion reveal gated while %s", (roundSaveStatus) => {
+    renderOutcome({
+      allowsRankProgression: true,
+      roundSaveStatus,
+      previousRankProgress: { tierLabel: "Bronze III", rankOrder: 2, isPlacement: false },
+      projectedRankProgress: { tierLabel: "Silver I", rankOrder: 3, isPlacement: false },
+    })
+    expect(screen.queryByRole("button", { name: "Reveal Rank" })).toBeNull()
+    expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
+  })
+
+  test.each(["idle", "saving", "failed"])("does not claim rewards or unlocks while save status is %s", (roundSaveStatus) => {
+    renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, roundSaveStatus, roundXpEarned: 1000 })
+    expect(screen.queryByLabelText("Round rewards")).toBeNull()
+    expect(screen.queryByLabelText(/Unlocked .*Open Armory/)).toBeNull()
+    expect(screen.queryByText(/Level up to/)).toBeNull()
+    expect(screen.getByLabelText("Final score 128")).not.toBeNull()
+    if (roundSaveStatus === "failed") expect(screen.getByRole("alert").textContent).toContain("couldn't be saved")
+  })
+
+  test.each(["saving", "failed"])("does not claim a practice record when %s", (roundSaveStatus) => {
+    renderOutcome({ roundSaveStatus })
+    expect(screen.queryByText(/Practice result recorded/)).toBeNull()
+    expect(screen.getByText(/Practice round complete/)).not.toBeNull()
+  })
+
   test("locks performance before settling earned balances", async () => {
     const user = userEvent.setup()
     const props = renderOutcome({
@@ -61,7 +88,7 @@ describe("B3 outcome and reward continuity", () => {
     })
 
     expect(screen.getByRole("heading", { name: "Round Complete" })).not.toBeNull()
-    expect(screen.getByRole("img", { name: "Hit signature: 24 hits and 3 misses" })).not.toBeNull()
+    expect(screen.getByText("24 hits · 3 misses")).not.toBeNull()
     expect(screen.getByLabelText("Personal best comparison").textContent).toContain("New best by 18")
     expect(screen.queryByRole("heading", { name: "Rewards Settled" })).toBeNull()
     expect(screen.getByLabelText("Round rewards").textContent).toContain("+18")
@@ -79,10 +106,12 @@ describe("B3 outcome and reward continuity", () => {
 
   test("stages a promotion between the outcome and reward settlement", async () => {
     const user = userEvent.setup()
+    // A promotion is only revealed once the server has confirmed the save.
     renderOutcome({
       allowsCoinRewards: true,
       allowsLevelProgression: true,
       allowsRankProgression: true,
+      roundSaveStatus: "saved",
       roundRankDelta: 24,
       previousRankProgress: {
         tierLabel: "Bronze III",

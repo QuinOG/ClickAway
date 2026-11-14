@@ -78,9 +78,6 @@ function getItemTypeLabel(itemType) {
 export default function ShopHeroHeader({
   playerName = "Player",
   coins = 0,
-  totalOwnedCount = 0,
-  totalItems = 0,
-  collectionPercent = 0,
   buttonSkin = null,
   arenaTheme = null,
   profileImage = null,
@@ -88,13 +85,13 @@ export default function ShopHeroHeader({
   selectedItem = null,
   selectedItemStatus = {},
   isSubmitting = false,
+  isBusy = false,
   onPurchase,
   onEquip,
   onShowEquipped,
   actionFeedback = null,
   actionSourceAware = false,
 }) {
-  const remainingCount = Math.max(0, totalItems - totalOwnedCount)
   const previewButtonSkin = selectedItem?.type === "button_skin" ? selectedItem : buttonSkin
   const previewArenaTheme = selectedItem?.type === "arena_theme" ? selectedItem : arenaTheme
   const previewProfileImage = selectedItem?.type === "profile_image" ? selectedItem : profileImage
@@ -104,7 +101,7 @@ export default function ShopHeroHeader({
   const selectedTypeLabel = getItemTypeLabel(selectedItem?.type)
 
   function handleSelectedAction(event) {
-    if (!selectedItem || isSubmitting) return
+    if (!selectedItem || isSubmitting || isBusy) return
     if (selectedItemStatus.isOwned) {
       if (actionSourceAware) onEquip?.(selectedItem, event.currentTarget)
       else onEquip?.(selectedItem)
@@ -125,6 +122,7 @@ export default function ShopHeroHeader({
           : `Need ${formatCoins(missingCoins)} more coins`
   const isSelectedActionDisabled = Boolean(
     isSubmitting
+    || isBusy
     || selectedItemStatus.isEquipped
     || !selectedItemStatus.isOwned && !selectedItemStatus.canAfford
   )

@@ -16,7 +16,7 @@ function getUsernameError(username = "") {
 function getPasswordError(password = "") {
   if (!password) return "Create a password."
   if (password.length < 8) return "Password must be at least 8 characters."
-  if (password.length > 128) return "Password must be 128 characters or less."
+  if (new TextEncoder().encode(password).length > 72) return "Password must be 72 characters or less."
   return ""
 }
 
@@ -200,7 +200,7 @@ export default function SignupPage({ onSignup }) {
             hintTone={passwordHint.tone}
             required
             minLength={8}
-            maxLength={128}
+            maxLength={72}
             disabled={isSubmitting}
           />
 
@@ -221,7 +221,7 @@ export default function SignupPage({ onSignup }) {
             hintTone={confirmPasswordHint.tone}
             required
             minLength={8}
-            maxLength={128}
+            maxLength={72}
             disabled={isSubmitting}
           />
 

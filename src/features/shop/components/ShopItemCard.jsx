@@ -93,6 +93,8 @@ export default function ShopItemCard({
   ownedItemIds,
   isSelected = false,
   isSubmitting = false,
+  // Another item's purchase/equip is in flight; actions wait for it.
+  isShopBusy = false,
   onSelect,
   onPurchase,
   onEquip,
@@ -117,7 +119,7 @@ export default function ShopItemCard({
     canAfford,
   })
   function handleAction(event) {
-    if (isSubmitting) return
+    if (isSubmitting || isShopBusy) return
     const source = event.currentTarget
     if (actionSourceAware) onSelect?.(item, source)
     else onSelect?.(item)
@@ -229,7 +231,7 @@ export default function ShopItemCard({
           type="button"
           className={actionButtonClassName}
           onClick={handleAction}
-          disabled={isActionDisabled || isSubmitting}
+          disabled={isActionDisabled || isSubmitting || isShopBusy}
         >
           {actionLabelDisplay}
           {!isOwned && canAfford && !isActionBusy ? (

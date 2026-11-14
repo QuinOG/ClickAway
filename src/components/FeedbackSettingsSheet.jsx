@@ -238,7 +238,7 @@ function FeedbackSettingsForm({ onRequestClose }) {
         <ActionButton intent="secondary" onClick={handleRestoreSaved}>
           {isDirty ? "Cancel" : "Close"}
         </ActionButton>
-        <ActionButton intent="primary" type="submit" disabled={!isDirty}>
+        <ActionButton intent="primary" type="submit" disabled={!isDirty && saveState !== "error"}>
           Apply
         </ActionButton>
       </div>

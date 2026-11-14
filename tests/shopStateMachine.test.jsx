@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
 
+import ShopCategoryTabs from "../src/features/shop/components/ShopCategoryTabs.jsx"
 import ShopHeroHeader from "../src/features/shop/components/ShopHeroHeader.jsx"
 import ShopItemCard from "../src/features/shop/components/ShopItemCard.jsx"
 
@@ -40,7 +41,9 @@ describe("Shop item state machine", () => {
 
     expect(card.dataset.shopState).toBe(state)
     expect(card.classList.contains(`shopItemCard-${state}`)).toBe(true)
-    expect(card.querySelector(".shopItemStateTag svg")).not.toBeNull()
+    // The equipped card shows its state through the Equipped button, not a tag.
+    if (state === "equipped") expect(card.querySelector(".shopItemStateTag")).toBeNull()
+    else expect(card.querySelector(".shopItemStateTag svg")).not.toBeNull()
   })
 
   test("selection is independent from ownership state and drives the preview control", () => {
@@ -76,9 +79,34 @@ describe("Shop preview-to-action continuity", () => {
     )
 
     expect(screen.getByLabelText(/Selected preview with Test Skin/)).not.toBeNull()
-    expect(screen.getByRole("progressbar", { name: "Collection progress" }).getAttribute("aria-valuenow")).toBe("3")
 
     await user.click(screen.getByRole("button", { name: /Unlock for 100 coins/ }))
     expect(onPurchase).toHaveBeenCalledWith(baseItem)
+  })
+})
+
+describe("Shop category keyboard navigation", () => {
+  test("arrows wrap, Home and End select, and only the active tab is a tab stop", async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const tabs = ["All", "Buttons", "Arenas"].map((label) => ({
+      id: label, label, ownedCount: 0, itemCount: 3,
+    }))
+    const { rerender } = render(<ShopCategoryTabs tabs={tabs} activeCategoryId="All" onChange={onChange} />)
+    const buttons = screen.getAllByRole("tab")
+    expect(buttons.map((button) => button.tabIndex)).toEqual([0, -1, -1])
+    buttons[0].focus()
+    await user.keyboard("{ArrowLeft}")
+    expect(document.activeElement).toBe(buttons[2])
+    expect(onChange).toHaveBeenLastCalledWith("Arenas", buttons[2])
+    rerender(<ShopCategoryTabs tabs={tabs} activeCategoryId="Arenas" onChange={onChange} />)
+    expect(buttons.map((button) => button.tabIndex)).toEqual([-1, -1, 0])
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toBe(buttons[0])
+    await user.keyboard("{End}")
+    expect(document.activeElement).toBe(buttons[2])
+    await user.keyboard("{Home}{ArrowRight}")
+    expect(document.activeElement).toBe(buttons[1])
+    expect(onChange).toHaveBeenLastCalledWith("Buttons", buttons[1])
   })
 })

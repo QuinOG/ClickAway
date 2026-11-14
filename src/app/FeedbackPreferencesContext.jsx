@@ -90,7 +90,9 @@ export function FeedbackPreferencesProvider({ children }) {
     try {
       return feedbackService.dispatch(eventName, options)
     } finally {
-      feedbackService.configure(preferencesRef.current)
+      // Restore the saved settings without cutting off the preview that was just
+      // played; otherwise a muted saved setting silences the draft's test cue.
+      feedbackService.configure(preferencesRef.current, { keepPlaying: true })
       setFeedbackStatus(feedbackService.getStatus())
     }
   }, [])
@@ -115,7 +117,9 @@ export function FeedbackPreferencesProvider({ children }) {
       }
     }
     const handleStorageChange = (event) => {
-      if (event.key !== FEEDBACK_PREFERENCES_STORAGE_KEY) return
+      // clear() sends a null key rather than a separate event for each setting.
+      if (event.key !== null && event.key !== FEEDBACK_PREFERENCES_STORAGE_KEY) return
+      if (event.storageArea && event.storageArea !== window.localStorage) return
 
       try {
         const nextPreferences = event.newValue

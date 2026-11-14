@@ -10,6 +10,7 @@ import { useAchievementSync } from "./app/useAchievementSync.js"
 import { useAppDerivedState } from "./app/useAppDerivedState.js"
 import { useAppPlayerState } from "./app/useAppPlayerState.js"
 import { useAuthSession } from "./app/useAuthSession.js"
+import { usePendingDuelCount } from "./app/usePendingDuelCount.js"
 import { usePlayerProgressionUpdates } from "./app/usePlayerProgressionUpdates.js"
 import { useProgressSync } from "./app/useProgressSync.js"
 import { useShopActions } from "./app/useShopActions.js"
@@ -205,6 +206,8 @@ export default function App() {
     void persistIntent({ selectedModeId: nextModeId })
   }, [persistIntent, setSelectedModeId])
 
+  const pendingDuelCount = usePendingDuelCount({ isAuthed, sessionKey: isAuthed ? playerUserId : "" })
+
   if (!authReady) {
     return <SessionLoadingScreen />
   }
@@ -231,6 +234,7 @@ export default function App() {
             profileImageSrc={equippedProfileImage?.imageSrc}
             profileImageClassName={equippedProfileImage?.effectClass}
             showArmoryUnlockBadge={showArmoryUnlockBadge}
+            pendingDuelCount={pendingDuelCount}
           />
         }
       >
@@ -363,6 +367,7 @@ export default function App() {
               <HistoryPage
                 roundHistory={roundHistory}
                 totalRoundCount={totalRoundCount}
+                careerBestScore={lifetimeStats?.bestSingleScore ?? null}
               />
             </ProtectedRoute>
           }

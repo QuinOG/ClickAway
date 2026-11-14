@@ -22,7 +22,9 @@ import {
 import {
   createUser,
   completeUserRound,
+  RoundAlreadySubmittedError,
   createChallenge,
+  findChallengeById,
   findChallengesForUser,
   findCurrentSeason,
   findLeaderboardPage,
@@ -47,22 +49,19 @@ import {
 import { calculateRoundRewards, simulateRound } from "./roundRewards.js"
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
-import { sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
+import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
-import {
-  evaluateAchievements,
-  getUnlockedAchievementIds,
-} from "../src/game/achievements/evaluateAchievements.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
-import {
-  applyRoundToLifetimeStats,
-  buildAchievementStatsFromLifetime,
-} from "../src/utils/lifetimeStatsUtils.js"
 import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
 const app = express()
-app.set("trust proxy", 1)
+// Rate limits key on the client IP. Only trust X-Forwarded-For when a proxy we
+// control sets it (Railway sets RAILWAY_ENVIRONMENT); otherwise anyone reaching
+// the server directly could rotate that header to dodge the login limit.
+// TRUST_PROXY overrides: a hop count (e.g. "1") or "false".
+const TRUST_PROXY = process.env.TRUST_PROXY ?? (process.env.RAILWAY_ENVIRONMENT ? "1" : "false")
+app.set("trust proxy", TRUST_PROXY === "false" ? false : Number(TRUST_PROXY) || TRUST_PROXY)
 const playerStateStore = createPlayerStateStore()
 
 const PORT = Number(process.env.PORT || 4000)
@@ -143,7 +142,10 @@ function clearAuthCookie(response) {
   })
 }
 
+// The session cookie is set last, after every read the response needs, so a
+// failed login or sign-up can never leave the browser signed in.
 async function createAuthResponse(user, response) {
+  const progress = await findUserProgressByUserId(user.id)
   setAuthCookie(response, signAuthToken(buildAuthPayload(user), JWT_SECRET))
 
   return {
@@ -152,7 +154,7 @@ async function createAuthResponse(user, response) {
       username: user.username,
       role: user.role,
     },
-    progress: await findUserProgressByUserId(user.id),
+    progress,
   }
 }
 
@@ -171,19 +173,6 @@ function normalizeProgressPayload(body = {}) {
     buildWalkthrough: body.buildWalkthrough,
     seenUnlockPartIds: body.seenUnlockPartIds,
   }
-}
-
-function resolveUnlockedAchievementIds(currentProgress) {
-  const achievementStats = buildAchievementStatsFromLifetime({
-    lifetimeStats: currentProgress.lifetimeStats,
-    levelProgress: getLevelProgress(currentProgress.levelXp),
-    coins: currentProgress.coins,
-  })
-  const evaluatedAchievements = evaluateAchievements(achievementStats, {
-    persistedUnlockedIds: currentProgress.unlockedAchievementIds,
-  })
-
-  return getUnlockedAchievementIds(evaluatedAchievements)
 }
 
 function mergeProgressPayload(existingProgress = {}, nextProgress = {}) {
@@ -219,7 +208,7 @@ function clampProgressBounds(progress = {}) {
 }
 
 function handleRouteError(error, response) {
-  if (error instanceof PlayerStateError) {
+  if (error instanceof PlayerStateError || error instanceof RoundAlreadySubmittedError) {
     response.status(error.status).json({ error: error.message })
     return
   }
@@ -283,7 +272,7 @@ app.get("/api/health", (_request, response) => {
 
 app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
   const username = sanitizeUsername(request.body?.username)
-  const password = String(request.body?.password || "")
+  const password = sanitizePassword(request.body?.password)
 
   const usernameError = validateUsername(username)
   if (usernameError) {
@@ -297,30 +286,41 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
     return
   }
 
-  const existingUser = await findUserByUsername(username)
-  if (existingUser) {
-    response.status(409).json({ error: "That username is already taken." })
+  let createdUser
+  try {
+    const existingUser = await findUserByUsername(username)
+    if (existingUser) {
+      response.status(409).json({ error: "That username is already taken." })
+      return
+    }
+    const passwordHash = await bcrypt.hash(password, 12)
+    createdUser = await createUser({ username, passwordHash, role: "player" })
+  } catch (error) {
+    if (error.code === "23505" && error.constraint === "users_username_key") {
+      response.status(409).json({ error: "That username is already taken." })
+    } else {
+      handleRouteError(error, response)
+    }
     return
   }
-
-  const passwordHash = await bcrypt.hash(password, 12)
-  const createdUser = await createUser({
-    username,
-    passwordHash,
-    role: "player",
-  })
 
   try {
     await playerStateStore.ensurePlayerUser(createdUser)
     response.status(201).json(await createAuthResponse(createdUser, response))
   } catch (error) {
-    handleRouteError(error, response)
+    // The account exists at this point, so say so: retrying sign-up would only
+    // report the name as taken.
+    console.error("Account created, but sign-in after sign-up failed:", error)
+    response.status(503).json({
+      error: "Your account was created, but we couldn't sign you in. Please log in.",
+      code: "account_created",
+    })
   }
 })
 
 app.post("/api/auth/login", authRateLimiter, async (request, response) => {
   const username = sanitizeUsername(request.body?.username)
-  const password = String(request.body?.password || "")
+  const password = sanitizePassword(request.body?.password)
 
   if (!username || !password) {
     response.status(400).json({ error: "Username and password are required." })
@@ -401,6 +401,7 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
     const limit = Number(request.query?.limit) || undefined
     const search = String(request.query?.search || "")
     const view = String(request.query?.view || "top")
+    const reverse = String(request.query?.order || "") === "reverse"
 
     const [leaderboard, season] = await Promise.all([
       findLeaderboardPage({
@@ -410,6 +411,7 @@ app.get("/api/leaderboard", requireAuth, async (request, response) => {
         search,
         userId: user.id,
         view,
+        reverse,
       }),
       findCurrentSeason(),
     ])
@@ -578,42 +580,8 @@ app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, re
   }
 })
 
-app.post("/api/challenges/:challengeId/complete", requireAuth, async (request, response) => {
-  const user = await findUserById(request.auth.userId)
-  if (!user) {
-    response.status(401).json({ error: "Session is no longer valid." })
-    return
-  }
-
-  try {
-    const opponentReplayId = Number(request.body?.opponentReplayId)
-    const opponentScore = Number(request.body?.opponentScore) || 0
-
-    if (!opponentReplayId) {
-      response.status(400).json({ error: "opponentReplayId is required." })
-      return
-    }
-
-    const result = await completeChallenge({
-      challengeId: Number(request.params.challengeId),
-      userId: user.id,
-      opponentReplayId,
-      opponentScore,
-    })
-
-    if (!result.ok) {
-      response.status(400).json({ error: result.reason })
-      return
-    }
-
-    response.json({
-      challenge: result.challenge,
-      challengerWon: result.challengerWon,
-    })
-  } catch (error) {
-    handleRouteError(error, response)
-  }
-})
+// Duels are completed only by a round started for that duel (see
+// /api/round/complete), so one run can't be reused to settle another duel.
 
 app.get("/api/history", requireAuth, async (request, response) => {
   const user = await findUserById(request.auth.userId)
@@ -670,14 +638,16 @@ app.post("/api/shop/equip", requireAuth, async (request, response) => {
 // server cannot reconstruct yet), so they are display-only stats: sanitized to
 // plausible bounds and never fed into rewards or rank.
 const MAX_REACTION_MS = 60_000
+const ROUND_SUBMIT_CLOCK_SLACK_MS = 5_000
 
 function sanitizeReactionMs(value) {
+  if (value === null || value === undefined || value === "") return null
   const n = Number(value)
   if (!Number.isFinite(n) || n < 0) return null
   return Math.min(MAX_REACTION_MS, Math.round(n))
 }
 
-app.post("/api/round/start", requireAuth, roundRateLimiter, (request, response) => {
+app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, response) => {
   const modeId = String(request.body?.modeId || "")
   const mode = getDifficultyById(modeId)
   if (!mode || mode.id !== modeId) {
@@ -685,13 +655,38 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, (request, response) 
     return
   }
 
-  const seed = createRoundSeed()
+  // A duel race uses the challenged ghost's seed, so the run can be stored as a
+  // replay and compared with the challenger's on the same targets.
+  let seed = createRoundSeed()
+  let replayId = null
+  const challengeId = Number(request.body?.challengeId) || null
+  if (challengeId) {
+    try {
+      const challenge = await findChallengeById(challengeId)
+      if (
+        !challenge
+        || challenge.opponentUserId !== Number(request.auth.userId)
+        || challenge.status !== "accepted"
+        || challenge.modeId !== modeId
+        || challenge.replaySeed === null
+      ) {
+        response.status(400).json({ error: "That duel cannot be raced right now." })
+        return
+      }
+      seed = challenge.replaySeed
+      replayId = challenge.replayId
+    } catch (error) {
+      handleRouteError(error, response)
+      return
+    }
+  }
+
   const roundToken = signRoundToken(
-    { userId: request.auth.userId, modeId, seed },
+    { userId: request.auth.userId, modeId, seed, challengeId },
     JWT_SECRET
   )
 
-  response.json({ roundToken, seed })
+  response.json({ roundToken, seed, ...(challengeId ? { replayId } : {}) })
 })
 
 app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, response) => {
@@ -714,9 +709,13 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     return
   }
 
-  // Round tokens are optional for non-ranked modes during rollout, but when
-  // present they must verify — a forged/expired token means a tampering client.
+  // A token is what makes a round reward-bearing: it is single-use and binds the
+  // seed, mode and start time. Non-ranked rounds without one (for example a
+  // ghost-duel race seeded from a replay) are still recorded, but earn nothing.
   let roundSeed = null
+  let roundTokenId = null
+  let roundTokenChallengeId = null
+  let roundTokenIssuedAtMs = null
   if (roundToken) {
     const tokenCheck = verifyRoundToken(String(roundToken), {
       userId: request.auth.userId,
@@ -728,7 +727,18 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       return
     }
 
+    // The last event cannot be later than the time that has passed since the
+    // token was issued (plus clock slack); otherwise the stream was fabricated.
+    const lastEventMs = Array.isArray(events) && events.length > 0 ? Number(events[events.length - 1]?.t) || 0 : 0
+    if (lastEventMs > Date.now() - tokenCheck.issuedAtMs + ROUND_SUBMIT_CLOCK_SLACK_MS) {
+      response.status(400).json({ error: "Round was submitted before it could have finished." })
+      return
+    }
+
     roundSeed = tokenCheck.seed
+    roundTokenId = tokenCheck.roundId
+    roundTokenChallengeId = tokenCheck.challengeId
+    roundTokenIssuedAtMs = tokenCheck.issuedAtMs
   }
 
   try {
@@ -749,20 +759,34 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       return
     }
 
+    // A timed round can't be handed in before its timer (plus any Time Boosts)
+    // could have run out. Without this, a fresh token could be cashed in at once.
+    if (roundTokenIssuedAtMs !== null && simulation.roundEndMs !== null && simulation.roundEndMs !== undefined) {
+      const elapsedSinceIssueMs = Date.now() - roundTokenIssuedAtMs
+      if (elapsedSinceIssueMs + ROUND_SUBMIT_CLOCK_SLACK_MS < simulation.roundEndMs) {
+        response.status(400).json({ error: "Round was submitted before its timer ran out." })
+        return
+      }
+    }
+
     const { hits, misses, score, bestStreak } = simulation
     const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
     const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
 
-    const { earnedCoins, earnedXp, progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } =
-      calculateRoundRewards({
-        modeId,
-        hits,
-        misses,
-        score,
-        bestStreak,
-      })
+    const calculatedRewards = calculateRoundRewards({
+      modeId,
+      hits,
+      misses,
+      score,
+      bestStreak,
+    })
+    const { progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } = calculatedRewards
+    const earnedCoins = roundTokenId ? calculatedRewards.earnedCoins : 0
+    const earnedXp = roundTokenId ? calculatedRewards.earnedXp : 0
 
-    const rankOutcome = applyRankedMatchResult({
+    // Estimate for the history entry; completeUserRound recalculates the ranked
+    // result from the locked row and stores the value that actually applied.
+    const estimatedRankOutcome = applyRankedMatchResult({
       currentMmr: currentProgress.rankMmr,
       currentRankedState: currentProgress.rankedState,
       hasRankedHistory,
@@ -771,10 +795,6 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       allowsRankProgression,
     })
 
-    const nextCoins = clampCoins(currentProgress.coins + earnedCoins)
-    const nextLevelXp = clampXp(currentProgress.levelXp + earnedXp)
-    const nextRankMmr = clampMmr(rankOutcome.nextMmr)
-    const rankDelta = rankOutcome.appliedRankDelta
 
     const historyEntry = {
       score,
@@ -785,76 +805,98 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       bestReactionMs,
       coinsEarned: earnedCoins,
       xpEarned: earnedXp,
-      rankDelta,
+      rankDelta: estimatedRankOutcome.appliedRankDelta,
       modeId,
       progressionMode,
       drillId: typeof drillId === "string" ? drillId : null,
       loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }
-    const nextLifetimeStats = applyRoundToLifetimeStats(
-      currentProgress.lifetimeStats,
-      historyEntry
-    )
 
-    const { progress } = await completeUserRound({
+    const { rankOutcome } = await completeUserRound({
       userId: user.id,
-      coins: nextCoins,
-      levelXp: nextLevelXp,
-      rankMmr: nextRankMmr,
-      rankedState: rankOutcome.nextRankedState,
-      ownedItemIds: currentProgress.ownedItemIds,
-      equippedButtonSkinId: currentProgress.equippedButtonSkinId,
-      equippedArenaThemeId: currentProgress.equippedArenaThemeId,
-      equippedProfileImageId: currentProgress.equippedProfileImageId,
-      activeLoadoutId: currentProgress.activeLoadoutId,
-      savedLoadouts: currentProgress.savedLoadouts,
-      selectedModeId: modeId,
-      unlockedAchievementIds: resolveUnlockedAchievementIds({
-        ...currentProgress,
-        coins: nextCoins,
-        levelXp: nextLevelXp,
-        lifetimeStats: nextLifetimeStats,
-      }),
-      buildWalkthrough: currentProgress.buildWalkthrough,
-      seenUnlockPartIds: currentProgress.seenUnlockPartIds,
+      earnedCoins,
+      earnedXp,
+      maxCoins: MAX_COINS,
+      maxXp: MAX_XP,
+      maxMmr: MAX_MMR,
+      roundTokenId,
+      rankInputs: { hasRankedHistory, baseRankDelta, placementMatchScore, allowsRankProgression },
+      fallbackRankState: {
+        currentMmr: currentProgress.rankMmr,
+        currentRankedState: currentProgress.rankedState,
+      },
+      countsTowardStats: Boolean(roundTokenId),
       historyEntry,
     })
 
+    const rankDelta = rankOutcome.appliedRankDelta
+    const nextRankMmr = rankOutcome.nextMmr
+
+    // A duel race is stored even with no clicks: a zero-score run is a real
+    // result and still has to settle the duel.
+    // The round and its rewards are committed at this point. If a follow-up write
+    // (replay, season, duel) fails, the round is still reported as saved, with a
+    // note, instead of telling the player their rewards were lost.
     let replay = null
-    const submittedEvents = Array.isArray(events) ? events : []
-    if (roundSeed !== null && submittedEvents.length > 0) {
-      replay = await insertRoundReplay({
-        userId: user.id,
-        username: user.username,
-        modeId,
-        seed: roundSeed,
-        events: submittedEvents,
-        loadoutSnapshot: simulation.loadoutSnapshot,
-        score,
-        hits,
-        misses,
-        bestStreak,
-      })
+    let seasonProgress = null
+    let completedChallenge = null
+    let followUpError = null
+    try {
+      const submittedEvents = Array.isArray(events) ? events : []
+      if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
+        replay = await insertRoundReplay({
+          userId: user.id,
+          username: user.username,
+          modeId,
+          seed: roundSeed,
+          events: submittedEvents,
+          loadoutSnapshot: simulation.loadoutSnapshot,
+          score,
+          hits,
+          misses,
+          bestStreak,
+        })
+      }
+
+
+      // Only a round started for a duel (its token names the challenge) can complete it.
+      const challengeId = roundTokenChallengeId
+      if (challengeId && replay?.id) {
+        const completion = await completeChallenge({
+          challengeId,
+          userId: user.id,
+          opponentReplayId: replay.id,
+        })
+        if (completion.ok) {
+          completedChallenge = completion.challenge
+        }
+      }
+    } catch (error) {
+      console.error("Round saved, but a follow-up write failed:", error)
+      followUpError = "Your round was saved, but its replay or duel result couldn't be stored."
     }
 
-    const seasonProgress = await applyUserSeasonProgress(user.id, {
-      rankMmr: nextRankMmr,
-      isRankedRound: progressionMode === "ranked",
-    })
-
-    const challengeId = Number(request.body?.challengeId) || null
-    let completedChallenge = null
-    if (challengeId && replay?.id) {
-      const completion = await completeChallenge({
-        challengeId,
-        userId: user.id,
-        opponentReplayId: replay.id,
-        opponentScore: score,
+    // Season credit is independent of the replay, so a replay failure can't skip it.
+    try {
+      seasonProgress = await applyUserSeasonProgress(user.id, {
+        rankMmr: nextRankMmr,
+        isRankedRound: progressionMode === "ranked",
+        isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
       })
-      if (completion.ok) {
-        completedChallenge = completion.challenge
-      }
+    } catch (error) {
+      console.error("Round saved, but the season update failed:", error)
+      followUpError = followUpError || "Your round was saved, but its season progress couldn't be updated."
+    }
+
+    // Read last, after the replay, season and duel writes, so the response is the
+    // newest state this request produced. If even this read fails, the round is
+    // still saved; the client refreshes its progress on the next request.
+    let progress = null
+    try {
+      progress = await findUserProgressByUserId(user.id)
+    } catch (error) {
+      console.error("Round saved, but reading progress failed:", error)
     }
 
     response.json({
@@ -862,9 +904,14 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       earnedCoins,
       earnedXp,
       rankDelta,
+      rankProgress: {
+        previous: rankOutcome.previousRankProgress,
+        next: rankOutcome.nextRankProgress,
+      },
       replay,
       seasonProgress,
       completedChallenge,
+      followUpError,
     })
   } catch (error) {
     handleRouteError(error, response)
@@ -885,11 +932,11 @@ app.put("/api/progress", requireAuth, async (request, response) => {
     const nextProgress = clampProgressBounds(
       mergeProgressPayload(currentProgress, incoming)
     )
-    nextProgress.unlockedAchievementIds = resolveUnlockedAchievementIds(currentProgress)
 
     const progress = await saveUserProgress({
       userId: user.id,
       ...nextProgress,
+      providedFields: Object.keys(incoming).filter((key) => incoming[key] !== undefined),
     })
 
     response.json({ progress })

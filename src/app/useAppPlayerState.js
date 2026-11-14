@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from "react"
+﻿import { useCallback, useEffect, useState } from "react"
 
 import {
   ACTIVE_LOADOUT_ID_DEFAULT,
@@ -11,7 +11,7 @@ import {
 } from "../constants/buildWalkthrough.js"
 import { normalizeSeenUnlockPartIds } from "../utils/unlockWallUtils.js"
 import { DEFAULT_EQUIPPED_IDS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
-import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID } from "../constants/gameModesConfig.js"
+import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID, getDifficultyById } from "../constants/gameModesConfig.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
 import {
   DEFAULT_LIFETIME_STATS,
@@ -128,6 +128,17 @@ function normalizePlayerState(playerState = {}) {
   }
 }
 
+const SELECTED_MODE_STORAGE_KEY = "clickaway.selected-mode"
+
+function readStoredModeId() {
+  try {
+    const storedModeId = localStorage.getItem(SELECTED_MODE_STORAGE_KEY)
+    return getDifficultyById(storedModeId)?.id === storedModeId ? storedModeId : DEFAULT_MODE_ID
+  } catch {
+    return DEFAULT_MODE_ID
+  }
+}
+
 export function useAppPlayerState() {
   const [isAuthed, setIsAuthed] = useState(false)
   const [playerUserId, setPlayerUserId] = useState("")
@@ -146,7 +157,15 @@ export function useAppPlayerState() {
   const [equippedProfileImageId, setEquippedProfileImageId] = useState(
     DEFAULT_PROGRESS.equippedProfileImageId
   )
-  const [selectedModeId, setSelectedModeId] = useState(DEFAULT_MODE_ID)
+  // The chosen mode is a per-device preference; the server has nowhere to keep it.
+  const [selectedModeId, setSelectedModeId] = useState(readStoredModeId)
+  useEffect(() => {
+    try {
+      localStorage.setItem(SELECTED_MODE_STORAGE_KEY, selectedModeId)
+    } catch {
+      // Storage unavailable; the choice lasts for this session only.
+    }
+  }, [selectedModeId])
   const [roundHistory, setRoundHistory] = useState(DEFAULT_PROGRESS.roundHistory)
   const [lifetimeStats, setLifetimeStats] = useState(DEFAULT_PROGRESS.lifetimeStats)
   const [loadoutStats, setLoadoutStats] = useState(DEFAULT_PROGRESS.loadoutStats)
@@ -219,7 +238,7 @@ export function useAppPlayerState() {
     setPlayerUserId("")
     setPlayerUsername(DEFAULT_PLAYER_NAME)
     applyProgress(DEFAULT_PROGRESS)
-    setSelectedModeId(DEFAULT_MODE_ID)
+    // The selected mode is a device preference, so it survives logout.
   }, [applyProgress])
 
   return {

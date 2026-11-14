@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import ProfilePage from "../src/pages/ProfilePage.jsx"
@@ -68,7 +68,7 @@ describe("Player identity cockpit", () => {
 
     expect(screen.getByRole("heading", { name: "Vector" })).not.toBeNull()
     expect(screen.getByLabelText("Gold II rank, level 12")).not.toBeNull()
-    expect(screen.getByText(/Signature strength/)).not.toBeNull()
+    expect(screen.getByText(/Signature/)).not.toBeNull()
     expect(screen.getByRole("heading", { name: "Last 3 rounds" })).not.toBeNull()
     expect(screen.getByRole("heading", { name: "Tempo Control" })).not.toBeNull()
 
@@ -86,4 +86,25 @@ describe("Player identity cockpit", () => {
     expect(screen.getByRole("link", { name: "View milestones" }).getAttribute("href"))
       .toBe("#achievement-constellation")
   })
+})
+
+
+test("achievement category tabs support roving keyboard selection", () => {
+  renderProfile()
+  const rounds = screen.getByRole("tab", { name: "Rounds" })
+  const level = screen.getByRole("tab", { name: "Level" })
+  const master = screen.getByRole("tab", { name: "Master" })
+  rounds.focus()
+  fireEvent.keyDown(rounds, { key: "ArrowRight" })
+  expect(document.activeElement).toBe(level)
+  expect(level.getAttribute("aria-selected")).toBe("true")
+  expect(rounds.tabIndex).toBe(-1)
+  fireEvent.keyDown(level, { key: "End" })
+  expect(document.activeElement).toBe(master)
+  fireEvent.keyDown(master, { key: "ArrowRight" })
+  expect(document.activeElement).toBe(rounds)
+  fireEvent.keyDown(rounds, { key: "ArrowLeft" })
+  expect(document.activeElement).toBe(master)
+  fireEvent.keyDown(master, { key: "Home" })
+  expect(document.activeElement).toBe(rounds)
 })

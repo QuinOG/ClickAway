@@ -3,6 +3,14 @@ import toast from "react-hot-toast"
 
 import { updatePlayerProgress } from "../services/clickAwayHttpApiClient.js"
 import { pickProgressIntent } from "./progressIntent.js"
+import {
+  applyProgressResponse,
+  beginProgressRequest,
+  isCurrentSession,
+  markPendingPreferences,
+  settlePendingPreferences,
+  settleProgressMutation,
+} from "./progressResponseGuard.js"
 
 const PROGRESS_SYNC_TOAST_ID = "progress-sync"
 
@@ -45,10 +53,18 @@ export function useProgressSync({ isAuthed, applyProgress }) {
 
     const requestEpoch = sessionEpochRef.current
     const intentSequence = ++latestIntentSequenceRef.current
+    const ticket = beginProgressRequest()
+    const pendingHandle = markPendingPreferences(payload)
 
     persistQueueRef.current = persistQueueRef.current
       .catch(() => null)
       .then(async () => {
+        // Checked before sending, not only after: a save queued by one account
+        // must never be sent once another account has logged in.
+        if (sessionEpochRef.current !== requestEpoch || !isCurrentSession(ticket)) {
+          return null
+        }
+
         const response = await updatePlayerProgress(payload)
         if (
           sessionEpochRef.current !== requestEpoch
@@ -57,16 +73,31 @@ export function useProgressSync({ isAuthed, applyProgress }) {
           return null
         }
 
-        applyProgress(response.progress)
+        settlePendingPreferences(pendingHandle)
+        const outcome = await applyProgressResponse(ticket, response.progress, applyProgress)
+        if (outcome === "refresh-failed") {
+          toast.error("Build saved, but progress couldn't refresh. Reload to see it.")
+        }
         return response.progress
       })
-      .catch((error) => {
+      .catch(async (error) => {
+        settlePendingPreferences(pendingHandle)
+        if (sessionEpochRef.current !== requestEpoch || !isCurrentSession(ticket)) return null
+        const outcome = await applyProgressResponse(ticket, null, applyProgress)
+        if (!isCurrentSession(ticket) || sessionEpochRef.current !== requestEpoch) return null
+        if (outcome === "refresh-failed") {
+          toast.error("Couldn't refresh your build. Build not saved, retry.")
+        }
         console.error("Unable to sync player progress:", error)
-        toast.error("Couldn't save your progress. Check your connection.", {
+        toast.error("Build not saved, retry. Check your connection.", {
           id: PROGRESS_SYNC_TOAST_ID,
           style: PROGRESS_ERROR_TOAST_STYLE,
         })
         return null
+      })
+      .finally(() => {
+        settlePendingPreferences(pendingHandle)
+        settleProgressMutation(ticket, applyProgress)
       })
 
     return persistQueueRef.current

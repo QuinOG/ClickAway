@@ -386,7 +386,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(within(instruments).getByText("100px")).not.toBeNull()
     // The featured candidate is previewed beside the current value, so the
     // shrink pace can appear twice (current and "→ candidate").
-    expect(within(instruments).getAllByText(/% \/ hit/).length).toBeGreaterThan(0)
+    expect(within(instruments).getAllByText(/%\s*\/\s*hit/).length).toBeGreaterThan(0)
   })
 
   test("part cards expose available, installed, and locked states", async () => {
@@ -497,6 +497,21 @@ describe("Armory tool rack (Phase 6)", () => {
 
     const timeline = screen.getByLabelText("Charge cadence timeline")
     expect(timeline.querySelectorAll(".armoryCadenceRow.isPreview")).toHaveLength(0)
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+  })
+
+  test("unrelated drops do not rearrange either power rack", async () => {
+    const props = renderArmory()
+    await openStep(userEvent.setup(), "Powerups")
+    const targets = [
+      document.querySelectorAll(".armoryMachineRackSlot")[2],
+      screen.getByLabelText("Powerup keys").querySelectorAll(".armoryHotbarButton")[2],
+    ]
+    for (const target of targets) {
+      for (const text of ["", "0", "1", "unrelated text"]) {
+        fireEvent.drop(target, { dataTransfer: { getData: (type) => type === "text/plain" ? text : "" } })
+      }
+    }
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
   })
 

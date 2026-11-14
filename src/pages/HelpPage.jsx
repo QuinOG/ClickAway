@@ -175,6 +175,7 @@ export default function HelpPage() {
               <HelpTableSection
                 title="Mode Rules"
                 columns={["Mode", "Timer", "Miss Penalty", "Coin Rate", "XP", "Rank"]}
+                note="Base rules before passive parts and active powers modify gameplay."
                 rows={DIFFICULTY_ROWS}
               />
             </div>

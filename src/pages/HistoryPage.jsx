@@ -1,4 +1,5 @@
-﻿import { useCallback, useMemo, useState } from "react"
+﻿import { RECENT_HISTORY_LIMIT } from "../utils/lifetimeStatsUtils.js"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import {
   ArrowRight,
@@ -263,12 +264,38 @@ function HistoryRoundCard({ round, markers = [] }) {
 export default function HistoryPage({
   roundHistory = [],
   totalRoundCount = 0,
+  careerBestScore = null,
 }) {
+  const historyGeneration = useRef(0)
+  const pendingPage = useRef(null)
   const [extraHistoryRows, setExtraHistoryRows] = useState([])
   const [historyPage, setHistoryPage] = useState(1)
   const [hasMoreHistory, setHasMoreHistory] = useState(false)
   const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState(false)
   const [historyLoadError, setHistoryLoadError] = useState("")
+
+  // Older pages were fetched relative to the first 50 rounds. When those change
+  // (a new round, or fresh progress from another tab), start paging again;
+  // otherwise a round that slid off the first page could vanish from the log.
+  const baseHistoryKey = (Array.isArray(roundHistory) ? roundHistory : []).map((round) => round.id).join(",")
+  const [pagedForBaseKey, setPagedForBaseKey] = useState(baseHistoryKey)
+  if (pagedForBaseKey !== baseHistoryKey) {
+    setPagedForBaseKey(baseHistoryKey)
+    setExtraHistoryRows([])
+    setHistoryPage(1)
+    setHasMoreHistory(false)
+    setHistoryLoadError("")
+    setIsLoadingMoreHistory(false)
+  }
+
+  useLayoutEffect(() => {
+    historyGeneration.current += 1
+    pendingPage.current = null
+    return () => {
+      historyGeneration.current += 1
+      pendingPage.current = null
+    }
+  }, [baseHistoryKey])
 
   const historyRows = useMemo(() => {
     const baseRows = Array.isArray(roundHistory) ? roundHistory : []
@@ -291,12 +318,18 @@ export default function HistoryPage({
     || (resolvedTotalRoundCount > historyRows.length && historyPage === 1)
 
   const handleLoadMoreHistory = useCallback(async () => {
+    if (pendingPage.current !== null) return
+    const generation = historyGeneration.current
+    pendingPage.current = generation
     const nextPage = historyPage + 1
     setIsLoadingMoreHistory(true)
     setHistoryLoadError("")
 
     try {
-      const historyResponse = await fetchHistoryPage({ page: nextPage })
+      // Same page size as the 50 rounds that arrive with your progress, so page 2
+      // starts at round 51 instead of re-fetching rounds already shown.
+      const historyResponse = await fetchHistoryPage({ page: nextPage, limit: RECENT_HISTORY_LIMIT })
+      if (generation !== historyGeneration.current) return
       const nextEntries = (Array.isArray(historyResponse?.entries) ? historyResponse.entries : [])
         .map(normalizeHistoryEntry)
 
@@ -312,9 +345,13 @@ export default function HistoryPage({
       setHistoryPage(nextPage)
       setHasMoreHistory(Boolean(historyResponse?.hasMore))
     } catch (error) {
+      if (generation !== historyGeneration.current) return
       setHistoryLoadError(error?.message || "Unable to load older rounds.")
     } finally {
-      setIsLoadingMoreHistory(false)
+      if (generation === historyGeneration.current) {
+        pendingPage.current = null
+        setIsLoadingMoreHistory(false)
+      }
     }
   }, [historyPage])
   const hasHistory = historyRows.length > 0
@@ -340,10 +377,15 @@ export default function HistoryPage({
       })
     }
 
+    // Only a real career best is called a personal best: the loaded rounds may
+    // not include the player's best, so check it against the lifetime record.
     const isLatestAlsoPeak = Boolean(
       historySnapshot.latestRound
       && historySnapshot.bestScoreRound
       && historySnapshot.latestRound.id === historySnapshot.bestScoreRound.id
+      // Must equal the saved record: a higher score can only come from a round
+      // that didn't count toward stats (unverified), so it isn't a personal best.
+      && (careerBestScore === null || Number(historySnapshot.latestRound.score) === Number(careerBestScore))
     )
 
     if (isLatestAlsoPeak && cards[0]) {
@@ -394,7 +436,7 @@ export default function HistoryPage({
     }
 
     return cards
-  }, [historySnapshot])
+  }, [careerBestScore, historySnapshot])
 
   return (
     <div className="pageCenter historyPageScene">

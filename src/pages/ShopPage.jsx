@@ -47,7 +47,6 @@ export default function ShopPage({
     (ownedCount, count) => ownedCount + count,
     0
   )
-  const collectionPercent = totalItems > 0 ? Math.round((totalOwnedCount / totalItems) * 100) : 0
   const tabs = useMemo(
     () => [
       {
@@ -105,6 +104,11 @@ export default function ShopPage({
 
     try {
       const purchaseResult = await onPurchase?.(item)
+      if (purchaseResult?.discarded) {
+        setActionFeedback(null)
+        signalAction(source, { state: "idle", silent: true })
+        return false
+      }
       if (purchaseResult?.ok) {
         celebrateShopPurchase({ enabled: effectivePreferences.flashes })
         setBalancePulseKey((key) => key + 1)
@@ -142,6 +146,11 @@ export default function ShopPage({
 
     try {
       const equipResult = await onEquip?.(item)
+      if (equipResult?.discarded) {
+        setActionFeedback(null)
+        signalAction(source, { state: "idle", silent: true })
+        return false
+      }
       if (equipResult?.ok) {
         celebrateShopEquip({ enabled: effectivePreferences.flashes })
         setActionFeedback({ kind: "success", message: `${item.name} equipped. Your live loadout is updated.` })
@@ -174,9 +183,6 @@ export default function ShopPage({
         <ShopHeroHeader
           playerName={playerName}
           coins={coins}
-          totalOwnedCount={totalOwnedCount}
-          totalItems={totalItems}
-          collectionPercent={collectionPercent}
           buttonSkin={equippedButtonSkin}
           arenaTheme={equippedArenaTheme}
           profileImage={equippedProfileImage}
@@ -184,6 +190,7 @@ export default function ShopPage({
           selectedItem={selectedItem}
           selectedItemStatus={selectedItemStatus}
           isSubmitting={pendingItemId === selectedItem.id}
+          isBusy={Boolean(pendingItemId) && pendingItemId !== selectedItem.id}
           onPurchase={handlePurchase}
           onEquip={handleEquip}
           onShowEquipped={() => selectEquippedItemForType(selectedItem.type)}
@@ -222,6 +229,7 @@ export default function ShopPage({
                     ownedItemIds={ownedItems}
                     isSelected={item.id === selectedItem.id}
                     isSubmitting={pendingItemId === item.id}
+                    isShopBusy={Boolean(pendingItemId) && pendingItemId !== item.id}
                     onSelect={(selectedItemValue, source) => {
                       setSelectedItemId(selectedItemValue.id)
                       setActionFeedback(null)

@@ -5256,3 +5256,7 @@
 .shopGrid .shopItemCard .shopItemHeader { position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%) !important; }
 .shopGrid { row-gap: 30px !important; }
 .shopGrid .shopItemCard { padding-top: 20px !important; }
+/* Results: whether the round reached the server */
+.gameOverHeader .gameOverSaveStatus { margin: 6px auto 0; max-width: 520px; padding: 6px 12px; border-radius: 6px; font: 700 13px/1.35 var(--ca-font-body, inherit); text-align: center; }
+.gameOverHeader .gameOverSaveStatus.isSaving { color: #b9c6d6; }
+.gameOverHeader .gameOverSaveStatus.isFailed { color: #ffd2cc; background: rgb(178 54 40 / 28%); box-shadow: inset 0 0 0 1px rgb(255 122 102 / 45%); }

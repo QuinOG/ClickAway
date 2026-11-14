@@ -18,7 +18,7 @@ export const QUICKSTART_CARDS = [
   {
     eyebrow: "3",
     title: "Hit to build",
-    body: "Click the target to grow streak and multiplier. A miss resets your streak immediately and applies the mode penalty.",
+    body: "Click the target to grow streak and multiplier. An unprotected miss resets your streak and applies your build's mode penalty.",
   },
   {
     eyebrow: "4",
@@ -38,11 +38,11 @@ export const ROUND_FLOW_STEPS = [
   },
   {
     title: "Live Round",
-    body: "Each hit shrinks the target and randomizes its next position.",
+    body: "Hits shrink and reposition the target unless an active power prevents it.",
   },
   {
     title: "Miss",
-    body: "A miss resets streak to 0 and applies the score penalty for that mode.",
+    body: "An unprotected miss resets streak to 0 and applies your build's score penalty. Guard blocks both; Second Wind saves streak only.",
   },
   {
     title: "Game Over",
@@ -66,12 +66,14 @@ export const CONTROLS_ROWS = [
 ]
 
 export const NAVIGATION_ROWS = [
-  ["Game", "Play rounds, use power-ups, and generate score/reward history."],
+  ["Play", "Play rounds, use power-ups, and generate score/reward history."],
   ["Armory", "Tune loadouts, compare mode sims, and set which build Ready uses next."],
   ["Profile", "View identity, ranked insights, achievement progress, and logout controls."],
   ["Shop", "Spend coins on cosmetics and equip owned items instantly."],
   ["History", "Review past rounds (mode, score, XP, coins, rank result)."],
   ["Ladder", "Compare placed ranked players and competitive rating positions."],
+  ["Duels", "Challenge rivals and race their recorded rounds."],
+  ["Settings", "Open the gear button or mobile More menu to tune feedback for this device."],
   ["Help", "Reference systems, formulas, controls, and progression rules."],
 ]
 
@@ -129,16 +131,16 @@ export const SCORING_ROWS = [
 export const POWERUP_ROWS = LOADOUT_POWERUPS.map((powerup) => [
   powerup.label,
   `Lv ${powerup.unlockLevel}`,
-  `Every ${powerup.awardEvery} streak`,
+  `Every ${powerup.awardEvery} streak (base)`,
   powerup.description,
 ])
 
 export const POWERUP_RULES_POINTS = [
-  "Power-up charges start at 0 every round and do not carry across rounds.",
+  "Charges don't carry across rounds. Each round starts with your Power Rig's starting charges: none for most rigs, 1 per power with Reserve Rig, 2 with Vault Rig.",
   "Your active loadout chooses which 3 powers occupy keys 1, 2, and 3 for that round.",
-  "Charges are awarded when streak exactly hits each equipped power's milestone.",
+  "Charges are awarded when your streak hits each equipped power's milestone. Milestones shown are base values; your Power Rig makes them faster or slower.",
   "Power-ups can only be activated while the round is actively playing.",
-  "Time +2s cannot exceed mode time buffer cap (Practice 40, Casual 30, Ranked 24).",
+  "Time +2s has no effect in Practice (no timer). In Casual and Ranked it can't raise the time left above 30 or 24 seconds.",
 ]
 
 export const LOADOUT_POINTS = [
@@ -193,8 +195,8 @@ export const DATA_SYSTEM_POINTS = [
   "Progress is stored against your signed-in account on the server.",
   "Rounds, achievement unlocks, purchases, equips, and loadout edits all sync back to the server while you play.",
   "Tracked data includes coins, XP, competitive rating, history, owned items, equipped cosmetics, saved loadouts, and unlocked achievements.",
-  "Clearing browser/site storage or logging out signs you out locally but does not erase account progression.",
-  "Signing into the same account on another browser/device restores the same stored progression.",
+  "Logging out ends your session without erasing account progression. Clearing site data resets device preferences and can remove your session.",
+  "Signing into the same account on another browser/device restores account progression. Feedback settings and the selected mode stay on each device.",
   "If a saved session is invalid or expired, the app signs you out and asks you to log in again.",
 ]
 
@@ -217,13 +219,13 @@ export const PROFILE_POINTS = [
 ]
 
 export const TRACKING_POINTS = [
-  "History keeps the 50 most recent rounds, newest first, with time, mode, score, hits, misses, accuracy, coins, XP, and ranked result.",
+  "History pages through saved rounds, 50 at a time, newest first, with time, mode, score, hits, misses, accuracy, coins, XP, and ranked result.",
   "After Game Over, review score, accuracy, streak, XP, coins, and ranked result before jumping into the next queue.",
   "If your account has no saved rounds yet, the History page shows an empty state with a quick link back to Game.",
-  "Ladder only includes players who have completed placements and currently loads up to 25 players from the server.",
+  "Ladder includes placed ranked players, with 25 per page, search, and an Around Me view.",
   "Server rank order is hidden rating first, then best score, best streak, accuracy, username, and user id as tie-breakers.",
-  "Ladder headers let you re-sort the visible rows by rating, best score, best streak, or accuracy.",
-  "Hover leaderboard names for quick stats. Your own row is marked YOU and opens your profile; other players currently expose hover stats only.",
+  "Choose Rating, Best Score, Best Streak, Accuracy, or Reaction to compare players; flip the order with the sort control.",
+  "Hover leaderboard names for quick stats. Your row is marked YOU and opens your profile; use Challenge on a rival to open Duels.",
 ]
 
 export const FAQ_ITEMS = [
@@ -257,7 +259,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: "How do achievements unlock?",
-    answer: "Achievement progress is calculated from your saved level, coins, best streak, and round history, then synced to your account automatically.",
+    answer: "Achievements unlock from server-confirmed account stats after saved rounds, including level, coins, streaks, and lifetime milestones.",
   },
   {
     question: "Why does my account appear reset?",

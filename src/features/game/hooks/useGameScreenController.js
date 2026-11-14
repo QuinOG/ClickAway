@@ -33,18 +33,17 @@ import {
   getButtonLabelFontSize,
   getCenteredPosition,
   getComboMultiplier,
-  getNextButtonSize,
-  getRandomPosition,
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
-import { createRoundSimulation } from "../../../game/engine/roundEngine.js"
+import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
+  createGeometrySimulation,
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
   SIZE_LOCK_DURATION_MS,
 } from "../../../game/engine/roundGeometry.js"
 import { createRandomSeed, createSeededRng } from "../../../game/engine/seededRng.js"
-import { computeGhostScoreAtElapsed } from "../../../utils/replayUtils.js"
+import { computeGhostScoreAtElapsed, isValidGhostReplay } from "../../../utils/replayUtils.js"
 import { requestRoundStart } from "../../../services/clickAwayHttpApiClient.js"
 import { calculateRoundXp } from "../../../utils/progressionUtils.js"
 import {
@@ -80,10 +79,14 @@ function getPlayfieldRect(arenaElement) {
 function getArenaClickCoordinates(event, arenaElement) {
   if (!arenaElement) return null
 
+  // Measured from inside the arena's border (where the target is positioned),
+  // and kept to two decimals: rounding to whole pixels could push an edge hit
+  // outside the target in the server's replay.
   const arenaRect = arenaElement.getBoundingClientRect()
+  const toPlayfield = (value) => Math.round(value * 100) / 100
   return {
-    x: Math.round(event.clientX - arenaRect.left),
-    y: Math.round(event.clientY - arenaRect.top),
+    x: toPlayfield(event.clientX - arenaRect.left - (arenaElement.clientLeft || 0)),
+    y: toPlayfield(event.clientY - arenaRect.top - (arenaElement.clientTop || 0)),
   }
 }
 
@@ -123,6 +126,27 @@ function getResolvedLoadout(savedLoadouts = [], activeLoadoutId = "", activeLoad
   return activeLoadout ?? getLoadoutById(savedLoadouts, activeLoadoutId)
 }
 
+
+function countClickEvents(events) {
+  let count = 0
+  for (const event of events) {
+    if (event.type === "hit" || event.type === "miss") count += 1
+  }
+  return count
+}
+
+// A second click inside MIN_CLICK_INTERVAL_MS (a double-click or bounce) is
+// ignored, matching the server, which would otherwise reject the whole round.
+function isTooSoonAfterLastClick(events, eventTimeMs) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index]
+    if (event.type === "hit" || event.type === "miss") {
+      return eventTimeMs - event.t < MIN_CLICK_INTERVAL_MS
+    }
+  }
+  return false
+}
+
 export function useGameScreenController({
   onRoundComplete,
   selectedModeId = DEFAULT_MODE_ID,
@@ -156,6 +180,7 @@ export function useGameScreenController({
   ghostReplay = null,
   challengeId = null,
   autoStartGhostDuel = false,
+  onExitDuel = null,
   emitFeedback = null,
   allowScreenShake = true,
 }) {
@@ -167,8 +192,7 @@ export function useGameScreenController({
   const goCueTimeoutRef = useRef(null)
   const countdownEndsAtRef = useRef(0)
   const pendingRoundStartRef = useRef(null)
-  const freezeMovementUntilRef = useRef(0)
-  const sizeLockUntilRef = useRef(0)
+  const geometryRef = useRef(null)
   const buttonSpawnedAtRef = useRef(0)
   const reactionTotalMsRef = useRef(0)
   const reactionSampleCountRef = useRef(0)
@@ -184,6 +208,16 @@ export function useGameScreenController({
   const rngRef = useRef(Math.random)
   const ghostReplayRef = useRef(ghostReplay)
   const challengeIdRef = useRef(challengeId)
+  // Whether the finished round reached the server, and what it actually awarded.
+  const [roundSave, setRoundSave] = useState({ status: "idle" })
+  // A duel is raced once. After its round, Play Again and Change Mode leave the
+  // duel (onExitDuel) and start ordinary rounds instead of re-racing it.
+  const finishedDuelRef = useRef(false)
+  const autoStartedChallengeRef = useRef(null)
+  const onExitDuelRef = useRef(onExitDuel)
+  useEffect(() => {
+    onExitDuelRef.current = onExitDuel
+  }, [onExitDuel])
   const rankedWarmupIntentRef = useRef(false)
 
   useEffect(() => {
@@ -192,6 +226,7 @@ export function useGameScreenController({
 
   useEffect(() => {
     challengeIdRef.current = challengeId
+    finishedDuelRef.current = false
   }, [challengeId])
 
   const [ghostScore, setGhostScore] = useState(0)
@@ -440,26 +475,15 @@ export function useGameScreenController({
     setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
-  const randomizeButtonPosition = useCallback((nextButtonSize) => {
-    const arenaElement = arenaRef.current
-    if (!arenaElement) return
-
-    setButtonPosition(getRandomPosition(getPlayfieldRect(arenaElement), nextButtonSize, rngRef.current))
-    markButtonSpawned()
-    setTargetSpawnSequence((currentSequence) => currentSequence + 1)
+  const mirrorGeometry = useCallback((state, spawned = false) => {
+    if (!state) return
+    setButtonSize(state.buttonSize)
+    setButtonPosition(state.position)
+    if (spawned) {
+      markButtonSpawned()
+      setTargetSpawnSequence((sequence) => sequence + 1)
+    }
   }, [markButtonSpawned])
-
-  const queueButtonReposition = useCallback(
-    (nextButtonSize) => {
-      if (getElapsedMs() < freezeMovementUntilRef.current) return
-
-      setTimeout(() => {
-        if (getElapsedMs() < freezeMovementUntilRef.current) return
-        randomizeButtonPosition(nextButtonSize)
-      }, 0)
-    },
-    [getElapsedMs, randomizeButtonPosition]
-  )
 
   const addClickFeedback = useCallback((clientX, clientY, value, type, detail = null) => {
     const arenaElement = arenaRef.current
@@ -540,8 +564,7 @@ export function useGameScreenController({
     )
     setComboSurgeHitsRemaining(0)
     setGuardActiveUntilMs(0)
-    freezeMovementUntilRef.current = 0
-    sizeLockUntilRef.current = 0
+    geometryRef.current = null
     buttonSpawnedAtRef.current = 0
     reactionTotalMsRef.current = 0
     reactionSampleCountRef.current = 0
@@ -564,6 +587,10 @@ export function useGameScreenController({
     nextLoadoutId = activeLoadoutId,
     nextDrillId = selectedDrillId
   ) => {
+    if (finishedDuelRef.current) onExitDuelRef.current?.()
+    // A duel can't start until its ghost has loaded; starting earlier would run
+    // an ordinary round that can never settle the duel.
+    else if (challengeIdRef.current && !isValidGhostReplay(ghostReplayRef.current)) return
     pendingRoundStartRef.current = {
       modeId: nextModeId,
       loadoutId: nextLoadoutId,
@@ -596,6 +623,7 @@ export function useGameScreenController({
     setRoundMode(nextRoundMode)
     resetRoundState(nextRoundMode)
     hasAwardedRoundRef.current = false
+    setRoundSave({ status: "idle" })
     roundEventsRef.current = []
     roundStartTimeRef.current = 0
     reactionTotalMsRef.current = 0
@@ -608,9 +636,14 @@ export function useGameScreenController({
     const startedRoundNonce = roundNonceRef.current
     roundTokenRef.current = null
     arenaDimensionsRef.current = null
-    const activeGhostReplay = ghostReplayRef.current
-    const requiresRoundToken = nextRoundMode.allowsRankProgression === true
-      && !activeGhostReplay?.seed
+    const activeGhostReplay = finishedDuelRef.current ? null : ghostReplayRef.current
+    // Reward-bearing rounds wait for a server token: without one the server
+    // records the round but pays nothing.
+    const requiresRoundToken = (
+      nextRoundMode.allowsRankProgression === true
+      || nextRoundMode.allowsCoinRewards === true
+      || nextRoundMode.allowsLevelProgression === true
+    ) && !isValidGhostReplay(activeGhostReplay)
 
     const beginCountdown = () => {
       setRoundStartBestScore(playerBestScore)
@@ -639,9 +672,45 @@ export function useGameScreenController({
 
     setGhostScore(0)
 
-    if (activeGhostReplay?.seed) {
-      applyRoundSeed(activeGhostReplay.seed)
-      beginCountdown()
+    if (isValidGhostReplay(activeGhostReplay)) {
+      // A duel race asks for a token bound to the challenge, so the run is stored
+      // as a replay and settles the duel. A ghost race outside a duel runs unrewarded.
+      const duelChallengeId = finishedDuelRef.current ? null : challengeIdRef.current
+      if (!duelChallengeId) {
+        applyRoundSeed(activeGhostReplay.seed)
+        beginCountdown()
+        return
+      }
+
+      setRoundStartStatus("requesting")
+      setPhase(ROUND_PHASE.READY)
+      // Without the challenge token the race could never settle the duel, so a
+      // failed request stops at Ready with the error and a retry, like Ranked.
+      requestRoundStart(nextModeId, { challengeId: duelChallengeId })
+        .then(({ roundToken, seed, replayId }) => {
+          if (roundNonceRef.current !== startedRoundNonce
+            || challengeIdRef.current !== duelChallengeId
+            || ghostReplayRef.current !== activeGhostReplay) return
+          if (Number(replayId) !== activeGhostReplay.id || !replayId || activeGhostReplay.modeId !== nextModeId) {
+            setRoundStartStatus("error")
+            setRoundStartError("This duel link doesn't match its rival run")
+            return
+          }
+          if (!roundToken) {
+            setRoundStartStatus("error")
+            setRoundStartError("The server did not start this duel. Please try again.")
+            return
+          }
+          applyRoundSeed(seed, roundToken)
+          beginCountdown()
+        })
+        .catch((error) => {
+          if (roundNonceRef.current !== startedRoundNonce
+            || challengeIdRef.current !== duelChallengeId
+            || ghostReplayRef.current !== activeGhostReplay) return
+          setRoundStartStatus("error")
+          setRoundStartError(error?.message || "Unable to start this duel. Check your connection and try again.")
+        })
       return
     }
 
@@ -653,7 +722,7 @@ export function useGameScreenController({
           if (roundNonceRef.current !== startedRoundNonce) return
           if (!roundToken) {
             setRoundStartStatus("error")
-            setRoundStartError("The Ranked server did not issue a round token. Please try again.")
+            setRoundStartError("The server did not issue a round token. Please try again.")
             return
           }
           applyRoundSeed(seed, roundToken)
@@ -663,7 +732,7 @@ export function useGameScreenController({
           if (roundNonceRef.current !== startedRoundNonce) return
           setRoundStartStatus("error")
           setRoundStartError(
-            error?.message || "Unable to reach the Ranked server. Check your connection and try again."
+            error?.message || "Unable to reach the server. Check your connection and try again."
           )
         })
       return
@@ -729,6 +798,7 @@ export function useGameScreenController({
   }, [startRoundWithCountdown])
 
   const returnToReadyOverlay = useCallback(() => {
+    if (finishedDuelRef.current) onExitDuelRef.current?.()
     const shouldReturnToRanked = rankedWarmupIntentRef.current
     rankedWarmupIntentRef.current = false
     const nextRoundMode = shouldReturnToRanked
@@ -758,6 +828,7 @@ export function useGameScreenController({
   // Visual/geometry side effects of a powerup. Score-relevant semantics
   // (charge consumption, combo surge, guard) live in the shared engine.
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs = 0) => {
+    mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
       setTimeLeft((currentTime) =>
         Math.min(roundMode.maxTimeBufferSeconds, currentTime + 2)
@@ -767,9 +838,6 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "size_boost") {
-      setButtonSize((currentButtonSize) => (
-        Math.min(roundMode.initialButtonSize, currentButtonSize + 10)
-      ))
       markButtonSpawned()
       setTargetSpawnSequence((currentSequence) => currentSequence + 1)
       addCenterFeedback("Grow", "power power-size_boost")
@@ -777,18 +845,11 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "freeze_movement") {
-      freezeMovementUntilRef.current = eventTimeMs + FREEZE_MOVEMENT_DURATION_MS
       addCenterFeedback("Freeze", "power power-freeze_movement")
       return
     }
 
     if (powerup.effectType === "magnet_center") {
-      freezeMovementUntilRef.current = eventTimeMs + MAGNET_CENTER_FREEZE_MS
-      setButtonSize((currentButtonSize) => {
-        const nextButtonSize = Math.min(roundMode.initialButtonSize, currentButtonSize + 6)
-        centerButtonPosition(nextButtonSize)
-        return nextButtonSize
-      })
       markButtonSpawned()
       setTargetSpawnSequence((currentSequence) => currentSequence + 1)
       addCenterFeedback("Center", "power power-magnet_center")
@@ -811,7 +872,6 @@ export function useGameScreenController({
     }
 
     if (powerup.effectType === "size_lock") {
-      sizeLockUntilRef.current = eventTimeMs + SIZE_LOCK_DURATION_MS
       addCenterFeedback("Locked", "power power-size_lock")
       return
     }
@@ -821,9 +881,8 @@ export function useGameScreenController({
     }
   }, [
     addCenterFeedback,
-    centerButtonPosition,
+    mirrorGeometry,
     markButtonSpawned,
-    roundMode.initialButtonSize,
     roundMode.maxTimeBufferSeconds,
   ])
 
@@ -896,11 +955,20 @@ export function useGameScreenController({
     const arenaElement = arenaRef.current
     const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
 
+    if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
+    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) return
+
     roundEventsRef.current.push({
       type: "hit",
       t: eventTimeMs,
       ...(clickCoordinates ?? {}),
     })
+    // Untimed Practice ends at the click cap. A timed round keeps running until
+    // its timer expires (ending early would fail the server's timer check);
+    // further clicks are simply not recorded.
+    if (!roundMode.isTimedRound && countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
+      endCurrentRound()
+    }
     buttonSpawnedAtRef.current = 0
 
     if (hitReactionMs !== null) {
@@ -919,6 +987,7 @@ export function useGameScreenController({
       ))
     }
 
+    const isComboSurgeHit = simulationRef.current.getState().comboSurgeHitsRemaining > 0
     const result = simulationRef.current.applyHit(eventTimeMs)
     syncSimulationState(result)
 
@@ -940,7 +1009,7 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      result.comboSurgeHitsRemaining > 0 ? "hit comboHit" : "hit"
+      isComboSurgeHit ? "hit comboHit" : "hit"
     )
     if (
       !hasPassedPersonalBestRef.current
@@ -958,20 +1027,19 @@ export function useGameScreenController({
       })
     })
 
-    setButtonSize((currentButtonSize) => {
-      const nextButtonSize = eventTimeMs < sizeLockUntilRef.current
-        ? currentButtonSize
-        : getNextButtonSize(currentButtonSize, roundMode)
-      queueButtonReposition(nextButtonSize)
-      return nextButtonSize
-    })
+    const geometry = geometryRef.current
+    if (geometry) {
+      const moving = eventTimeMs >= geometry.getState().freezeMovementUntilMs
+      mirrorGeometry(geometry.applyHit(eventTimeMs), moving)
+    }
   }, [
+    endCurrentRound,
     addCenterFeedback,
     addClickFeedback,
     emitFeedback,
     getElapsedMs,
     isPlaying,
-    queueButtonReposition,
+    mirrorGeometry,
     roundStartBestScore,
     roundMode,
     score,
@@ -985,11 +1053,20 @@ export function useGameScreenController({
     const arenaElement = arenaRef.current
     const clickCoordinates = getArenaClickCoordinates(event, arenaElement)
 
+    if (isTooSoonAfterLastClick(roundEventsRef.current, eventTimeMs)) return
+    if (countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) return
+
     roundEventsRef.current.push({
       type: "miss",
       t: eventTimeMs,
       ...(clickCoordinates ?? {}),
     })
+    // Untimed Practice ends at the click cap. A timed round keeps running until
+    // its timer expires (ending early would fail the server's timer check);
+    // further clicks are simply not recorded.
+    if (!roundMode.isTimedRound && countClickEvents(roundEventsRef.current) >= getMaxClickEvents(roundMode.id)) {
+      endCurrentRound()
+    }
 
     const result = simulationRef.current.applyMiss(eventTimeMs)
     syncSimulationState(result)
@@ -1002,10 +1079,14 @@ export function useGameScreenController({
       return
     }
 
+    // Second Wind can absorb the streak reset, so read the outcome, not the old streak.
+    const streakBroken = streak > 0 && result.streak === 0
+    const streakSaved = streak > 0 && result.streak > 0
+
     triggerScreenShake()
     emitFeedback?.(FEEDBACK_EVENTS.MISS, { eventId: feedbackEventId })
     // A miss supersedes any streak celebration still on screen.
-    if (streak > 0) {
+    if (streakBroken) {
       setClickFeedbackItems((currentItems) => currentItems.filter((item) => !String(item.type).includes("milestone")))
     }
 
@@ -1014,8 +1095,8 @@ export function useGameScreenController({
         event.clientX,
         event.clientY,
         `-${result.penaltyApplied}`,
-        streak > 0 ? "streakBreak" : "miss",
-        streak > 0 ? `${streak} streak lost` : null
+        streakBroken ? "streakBreak" : "miss",
+        streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
       )
       return
     }
@@ -1024,10 +1105,13 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       "Miss",
-      streak > 0 ? "streakBreak" : "miss",
-      streak > 0 ? `${streak} streak lost` : null
+      streakBroken ? "streakBreak" : "miss",
+      streakBroken ? `${streak} streak lost` : streakSaved ? "Streak saved" : null
     )
   }, [
+    roundMode.isTimedRound,
+    endCurrentRound,
+    roundMode.id,
     addClickFeedback,
     emitFeedback,
     getElapsedMs,
@@ -1060,6 +1144,14 @@ export function useGameScreenController({
           arenaWidth: Math.round(playfieldRect.width),
           arenaHeight: Math.round(playfieldRect.height),
         }
+        geometryRef.current = createGeometrySimulation({
+          roundRules: roundMode,
+          ...arenaDimensionsRef.current,
+          rng: rngRef.current,
+        })
+        const geometry = geometryRef.current.getState()
+        setButtonSize(geometry.buttonSize)
+        setButtonPosition(geometry.position)
       }
 
       setCountdownValue(0)
@@ -1101,7 +1193,7 @@ export function useGameScreenController({
       window.clearTimeout(timeoutId)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [markButtonSpawned, phase])
+  }, [markButtonSpawned, phase, roundMode])
 
   useEffect(() => {
     if (phase === ROUND_PHASE.COUNTDOWN && countdownValue > 0) {
@@ -1144,10 +1236,18 @@ export function useGameScreenController({
   }, [getElapsedMs, isPlaying, playerLevel])
 
   useEffect(() => {
-    if (!autoStartGhostDuel || !ghostReplay?.seed) return undefined
+    if (!isValidGhostReplay(ghostReplay)) {
+      autoStartedChallengeRef.current = null
+      return undefined
+    }
+    if (!autoStartGhostDuel) return undefined
     if (phase !== ROUND_PHASE.READY) return undefined
+    // Start each duel automatically only once: returning to Ready or cancelling
+    // must not launch it again.
+    if (autoStartedChallengeRef.current === challengeId) return undefined
 
     const timeoutId = window.setTimeout(() => {
+      autoStartedChallengeRef.current = challengeId
       startRoundWithCountdown(ghostReplay.modeId || selectedModeId, activeLoadoutId)
     }, 0)
 
@@ -1155,6 +1255,7 @@ export function useGameScreenController({
   }, [
     activeLoadoutId,
     autoStartGhostDuel,
+    challengeId,
     ghostReplay,
     phase,
     selectedModeId,
@@ -1207,7 +1308,9 @@ export function useGameScreenController({
       if (hasAwardedRoundRef.current) return
       hasAwardedRoundRef.current = true
 
-      onRoundComplete?.({
+      const savingRoundNonce = roundNonceRef.current
+      setRoundSave({ status: "saving" })
+      const roundSaveResult = onRoundComplete?.({
         clicksScored: hits,
         hits,
         misses,
@@ -1227,8 +1330,15 @@ export function useGameScreenController({
         seed: roundSeedRef.current,
         arenaWidth: arenaDimensionsRef.current?.arenaWidth ?? null,
         arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
-        challengeId: challengeIdRef.current,
+        challengeId: finishedDuelRef.current ? null : challengeIdRef.current,
         drillId: activeDrillIdRef.current,
+      })
+      if (challengeIdRef.current) finishedDuelRef.current = true
+      Promise.resolve(roundSaveResult).then((result) => {
+        if (roundNonceRef.current !== savingRoundNonce) return
+        setRoundSave(result && result.ok === false
+          ? { status: "failed", error: result.error }
+          : { status: "saved", outcome: result?.ok ? result : null })
       })
 
       setSessionStats((previousStats) => ({
@@ -1276,7 +1386,10 @@ export function useGameScreenController({
     function handleKeyDown(event) {
       if (event.repeat) return
       if (import.meta.env.DEV && event.key.toLowerCase() === "g") {
+        // Dev preview shortcut: end without submitting, but treat the round as
+        // saved so the Results and promotion screens can still be previewed.
         hasAwardedRoundRef.current = true
+        setRoundSave({ status: "saved" })
         setTimeLeft(0)
         endCurrentRound()
         return
@@ -1422,6 +1535,7 @@ export function useGameScreenController({
     phase,
     allowsCoinRewards,
     gameScreenClassName,
+    duelStartError: challengeId && roundStartError === "This duel link doesn't match its rival run" ? roundStartError : "",
     hudProps: {
       score,
       ghostScore: ghostReplay ? ghostScore : null,
@@ -1535,13 +1649,20 @@ export function useGameScreenController({
       playerCoins: roundStartCoins,
       playerXpIntoLevel: roundStartXpIntoLevel,
       playerXpToNextLevel: roundStartXpToNextLevel,
-      roundXpEarned,
-      roundCoinsEarned,
+      // Once the server answers, show what it actually awarded rather than the
+      // estimate made when the round ended.
+      roundXpEarned: roundSave.outcome?.earnedXp ?? roundXpEarned,
+      roundCoinsEarned: roundSave.outcome?.earnedCoins ?? roundCoinsEarned,
+      roundSaveStatus: roundSave.status,
+      roundSaveError: roundSave.error ?? "",
+      roundSaveNote: roundSave.outcome?.followUpError ?? "",
       allowsCoinRewards,
       allowsLevelProgression,
-      previousRankProgress: projectedRankOutcome.previousRankProgress,
-      projectedRankProgress: projectedRankOutcome.nextRankProgress,
-      roundRankDelta: projectedRankOutcome.appliedRankDelta,
+      // After the save, the rank shown is the one the server calculated (another
+      // tab may have played a ranked round in between).
+      previousRankProgress: roundSave.outcome?.rankProgress?.previous ?? projectedRankOutcome.previousRankProgress,
+      projectedRankProgress: roundSave.outcome?.rankProgress?.next ?? projectedRankOutcome.nextRankProgress,
+      roundRankDelta: roundSave.outcome?.rankDelta ?? projectedRankOutcome.appliedRankDelta,
       allowsRankProgression,
       selectedModeId,
       bestScore: roundStartBestScore,

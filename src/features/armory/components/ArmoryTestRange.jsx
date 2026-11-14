@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 import GameArena from "../../game/components/GameArena.jsx"
 import PowerupTray from "../../game/components/PowerupTray.jsx"
@@ -34,6 +34,7 @@ function RangeReadout({ range }) {
 // Last range sample per build+rules, kept for the session so a second run
 // always has a baseline to compare against.
 const rangeHistory = new Map()
+let rangeMountCounter = 0
 
 function getAccuracyValue(results) {
   const total = results.hits + results.misses
@@ -151,27 +152,36 @@ export default function ArmoryTestRange({
   arenaThemeClass = "theme-default",
 }) {
   const range = useArmoryRangeRound({ roundRules, isActive: isOpen, runToken, onExit })
+  // runToken restarts at 1 each time the Armory mounts, but the history below
+  // lives for the whole session, so tag runs with this mount's id as well.
+  const [mountId] = useState(() => { rangeMountCounter += 1; return rangeMountCounter })
+  const runKey = `${mountId}:${runToken}`
 
-  const historyKey = `${loadoutName}|${modeLabel}`
-  const rulesKey = JSON.stringify(roundRules ?? {})
-  const isRunDone = range.phase === RANGE_PHASE.DONE && Boolean(range.results)
+  // Keyed by the bay's stable id (names can be copied or renamed).
+  const historyKey = `${roundRules?.loadoutSnapshot?.loadoutId ?? loadoutName}|${modeLabel}`
+  // A cosmetic rename does not change the rules or installed parts.
+  const rulesKey = JSON.stringify(roundRules ?? {}, (key, value) => key === "loadoutName" ? undefined : value)
+  const isRunDone = isOpen
+    && range.phase === RANGE_PHASE.DONE
+    && Boolean(range.results)
+    && range.completedRunToken === runToken
 
   useEffect(() => {
     if (!isRunDone) return
     const entry = rangeHistory.get(historyKey)
-    if (entry?.token === runToken) return
-    rangeHistory.set(historyKey, { token: runToken, results: range.results, rulesKey, previous: entry?.results ?? null, previousRulesKey: entry?.rulesKey ?? null, count: (entry?.count ?? 0) + 1 })
-  }, [historyKey, rulesKey, isRunDone, range.results, runToken])
+    if (entry?.token === runKey) return
+    rangeHistory.set(historyKey, { token: runKey, results: range.results, rulesKey, previous: entry?.results ?? null, previousRulesKey: entry?.rulesKey ?? null, count: (entry?.count ?? 0) + 1 })
+  }, [historyKey, rulesKey, isRunDone, range.results, runKey])
 
   if (!isOpen) return null
 
   const historyEntry = rangeHistory.get(historyKey)
-  const previousResults = historyEntry?.token === runToken
+  const previousResults = historyEntry?.token === runKey
     ? historyEntry.previous
     : historyEntry?.results ?? null
-  const previousRulesKey = historyEntry?.token === runToken ? historyEntry.previousRulesKey : historyEntry?.rulesKey ?? null
+  const previousRulesKey = historyEntry?.token === runKey ? historyEntry.previousRulesKey : historyEntry?.rulesKey ?? null
   const partsChanged = Boolean(previousResults) && previousRulesKey !== null && previousRulesKey !== rulesKey
-  const runNumber = historyEntry?.token === runToken ? historyEntry.count : (historyEntry?.count ?? 0) + 1
+  const runNumber = historyEntry?.token === runKey ? historyEntry.count : (historyEntry?.count ?? 0) + 1
   const isDone = range.phase === RANGE_PHASE.DONE
   const isCountingDown = range.phase === RANGE_PHASE.COUNTDOWN
 
