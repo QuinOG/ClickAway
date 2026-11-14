@@ -81,31 +81,56 @@ const W = budget.claudeWeights ?? { input: 1, cacheCreate: 1.25, cacheRead: 0.1,
 function claude() {
   const files = walk(join(HOME, ".claude", "projects"), (n) => n.endsWith(".jsonl"))
     .filter((f) => NOW - f.mtime < WEEK)
-  let fiveHour = 0
-  let week = 0
+  const events = []
   for (const file of files) {
     for (const line of readFileSync(file.path, "utf8").split("\n")) {
-      if (!line.includes("\"usage\"")) continue
+      if (!line.includes('"usage"')) continue
       let event
       try { event = JSON.parse(line) } catch { continue }
       const usage = event?.message?.usage
       const at = Date.parse(event?.timestamp ?? "")
       if (!usage || !at || NOW - at > WEEK) continue
-      const weighted = (usage.input_tokens ?? 0) * W.input
+      events.push([at, (usage.input_tokens ?? 0) * W.input
         + (usage.cache_creation_input_tokens ?? 0) * W.cacheCreate
         + (usage.cache_read_input_tokens ?? 0) * W.cacheRead
-        + (usage.output_tokens ?? 0) * W.output
-      week += weighted
-      if (NOW - at <= FIVE_HOURS) fiveHour += weighted
+        + (usage.output_tokens ?? 0) * W.output])
     }
   }
+  events.sort((a, b) => a[0] - b[0])
+
+  // Session windows: a 5-hour window starts at the first message after the
+  // previous window ended (how the Claude usage page counts a "session").
+  // Chained forward from a session start read off the usage page, since activity
+  // outside these logs (e.g. claude.ai on a phone) shifts where windows start.
+  const anchor = budget.claudeSessionResetAt ? Date.parse(budget.claudeSessionResetAt) - FIVE_HOURS : null
+  let windowStart = anchor
+  for (const [at] of events) {
+    if (anchor !== null && at < anchor) continue
+    if (windowStart === null || at >= windowStart + FIVE_HOURS) windowStart = at
+  }
+  const sessionActive = windowStart !== null && NOW < windowStart + FIVE_HOURS
+  const fiveHour = sessionActive ? events.filter(([at]) => at >= windowStart).reduce((sum, [, w]) => sum + w, 0) : 0
+
+  // Weekly window: anchored to a reset time read once from the usage page,
+  // rolled forward a week at a time.
+  let weekStart = NOW - WEEK
+  if (budget.claudeWeeklyResetAt) {
+    let reset = Date.parse(budget.claudeWeeklyResetAt)
+    while (reset <= NOW) reset += WEEK
+    weekStart = reset - WEEK
+  }
+  const week = events.filter(([at]) => at >= weekStart).reduce((sum, [, w]) => sum + w, 0)
+
   const pct = (value, cap) => (cap ? Math.round((value / cap) * 100) : null)
+  const sessionReset = sessionActive ? windowStart + FIVE_HOURS : null
   return {
     source: budget.claudeFiveHourBudget ? "estimate (calibrated)" : "estimate (uncalibrated: set budgets in usage-budget.json)",
     weightedTokens5h: Math.round(fiveHour),
     weightedTokens7d: Math.round(week),
     fiveHourPercent: pct(fiveHour, budget.claudeFiveHourBudget),
     weeklyPercent: pct(week, budget.claudeWeeklyBudget),
+    minutesToSessionReset: sessionReset ? Math.round((sessionReset - NOW) / 60000) : null,
+    fiveHourPace: sessionReset ? pace(pct(fiveHour, budget.claudeFiveHourBudget) ?? 0, sessionReset, FIVE_HOURS).status : "idle",
   }
 }
 
@@ -119,5 +144,5 @@ if (process.argv.includes("--json")) {
     ? `Codex  5h: ${c.fiveHour.usedPercent}% used (${c.fiveHour.status}, ${c.fiveHour.elapsedPercent}% of window elapsed, resets in ${c.fiveHour.minutesToReset} min) | week: ${c.weekly?.usedPercent}% (${c.weekly?.status})`
     : "Codex  no rate-limit data found in ~/.codex/sessions")
   const k = report.claude
-  console.log(`Claude 5h: ${k.fiveHourPercent ?? "?"}% est (${k.weightedTokens5h.toLocaleString()} weighted tok) | week: ${k.weeklyPercent ?? "?"}% est (${k.weightedTokens7d.toLocaleString()}) [${k.source}]`)
+  console.log(`Claude 5h: ${k.fiveHourPercent ?? "?"}% est (${k.fiveHourPace}${k.minutesToSessionReset !== null ? `, resets in ${k.minutesToSessionReset} min` : ""}) | week: ${k.weeklyPercent ?? "?"}% est [${k.source}]`)
 }
