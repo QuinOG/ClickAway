@@ -97,7 +97,8 @@ export default function GamePage({ onPhaseChange, ...props }) {
     stopFeedback()
   }, [game.phase, stopFeedback])
 
-  const duelError = ghostLoadError || game.duelStartError
+  const duelError = (challengeId && !replayId ? "This duel link is missing its rival run." : "")
+    || ghostLoadError || game.duelStartError
   let activeOverlay = null
   const entranceOverlay = game.entranceOverlayProps
     ? <CountdownOverlay key="round-entrance" {...game.entranceOverlayProps} />
@@ -125,8 +126,11 @@ export default function GamePage({ onPhaseChange, ...props }) {
       {duelError ? (
         <div className="ghostDuelError" role="alert">
           {duelError}
-          <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button>
-          <button type="button" onClick={() => setSearchParams({}, { replace: true })}>Leave duel</button>
+          {replayId ? <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button> : null}
+          <button type="button" onClick={() => {
+            game.entranceOverlayProps?.onCancel?.()
+            setSearchParams({}, { replace: true })
+          }}>Leave duel</button>
         </div>
       ) : challengeId && replayId && !ghostReplay ? (
         <div className="ghostDuelError" role="status">Loading your rival's run…</div>
