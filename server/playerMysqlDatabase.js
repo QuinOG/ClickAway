@@ -1,4 +1,4 @@
-﻿import "dotenv/config"
+import "dotenv/config"
 
 import pool, { buildValuesClause } from "./db/pgPool.js"
 
@@ -2242,7 +2242,30 @@ export async function createChallenge({
     ]
   )
 
-  return findChallengeById(result.insertId)
+  try {
+    return await findChallengeById(result.insertId)
+  } catch (error) {
+    console.error("Challenge created, but its response read failed:", error)
+    return {
+      id: Number(result.insertId),
+      challengerUserId,
+      challengerUsername,
+      opponentUserId,
+      opponentUsername,
+      replayId,
+      opponentReplayId: null,
+      modeId,
+      status: "pending",
+      message: message ? String(message).slice(0, 280) : null,
+      challengerWon: null,
+      createdAt: null,
+      respondedAt: null,
+      completedAt: null,
+      replayScore: null,
+      replaySeed: null,
+      opponentReplayScore: null,
+    }
+  }
 }
 
 export async function findChallengeById(challengeId) {
@@ -2360,7 +2383,12 @@ export async function respondToChallenge({
     return { ok: false, reason: "Challenge is no longer pending." }
   }
 
-  return { ok: true, challenge: await findChallengeById(challengeId) }
+  try {
+    return { ok: true, challenge: await findChallengeById(challengeId) }
+  } catch (error) {
+    console.error("Challenge response saved, but its response read failed:", error)
+    return { ok: true, challenge: { ...challenge, status: nextStatus } }
+  }
 }
 
 // The opponent's score always comes from their stored replay, which must be
@@ -2410,7 +2438,22 @@ export async function completeChallenge({
     return { ok: false, reason: "Challenge was already completed." }
   }
 
-  return { ok: true, challenge: await findChallengeById(challengeId), challengerWon }
+  try {
+    return { ok: true, challenge: await findChallengeById(challengeId), challengerWon }
+  } catch (error) {
+    console.error("Challenge completed, but its response read failed:", error)
+    return {
+      ok: true,
+      challenge: {
+        ...challenge,
+        status: "completed",
+        opponentReplayId: opponentReplay.id,
+        challengerWon,
+        opponentReplayScore: opponentScore,
+      },
+      challengerWon,
+    }
+  }
 }
 
 export default pool
