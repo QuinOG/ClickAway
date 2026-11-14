@@ -134,6 +134,12 @@ function isTooSoonAfterLastClick(events, eventTimeMs) {
   return false
 }
 
+// Mirrors the server: the first XP-earning round of each UTC day earns double XP.
+function hasXpRoundToday(rounds = [], now = Date.now()) {
+  const todayStartMs = new Date(now).setUTCHours(0, 0, 0, 0)
+  return rounds.some((round) => Number(round?.xpEarned) > 0 && Date.parse(round?.playedAtIso ?? "") >= todayStartMs)
+}
+
 export function useGameScreenController({
   onRoundComplete,
   selectedModeId = DEFAULT_MODE_ID,
@@ -1649,6 +1655,7 @@ export function useGameScreenController({
           }
         : null,
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,
+      dailyBonusAvailable: selectedModeConfig?.allowsLevelProgression === true && !hasXpRoundToday(playerRecentRounds),
       showTrainingSuite: selectedModeId === DIFFICULTY_IDS.EASY && !isGameOnboardingActive,
       trainingDrills: TRAINING_DRILLS,
       selectedDrillId,
@@ -1691,6 +1698,7 @@ export function useGameScreenController({
       // Once the server answers, show what it actually awarded rather than the
       // estimate made when the round ended.
       roundXpEarned: roundSave.outcome?.earnedXp ?? roundXpEarned,
+      roundDailyBonusXp: roundSave.outcome?.dailyBonusXp ?? 0,
       roundCoinsEarned: roundSave.outcome?.earnedCoins ?? roundCoinsEarned,
       roundSaveStatus: roundSave.status,
       roundSaveError: roundSave.error ?? "",

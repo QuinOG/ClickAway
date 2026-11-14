@@ -263,6 +263,7 @@ export function GameOverOverlay({
   onPrimaryAction,
   roundCoinsEarned = 0,
   roundXpEarned = 0,
+  roundDailyBonusXp = 0,
   roundRankDelta = 0,
   placementLabel = null,
   roundSaveStatus = "idle",
@@ -303,6 +304,7 @@ export function GameOverOverlay({
       level: playerLevel,
       xpIntoLevel: playerXpIntoLevel,
       earnedXp: roundXpEarned,
+      nextRoundXp: roundXpEarned - roundDailyBonusXp,
     })
     : null
 
@@ -416,7 +418,7 @@ export function GameOverOverlay({
             <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
           ) : null}
           {allowsLevelProgression ? (
-            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP</small></span>
+            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>{roundDailyBonusXp > 0 ? "XP · 2× today" : "XP"}</small></span>
           ) : null}
           {allowsLevelProgression ? (
             <XpTally

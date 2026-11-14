@@ -189,3 +189,19 @@ test.each([
     expect(onModeChange).not.toHaveBeenCalledWith("normal")
   }
 })
+
+test.each([
+  ["no rounds yet", [], "normal", true],
+  ["an XP round earlier today", [{ xpEarned: 160, playedAtIso: new Date().toISOString() }], "normal", false],
+  ["only yesterday's rounds", [{ xpEarned: 160, playedAtIso: new Date(Date.now() - 2 * 86400000).toISOString() }], "normal", true],
+  ["Practice selected", [], "easy", false],
+])("double-XP notice with %s", (_label, rounds, modeId, expected) => {
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status: "dismissed" },
+    selectedModeId: modeId,
+    playerRecentRounds: rounds,
+    lifetimeStats: {},
+  }))
+  expect(result.current.readyOverlayProps.dailyBonusAvailable).toBe(expected)
+})

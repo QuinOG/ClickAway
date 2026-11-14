@@ -653,3 +653,14 @@
     .lobbyModeRail .lobbyModeBriefStat { padding: 8px 6px; }
     .lobbyModeBriefStat small { letter-spacing: 0.04em; }
 }
+
+/* The once-a-day double XP, right above Start. */
+.arenaLobbyActions:has(.arenaLobbyDailyBonus) { flex-wrap: wrap; }
+.arenaLobbyDailyBonus {
+    flex-basis: 100%;
+    margin: 0 0 var(--ca-space-2, 8px);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: #ffd76a;
+}

@@ -380,6 +380,7 @@ export function ReadyOverlay({
   showArmoryWalkthroughBadge = false,
   onboardingCoach = null,
   showTrainingSuite = false,
+  dailyBonusAvailable = false,
   trainingDrills = [],
   selectedDrillId = null,
   onSelectDrill,
@@ -571,6 +572,7 @@ export function ReadyOverlay({
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
+            {dailyBonusAvailable ? <p className="arenaLobbyDailyBonus">First round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

@@ -25,6 +25,9 @@ export function getNextRoundGoal({
   level = 1,
   xpIntoLevel = 0,
   earnedXp = 0,
+  // What a similar next round would earn; less than earnedXp when this round
+  // carried the once-a-day bonus.
+  nextRoundXp = earnedXp,
 } = {}) {
   const roundScore = Math.max(0, Number(score) || 0)
   const best = Math.max(0, Number(bestScore) || 0)
@@ -38,7 +41,7 @@ export function getNextRoundGoal({
   const earned = Math.max(0, Number(earnedXp) || 0)
   if (countsLevelProgress && earned > 0) {
     const { reachedLevel, remaining } = levelAfterRound(level, xpIntoLevel, earned)
-    if (getRequiredXpForLevel(reachedLevel) - remaining <= earned) {
+    if (getRequiredXpForLevel(reachedLevel) - remaining <= Math.max(0, Number(nextRoundXp) || 0)) {
       const nextLevel = reachedLevel + 1
       const unlock = UNLOCK_WALL_PARTS.find((part) => part.unlockLevel === nextLevel)
       return {

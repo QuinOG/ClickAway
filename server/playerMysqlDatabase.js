@@ -1781,6 +1781,7 @@ export async function completeUserRound({
   const connection = await pool.getConnection()
   let rankOutcome = null
   let insertedHistoryEntry = null
+  let dailyBonusXp = 0
 
   try {
     await connection.beginTransaction()
@@ -1802,8 +1803,24 @@ export async function completeUserRound({
       }
     }
 
+    // The first XP-earning round of each UTC day earns its XP twice: a reason to
+    // come back daily that never takes anything away. Checked under the user row
+    // lock, so two rounds finishing together can't both claim it. Practice and
+    // unverified rounds earn no XP, so they neither get nor use up the bonus.
+    if ((Number(earnedXp) || 0) > 0) {
+      const [earlierToday] = await connection.query(
+        `SELECT 1 FROM round_history
+         WHERE user_id = ? AND xp_earned > 0
+           AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+         LIMIT 1`,
+        [userId]
+      )
+      if (!earlierToday.length) dailyBonusXp = Number(earnedXp)
+    }
+    const totalXp = (Number(earnedXp) || 0) + dailyBonusXp
+
     const coins = Math.min(maxCoins, Math.max(0, (Number(userRow.coins) || 0) + (Number(earnedCoins) || 0)))
-    const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + (Number(earnedXp) || 0)))
+    const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + totalXp))
 
     const isCurrentRankSystem = Number(userRow.rankSystemVersion) === RANK_SYSTEM_VERSION
     rankOutcome = applyRankedMatchResult({
@@ -1853,6 +1870,7 @@ export async function completeUserRound({
 
     insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
       ...historyEntry,
+      xpEarned: totalXp,
       rankDelta: rankOutcome.appliedRankDelta,
       rankResultKind: historyEntry?.progressionMode === 'ranked'
         ? (rankOutcome.previousRankProgress?.isUnranked || rankOutcome.previousRankProgress?.isPlacement ? 'placement' : 'rr')
@@ -1941,6 +1959,7 @@ export async function completeUserRound({
   return {
     historyEntry: insertedHistoryEntry,
     rankOutcome,
+    dailyBonusXp,
   }
 }
 

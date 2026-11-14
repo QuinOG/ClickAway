@@ -36,6 +36,10 @@ for (const [label, width, height] of SIZES) {
     const progressOverrides = process.env.NEW_PLAYER ? { ...NEW_PLAYER_PROGRESS } : {}
     if (process.env.BEST) progressOverrides.lifetimeStats = { ...(progressOverrides.lifetimeStats ?? {}), bestSingleScore: Number(process.env.BEST) }
     await installApiMocks(page, { progressOverrides })
+    // DAILY_BONUS=1: the round save reports the first-round-of-the-day double XP.
+    if (process.env.DAILY_BONUS) {
+      await page.route("**/api/round/complete", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ progress: null, earnedCoins: 16, earnedXp: 320, dailyBonusXp: 160, rankDelta: 0, replay: null }) }))
+    }
     await page.addInitScript((prefs) => localStorage.setItem("clickaway.feedback-preferences.v1", JSON.stringify(prefs)), PREFS)
     const route = AUTHENTICATED_ROUTES.find((entry) => entry.id === ROUTE)
     // HEADING=<text> when the page heading differs for this state (e.g. a new player).
@@ -59,7 +63,9 @@ for (const [label, width, height] of SIZES) {
         await page.locator(".arena .bigCircleButton").first().click({ force: true, timeout: 1000 }).catch(() => {})
         await page.waitForTimeout(110)
       }
-      await page.keyboard.press("g")
+      // PLAY_FULL=1 lets the timer run out so the real (mocked) save runs; "g" skips it.
+      if (process.env.PLAY_FULL) await page.waitForTimeout(31000)
+      else await page.keyboard.press("g")
       await page.waitForTimeout(2600)
       await page.screenshot({ path: `${OUT}-${label}.png` })
       await context.close()

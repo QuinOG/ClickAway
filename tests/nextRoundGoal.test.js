@@ -34,3 +34,9 @@ test("no level line when the next level is out of reach or progress doesn't coun
   assert.equal(getNextRoundGoal({ countsLevelProgress: true, level: 10, xpIntoLevel: 0, earnedXp: 40 }), null)
   assert.equal(getNextRoundGoal({ countsLevelProgress: false, level: 1, xpIntoLevel: 90, earnedXp: 160 }), null)
 })
+
+test("the once-a-day bonus isn't counted as part of the next round", () => {
+  // 0 + 320 XP (160 + 160 bonus) lands at level 3 with 70; level 3 needs 200, so 130 more.
+  assert.equal(getNextRoundGoal({ countsLevelProgress: true, level: 1, xpIntoLevel: 0, earnedXp: 320, nextRoundXp: 160 }).kind, "level")
+  assert.equal(getNextRoundGoal({ countsLevelProgress: true, level: 1, xpIntoLevel: 0, earnedXp: 320, nextRoundXp: 100 }), null)
+})

@@ -43,6 +43,7 @@ export function usePlayerProgressionUpdates({
           ok: true,
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
+          dailyBonusXp: Number(response.dailyBonusXp) || 0,
           rankDelta: response.rankDelta,
           rankProgress: response.rankProgress ?? null,
           followUpError: [
