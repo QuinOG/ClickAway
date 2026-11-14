@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { fetchCurrentUser, loginUser, logoutUser, signupUser } from "../services/clickAwayHttpApiClient.js"
 import { normalizeUsername } from "./appAccountStateHelpers.js"
@@ -18,7 +18,7 @@ function markPendingLogout() {
   try {
     localStorage.setItem(PENDING_LOGOUT_KEY, "1")
   } catch {
-    // Storage unavailable; the logout request itself still runs.
+    // Storage unavailable; explicit logout does not depend on this retry flag.
   }
 }
 
@@ -43,9 +43,9 @@ function withAuthLock(task) {
   return locks?.request ? locks.request("clickaway-auth", task) : task()
 }
 
-function sendLogout() {
+function sendLogout(retryPending = false) {
   if (!inFlightLogout) {
-    inFlightLogout = withAuthLock(() => (hasPendingLogout() ? logoutUser() : Promise.resolve()))
+    inFlightLogout = withAuthLock(() => (!retryPending || hasPendingLogout() ? logoutUser() : Promise.resolve()))
       .then(() => {
         clearPendingLogout()
       })
@@ -135,7 +135,7 @@ export function useAuthSession({
       // here and stay logged out instead of restoring the previous player.
       if (hasPendingLogout()) {
         try {
-          await sendLogout()
+          await sendLogout(true)
         } catch {
           // Still pending; try again on the next load.
         }
