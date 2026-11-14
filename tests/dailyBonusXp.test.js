@@ -10,6 +10,10 @@ const code = source.slice(
   source.indexOf("export async function completeUserRound("),
   source.indexOf("// Saves only the preferences the client actually sent")
 ).replace("export async function", "async function")
+const helper = source.slice(
+  source.indexOf("async function hasXpRoundToday("),
+  source.indexOf("async function getRoundHistoryCount(")
+)
 
 function harness({ playedEarlierToday }) {
   const writes = { xp: null, historyEntry: null, bonusQueries: 0 }
@@ -41,7 +45,7 @@ function harness({ playedEarlierToday }) {
     insertRoundHistoryEntry: async (_connection, _userId, entry) => { writes.historyEntry = entry; return entry },
     RoundAlreadySubmittedError: class extends Error {},
   }
-  vm.runInNewContext(code, ctx)
+  vm.runInNewContext(helper + code, ctx)
   return { ctx, writes }
 }
 

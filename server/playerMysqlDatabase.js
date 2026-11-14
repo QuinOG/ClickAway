@@ -784,6 +784,19 @@ async function getWeeklyRoundCount(executor, userId) {
   return toNonNegativeNumber(weekly?.roundsThisWeek, 0)
 }
 
+// Whether the player already had an XP-earning round today (UTC). The first one
+// each day earns double XP; the save and the progress read both ask this.
+async function hasXpRoundToday(executor, userId) {
+  const [rows] = await executor.query(
+    `SELECT 1 FROM round_history
+     WHERE user_id = ? AND xp_earned > 0
+       AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+     LIMIT 1`,
+    [userId]
+  )
+  return rows.length > 0
+}
+
 async function getRoundHistoryCount(executor, userId) {
   const [rows] = await executor.query(
     `SELECT COUNT(*) AS totalCount
@@ -1226,6 +1239,9 @@ async function buildProgressRecord(executor, userId) {
   const totalRoundCount = await getRoundHistoryCount(executor, userId)
   const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
   lifetimeStats.roundsThisWeek = await getWeeklyRoundCount(executor, userId)
+  // From the server, not the 50 loaded rounds, so the lobby never promises a
+  // bonus that an older round today already used.
+  const dailyBonusAvailable = !(await hasXpRoundToday(executor, userId))
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
     rankMmr: userRow.mmr,
@@ -1238,6 +1254,7 @@ async function buildProgressRecord(executor, userId) {
   })
 
   return {
+    dailyBonusAvailable,
     coins: toNonNegativeNumber(userRow.coins, DEFAULT_PROGRESS.coins),
     levelXp: toNonNegativeNumber(userRow.xp, DEFAULT_PROGRESS.levelXp),
     rankMmr: migratedRankData.rankMmr,
@@ -1807,15 +1824,8 @@ export async function completeUserRound({
     // come back daily that never takes anything away. Checked under the user row
     // lock, so two rounds finishing together can't both claim it. Practice and
     // unverified rounds earn no XP, so they neither get nor use up the bonus.
-    if ((Number(earnedXp) || 0) > 0) {
-      const [earlierToday] = await connection.query(
-        `SELECT 1 FROM round_history
-         WHERE user_id = ? AND xp_earned > 0
-           AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
-         LIMIT 1`,
-        [userId]
-      )
-      if (!earlierToday.length) dailyBonusXp = Number(earnedXp)
+    if ((Number(earnedXp) || 0) > 0 && !(await hasXpRoundToday(connection, userId))) {
+      dailyBonusXp = Number(earnedXp)
     }
     const totalXp = (Number(earnedXp) || 0) + dailyBonusXp
 

@@ -25,3 +25,10 @@ Excluded: daily challenges, streaks, notifications. No schema change (uses round
 - Checks: 3 server tests run the real `completeUserRound` with a scripted connection (first round doubled, second not, no-XP rounds don't check or consume); goal-line test for the bonus; 4 lobby notice tests (no rounds, XP round today, only yesterday's, Practice). Lint, unit, full UI suite and build pass.
 - Shots: shots/013/after-lobby-*, after-results-* (the save ran with a mocked bonus response).
 - Day boundary is UTC, so for a player in New York the day turns over at 7 or 8 p.m. local time. A local-day boundary would need the player's time zone on the server.
+
+## Review (Sol, high reasoning: pass with issues) and repair 1
+- Confirmed: lobby and Results agree across Practice/Casual/Ranked and with or without an XP round today; Results uses the server total without doubling again; the goal line leaves the bonus out. In a scripted two-connection model with the row lock, two simultaneous rounds got [160, 0]. Practice and tokenless rounds neither get nor use up the bonus. The UTC midnight expression is correct against a timestamptz column.
+- Issue: the lobby inferred eligibility from the 50 loaded rounds, so 50+ zero-XP rounds after an XP round today would advertise a bonus the server wouldn't give. Repair: the progress response now includes `dailyBonusAvailable` from the same server query the save uses (`hasXpRoundToday`); the loaded-rounds check is only a fallback for responses without it.
+- Policy, kept: a verified duel round earns XP, so it can be the day's bonus round. That matches "first XP-earning round of the day".
+- Known edge, not changed: at the 10,000,000 XP cap, history records the full XP while the player gains only what fits. The same was true of base XP before this change.
+- Seen but outside this trial: on phones, Practice's End Practice button can sit outside the screen.

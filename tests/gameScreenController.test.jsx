@@ -205,3 +205,16 @@ test.each([
   }))
   expect(result.current.readyOverlayProps.dailyBonusAvailable).toBe(expected)
 })
+
+test("the server's answer wins over the loaded rounds for the double-XP notice", () => {
+  // e.g. an XP round today that's older than the 50 loaded rounds
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status: "dismissed" },
+    selectedModeId: "normal",
+    playerRecentRounds: [],
+    serverDailyBonusAvailable: false,
+    lifetimeStats: {},
+  }))
+  expect(result.current.readyOverlayProps.dailyBonusAvailable).toBe(false)
+})

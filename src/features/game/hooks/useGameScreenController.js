@@ -154,6 +154,7 @@ export function useGameScreenController({
   playerRankedState = {},
   playerHasRankedHistory = false,
   playerRecentRounds = [],
+  serverDailyBonusAvailable = null,
   playerBestScore = 0,
   lifetimeStats = null,
   loadoutStats = [],
@@ -1655,7 +1656,8 @@ export function useGameScreenController({
           }
         : null,
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,
-      dailyBonusAvailable: selectedModeConfig?.allowsLevelProgression === true && !hasXpRoundToday(playerRecentRounds),
+      dailyBonusAvailable: selectedModeConfig?.allowsLevelProgression === true
+        && (serverDailyBonusAvailable ?? !hasXpRoundToday(playerRecentRounds)),
       showTrainingSuite: selectedModeId === DIFFICULTY_IDS.EASY && !isGameOnboardingActive,
       trainingDrills: TRAINING_DRILLS,
       selectedDrillId,

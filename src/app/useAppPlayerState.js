@@ -83,6 +83,9 @@ function normalizeProgress(progress = {}) {
     .filter(Boolean)
 
   return {
+    // Server-reported; null when unknown (older responses), and the lobby then
+    // falls back to the loaded rounds.
+    dailyBonusAvailable: typeof progress.dailyBonusAvailable === "boolean" ? progress.dailyBonusAvailable : null,
     coins: Math.max(0, Number(progress.coins) || 0),
     levelXp,
     rankMmr: migratedRankData.rankMmr,
@@ -177,6 +180,7 @@ export function useAppPlayerState() {
   const [activeLoadoutId, setActiveLoadoutId] = useState(DEFAULT_PROGRESS.activeLoadoutId)
   const [buildWalkthrough, setBuildWalkthrough] = useState(DEFAULT_PROGRESS.buildWalkthrough)
   const [seenUnlockPartIds, setSeenUnlockPartIds] = useState(DEFAULT_PROGRESS.seenUnlockPartIds)
+  const [dailyBonusAvailable, setDailyBonusAvailable] = useState(null)
 
   const applyProgress = useCallback((progress = {}) => {
     const normalizedProgress = normalizeProgress(progress)
@@ -198,6 +202,7 @@ export function useAppPlayerState() {
     setActiveLoadoutId(normalizedProgress.activeLoadoutId)
     setBuildWalkthrough(normalizedProgress.buildWalkthrough)
     setSeenUnlockPartIds(normalizedProgress.seenUnlockPartIds)
+    setDailyBonusAvailable(normalizedProgress.dailyBonusAvailable)
 
     return normalizedProgress
   }, [])
@@ -268,6 +273,7 @@ export function useAppPlayerState() {
     setSelectedModeId,
     roundHistory,
     setRoundHistory,
+    dailyBonusAvailable,
     lifetimeStats,
     setLifetimeStats,
     loadoutStats,

@@ -84,6 +84,7 @@ export default function App() {
     selectedModeId,
     setSelectedModeId,
     roundHistory,
+    dailyBonusAvailable,
     lifetimeStats,
     loadoutStats,
     totalRoundCount,
@@ -290,6 +291,7 @@ export default function App() {
                 playerRankedState={rankedState}
                 playerHasRankedHistory={hasRankedHistory}
                 playerRecentRounds={roundHistory}
+                serverDailyBonusAvailable={dailyBonusAvailable}
                 playerBestScore={playerLeaderboardStats.bestScore}
                 lifetimeStats={lifetimeStats}
                 loadoutStats={loadoutStats}
