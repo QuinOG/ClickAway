@@ -156,3 +156,26 @@ describe("B3 outcome and reward continuity", () => {
     expect(props.onRematch).toHaveBeenCalledOnce()
   })
 })
+
+describe("next-round goal", () => {
+  test("a saved near miss names the gap above Play Again", () => {
+    renderOutcome({ score: 104, bestScore: 110 , allowsCoinRewards: true, allowsLevelProgression: true })
+    expect(screen.getByText("6 points off your best.")).toBeTruthy()
+  })
+
+  test("nothing before the save is confirmed or when the best is far away", () => {
+    renderOutcome({ score: 104, bestScore: 110, roundSaveStatus: "saving" , allowsCoinRewards: true, allowsLevelProgression: true })
+    expect(screen.queryByText(/off your best/)).toBeNull()
+  })
+
+  test("a far miss shows no goal line", () => {
+    renderOutcome({ score: 40, bestScore: 110 , allowsCoinRewards: true, allowsLevelProgression: true })
+    expect(screen.queryByText(/off your best|One more round/)).toBeNull()
+  })
+})
+
+test("an unlocked powerup's Equip opens the Armory's powerup keys", () => {
+  renderOutcome({ playerLevel: 1, playerXpIntoLevel: 0, playerXpToNextLevel: 100, roundXpEarned: 160, allowsCoinRewards: true, allowsLevelProgression: true })
+  const link = screen.getByLabelText(/Unlocked Magnet Center/)
+  expect(link.getAttribute("href")).toBe("/armory?step=hotbar&powerSlot=1")
+})

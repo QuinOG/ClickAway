@@ -22,6 +22,7 @@ import {
 } from "../../../../services/celebrationEffects.js"
 import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
 import { getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
+import { getNextRoundGoal } from "../../../../utils/nextRoundGoal.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -194,7 +195,8 @@ function NextUnlock({ level, xpIntoLevel, earned }) {
   return (
     <Link
       className={`gameOverNextUnlock ${justUnlocked ? "isUnlocked" : ""}`}
-      to="/armory"
+      // Lands where the part is installed: the powerup keys, or the part's lane.
+      to={nextPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(nextPart.slotId)}`}
       aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
     >
       <span className="gameOverNextUnlockIcon" aria-hidden="true">
@@ -262,6 +264,7 @@ export function GameOverOverlay({
   onPrimaryAction,
   roundCoinsEarned = 0,
   roundXpEarned = 0,
+  roundDailyBonusXp = 0,
   roundRankDelta = 0,
   placementLabel = null,
   roundSaveStatus = "idle",
@@ -292,6 +295,19 @@ export function GameOverOverlay({
     ),
     [loadoutPresentation, loadoutSnapshot, selectedModeId]
   )
+
+  // Waits for the save so the XP it counts is what the server awarded.
+  const nextRoundGoal = isRoundSaved && !isPracticeMode
+    ? getNextRoundGoal({
+      score,
+      bestScore,
+      countsLevelProgress: allowsLevelProgression,
+      level: playerLevel,
+      xpIntoLevel: playerXpIntoLevel,
+      earnedXp: roundXpEarned,
+      nextRoundXp: roundXpEarned - roundDailyBonusXp,
+    })
+    : null
 
   const tone = getGameOverTone({ hits, misses, accuracy, bestStreak })
   const nearestAchievement = useMemo(() => {
@@ -403,7 +419,7 @@ export function GameOverOverlay({
             <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
           ) : null}
           {allowsLevelProgression ? (
-            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP</small></span>
+            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>{roundDailyBonusXp > 0 ? "XP · 2× today" : "XP"}</small></span>
           ) : null}
           {allowsLevelProgression ? (
             <XpTally
@@ -501,6 +517,9 @@ export function GameOverOverlay({
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.72, duration: 0.24 }}
       >
+        {nextRoundGoal ? (
+          <p className="gameOverNextGoal" data-goal={nextRoundGoal.kind}>{nextRoundGoal.text}</p>
+        ) : null}
         <button
           ref={primaryActionRef}
           className="primaryButton primaryButton-lg"

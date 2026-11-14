@@ -784,6 +784,19 @@ async function getWeeklyRoundCount(executor, userId) {
   return toNonNegativeNumber(weekly?.roundsThisWeek, 0)
 }
 
+// Whether the player already had an XP-earning round today (UTC). The first one
+// each day earns double XP; the save and the progress read both ask this.
+async function hasXpRoundToday(executor, userId) {
+  const [rows] = await executor.query(
+    `SELECT 1 FROM round_history
+     WHERE user_id = ? AND xp_earned > 0
+       AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+     LIMIT 1`,
+    [userId]
+  )
+  return rows.length > 0
+}
+
 async function getRoundHistoryCount(executor, userId) {
   const [rows] = await executor.query(
     `SELECT COUNT(*) AS totalCount
@@ -1226,6 +1239,9 @@ async function buildProgressRecord(executor, userId) {
   const totalRoundCount = await getRoundHistoryCount(executor, userId)
   const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
   lifetimeStats.roundsThisWeek = await getWeeklyRoundCount(executor, userId)
+  // From the server, not the 50 loaded rounds, so the lobby never promises a
+  // bonus that an older round today already used.
+  const dailyBonusAvailable = !(await hasXpRoundToday(executor, userId))
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
     rankMmr: userRow.mmr,
@@ -1238,6 +1254,7 @@ async function buildProgressRecord(executor, userId) {
   })
 
   return {
+    dailyBonusAvailable,
     coins: toNonNegativeNumber(userRow.coins, DEFAULT_PROGRESS.coins),
     levelXp: toNonNegativeNumber(userRow.xp, DEFAULT_PROGRESS.levelXp),
     rankMmr: migratedRankData.rankMmr,
@@ -1781,6 +1798,7 @@ export async function completeUserRound({
   const connection = await pool.getConnection()
   let rankOutcome = null
   let insertedHistoryEntry = null
+  let dailyBonusXp = 0
 
   try {
     await connection.beginTransaction()
@@ -1802,8 +1820,17 @@ export async function completeUserRound({
       }
     }
 
+    // The first XP-earning round of each UTC day earns its XP twice: a reason to
+    // come back daily that never takes anything away. Checked under the user row
+    // lock, so two rounds finishing together can't both claim it. Practice and
+    // unverified rounds earn no XP, so they neither get nor use up the bonus.
+    if ((Number(earnedXp) || 0) > 0 && !(await hasXpRoundToday(connection, userId))) {
+      dailyBonusXp = Number(earnedXp)
+    }
+    const totalXp = (Number(earnedXp) || 0) + dailyBonusXp
+
     const coins = Math.min(maxCoins, Math.max(0, (Number(userRow.coins) || 0) + (Number(earnedCoins) || 0)))
-    const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + (Number(earnedXp) || 0)))
+    const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + totalXp))
 
     const isCurrentRankSystem = Number(userRow.rankSystemVersion) === RANK_SYSTEM_VERSION
     rankOutcome = applyRankedMatchResult({
@@ -1853,6 +1880,7 @@ export async function completeUserRound({
 
     insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
       ...historyEntry,
+      xpEarned: totalXp,
       rankDelta: rankOutcome.appliedRankDelta,
       rankResultKind: historyEntry?.progressionMode === 'ranked'
         ? (rankOutcome.previousRankProgress?.isUnranked || rankOutcome.previousRankProgress?.isPlacement ? 'placement' : 'rr')
@@ -1941,6 +1969,7 @@ export async function completeUserRound({
   return {
     historyEntry: insertedHistoryEntry,
     rankOutcome,
+    dailyBonusXp,
   }
 }
 

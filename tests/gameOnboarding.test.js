@@ -13,6 +13,7 @@ import {
   getNextOnboardingStatusAfterRound,
   isGameOnboardingStatus,
 } from "../src/constants/gameOnboarding.js"
+import { DIFFICULTY_IDS } from "../src/constants/gameModesConfig.js"
 import { WALKTHROUGH_STEPS } from "../src/features/armory/armoryConstants.js"
 
 test("normalizeBuildWalkthrough accepts multi-step onboarding statuses", () => {
@@ -87,4 +88,15 @@ test("legacy walkthrough statuses never re-trigger auto-start", () => {
   ]) {
     assert.equal(shouldAutoStartArmoryWalkthrough(status), false)
   }
+})
+
+test("a brand-new player gets a first Casual round before any tour", () => {
+  const step = getGameOnboardingStep(BUILD_WALKTHROUGH_STATUS.NOT_STARTED, { isNewPlayer: true })
+  assert.equal(step.title, "Your first round")
+  assert.equal(step.modeId, DIFFICULTY_IDS.NORMAL)
+  assert.equal(step.startLabel, "Play")
+  assert.ok(isGameOnboardingStatus(BUILD_WALKTHROUGH_STATUS.NOT_STARTED, { isNewPlayer: true }))
+  // Once a round is played (or for older accounts), nothing changes.
+  assert.equal(getGameOnboardingStep(BUILD_WALKTHROUGH_STATUS.NOT_STARTED, { isNewPlayer: false }), null)
+  assert.equal(getGameOnboardingStep(BUILD_WALKTHROUGH_STATUS.DISMISSED, { isNewPlayer: true }), null)
 })

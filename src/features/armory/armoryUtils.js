@@ -148,6 +148,7 @@ export function measureSpotlightRect(shellElement, targetElement) {
     bottom,
     width: Math.max(0, right - left),
     height: Math.max(0, bottom - top),
+    shellWidth: shellRect.width,
   }
 }
 

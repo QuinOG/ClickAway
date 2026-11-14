@@ -3768,3 +3768,34 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 /* Sentence-case instrument labels read faster than tracked caps. */
 .armoryInstrumentLabel { text-transform: none; font-size: 12px; letter-spacing: 0; font-weight: 600; color: rgba(205, 222, 242, 0.8); }
 .armoryInstrumentValue { font-size: 13px; }
+
+/* Phones: the Armory is much taller than the screen, so the tour card is pinned
+   just above the bottom navigation instead of the bottom of the page. */
+@media (max-width: 820px) {
+    .armoryWalkthroughPanel,
+    .armoryWalkthroughPanel.isCentered {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        top: auto;
+        bottom: calc(var(--mobile-dock-height, 66px) + env(safe-area-inset-bottom, 0px) + 12px);
+        width: auto;
+        max-height: 46vh;
+        overflow-y: auto;
+        transform: none;
+    }
+}
+
+/* Wide screens: when the step points at the right-hand column, the card moves left. */
+@media (min-width: 821px) {
+    .armoryWalkthroughPanel.isLeft { left: 20px; right: auto; }
+}
+
+/* Phones and tablets: room below the content while the tour runs, so anything
+   under the pinned card can be scrolled up above it. */
+@media (max-width: 820px) {
+    .armoryPage:has(.armoryWalkthroughOverlay) { padding-bottom: 50vh; }
+    /* Compact card: the step's instruction stays, the secondary note goes. */
+    .armoryWalkthroughPanel { gap: var(--ca-space-2, 8px); padding: 14px 16px; }
+    .armoryWalkthroughPanel .armoryWalkthroughNote { display: none; }
+}
