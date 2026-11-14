@@ -1,3 +1,5 @@
+import { createRoundClock } from "../../../game/engine/roundClock.js"
+import { measurePlayfield } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
@@ -55,6 +57,9 @@ export function useArmoryRangeRound({
   onExit,
 }) {
   const arenaRef = useRef(null)
+  const [logicalDimensions, setLogicalDimensions] = useState(null)
+  const clockRef = useRef(null)
+  const dimensionsRef = useRef(null)
   const simulationRef = useRef(null)
   const roundStartTimeRef = useRef(0)
   const geometryRef = useRef(null)
@@ -97,7 +102,7 @@ export function useArmoryRangeRound({
   const isPlaying = phase === RANGE_PHASE.PLAYING
 
   const getElapsedMs = useCallback(() => (
-    roundStartTimeRef.current > 0 ? Date.now() - roundStartTimeRef.current : 0
+    clockRef.current?.elapsedMs() ?? 0
   ), [])
 
   const clearFeedbackTimeouts = useCallback(() => {
@@ -122,7 +127,10 @@ export function useArmoryRangeRound({
   const initializeGeometry = useCallback(() => {
     const arena = arenaRef.current
     if (!arena) return
-    const rect = arena.getBoundingClientRect()
+    const measured = measurePlayfield(arena)
+    const rect = { width: Math.floor(measured.width), height: Math.floor(measured.height) }
+    dimensionsRef.current = { arenaWidth: rect.width, arenaHeight: rect.height }
+    setLogicalDimensions(dimensionsRef.current)
     geometryRef.current = createGeometrySimulation({
       roundRules,
       arenaWidth: rect.width,
@@ -189,6 +197,9 @@ export function useArmoryRangeRound({
     rngRef.current = Math.random
     roundStartTimeRef.current = 0
     geometryRef.current = null
+    clockRef.current = null
+    dimensionsRef.current = null
+    setLogicalDimensions(null)
 
     setPhase(RANGE_PHASE.COUNTDOWN)
     setCountdownValue(READY_COUNTDOWN_START)
@@ -224,6 +235,7 @@ export function useArmoryRangeRound({
       const remainingMs = countdownEndsAtRef.current - Date.now()
       if (remainingMs <= 0) {
         roundStartTimeRef.current = Date.now()
+        clockRef.current = createRoundClock(RANGE_DURATION_SECONDS, roundRules.maxTimeBufferSeconds ?? RANGE_DURATION_SECONDS + 2)
         setCountdownValue(0)
         setPhase(RANGE_PHASE.PLAYING)
         setTargetSpawnSequence((sequence) => sequence + 1)
@@ -236,7 +248,7 @@ export function useArmoryRangeRound({
 
     timeoutId = window.setTimeout(tick, TIMER_TICK_MS)
     return () => window.clearTimeout(timeoutId)
-  }, [isActive, phase, initializeGeometry])
+  }, [isActive, phase, initializeGeometry, roundRules.maxTimeBufferSeconds])
 
   // Closing the range abandons the sample: stop its clock and any pending
   // finish so a hidden run can't complete and become the comparison baseline.
@@ -253,24 +265,33 @@ export function useArmoryRangeRound({
   useEffect(() => {
     if (!isPlaying || !isActive) return undefined
 
-    const intervalId = window.setInterval(() => {
-      setTimeLeft((current) => {
-        if (current <= 1) {
-          window.clearInterval(intervalId)
-          endRound()
-          return 0
-        }
-        return current - 1
-      })
-    }, TIMER_TICK_MS)
-
-    return () => window.clearInterval(intervalId)
+    let timerId
+    const syncClock = () => {
+      window.clearTimeout(timerId)
+      const remaining = clockRef.current?.secondsLeft() ?? 0
+      setTimeLeft(remaining)
+      if (remaining <= 0 && !isEndingRef.current) endRound()
+      else if (!isEndingRef.current) timerId = window.setTimeout(syncClock, Math.min(TIMER_TICK_MS, clockRef.current.remainingMs()))
+    }
+    document.addEventListener("visibilitychange", syncClock)
+    window.addEventListener("focus", syncClock)
+    syncClock()
+    return () => {
+      window.clearTimeout(timerId)
+      document.removeEventListener("visibilitychange", syncClock)
+      window.removeEventListener("focus", syncClock)
+    }
   }, [endRound, isActive, isPlaying])
 
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()
     if (!isPlaying || isEndingRef.current || !simulationRef.current) return
 
+    if (clockRef.current?.remainingMs() <= 0) {
+      setTimeLeft(0)
+      endRound()
+      return
+    }
     const eventTimeMs = getElapsedMs()
     if (isTooSoonAfter(lastClickMsRef.current, eventTimeMs)) return
     lastClickMsRef.current = eventTimeMs
@@ -298,11 +319,16 @@ export function useArmoryRangeRound({
       const moving = eventTimeMs >= geometry.getState().freezeMovementUntilMs
       mirrorGeometry(geometry.applyHit(eventTimeMs), moving)
     }
-  }, [addCenterFeedback, addClickFeedback, getElapsedMs, isPlaying, mirrorGeometry])
+  }, [addCenterFeedback, addClickFeedback, endRound, getElapsedMs, isPlaying, mirrorGeometry])
 
   const handleArenaClick = useCallback((event) => {
     if (!isPlaying || isEndingRef.current || !simulationRef.current) return
 
+    if (clockRef.current?.remainingMs() <= 0) {
+      setTimeLeft(0)
+      endRound()
+      return
+    }
     const eventTimeMs = getElapsedMs()
     if (isTooSoonAfter(lastClickMsRef.current, eventTimeMs)) return
     lastClickMsRef.current = eventTimeMs
@@ -323,12 +349,13 @@ export function useArmoryRangeRound({
       streak > 0 && result.streak === 0 ? "streakBreak" : "miss",
       streak > 0 && result.streak > 0 ? "Streak saved" : null
     )
-  }, [addClickFeedback, getElapsedMs, isPlaying, streak])
+  }, [addClickFeedback, endRound, getElapsedMs, isPlaying, streak])
 
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs) => {
     mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
-      setTimeLeft((current) => Math.min(roundRules.maxTimeBufferSeconds ?? current + 2, current + 2))
+      clockRef.current?.boost()
+      setTimeLeft(clockRef.current?.secondsLeft() ?? 0)
       addCenterFeedback("+2s", "power power-time_boost")
     } else if (powerup.effectType === "size_boost") {
       setTargetSpawnSequence((sequence) => sequence + 1)
@@ -349,13 +376,18 @@ export function useArmoryRangeRound({
     } else if (powerup.effectType === "overclock") {
       addCenterFeedback("Overclock", "power power-overclock")
     }
-  }, [addCenterFeedback, mirrorGeometry, roundRules.maxTimeBufferSeconds])
+  }, [addCenterFeedback, mirrorGeometry])
 
   const handleUsePowerup = useCallback((powerupId) => {
     if (!isPlaying || isEndingRef.current || !simulationRef.current) return
     const powerup = roundRules.equippedPowerups.find((item) => item.id === powerupId)
     if (!powerup) return
 
+    if (clockRef.current?.remainingMs() <= 0) {
+      setTimeLeft(0)
+      endRound()
+      return
+    }
     const eventTimeMs = getElapsedMs()
     const outcome = simulationRef.current.applyPowerup(powerup.id, eventTimeMs)
     if (!outcome.applied) {
@@ -373,7 +405,7 @@ export function useArmoryRangeRound({
       activationCueTimeoutRef.current = null
     }, 1100)
     applyPowerupPresentation(powerup, eventTimeMs)
-  }, [addCenterFeedback, applyPowerupPresentation, getElapsedMs, isPlaying, roundRules.equippedPowerups])
+  }, [addCenterFeedback, applyPowerupPresentation, endRound, getElapsedMs, isPlaying, roundRules.equippedPowerups])
 
   // Guard expiry mirrors the engine's elapsed-ms timebase.
   useEffect(() => {
@@ -441,6 +473,7 @@ export function useArmoryRangeRound({
     endRound,
     arenaProps: {
       arenaRef,
+      logicalDimensions,
       onArenaClick: handleArenaClick,
       buttonStyle: {
         width: `${buttonSize}px`,
