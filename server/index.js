@@ -533,6 +533,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
       return
     }
 
+    if (replay.visibility === "private") {
+      response.status(400).json({ error: "Private runs cannot be used for duels. Choose a public run." })
+      return
+    }
+
     const challenge = await createChallenge({
       challengerUserId: user.id,
       challengerUsername: user.username,
