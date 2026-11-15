@@ -446,8 +446,13 @@
 .readyCard.arenaLobby .practiceDrillChoice { min-height: 0; padding: 9px 10px; }
 
 @media (max-width: 900px) {
+    /* The content column is 2 here as well (column 1 is the empty stage track).
+       grid-area must come first: as a shorthand it would reset grid-column. */
     .readyCard.arenaLobby .rankedPreflight,
-    .readyCard.arenaLobby .practiceDrawer { grid-column: 1; grid-area: auto; }
+    .readyCard.arenaLobby .practiceDrawer { grid-area: auto; grid-column: 2; }
+    /* It clips its own content (overflow: hidden), which lets a grid item shrink
+       to nothing in the lobby's fixed-height grid; unclipped, its row fits it. */
+    .readyCard.arenaLobby .practiceDrawer { overflow: visible; }
 }
 
 /* ---- Phase 3 r2: opened Practice lab takes over the open left stage; Start stays alone in its footer ---- */
