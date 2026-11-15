@@ -1,5 +1,5 @@
 import { getNextButtonSize } from "../../utils/gameMath.js"
-import { BULLSEYE_RADIUS_SHARE, ROUND_EVENT_TYPES } from "./roundEngine.js"
+import { ROUND_EVENT_TYPES } from "./roundEvents.js"
 import { createSeededRng } from "./seededRng.js"
 
 export const FREEZE_MOVEMENT_DURATION_MS = 1000
@@ -46,6 +46,9 @@ export function isPointOnButtonForHit(x, y, position, buttonSize) {
     && y <= position.y + buttonSize + CLICK_TOLERANCE_PX
   )
 }
+
+// A hit within this share of the target's radius from its centre is a Bullseye.
+export const BULLSEYE_RADIUS_SHARE = 1 / 3
 
 export function isBullseyeHit(x, y, position, buttonSize) {
   if (!Number.isFinite(x) || !Number.isFinite(y) || !(buttonSize > 0)) return false

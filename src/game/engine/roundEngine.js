@@ -1,11 +1,14 @@
-import { createGeometrySimulation, isBullseyeHit, normalizeArenaDimensions } from "./roundGeometry.js"
+import { BULLSEYE_RADIUS_SHARE, createGeometrySimulation, isBullseyeHit, normalizeArenaDimensions } from "./roundGeometry.js"
+import { ROUND_EVENT_TYPES } from "./roundEvents.js"
 import { createSeededRng } from "./seededRng.js"
 import { getComboMultiplier } from "../../utils/gameMath.js"
 
 // Score-relevant powerup tuning lives here (not in the UI hook) so the client
 // simulation and the server's replay of the submitted event stream can never
 // disagree about what a powerup did.
-export const BULLSEYE_RADIUS_SHARE = 1 / 3
+// Re-exported so existing imports from the engine keep working; they live in
+// their own modules so the engine and geometry don't import each other.
+export { BULLSEYE_RADIUS_SHARE, ROUND_EVENT_TYPES }
 export const BULLSEYE_POINTS_MULTIPLIER = 2
 
 export const COMBO_SURGE_STREAK_BONUS = 4
@@ -15,12 +18,6 @@ export const SECOND_WIND_DURATION_MS = 5000
 export const OVERCLOCK_DURATION_MS = 5000
 export const OVERCLOCK_SCORE_MULTIPLIER = 1.5
 export const OVERCLOCK_MISS_PENALTY_MULTIPLIER = 2
-
-export const ROUND_EVENT_TYPES = {
-  HIT: "hit",
-  MISS: "miss",
-  POWERUP: "powerup",
-}
 
 function toCount(value) {
   const n = Number(value)
