@@ -1,3 +1,4 @@
+import { useOverlayDismiss } from "../useOverlayDismiss.js"
 import { ModuleSlotGlyph, PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 
@@ -23,6 +24,7 @@ export default function ArmoryUnlockCeremony({
   onRackIt,
   onSkipAll,
 }) {
+  const dialogRef = useOverlayDismiss(Boolean(part), onSkipAll)
   if (!part) return null
 
   const tone = part.kind === "module" ? part.slotId : "power"
@@ -35,6 +37,8 @@ export default function ArmoryUnlockCeremony({
       <div className="armoryCeremonyScrim" aria-hidden="true" />
       <section
         className={`armoryUnlockCeremony${isBatch ? " isBatch" : ""}`}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Part unlocked"
