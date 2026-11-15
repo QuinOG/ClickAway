@@ -645,6 +645,25 @@ describe("Armory collection flow (Phase D2b)", () => {
     expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
     expect(onSeenUnlockPartIdsChange).toHaveBeenCalledTimes(1)
   })
+
+  test("a first-time visitor gets the build tour without the unlock dialog on top", () => {
+    const onSeenUnlockPartIdsChange = vi.fn()
+    renderArmory({
+      playerLevel: 2,
+      seenUnlockPartIds: [],
+      buildWalkthrough: { status: BUILD_WALKTHROUGH_STATUS.NOT_STARTED },
+      onSeenUnlockPartIdsChange,
+    })
+
+    expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
+    // Results already announced Magnet Center, so it's marked seen rather than queued for later.
+    expect(onSeenUnlockPartIdsChange).toHaveBeenCalledWith(["magnet_center"])
+  })
+
+  test("the starter kit alone doesn't open the unlock dialog", () => {
+    renderArmory({ playerLevel: 1, seenUnlockPartIds: [] })
+    expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
+  })
 })
 
 describe("Armory bay wall", () => {

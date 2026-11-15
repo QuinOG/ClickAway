@@ -87,7 +87,12 @@ export function useArmoryScreenController({
   // Unlock ceremony queue (Phase 11): frozen at mount, so a visit reveals
   // whatever crossed the unlock wall since the last time this page opened.
   const [ceremonyParts] = useState(() => getUnseenUnlockedParts(playerLevel, seenUnlockPartIds))
-  const [ceremonyQueue, setCeremonyQueue] = useState(ceremonyParts)
+  // A first-time visitor gets the build tour instead: the unlock was already
+  // announced on Results, and two dialogs at once buried the tour's first step.
+  // The batch is still marked seen below, so it doesn't come back next visit.
+  const [ceremonyQueue, setCeremonyQueue] = useState(() => (
+    shouldAutoStartArmoryWalkthrough(buildWalkthrough?.status ?? BUILD_WALKTHROUGH_STATUS.DISMISSED) ? [] : ceremonyParts
+  ))
   const hasAcknowledgedCeremonyRef = useRef(false)
   const [isUnlockWallOpen, setIsUnlockWallOpen] = useState(false)
   const [blueprintNotice, setBlueprintNotice] = useState(null)

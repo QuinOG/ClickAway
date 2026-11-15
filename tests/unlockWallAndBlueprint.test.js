@@ -9,12 +9,16 @@ import {
 import { encodeBlueprint, importBlueprint } from "../src/utils/blueprintCodeUtils.js"
 
 test("getUnseenUnlockedParts only returns parts unlocked by level and not yet seen", () => {
-  const unseenAtLevel1 = getUnseenUnlockedParts(1, [])
-  assert.ok(unseenAtLevel1.length > 0)
-  assert.ok(unseenAtLevel1.every((part) => part.unlockLevel <= 1))
+  const unseenAtLevel2 = getUnseenUnlockedParts(2, [])
+  assert.deepEqual(unseenAtLevel2.map((part) => part.id), ["magnet_center"])
 
-  const seenIds = unseenAtLevel1.map((part) => part.id)
-  assert.equal(getUnseenUnlockedParts(1, seenIds).length, 0)
+  const seenIds = unseenAtLevel2.map((part) => part.id)
+  assert.equal(getUnseenUnlockedParts(2, seenIds).length, 0)
+})
+
+test("the level 1 starter kit is never announced as an unlock", () => {
+  assert.deepEqual(getUnseenUnlockedParts(1, []), [])
+  assert.ok(getUnseenUnlockedParts(30, []).every((part) => part.unlockLevel > 1))
 })
 
 test("getUnseenUnlockedParts sorts by unlock level ascending", () => {
@@ -25,7 +29,8 @@ test("getUnseenUnlockedParts sorts by unlock level ascending", () => {
 })
 
 test("hasUnseenUnlockedParts reflects whether any unlocked part is unseen", () => {
-  assert.equal(hasUnseenUnlockedParts(1, []), true)
+  assert.equal(hasUnseenUnlockedParts(1, []), false)
+  assert.equal(hasUnseenUnlockedParts(2, []), true)
   const allIds = getUnseenUnlockedParts(30, []).map((part) => part.id)
   assert.equal(hasUnseenUnlockedParts(30, allIds), false)
 })
