@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { pathToFileURL } from "node:url"
+import { writeFile } from "node:fs/promises"
 import { buildDemoPlan, DEMO_PLAYER_USERNAMES, removeDemoPlayers, summarizeDemoPlan } from "./demoPlayerData.js"
 
 export function parseArgs(args) {
@@ -11,10 +12,11 @@ export function parseArgs(args) {
     seen.add(arg)
     if (arg === "--dry-run") options.dryRun = true
     else if (arg === "--remove") options.remove = true
-    else if (["--count", "--days", "--duels-to"].includes(arg)) {
+    else if (["--count", "--days", "--duels-to", "--sql"].includes(arg)) {
       const value = args[++i]
       if (!value || value.startsWith("--")) throw new Error(`Missing value for ${arg}`)
-      if (arg === "--duels-to") options.duelsTo = value.trim()
+      if (arg === "--sql") options.sql = value
+      else if (arg === "--duels-to") options.duelsTo = value.trim()
       else options[arg.slice(2)] = /^\d+$/.test(value) ? Number(value) : NaN
     } else throw new Error(`Unknown option: ${arg}`)
   }
@@ -125,6 +127,12 @@ export async function main(args = process.argv.slice(2), output = console) {
     return
   }
   const plan = options.remove ? null : buildDemoPlan(options)
+  if (options.sql) {
+    const { generateDemoSql, generateCleanupSql } = await import("./demoSql.js")
+    await writeFile(options.sql, options.remove ? generateCleanupSql() : await generateDemoSql(plan), "utf8")
+    output.log(`SQL written to ${options.sql}; database not loaded.`)
+    return
+  }
   if (plan) {
     output.table(summarizeDemoPlan(plan))
     output.log(`${options.dryRun ? "DRY RUN: " : "Planned: "}${plan.players.length} players, ${plan.players.reduce((n, p) => n + p.rounds.length, 0)} rounds, ${plan.duels.length} duels (${plan.duels.filter((d) => !d.completed).length} pending).`)
