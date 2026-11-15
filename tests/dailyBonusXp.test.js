@@ -142,3 +142,24 @@ test("a round is stored at the database transaction's time, the clock its daily 
   await ctx.completeUserRound(round({ historyEntry: { xpEarned: 160, modeId: "normal", hits: 20, misses: 1, bestStreak: 9, playedAtIso: "2026-11-15T23:59:59.900Z" } }))
   assert.equal(writes.historyEntry.playedAtIso, "2026-11-16T00:00:00.250Z")
 })
+
+test("goal coins count toward lifetime coin totals, as they do in the wallet and history", async () => {
+  const before = Array.from({ length: showUpGoal.target - 1 }, () => casualRound())
+  const { ctx, writes } = harness({ playedEarlierToday: true, todaysRounds: before })
+  let statsEntry = null
+  Object.assign(ctx, {
+    getLifetimeStatsRow: async () => null,
+    DEFAULT_LIFETIME_STATS: {},
+    applyRoundToLifetimeStats: (_stats, entry) => { statsEntry = entry; return {} },
+    persistLifetimeStats: async () => {},
+    buildAchievementStatsFromLifetime: () => ({}),
+    getLevelProgress: () => ({}),
+    evaluateAchievements: () => [],
+    getUnlockedAchievementIds: () => [],
+    addUnlockedAchievements: async () => {},
+  })
+  const result = await ctx.completeUserRound(round({ countsTowardStats: true, historyEntry: { xpEarned: 160, modeId: "normal", hits: 20, misses: 2, bestStreak: 8, coinsEarned: 16 } }))
+  assert.ok(result.dailyGoalRewards.coins > 0)
+  assert.equal(statsEntry.coinsEarned, 16 + result.dailyGoalRewards.coins)
+  assert.equal(statsEntry.coinsEarned, writes.historyEntry.coinsEarned)
+})

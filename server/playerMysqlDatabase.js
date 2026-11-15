@@ -1966,6 +1966,9 @@ export async function completeUserRound({
     if (countsTowardStats) {
       const committedHistoryEntry = {
         ...historyEntry,
+        // Coins earned include daily goal rewards, matching the wallet and the
+        // history row, so lifetime coin totals and coin achievements count them.
+        coinsEarned: (Number(historyEntry?.coinsEarned) || 0) + dailyGoalRewards.coins,
         rankDelta: rankOutcome.appliedRankDelta,
         // Placement rounds award a placement score, not a ranked win.
         rankedWin: !rankOutcome.previousRankProgress?.isUnranked && !rankOutcome.previousRankProgress?.isPlacement && rankOutcome.appliedRankDelta > 0,
