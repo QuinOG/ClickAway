@@ -701,7 +701,8 @@
     text-transform: uppercase;
 }
 .lobbyDailyGoalsHeader small { color: rgb(255 255 255 / 60%); font-size: 11px; font-weight: 700; }
-.lobbyDailyGoalsHeader small.isBonus { color: #ffd76a; }
+.lobbyDailyGoalsNote { margin: 2px 0 0; color: rgb(255 255 255 / 60%); font-size: 11px; font-weight: 700; }
+.lobbyDailyGoalsNote.isBonus { color: #ffd76a; }
 .lobbyDailyGoals ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .lobbyDailyGoals li {
     display: grid;
@@ -751,4 +752,11 @@
     }
     .lobbyDailyGoalsSummary span { flex: none; color: #ffd76a; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
     .lobbyDailyGoalsSummary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+}
+/* The double-XP note: in the goals list on wide screens, above Start on phones. */
+@media (min-width: 901px) {
+    .arenaLobbyDailyBonus.hasDailyGoals { display: none; }
+}
+@media (max-width: 900px) {
+    .lobbyDailyGoalsNote.isBonus { display: none; }
 }

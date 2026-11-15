@@ -333,6 +333,22 @@ function PracticeDrawer({
 
 // The selected mode's track record as a mini scoreboard: best / average /
 // rounds tiles over a bar chart of the last ten scores (oldest left).
+// The current time, refreshed every minute while the lobby is open, so the
+// reset countdown moves and goals from a day that has ended are replaced.
+function useMinuteClock() {
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNowMs(Date.now()), 60000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+  return nowMs
+}
+
+function areDailyGoalsExpired(dailyGoals, nowMs) {
+  const resetsAtMs = Date.parse(dailyGoals?.resetsAt)
+  return Number.isFinite(resetsAtMs) && nowMs >= resetsAtMs
+}
+
 function formatResetsIn(resetsAt, nowMs) {
   const remainingMs = Date.parse(resetsAt) - nowMs
   // Outside one day the clock disagrees with the server's; say nothing rather than something wrong.
@@ -343,21 +359,29 @@ function formatResetsIn(resetsAt, nowMs) {
 
 
 // Today's three goals with their progress, as of the last progress read (every
-// round save brings a fresh copy, including the next day's goals).
-function DailyGoals({ dailyGoals, isPracticeSelected, dailyBonusAvailable }) {
-  // Read once when the lobby opens; an hour-level countdown needn't tick.
-  const [nowMs] = useState(() => Date.now())
+// round save brings a fresh copy). Once their day has ended they're replaced by
+// a note until the next save brings the new day's goals.
+function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable }) {
   if (!dailyGoals?.goals?.length) return null
+  if (areDailyGoalsExpired(dailyGoals, nowMs)) {
+    return (
+      <section className="lobbyDailyGoals" aria-label="Daily goals">
+        <header className="lobbyDailyGoalsHeader"><span>Daily goals</span></header>
+        <p className="lobbyDailyGoalsNote">New goals are ready. They'll show after your next round.</p>
+      </section>
+    )
+  }
   const resetsIn = dailyGoals.resetsAt ? formatResetsIn(dailyGoals.resetsAt, nowMs) : ""
   const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
+  const note = isPracticeSelected
+    ? "Practice rounds don't count toward goals."
+    : dailyBonusAvailable ? "Your first round today earns 2× XP." : ""
 
   return (
     <section className="lobbyDailyGoals" aria-label="Daily goals">
       <header className="lobbyDailyGoalsHeader">
         <span>Daily goals · {doneCount}/{dailyGoals.goals.length}</span>
-        <small className={dailyBonusAvailable && !isPracticeSelected ? "isBonus" : ""}>
-          {isPracticeSelected ? "Practice doesn't count" : dailyBonusAvailable ? "First round today: 2× XP" : resetsIn}
-        </small>
+        <small>{resetsIn}</small>
       </header>
       <ul>
         {dailyGoals.goals.map((goal) => (
@@ -378,14 +402,18 @@ function DailyGoals({ dailyGoals, isPracticeSelected, dailyBonusAvailable }) {
           </li>
         ))}
       </ul>
+      {note ? <p className={`lobbyDailyGoalsNote ${isPracticeSelected ? "" : "isBonus"}`}>{note}</p> : null}
     </section>
   )
 }
 
 // Phones only: the full list sits below Start, so one line above it says the
 // goals are there and what's next.
-function DailyGoalsSummary({ dailyGoals }) {
+function DailyGoalsSummary({ dailyGoals, nowMs }) {
   if (!dailyGoals?.goals?.length) return null
+  if (areDailyGoalsExpired(dailyGoals, nowMs)) {
+    return <p className="lobbyDailyGoalsSummary" aria-hidden="true"><span>Daily goals</span><b>New goals after your next round</b></p>
+  }
   const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
   const nextGoal = dailyGoals.goals.find((goal) => !goal.isComplete)
   return (
@@ -458,6 +486,7 @@ export function ReadyOverlay({
   recentRounds = [],
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const dailyGoalsNowMs = useMinuteClock()
   const lobbyRef = useRef(null)
   const previousFocusRef = useRef(null)
   const [localSelectedModeId, setLocalSelectedModeId] = useState(selectedModeId)
@@ -633,14 +662,14 @@ export function ReadyOverlay({
           />
         ) : null}
 
-        <DailyGoalsSummary dailyGoals={dailyGoals} />
-        <DailyGoals dailyGoals={dailyGoals} isPracticeSelected={selectedMode?.id === "easy"} dailyBonusAvailable={dailyBonusAvailable} />
+        <DailyGoalsSummary dailyGoals={dailyGoals} nowMs={dailyGoalsNowMs} />
+        <DailyGoals dailyGoals={dailyGoals} nowMs={dailyGoalsNowMs} isPracticeSelected={selectedMode?.id === "easy"} dailyBonusAvailable={dailyBonusAvailable} />
 
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
-            {/* With goals showing, their header carries the double-XP note. */}
-            {dailyBonusAvailable && !dailyGoals?.goals?.length ? <p className="arenaLobbyDailyBonus">First round today earns double XP</p> : null}
+            {/* On wide screens the goals list carries this note; phones keep it here, above Start. */}
+            {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

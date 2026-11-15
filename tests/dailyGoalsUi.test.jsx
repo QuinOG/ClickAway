@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
@@ -53,22 +53,38 @@ describe("Daily goals in the lobby", () => {
     expect(within(rows[1]).getByText(", 14 of 20")).toBeTruthy()
   })
 
-  test("carries the double-XP note in its header instead of a separate line", () => {
+  test("keeps the reset time with the double-XP note, and the phone line above Start", () => {
     renderLobby({ dailyBonusAvailable: true })
-    expect(within(screen.getByRole("region", { name: "Daily goals" })).getByText("First round today: 2× XP")).toBeTruthy()
-    expect(screen.queryByText("First round today earns double XP")).toBeNull()
+    const goals = screen.getByRole("region", { name: "Daily goals" })
+    expect(within(goals).getByText("New goals in 5h")).toBeTruthy()
+    expect(within(goals).getByText("Your first round today earns 2× XP.")).toBeTruthy()
+    // Hidden on wide screens by CSS (hasDailyGoals); phones still see it above Start.
+    expect(screen.getByText("First round today earns double XP").className).toContain("hasDailyGoals")
   })
 
   test("says Practice doesn't count while Practice is selected", async () => {
     const user = userEvent.setup({ advanceTimers: () => {} })
     renderLobby()
     await user.click(screen.getByRole("button", { name: /Practice/ }))
-    expect(within(screen.getByRole("region", { name: "Daily goals" })).getByText("Practice doesn't count")).toBeTruthy()
+    const goals = screen.getByRole("region", { name: "Daily goals" })
+    expect(within(goals).getByText("Practice rounds don't count toward goals.")).toBeTruthy()
+    expect(within(goals).getByText("New goals in 5h")).toBeTruthy()
   })
 
   test("the phone summary names the next unfinished goal", () => {
     const { container } = renderLobby()
     expect(container.querySelector(".lobbyDailyGoalsSummary").textContent).toBe("Daily goals 1/3Hit a 20 streak · 14/20")
+  })
+
+  test("an open lobby moves its countdown and drops goals once their day ends", () => {
+    vi.useFakeTimers({ now: Date.UTC(2026, 10, 15, 23, 58), toFake: ["Date", "setInterval", "clearInterval"] })
+    const { container } = renderLobby()
+    const goals = screen.getByRole("region", { name: "Daily goals" })
+    expect(within(goals).getByText("New goals in 2m")).toBeTruthy()
+    act(() => vi.advanceTimersByTime(3 * 60000))
+    expect(within(screen.getByRole("region", { name: "Daily goals" })).getByText("New goals are ready. They'll show after your next round.")).toBeTruthy()
+    expect(screen.queryByText("Hit a 20 streak")).toBeNull()
+    expect(container.querySelector(".lobbyDailyGoalsSummary").textContent).toBe("Daily goalsNew goals after your next round")
   })
 
   test("without goals from the server the lobby is unchanged", () => {
