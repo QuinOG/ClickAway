@@ -5284,8 +5284,13 @@
     .achievementCategoryTab,
     .helpArmoryLink,
     .armoryCart .armoryCartCompare,
-    .armoryMachineHeader .armoryMachineNameButton { min-height: 36px; }
-    .armoryFirstTouchTipDismiss { min-width: 36px; min-height: 36px; }
+    .armoryMachineHeader .armoryMachineNameButton,
+    .armoryUnlockWallTab { min-height: 36px; }
+    .armoryFirstTouchTipDismiss,
+    .achievementsArrow { min-width: 36px; min-height: 36px; }
+    /* Login/Signup "Create account" / "Login instead" were 17px-tall text links. */
+    .authFooterLink,
+    .lobbyTextLink.lobbyStageEdit { display: inline-block; padding-block: 9px; }
 }
 
 /* Phones held sideways: HUD, arena and powerup tray must all fit the short screen,
@@ -5339,6 +5344,18 @@
     /* The small timer has room for the eyebrow and the number only; "no limit"
        ran into the infinity sign. */
     .gameHud .hudTimerAnchor.is-untimed .hudTimerUnit { display: none; }
+    /* PB pace: on desktop it fills the empty left of a wide score plate; a phone
+       plate has no empty side, so it becomes a slim strip where the "PB" line sits. */
+    .gameHud .hudPaceRace {
+        inset: auto 10px 7px 10px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto;
+        align-items: center;
+        column-gap: 6px;
+    }
+    .gameHud .hudPaceRace small { display: none; }
+    .gameHud .hudPaceRaceTrack { grid-column: 1; grid-row: 1; align-self: center; }
+    .gameHud .hudPaceRaceDelta { grid-column: 2; grid-row: 1; font-size: 13px; line-height: 1; }
 }
 /* Phones held sideways: no height to spare for an extra row; End Practice
    goes left of the score plate as on desktop (the plate no longer has a
@@ -5357,4 +5374,10 @@
     .topbar .brandCluster .brandText { display: none; }
     .topbar .shellIdentityButton .shellIdentityText { display: none; }
     .topbar .shellIdentityButton { width: auto; }
+}
+
+/* Armory first-touch tips sat behind the bottom nav (820px and below), so
+   their dismiss button couldn't be tapped; they now sit above it like toasts. */
+@media (max-width: 820px) {
+    .armoryFirstTouchTip { bottom: calc(var(--mobile-dock-height, 66px) + env(safe-area-inset-bottom) + 12px); }
 }
