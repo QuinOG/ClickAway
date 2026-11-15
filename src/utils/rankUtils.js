@@ -420,12 +420,16 @@ export function buildRankedPreflight({
   }
 
   const normalizedRankedState = normalizeRankedState(rankedState)
-  const rankedRounds = (Array.isArray(recentRounds) ? recentRounds : [])
+  const allRankedRounds = (Array.isArray(recentRounds) ? recentRounds : [])
     .filter((round) => (
       round?.progressionMode === PROGRESSION_MODE.RANKED ||
       round?.modeId === DIFFICULTY_IDS.HARD ||
       round?.difficultyId === DIFFICULTY_IDS.HARD
     ))
+  // Placement points aren't RR. Rows with no kind predate the field and count as RR,
+  // matching History.
+  const rankedRounds = allRankedRounds
+    .filter((round) => round?.rankResultKind !== "placement")
     .slice(0, 5)
   const recentDelta = rankedRounds.reduce(
     (total, round) => total + (Number(round?.rankDelta) || 0),
@@ -434,7 +438,7 @@ export function buildRankedPreflight({
   const recentTrend = {
     label: rankedRounds.length
       ? `${recentDelta > 0 ? "+" : ""}${recentDelta} RR / last ${rankedRounds.length}`
-      : "No recent Ranked rounds",
+      : allRankedRounds.length ? "No RR rounds yet" : "No recent Ranked rounds",
     value: recentDelta,
     tone: recentDelta > 0 ? "positive" : recentDelta < 0 ? "negative" : "neutral",
   }
