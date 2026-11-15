@@ -108,3 +108,14 @@ test("achievement category tabs support roving keyboard selection", () => {
   fireEvent.keyDown(master, { key: "Home" })
   expect(document.activeElement).toBe(rounds)
 })
+
+test("Profile displays zero reaction measurements and keeps missing reactions empty", () => {
+  const { container, rerender } = render(<ProfilePage lifetimeStats={{ reactionRounds: 1, totalReactionMs: 0, bestReactionMs: 0 }} />)
+  const reaction = () => [...container.querySelectorAll(".profileAttribute")].find((row) => row.textContent.includes("Reaction"))
+  expect(reaction().textContent).toContain("0 ms fastest")
+  expect(reaction().querySelector(".profileAttributeValue").textContent).toBe("0 ms")
+  expect(reaction().querySelector(".profileDialFill").getAttribute("stroke-dasharray")).toBe("100 100")
+  rerender(<ProfilePage lifetimeStats={{}} />)
+  expect(reaction().textContent).toContain("awaiting timed hits")
+  expect(reaction().querySelector(".profileAttributeValue").textContent).toBe("\u2014")
+})

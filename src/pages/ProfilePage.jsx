@@ -33,8 +33,8 @@ function formatNumber(value = 0) {
 }
 
 function formatReactionTime(value) {
-  const normalizedValue = Number(value)
-  if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) return "\u2014"
+  const normalizedValue = value === null || value === undefined || value === "" ? NaN : Number(value)
+  if (!Number.isFinite(normalizedValue) || normalizedValue < 0) return "\u2014"
   return `${Math.round(normalizedValue)} ms`
 }
 
@@ -100,7 +100,7 @@ function buildRecentForm(roundHistory = []) {
 function getStrongestTrait(profileStats, reactionStats) {
   const traits = [
     { key: "precision", label: "Precision", score: profileStats.accuracyPercent / 85 },
-    { key: "tempo", label: "Tempo", score: reactionStats.avgReactionMs ? 430 / reactionStats.avgReactionMs : 0 },
+    { key: "tempo", label: "Tempo", score: reactionStats.avgReactionMs !== null ? 430 / Math.max(1, reactionStats.avgReactionMs) : 0 },
     { key: "chain", label: "Combo chain", score: profileStats.bestStreak / 15 },
   ]
   return traits.sort((firstTrait, secondTrait) => secondTrait.score - firstTrait.score)[0]
@@ -323,9 +323,9 @@ export default function ProfilePage({
                 <AttributeRow
                   icon={<StopwatchIcon size={30} />}
                   label="Reaction"
-                  detail={reactionStats.bestReactionMs ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
+                  detail={reactionStats.bestReactionMs !== null ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
                   value={formatReactionTime(reactionStats.avgReactionMs)}
-                  fill={reactionStats.avgReactionMs ? (520 - reactionStats.avgReactionMs) / 360 : 0}
+                  fill={reactionStats.avgReactionMs !== null ? (520 - reactionStats.avgReactionMs) / 360 : 0}
                   isStrongest={strongestTrait.key === "tempo"}
                 />
                 <AttributeRow
