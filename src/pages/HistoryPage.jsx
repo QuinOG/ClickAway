@@ -40,7 +40,7 @@ function getPlayedAtLabel(round = {}) {
 
 function formatReactionTime(value) {
   const normalizedValue = Number(value)
-  if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) return "\u2014"
+  if (value === null || value === undefined || value === "" || !Number.isFinite(normalizedValue) || normalizedValue < 0) return "\u2014"
   return `${Math.round(normalizedValue)} ms`
 }
 
