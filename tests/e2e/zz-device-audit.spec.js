@@ -2,6 +2,8 @@
 // for sideways overflow, clipped text, overlapping text and small touch targets.
 // Run against your own dev server (another worktree's server may be on 4173):
 //   AUDIT_BASE_URL=http://127.0.0.1:4174 AUDIT_DIR=<dir> npx playwright test tests/e2e/zz-device-audit.spec.js --workers=2
+// AUDIT_DEVICES and AUDIT_SCREENS (comma lists) run a smaller batch; a full run of all
+// devices and screens takes over two hours.
 // Writes <dir>/audit.json and one screenshot per device and screen.
 import fs from "node:fs"
 import { test } from "@playwright/test"
@@ -16,6 +18,7 @@ const DEVICES = [
   ["desktop", 1440, 900, false],
 ]
 const ONLY = process.env.AUDIT_DEVICES ? process.env.AUDIT_DEVICES.split(",") : null
+const ONLY_SCREENS = process.env.AUDIT_SCREENS ? process.env.AUDIT_SCREENS.split(",") : null
 const PREFS = { masterVolume: 0.7, sfxVolume: 0.75, muted: true, reduceMotion: true, screenShake: false, flashes: false, haptics: false, feedbackIntensity: "standard" }
 const NEW_PLAYER = { coins: 0, levelXp: 0, rankMmr: 0, roundHistory: [], totalRoundCount: 0, loadoutStats: [], lifetimeStats: {}, unlockedAchievementIds: [], buildWalkthrough: { status: "not_started" }, seenUnlockPartIds: [], rankedState: { rankSystemVersion: 4, placementMatchesPlayed: 0, placementScoreTotal: 0, demotionProtectionRounds: 0, consecutiveRankedWins: 0 } }
 
@@ -44,6 +47,8 @@ function audit({ touch }) {
     const s = getComputedStyle(el); const r = el.getBoundingClientRect()
     if (!(r.width > 1 && r.height > 1 && s.visibility !== "hidden" && s.display !== "none")) return false
     if (el.closest("[aria-hidden='true'], .uiVisuallyHidden, .srOnly, [hidden]")) return false
+    // Content of a collapsed <details> (its summary stays visible).
+    const det = el.closest("details:not([open])"); if (det && !el.closest("summary")) return false
     for (let a = el; a; a = a.parentElement) if (Number(getComputedStyle(a).opacity) < 0.05) return false
     return true
   }
@@ -52,9 +57,16 @@ function audit({ touch }) {
     const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
     return Boolean(hit) && (hit === el || el.contains(hit) || hit.contains(el))
   }
-  const inFixed = (el) => { for (let a = el; a; a = a.parentElement) { const p = getComputedStyle(a).position; if (p === "fixed" || p === "sticky") return true } return false }
+  // Inside a pinned bar (nav, header)? Full-screen fixed layers such as a live round still count.
+  const inFixed = (el) => {
+    for (let a = el; a; a = a.parentElement) {
+      const p = getComputedStyle(a).position
+      if ((p === "fixed" || p === "sticky") && a.getBoundingClientRect().height < innerHeight * 0.4) return true
+    }
+    return false
+  }
   const all = [...document.querySelectorAll("body *")].filter(shown)
-  const issues = { sideways: [], clipped: [], overlaps: [], smallTargets: [] }
+  const issues = { sideways: [], clipped: [], overlaps: [], unreachable: [], smallTargets: [] }
 
   // 1. Content sticking out of the screen sideways (ignores decorative art).
   for (const el of all) {
@@ -111,6 +123,21 @@ function audit({ touch }) {
     }
   }
 
+  // 3b. Buttons and links with something else on top of them (not a dialog or
+  // backdrop that covers the page on purpose), so a tap lands on the wrong thing.
+  const pageArea = innerWidth * innerHeight
+  for (const el of all.filter((e) => e.matches("button, a[href], [role='tab']"))) {
+    const r = el.getBoundingClientRect()
+    if (r.bottom < 0 || r.top > innerHeight) continue
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+    if (!hit || el.contains(hit) || hit.contains(el)) continue
+    let layer = hit
+    for (let a = hit; a; a = a.parentElement) { const p = getComputedStyle(a).position; if (p === "fixed" || p === "absolute" || p === "sticky") { layer = a; break } }
+    const lr = layer.getBoundingClientRect()
+    if (lr.width * lr.height > pageArea * 0.35 || hit.closest("[role='dialog'], .gameOverlay")) continue
+    issues.unreachable.push(`${describe(el)} under ${describe(hit).slice(0, 40)}`)
+  }
+
   // 4. Touch targets under 32px (touch devices only; 44px is the comfortable size).
   if (touch) {
     for (const el of all.filter((e) => e.matches("button, a[href], input, select, [role='tab'], [role='button']"))) {
@@ -130,6 +157,7 @@ for (const [device, width, height, touch] of DEVICES) {
     fs.mkdirSync(DIR, { recursive: true })
     const results = {}
     for (const screen of SCREENS) {
+      if (ONLY_SCREENS && !ONLY_SCREENS.includes(screen.id)) continue
       const context = await browser.newContext({ viewport: { width, height }, baseURL: BASE, reducedMotion: "reduce", hasTouch: touch, isMobile: touch && width < 900, colorScheme: "dark" })
       const page = await context.newPage()
       try {
@@ -139,12 +167,16 @@ for (const [device, width, height, touch] of DEVICES) {
         await page.addInitScript((prefs) => localStorage.setItem("clickaway.feedback-preferences.v1", JSON.stringify(prefs)), PREFS)
         if (screen.anon) { await page.goto(screen.path); await page.waitForTimeout(1500) } else await gotoRoute(page, screen.route)
         await page.waitForTimeout(600)
-        if (screen.click) { await page.getByRole("button", { name: screen.click, exact: true }).first().click(); await page.waitForTimeout(900) }
+        if (screen.click) { await page.getByRole("button", { name: screen.click, exact: true }).first().click({ timeout: 8000 }); await page.waitForTimeout(900) }
         if (screen.action === "settings") {
-          const trigger = page.getByRole("button", { name: /Settings|More/ }).first()
-          await trigger.click(); await page.waitForTimeout(500)
-          const settings = page.getByRole("button", { name: /^Settings$/ })
-          if (await settings.count()) await settings.last().click().catch(() => {})
+          // Desktop has a gear button; phones and tablets open it from the More menu.
+          const gear = page.getByRole("button", { name: "Open feedback settings" })
+          if (await gear.isVisible()) await gear.click({ timeout: 5000 })
+          else {
+            await page.getByRole("button", { name: /^More/ }).first().click({ timeout: 5000 })
+            await page.waitForTimeout(400)
+            await page.getByRole("button", { name: "Settings, Support" }).click({ timeout: 5000 })
+          }
           await page.waitForTimeout(800)
         }
         if (screen.action === "round" || screen.action === "results") {

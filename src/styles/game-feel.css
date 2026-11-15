@@ -5296,3 +5296,65 @@
     .gameScreen .powerupHotbar { padding-block: 4px !important; margin: 0 !important; }
     .gameScreen .arena { flex: 1 1 0 !important; height: auto !important; min-height: 140px !important; max-height: none !important; }
 }
+
+/* ---- Round HUD fits every screen (2026-11-15) ----------------------------
+ * The streak row had a 300px minimum, wider than the space phones and
+ * portrait tablets give it, so it ran over the timer (phones) or off the
+ * right edge (tablets). End Practice sat left of the score plate, which only
+ * exists on screens about 920px and wider, so below that Practice couldn't
+ * be ended.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 980px) {
+    .gameHud .gameStatusRow { min-width: 0; column-gap: 10px; }
+    .gameHud .hudCenterChannel { min-width: 0; padding-inline: 12px; }
+    .gameHud .hudScoreAnchor { min-width: 0; }
+    .gameHud .hudComboNext { min-width: 0; }
+    .gameHud .hudEndPractice {
+        position: static;
+        transform: none;
+        display: block;
+        width: max-content;
+        white-space: nowrap;
+        margin: 8px 0 0 12px;
+        min-height: 36px;
+        padding: 6px 16px;
+    }
+}
+@media (max-width: 760px) {
+    /* Phones: streak, combo plate and the pips toward the next multiplier;
+       the best streak and the "×2 in 5" text are left for wider screens. */
+    .gameHud .gameStatusRow { grid-template-columns: auto auto; column-gap: 8px; max-width: 100%; justify-content: center; }
+    .gameHud .hudBestReadout,
+    .gameHud .hudComboNextLabel { display: none; }
+    .gameHud .hudComboNext { grid-column: 1 / -1; grid-row: 2; margin: 4px 0 0; width: auto; max-width: 100%; padding-inline: 0; justify-self: stretch; }
+    .gameHud .hudComboNextPips > span { height: 5px; }
+    .gameHud .hudStreakValue { font-size: 34px; }
+    .gameHud .hudCenterChannel { padding-inline: 6px; overflow: hidden; }
+    /* Mode only ("Casual"); rank and loadout are on the lobby. */
+    .gameHud .hudIdentity { justify-content: center; }
+    .gameHud .hudIdentity > :not(.hudModeIdentity) { display: none; }    .gameHud .hudEndPractice { margin-inline: auto; }
+    .gameHud .hudComboReadout { padding: 3px 8px 2px; margin-right: 3px; }
+    .gameHud .hudComboValue { font-size: 21px; }
+    .gameHud .hudComboLabel { font-size: 9px; letter-spacing: 0.08em; }
+    /* The small timer has room for the eyebrow and the number only; "no limit"
+       ran into the infinity sign. */
+    .gameHud .hudTimerAnchor.is-untimed .hudTimerUnit { display: none; }
+}
+/* Phones held sideways: no height to spare for an extra row; End Practice
+   goes left of the score plate as on desktop (the plate no longer has a
+   230px minimum, so there's room). */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 980px) {
+    .gameHud .hudEndPractice { position: absolute; top: 50%; right: auto; left: 10px; transform: translateY(-50%); margin: 0; padding-inline: 12px; }
+}
+
+/* ---- Top bar between 821 and 1023px (phones held sideways, small tablets) ----
+ * The full desktop bar needs about 960px; below that Help and Settings slid
+ * under the player card and couldn't be tapped. The logo drops its wordmark
+ * and the player card keeps the avatar, coins and level (name and rank are a
+ * tap away in the card's popover).
+ * ------------------------------------------------------------------------ */
+@media (min-width: 821px) and (max-width: 1023px) {
+    .topbar .brandCluster .brandText { display: none; }
+    .topbar .shellIdentityButton .shellIdentityText { display: none; }
+    .topbar .shellIdentityButton { width: auto; }
+}

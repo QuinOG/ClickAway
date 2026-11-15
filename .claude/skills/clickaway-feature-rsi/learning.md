@@ -12,6 +12,8 @@
 
 5. (Provisional, 1 supporting run) When a change adds or reveals text in a shared component, measure the primary action at 390 wide in every state that uses the component, not just the one being changed. In 009, revealing coach text for new players pushed Start off the screen for two other onboarding states. Scope: shared lobby, Results and dialog components. Test: the next trial touching a shared component lists the states it measured.
 
+6. (Provisional, 1 supporting run) An automated layout audit only finds what it looks at: the device audit passed a live round whose timer was covered on phones and a top bar whose Help and Settings sat under the player card, because it skipped anything inside a fixed layer and anything not on top. Read the screenshots of the core screens (live round, lobby, Results, nav) by eye at phone, sideways phone and tablet sizes, and when the eye finds something the audit missed, extend the audit and confirm it flags the old code. Scope: any device or layout pass. Test: the next pass records which screenshots were read by eye and any audit rule added.
+
 ## Recent runs
 
 - **Run 1 (001–006, 2026-11-12), summarised:** History filter and mode control, Ladder→Duel, Ladder phone controls, Ladder no-match search, Duel picker keyboard. Five accepted locally after Sol reviews (one or two repairs each), one unverified. Lessons came from phone hand-offs, clipped controls and a stale-rank bug in a repair.
