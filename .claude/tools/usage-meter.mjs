@@ -78,6 +78,13 @@ function codex() {
 // ---- Claude Code: weighted tokens from transcripts
 // Weights approximate how much each kind counts toward limits; cache reads are cheap.
 const W = budget.claudeWeights ?? { input: 1, cacheCreate: 1.25, cacheRead: 0.1, output: 5 }
+// Per-model price relative to Opus (user, 2026-11-15: Fable is $8/$40 per
+// million input/output tokens against Opus's $4/$20, so it counts double).
+const MODEL_MULTIPLIERS = budget.claudeModelMultipliers ?? { fable: 2 }
+function modelMultiplier(model = "") {
+  const key = Object.keys(MODEL_MULTIPLIERS).find((name) => String(model).toLowerCase().includes(name))
+  return key ? MODEL_MULTIPLIERS[key] : 1
+}
 function claude() {
   const files = walk(join(HOME, ".claude", "projects"), (n) => n.endsWith(".jsonl"))
     .filter((f) => NOW - f.mtime < WEEK)
@@ -90,10 +97,10 @@ function claude() {
       const usage = event?.message?.usage
       const at = Date.parse(event?.timestamp ?? "")
       if (!usage || !at || NOW - at > WEEK) continue
-      events.push([at, (usage.input_tokens ?? 0) * W.input
+      events.push([at, ((usage.input_tokens ?? 0) * W.input
         + (usage.cache_creation_input_tokens ?? 0) * W.cacheCreate
         + (usage.cache_read_input_tokens ?? 0) * W.cacheRead
-        + (usage.output_tokens ?? 0) * W.output])
+        + (usage.output_tokens ?? 0) * W.output) * modelMultiplier(event?.message?.model)])
     }
   }
   events.sort((a, b) => a[0] - b[0])
