@@ -141,7 +141,7 @@ Open PR: #27, the rolling PR on `daily-goals` (user, 2026-11-15: keep adding bat
   - Ladder season banner scope copy and 0 ms reactions;
   - lobby Shift+Tab focus wrap; Collection drop focus trap and Escape.
 
-- **Run 10 (rolling PR #27):** Shop actions and portrait preview name the cosmetic for screen readers; duel Retry after a replay identity error restarts the duel; private runs are hidden from the duel picker. Profile, History and Help/menus were not reviewed (Codex ahead of weekly pace); they go first next run.
+- **Run 10 (rolling PR #27):** Shop actions and portrait preview name the cosmetic for screen readers; duel Retry after a replay identity error restarts the duel; private runs are hidden from the duel picker. Later the same run: Profile shows 0 ms reactions and labels placement points (not RR); History shows a 0 ms best reaction; lifetime coin totals include daily-goal coins (PROFILE-1, implemented by Claude before goals shipped, so no repair). Help/menus not reviewed yet; it goes first next run.
 
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
