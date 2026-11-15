@@ -284,6 +284,7 @@ export default function App() {
                 onModeChange={handleModeChange}
                 playerLevel={levelProgress.level}
                 playerCoins={coins}
+                playerOwnedItemIds={ownedItemIds}
                 playerXpIntoLevel={levelProgress.xpIntoLevel}
                 playerXpToNextLevel={levelProgress.xpToNextLevel}
                 playerRankMmr={rankProgress.mmr}
