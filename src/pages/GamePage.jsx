@@ -126,7 +126,10 @@ export default function GamePage({ onPhaseChange, ...props }) {
       {duelError ? (
         <div className="ghostDuelError" role="alert">
           {duelError}
-          {replayId ? <button type="button" onClick={() => setGhostLoadAttempt((attempt) => attempt + 1)}>Retry ghost</button> : null}
+          {replayId ? <button type="button" onClick={() => {
+            if (game.duelStartError) game.entranceOverlayProps?.onRetry?.()
+            else setGhostLoadAttempt((attempt) => attempt + 1)
+          }}>{game.duelStartError ? "Retry duel" : "Retry ghost"}</button> : null}
           <button type="button" onClick={() => {
             game.entranceOverlayProps?.onCancel?.()
             setSearchParams({}, { replace: true })

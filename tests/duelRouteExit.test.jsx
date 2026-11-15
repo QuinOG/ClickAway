@@ -59,3 +59,19 @@ test("cancelling a failed duel start leaves the duel route", async () => {
   expect(screen.queryByTestId("start-overlay")).toBeNull()
   expect(screen.getByText("Ready to play")).toBeTruthy()
 })
+
+test("retrying a duel identity error requests a fresh duel start", async () => {
+  vi.useFakeTimers()
+  render(<MemoryRouter initialEntries={["/game?challengeId=1&replayId=2"]}>
+    <GamePage savedLoadouts={DEFAULT_SAVED_LOADOUTS} activeLoadout={DEFAULT_SAVED_LOADOUTS[0]} />
+  </MemoryRouter>)
+  await act(async () => vi.advanceTimersByTimeAsync(20))
+  await act(async () => vi.advanceTimersByTimeAsync(20))
+  expect(screen.getByTestId("start-overlay").textContent).toContain("doesn't match")
+  const startsBeforeRetry = requestRoundStart.mock.calls.length
+  requestRoundStart.mockResolvedValueOnce({ replayId: 2, seed: 0, roundToken: "token" })
+  fireEvent.click(screen.getByRole("button", { name: /Retry (ghost|duel)/ }))
+  await act(async () => vi.advanceTimersByTimeAsync(40))
+  expect(requestRoundStart.mock.calls.length).toBe(startsBeforeRetry + 1)
+  expect(screen.getByTestId("start-overlay").textContent).toBe("")
+})
