@@ -1,0 +1,28 @@
+[
+  {
+    "at": "2026-11-15T19:28:00.000Z",
+    "page": {
+      "session": 6,
+      "weekly": 49,
+      "fable": 5
+    },
+    "logged": {
+      "session": 1220854,
+      "weekly": 148500350,
+      "fable": 437865
+    }
+  },
+  {
+    "at": "2026-11-15T19:55:00.000Z",
+    "page": {
+      "session": 18,
+      "weekly": 50,
+      "fable": 5
+    },
+    "logged": {
+      "session": 3827525,
+      "weekly": 151107021,
+      "fable": 437865
+    }
+  }
+]
