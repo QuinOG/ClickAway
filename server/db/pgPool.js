@@ -64,6 +64,8 @@ const pool = new Pool({
 
 const wrappedPool = {
   ...wrapQueryable(pool),
+  // Explicit lifecycle hook for one-shot maintenance scripts.
+  end: () => pool.end(),
   async getConnection() {
     const client = await pool.connect()
     return {
