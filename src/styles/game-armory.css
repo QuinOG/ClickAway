@@ -3240,3 +3240,28 @@
    empty-state text wrap into it. */
 .armoryBayWall .armoryCart:not(.isActive) .armoryCartStats { padding-right: 92px; }
 .armoryBayWall .armoryCart .armoryCartStats.isEmpty { white-space: normal; line-height: 1.15; min-width: 0; }
+
+/* The featured part's desktop action column exceeds a narrow phone card. */
+@media (max-width: 380px) {
+    .armoryWorkspace .armoryPartFeature,
+    .armoryWorkspace .armoryPartFeature:has(.armoryChargeRhythm) {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas: "glyph head" "install install" "trade trade";
+    }
+    .armoryWorkspace .armoryPartFeatureInstall {
+        justify-self: stretch;
+        min-width: 0;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 380px) {
+    .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem {
+        max-width: 100%;
+        min-width: 0;
+        white-space: normal;
+        flex-direction: column;
+        padding-inline: 3px;
+        letter-spacing: 0;
+    }
+}
