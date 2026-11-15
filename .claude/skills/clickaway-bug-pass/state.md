@@ -1,6 +1,6 @@
 # Bug pass state
 
-Open PR: bug pass 9 on `bug-pass-run-9` (opened 2026-11-15). Runs 1–6 merged in PR #21, runs 7–8 in PR #23. Before deploying, migrations `012_add_consumed_round_tokens.sql` and `013_add_rank_result_kind.sql` must have been run. Next run: branch from main once this PR merges. Name the run branch `bug-pass-run-N`: `bug-pass-N` can't be created while `bug-pass-N/<slug>` feature branches exist.
+Open PR: #27, the rolling PR on `daily-goals` (user, 2026-11-15: keep adding batches to one PR so they merge rarely). Runs 1–6 merged in PR #21, runs 7–8 in #23, run 9 in #26. Before deploying, migrations `012_add_consumed_round_tokens.sql` and `013_add_rank_result_kind.sql` must have been run. Feature branches are based on the rolling branch and merged into it; name them `bug-pass-N/<slug>` (the run branch is the rolling branch itself).
 
 ## Fixed (do not re-report)
 - **Run 1 (a94b38a):**
@@ -140,6 +140,8 @@ Open PR: bug pass 9 on `bug-pass-run-9` (opened 2026-11-15). Runs 1–6 merged i
   - PB pace and Time Boost "+Ns" follow the real clock;
   - Ladder season banner scope copy and 0 ms reactions;
   - lobby Shift+Tab focus wrap; Collection drop focus trap and Escape.
+
+- **Run 10 (rolling PR #27):** Shop actions and portrait preview name the cosmetic for screen readers; duel Retry after a replay identity error restarts the duel; private runs are hidden from the duel picker. Profile, History and Help/menus were not reviewed (Codex ahead of weekly pace); they go first next run.
 
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
