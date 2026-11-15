@@ -2127,9 +2127,22 @@ export async function findCurrentSeason(userId = null) {
   }))
 }
 
-export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound = false, isPlaced = true } = {}) {
+export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound = false, isPlaced = true, playedAt = null } = {}) {
   if (!isRankedRound) return null
   return withCurrentSeason(async (connection, season) => {
+    // Credit the season the round was played in. The replay and duel writes run
+    // first, so a round saved just before a rollover can arrive after it; it
+    // belongs to the season that just ended, not the new one.
+    let seasonId = season.id
+    const playedAtDate = playedAt ? new Date(playedAt) : null
+    if (playedAtDate && Number.isFinite(playedAtDate.getTime()) && playedAtDate < new Date(season.startsAt)) {
+      const [playedSeasons] = await connection.query(
+        `SELECT id FROM seasons WHERE starts_at <= ? AND ends_at > ?
+         ORDER BY starts_at DESC, id DESC LIMIT 1`,
+        [playedAtDate, playedAtDate]
+      )
+      if (playedSeasons[0]?.id) seasonId = Number(playedSeasons[0].id)
+    }
     // Hidden placement totals must not inflate a later placed season peak.
     const normalizedMmr = isPlaced ? toNonNegativeNumber(rankMmr, 0) : 0
     const rewardTier = getSeasonRewardTier(normalizedMmr, { isPlaced }).tier
@@ -2140,8 +2153,10 @@ export async function applyUserSeasonProgress(userId, { rankMmr, isRankedRound =
          ranked_rounds = user_season_stats.ranked_rounds + 1,
          peak_mmr = GREATEST(user_season_stats.peak_mmr, EXCLUDED.peak_mmr),
          reward_tier = GREATEST(user_season_stats.reward_tier, EXCLUDED.reward_tier)`,
-      [userId, season.id, normalizedMmr, rewardTier]
+      [userId, seasonId, normalizedMmr, rewardTier]
     )
+    // The response describes the current season; an ended season's credit has nothing to show.
+    if (seasonId !== season.id) return null
     return { season, ...await readUserSeasonStats(connection, userId, season.id) }
   })
 }
