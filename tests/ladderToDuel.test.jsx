@@ -104,6 +104,16 @@ describe("Challenge a Ladder player", () => {
 
 
 describe("Independent Duels page states", () => {
+  test("private runs cannot be selected for a duel", async () => {
+    fetchUserReplays.mockResolvedValue({ replays: [
+      { id: 40, modeId: "normal", score: 777, visibility: "private" },
+      { ...replays[0], visibility: "public" },
+    ] })
+    renderApp("/challenges")
+    expect(await screen.findByRole("radio", { name: /880/ })).toBeTruthy()
+    expect(screen.queryByRole("radio", { name: /777/ })).toBeNull()
+  })
+
   test("an unavailable replay list leaves incoming challenges actionable", async () => {
     fetchChallenges.mockResolvedValue({ challenges: [{
       id: 1, challengerUserId: 9, challengerUsername: "Kestrel",
