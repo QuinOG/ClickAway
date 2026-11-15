@@ -77,6 +77,7 @@ function buildRecentForm(roundHistory = []) {
     score: scores[index],
     mode: getModeLabelFromHistoryEntry(round),
     rankDelta: toNumber(round.rankDelta),
+    rankResultLabel: round.rankResultKind === "placement" ? "placement points" : "RR",
     isRanked: isRankedModeEntry(round),
   }))
   const midpoint = Math.max(1, Math.floor(scores.length / 2))
@@ -354,11 +355,11 @@ export default function ProfilePage({
                     <li
                       key={bar.id}
                       className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
-                      title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} RR` : ""}`}
+                      title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} ${bar.rankResultLabel}` : ""}`}
                     >
                       <span className="profileReceiptMode">{bar.mode}</span>
                       <span className="profileStampScore">{formatNumber(bar.score)}</span>
-                      {bar.isRanked ? <span className="profileStampOutcome">{formatSignedValue(bar.rankDelta)} RR</span> : null}
+                      {bar.isRanked ? <span className="profileStampOutcome">{formatSignedValue(bar.rankDelta)} {bar.rankResultLabel}</span> : null}
                     </li>
                   )) : <li className="profileEmptySignal">Play a round to establish form</li>}
                 </ol>

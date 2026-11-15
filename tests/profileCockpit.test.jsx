@@ -119,3 +119,13 @@ test("Profile displays zero reaction measurements and keeps missing reactions em
   expect(reaction().textContent).toContain("awaiting timed hits")
   expect(reaction().querySelector(".profileAttributeValue").textContent).toBe("\u2014")
 })
+
+test("Profile recent form distinguishes placement points from RR", () => {
+  const { container } = render(<ProfilePage roundHistory={[
+    { progressionMode: "ranked", rankResultKind: "placement", rankDelta: 50, score: 100 },
+    { progressionMode: "ranked", rankResultKind: "rr", rankDelta: 12, score: 120 },
+  ]} />)
+  expect(screen.getByText("+50 placement points")).not.toBeNull()
+  expect(screen.getByText("+12 RR")).not.toBeNull()
+  expect(container.querySelector('[title="100 score, +50 placement points"]')).not.toBeNull()
+})
