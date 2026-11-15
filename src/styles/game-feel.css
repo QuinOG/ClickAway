@@ -5387,3 +5387,11 @@
 @media (prefers-reduced-motion: reduce) {
   .goldTargetRing { display: none; }
 }
+
+/* Reserve enough space for streak and combo without cropping either readout. */
+@media (max-width: 380px) {
+    .gameHud .hudPrimaryRow {
+        grid-template-columns: minmax(76px, 0.85fr) minmax(0, 1.5fr) 58px;
+        gap: 4px;
+    }
+}

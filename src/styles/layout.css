@@ -2369,19 +2369,11 @@
     }
 }
 
+/* Keep the wordmark readable alongside the player chip on narrow phones. */
 @media (max-width: 380px) {
-    .brandText {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-    }
-
-    .shellIdentityButton {
-        width: min(210px, calc(100vw - 62px));
-    }
+    .brandCluster { gap: 6px; }
+    .brandCluster .brand { font-size: var(--ca-type-body); }
+    .shellIdentityButton { width: 50vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {
