@@ -146,6 +146,7 @@ export function useGameScreenController({
   onModeChange,
   playerLevel = 1,
   playerCoins = 0,
+  playerOwnedItemIds = [],
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   playerRankMmr = 0,
@@ -1702,6 +1703,8 @@ export function useGameScreenController({
       modeLabel: roundMode.label,
       playerLevel: roundStartLevel,
       playerCoins: roundStartCoins,
+      // Results names a cosmetic the round's coins just made affordable.
+      ownedItemIds: playerOwnedItemIds,
       playerXpIntoLevel: roundStartXpIntoLevel,
       playerXpToNextLevel: roundStartXpToNextLevel,
       // Once the server answers, show what it actually awarded rather than the

@@ -59,3 +59,33 @@ export function getShopItemStatus({
 
   return { isOwned, canAfford, isAffordable, isEquipped, state }
 }
+
+/**
+ * Returns the cheapest item a round's coins just brought within reach: one the
+ * player couldn't afford before the round and can now. Ties keep catalog order.
+ * @param {Object[]} items Catalog items, in catalog order.
+ * @param {Object} options
+ * @param {number|null} options.coinsBefore Balance when the round started.
+ * @param {number|null} options.coinsAfter Balance once the round's coins land.
+ * @param {string[]} [options.ownedItemIds]
+ * @returns {Object|null}
+ */
+export function getNewlyAffordableShopItem(items, { coinsBefore, coinsAfter, ownedItemIds = [] } = {}) {
+  // Number(null) is 0, which would read an unknown balance as "had no coins".
+  if (coinsBefore == null || coinsAfter == null) return null
+  const before = Number(coinsBefore)
+  const after = Number(coinsAfter)
+  if (!Number.isFinite(before) || !Number.isFinite(after) || after <= before) return null
+  if (!Array.isArray(items)) return null
+  const ownedIds = Array.isArray(ownedItemIds) ? ownedItemIds : []
+
+  let cheapest = null
+  for (const item of items) {
+    if (!item?.id || typeof item.cost !== "number" || item.cost <= 0) continue
+    if (item.builtIn || ownedIds.includes(item.id)) continue
+    if (item.cost <= before || item.cost > after) continue
+    // Strictly cheaper only, so the first of equal prices (catalog order) wins.
+    if (!cheapest || item.cost < cheapest.cost) cheapest = item
+  }
+  return cheapest
+}

@@ -23,6 +23,8 @@ import {
 import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
 import { getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
 import { getNextRoundGoal } from "../../../../utils/nextRoundGoal.js"
+import { SHOP_ITEMS } from "../../../../constants/shopCatalog.js"
+import { getNewlyAffordableShopItem } from "../../../../utils/shopUtils.js"
 import { useCountUpNumber, usePrefersReducedMotion } from "./gameRoundOverlayMotionHooks.js"
 
 const MotionDiv = motion.div
@@ -276,6 +278,7 @@ export function GameOverOverlay({
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   playerCoins = null,
+  ownedItemIds = [],
   secondaryActionLabel = null,
   onSecondaryAction = null,
 }) {
@@ -311,6 +314,16 @@ export function GameOverOverlay({
       nextRoundXp: roundXpEarned - roundDailyBonusXp - (Number(roundDailyGoals?.xp) || 0),
       dailyGoals,
       round: { modeId: selectedModeId, hits, misses, bestStreak },
+    })
+    : null
+
+  // Waits for the save so the coins counted are the server's total (daily goal
+  // coins included); an unknown balance can't tell what the round changed.
+  const nowAffordableItem = isRoundSaved && allowsCoinRewards && playerCoins !== null
+    ? getNewlyAffordableShopItem(SHOP_ITEMS, {
+      coinsBefore: playerCoins,
+      coinsAfter: Number(playerCoins) + Number(roundCoinsEarned),
+      ownedItemIds,
     })
     : null
 
@@ -453,6 +466,20 @@ export function GameOverOverlay({
                 </li>
               ))}
             </ul>
+          ) : null}
+          {nowAffordableItem ? (
+            <p className="gameOverNowAffordable">
+              <span className="gameOverNowAffordableTag">Now affordable</span>
+              <span className="gameOverNowAffordableName">{nowAffordableItem.name}</span>
+              <span className="gameOverNowAffordablePrice">{formatNumber(nowAffordableItem.cost)} coins</span>
+              <Link
+                className="gameOverNowAffordableLink"
+                to="/shop"
+                aria-label={`Open Shop to buy ${nowAffordableItem.name}`}
+              >
+                Open Shop
+              </Link>
+            </p>
           ) : null}
         </MotionDiv>
       ) : null}
