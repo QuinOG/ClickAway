@@ -247,6 +247,7 @@ export function GameOverOverlay({
   score,
   hits,
   bullseyes = 0,
+  goldHits = 0,
   misses,
   bestStreak,
   accuracy,
@@ -417,7 +418,7 @@ export function GameOverOverlay({
         <span className="gameOverScoreLockRail" aria-hidden="true"><i /></span>
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
-        <p className="gameOverScoreTally">{formatNumber(hits)} hits · {formatNumber(misses)} misses{bullseyes > 0 ? ` · ${formatNumber(bullseyes)} bullseyes` : ""}</p>
+        <p className="gameOverScoreTally">{formatNumber(hits)} hits · {formatNumber(misses)} misses{bullseyes > 0 ? ` · ${formatNumber(bullseyes)} bullseyes` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}

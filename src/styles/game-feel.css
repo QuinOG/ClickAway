@@ -5402,3 +5402,12 @@
 
 .clickFeedback.bullseye .clickFeedbackValue { color: #ffe291 !important; }
 .clickFeedback.bullseye .clickFeedbackDetail { color: #ffe291; font-weight: 700; }
+
+.clickFeedback.gold .clickFeedbackValue,
+.clickFeedback.gold .clickFeedbackDetail { color: #ffd34d !important; font-weight: 700; }
+.arena .bigCircleButton.isGoldTarget { outline: 5px solid #ffd34d !important; outline-offset: 4px !important; box-shadow: 0 0 0 3px #fff0a0, 0 0 30px 10px #ffd34d88 !important; }
+.goldTargetRing { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; transform: rotate(-90deg); z-index: 5; }
+.goldTargetRing circle { fill: none; stroke: #fff0a0; stroke-width: 3; stroke-dasharray: 1; transition: stroke-dashoffset 50ms linear; }
+@media (prefers-reduced-motion: reduce) {
+  .goldTargetRing { display: none; }
+}

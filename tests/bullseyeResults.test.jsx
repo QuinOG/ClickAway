@@ -32,3 +32,9 @@ test("a round without bullseyes keeps the plain tally", () => {
   renderResults({ bullseyes: 0 })
   expect(screen.getByText("8 hits · 0 misses")).toBeTruthy()
 })
+
+
+test("Results forwards gold through GameOverFlow and omits an empty gold count", () => {
+  renderResults({ bullseyes: 4, goldHits: 2 })
+  expect(screen.getByText("8 hits \u00b7 0 misses \u00b7 4 bullseyes \u00b7 2 gold")).toBeTruthy()
+})

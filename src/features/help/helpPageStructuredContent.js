@@ -18,7 +18,7 @@ export const QUICKSTART_CARDS = [
   {
     eyebrow: "3",
     title: "Hit to build",
-    body: "Click the target to grow streak and multiplier. A Bullseye lands within the inner third of its radius and doubles the points for that hit. An unprotected miss resets your streak and applies your build's mode penalty.",
+    body: "Click the target to grow streak and multiplier. A Bullseye lands within the inner third of its radius and doubles the points for that hit. Hit a gold target within 1.5 seconds of its appearance for triple points, stacking with Bullseye. An unprotected miss resets your streak and applies your build's mode penalty.",
   },
   {
     eyebrow: "4",

@@ -1,3 +1,4 @@
+import { GOLD_TARGET_WINDOW_MS } from "../game/engine/roundGeometry.js"
 import { useState } from "react"
 
 const failedTargetSkinSources = new Set()
@@ -15,6 +16,8 @@ export default function MovingButton({
   style,
   onClick,
   disabled,
+  isGold = false,
+  goldRemainingMs = 0,
   label = "Click",
   labelFontSize,
   skinClass = "skin-default",
@@ -32,7 +35,7 @@ export default function MovingButton({
 
   return (
     <button
-      className={`bigCircleButton ${skinClassName} ${showImage ? "hasImage" : ""} ${imageFailed ? "imageFallback" : ""}`}
+      className={`bigCircleButton ${skinClassName} ${isGold ? "isGoldTarget" : ""} ${showImage ? "hasImage" : ""} ${imageFailed ? "imageFallback" : ""}`}
       style={getButtonInlineStyle({
         style,
         labelFontSize,
@@ -44,8 +47,9 @@ export default function MovingButton({
       disabled={disabled}
       // Out of the tab order: Space/Enter can't aim, so the target is pointer only.
       tabIndex={-1}
-      aria-label="Precision target"
+      aria-label={isGold ? "Gold target" : "Precision target"}
     >
+      {isGold ? <svg className="goldTargetRing" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" pathLength="1" style={{ strokeDashoffset: 1 - goldRemainingMs / GOLD_TARGET_WINDOW_MS }} /></svg> : null}
       {showImage ? (
         <img
           className="targetSkinProbe"
