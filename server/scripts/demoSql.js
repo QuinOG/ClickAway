@@ -11,6 +11,8 @@ import { evaluateAchievements, getUnlockedAchievementIds } from "../../src/game/
 import { getNewlyCompletedDailyGoals, sumDailyGoalRewards } from "../../src/utils/dailyGoals.js"
 import { getSeasonRewardTier } from "../../src/utils/seasonUtils.js"
 
+export const REPLAYS_KEPT_PER_PLAYER = 3
+
 export const cosmeticSets = [["skin_neon", "profile_racoon"], ["theme_sunset", "profile_heart"], ["skin_moon", "profile_ghost"], []]
 export const sqlString = value => `'${String(value).replaceAll("'", "''")}'`
 const raw = sql => ({ sql })
@@ -102,12 +104,17 @@ export async function generateDemoSql(plan, { password = process.env.DEMO_PASSWO
     lines.push(`created := array_append(created, ${sqlString(player.username)});`)
     const stats = Object.fromEntries(Object.entries(state.lifetimeStats).filter(([key]) => key !== "roundsThisWeek").map(([key, value]) => [key === "drillStats" ? "drill_stats_json" : snake(key), value]))
     lines.push(insert("user_lifetime_stats", { user_id: userId(player.username), ...stats }) + ";")
-    for (const { entry: e, replay, season } of state.rounds) {
+    // Replays only for each player's latest rounds (what the duel picker lists):
+    // a replay per round made the file ~10 MB, too big for the Supabase editor.
+    const firstReplayIndex = Math.max(0, state.rounds.length - REPLAYS_KEPT_PER_PLAYER)
+    for (const [roundIndex, { entry: e, replay, season }] of state.rounds.entries()) {
       const row = { user_id: userId(player.username), mode: e.modeId, progression_mode: e.progressionMode, score: e.score, hits: e.hits, misses: e.misses, best_streak: e.bestStreak,
         avg_reaction_ms: e.avgReactionMs, best_reaction_ms: e.bestReactionMs, coins_earned: e.coinsEarned, xp_earned: e.xpEarned, rank_delta: e.rankDelta, rank_result_kind: e.rankResultKind, played_at: e.playedAtIso }
       const r = replayRow(player.username, replay)
       delete r.round_history_id
-      lines.push(`WITH r AS (${insert("round_history", row, " RETURNING id")}) INSERT INTO round_replays (${Object.keys(r).join(", ")}, round_history_id) SELECT ${Object.values(r).map(literal).join(", ")}, r.id FROM r;`)
+      lines.push(roundIndex < firstReplayIndex
+        ? `${insert("round_history", row)};`
+        : `WITH r AS (${insert("round_history", row, " RETURNING id")}) INSERT INTO round_replays (${Object.keys(r).join(", ")}, round_history_id) SELECT ${Object.values(r).map(literal).join(", ")}, r.id FROM r;`)
       if (season) {
         const at = `${sqlString(e.playedAtIso)}::timestamptz`
         const seasonId = raw(`COALESCE((SELECT id FROM seasons WHERE starts_at <= ${at} AND ends_at > ${at} ORDER BY starts_at DESC, id DESC LIMIT 1), (SELECT id FROM seasons ORDER BY starts_at DESC, id DESC LIMIT 1))`)
@@ -132,5 +139,5 @@ export async function generateDemoSql(plan, { password = process.env.DEMO_PASSWO
   let tag = "$demo$"
   while (body.includes(tag)) tag = tag.replace("$demo", "$demo_")
   const rounds = plan.players.reduce((n, p) => n + p.rounds.length, 0)
-  return `-- Demo players for the Supabase SQL editor; requires the migrated ClickAway schema.\n-- Maximum rows: ${plan.players.length} users, ${rounds} history, ${rounds + plan.duels.reduce((n, d) => n + (d.completed ? 2 : 1), 0)} replays, ${plan.duels.length} challenges.\n-- Lifetime: ${plan.players.length}; collections: ${states.reduce((n, s) => n + s.purchases.length, 0)}; achievements: ${states.reduce((n, s) => n + s.achievements.length, 0)} (catalog permitting).\n-- Season rows <= ${states.reduce((n, s) => n + s.lifetimeStats.rankedRounds, 0)} ranked rounds; missing/expired seasons are seeded/rolled forward.\n-- Existing usernames are skipped. Missing pending opponents are skipped. Passwords are bcrypt cost 12.\n-- Undo: paste docs/demo-data/remove-demo-players.sql (fixed demo usernames, player role only).\nBEGIN;\nSET LOCAL search_path = public;\nSET LOCAL standard_conforming_strings = on;\n${seasonSetup}\nDO ${tag}\n${body}\n${tag};\nCOMMIT;\n`.replaceAll("\n", "\r\n")
+  return `-- Demo players for the Supabase SQL editor; requires the migrated ClickAway schema.\n-- Maximum rows: ${plan.players.length} users, ${rounds} history, ${plan.players.reduce((n, p) => n + Math.min(p.rounds.length, REPLAYS_KEPT_PER_PLAYER), 0) + plan.duels.reduce((n, d) => n + (d.completed ? 2 : 1), 0)} replays, ${plan.duels.length} challenges.\n-- Lifetime: ${plan.players.length}; collections: ${states.reduce((n, s) => n + s.purchases.length, 0)}; achievements: ${states.reduce((n, s) => n + s.achievements.length, 0)} (catalog permitting).\n-- Season rows <= ${states.reduce((n, s) => n + s.lifetimeStats.rankedRounds, 0)} ranked rounds; missing/expired seasons are seeded/rolled forward.\n-- Existing usernames are skipped. Missing pending opponents are skipped. Passwords are bcrypt cost 12.\n-- Undo: paste docs/demo-data/remove-demo-players.sql (fixed demo usernames, player role only).\nBEGIN;\nSET LOCAL search_path = public;\nSET LOCAL standard_conforming_strings = on;\n${seasonSetup}\nDO ${tag}\n${body}\n${tag};\nCOMMIT;\n`.replaceAll("\n", "\r\n")
 }
