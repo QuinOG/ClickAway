@@ -42,7 +42,8 @@ export function usePlayerProgressionUpdates({
         const applied = await applyProgressResponse(ticket, response.progress, applyProgress)
         return {
           ok: true,
-          bullseyes: response.bullseyes ?? 0,
+          // Missing from older servers: Results then keeps the client's own count.
+          bullseyes: Number.isFinite(Number(response.bullseyes)) && response.bullseyes !== null ? Number(response.bullseyes) : null,
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
           dailyBonusXp: Number(response.dailyBonusXp) || 0,

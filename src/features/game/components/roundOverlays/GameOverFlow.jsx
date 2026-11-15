@@ -29,6 +29,7 @@ function getFlowVariants(prefersReducedMotion) {
 export function GameOverFlow({
   score,
   hits,
+  bullseyes = 0,
   misses,
   bestStreak,
   accuracy,
@@ -98,6 +99,7 @@ export function GameOverFlow({
   const summaryProps = {
     score,
     hits,
+    bullseyes,
     misses,
     bestStreak,
     accuracy,
