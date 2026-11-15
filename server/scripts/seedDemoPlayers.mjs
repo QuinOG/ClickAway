@@ -55,6 +55,7 @@ export async function writeDemoPlan(plan, db, store) {
     created.add(player.username)
     await store.ensurePlayerUser(user)
     let progress = await db.createDefaultUserProgress(user.id)
+    const savedRounds = []
     for (const round of player.rounds) {
       const { earnedCoins, earnedXp, progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } = round.rewards
       const hasRankedHistory = (progress.lifetimeStats?.rankedRounds ?? 0) > 0
@@ -69,9 +70,7 @@ export async function writeDemoPlan(plan, db, store) {
           modeId: round.modeId, progressionMode, drillId: null, loadoutSnapshot: null, playedAtIso: round.playedAtIso },
       })
       if (!result.historyEntry?.id) throw new Error("Saved round did not return a history id.")
-      // completeUserRound deliberately uses transaction now(), ignoring playedAtIso.
-      // Backdate only this returned row. Daily bonus/goals keep their insertion-day effects.
-      await db.default.execute("UPDATE round_history SET played_at = ? WHERE id = ? AND user_id = ?", [new Date(round.playedAtIso), result.historyEntry.id, user.id])
+      savedRounds.push({ id: result.historyEntry.id, playedAtIso: round.playedAtIso })
       await saveReplay(user, { ...round, roundHistoryId: result.historyEntry.id })
       if (progressionMode === "ranked") {
         await db.applyUserSeasonProgress(user.id, { rankMmr: result.rankOutcome.nextMmr, isRankedRound: true,
@@ -79,6 +78,13 @@ export async function writeDemoPlan(plan, db, store) {
       }
       progress = await db.findUserProgressByUserId(user.id)
       rounds++
+    }
+    // completeUserRound stamps rounds with the transaction's now(), so they're
+    // backdated here, only after all of this player's rounds are saved. Backdating
+    // each one straight away would make every next round look like the first of
+    // the day: double XP and the daily goals paid on every round.
+    for (const saved of savedRounds) {
+      await db.default.execute("UPDATE round_history SET played_at = ? WHERE id = ? AND user_id = ?", [new Date(saved.playedAtIso), saved.id, user.id])
     }
     // Spend only earned coins, using the same catalog and transactions as the shop.
     const { getMappedShopItemById } = await import("../serverShopCatalogIdMappings.js")

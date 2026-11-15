@@ -70,7 +70,9 @@ export function generateDemoRound({ seed, modeId, skill, playedAtIso = null }) {
 export function generateDemoPlayer(username, { days = 21, now = new Date() } = {}) {
   if (!DEMO_PLAYER_USERNAMES.includes(username) || validateUsername(username)) throw new Error("Unknown demo username.")
   const rng = createSeededRng(usernameSeed(username))
-  const talent = rng()
+  // Most players sit mid-ladder: talent leans to the middle (average of two
+  // draws), with a floor so even weak players don't lose rating every round.
+  const talent = 0.25 + 0.75 * ((rng() + rng()) / 2)
   const skill = {
     clicksPerSecond: 1.2 + talent * 5.5,
     accuracy: 0.62 + talent * 0.34,
