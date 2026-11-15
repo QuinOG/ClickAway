@@ -103,6 +103,38 @@ test("ranked preflight summarizes only the five most recent ranked results", () 
   assert.equal(preflight.recentTrend.label, "+12 RR / last 5")
 })
 
+test("ranked preflight counts RR results only, not placement points", () => {
+  const placed = { ...buildDefaultRankedState(), placementMatchesPlayed: PLACEMENT_MATCH_COUNT }
+  const mixed = buildRankedPreflight({
+    rankProgress: getRankProgress(340),
+    rankedState: placed,
+    recentRounds: [
+      { progressionMode: "ranked", rankDelta: 15, rankResultKind: "rr" },
+      { progressionMode: "ranked", rankDelta: 120, rankResultKind: "placement" },
+      { progressionMode: "ranked", rankDelta: 0, rankResultKind: "placement" },
+      { progressionMode: "ranked", rankDelta: -6 },
+      { progressionMode: "ranked", rankDelta: 2, rankResultKind: "rr" },
+      { progressionMode: "ranked", rankDelta: 4, rankResultKind: "rr" },
+      { progressionMode: "ranked", rankDelta: -3, rankResultKind: "rr" },
+      { progressionMode: "ranked", rankDelta: 50, rankResultKind: "rr" },
+    ],
+  })
+  // The window of five is taken after placements are removed; the kind-less legacy row counts as RR.
+  assert.equal(mixed.recentTrend.label, "+12 RR / last 5")
+  assert.equal(mixed.recentTrend.value, 12)
+
+  const placementsOnly = buildRankedPreflight({
+    rankProgress: getRankProgress(340),
+    rankedState: placed,
+    recentRounds: [
+      { progressionMode: "ranked", rankDelta: 120, rankResultKind: "placement" },
+      { progressionMode: "ranked", rankDelta: 0, rankResultKind: "placement" },
+    ],
+  })
+  assert.equal(placementsOnly.recentTrend.label, "No RR rounds yet")
+  assert.equal(placementsOnly.recentTrend.tone, "neutral")
+})
+
 test("rank progress stays unranked before any placement match starts", () => {
   const progress = getRankProgressWithPlacement({
     mmr: 0,

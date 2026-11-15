@@ -888,6 +888,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         rankMmr: nextRankMmr,
         isRankedRound: progressionMode === "ranked",
         isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
+        playedAt: historyEntry.playedAtIso,
       })
     } catch (error) {
       console.error("Round saved, but the season update failed:", error)

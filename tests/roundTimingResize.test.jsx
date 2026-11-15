@@ -145,3 +145,22 @@ test("range Time Boost uses the fractional deadline and keeps fixed geometry aft
   act(() => vi.advanceTimersByTime(1))
   expect(result.current.timeLeft).toBe(0)
 })
+
+test("Time Boost keeps PB pace tied to elapsed play time", async () => {
+  vi.useFakeTimers()
+  const { result } = renderHook(() => useGameScreenController({ activeLoadout: loadout, playerBestScore: 300 }))
+  result.current.arenaProps.arenaRef.current = { getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }) }
+  await act(async () => result.current.readyOverlayProps.onStart("normal"))
+  act(() => vi.advanceTimersByTime(8000))
+  expect(result.current.hudProps.pbPaceDelta).toBe(-50)
+  act(() => result.current.powerupTrayProps.onUsePowerup("time_boost"))
+  expect(result.current.hudProps.pbPaceDelta).toBe(-50)
+})
+
+test.each([[0, "+0s"], [1250, "+1.25s"], [3000, "+2s"]])("Time Boost feedback reports the capped time added at %i ms", async (elapsed, expected) => {
+  vi.useFakeTimers()
+  const { result } = await startGame()
+  act(() => vi.advanceTimersByTime(elapsed))
+  act(() => result.current.powerupTrayProps.onUsePowerup("time_boost"))
+  expect(result.current.arenaProps.clickFeedbackItems.at(-1).value).toBe(expected)
+})

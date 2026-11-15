@@ -42,6 +42,8 @@ export default function MovingButton({
       })}
       onClick={onClick}
       disabled={disabled}
+      // Out of the tab order: Space/Enter can't aim, so the target is pointer only.
+      tabIndex={-1}
       aria-label="Precision target"
     >
       {showImage ? (

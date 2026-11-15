@@ -198,7 +198,7 @@ function LeaderboardTableSkeleton() {
 
 function formatLadderStat(player, key) {
   if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
-  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
+  if (key === "bestReactionMs") return player.bestReactionMs !== null ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
   if (key === "mmr") return formatNumericValue(player.mmr)
   return formatNumericValue(player[key])
 }
@@ -737,6 +737,7 @@ export default function LeaderboardPage({
         />
 
         <SeasonBanner season={season} />
+        <p className="leaderboardStandingScope">Rating carries across seasons. Score, streak, accuracy and reaction records are all-time.</p>
 
         <div className="leaderboardTopRow">
           {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (

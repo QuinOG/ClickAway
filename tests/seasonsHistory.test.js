@@ -117,3 +117,34 @@ test('restricted startup rejects a missing migration 013 column', async () => {
   assert.match(migration, /DEFAULT NULL/)
   assert.match(migration, /CHECK \(rank_result_kind IN \('rr', 'placement'\)\)/)
 })
+
+test('a round played before a rollover is credited to the season it was played in', async () => {
+  const seasons = [
+    { id: 1, startsAt: new Date('2026-08-17T00:00:00Z'), endsAt: new Date('2026-11-15T00:00:00Z') },
+    { id: 2, startsAt: new Date('2026-11-15T00:00:00Z'), endsAt: new Date('2027-02-13T00:00:00Z') },
+  ]
+  const credited = []
+  const connection = {
+    execute: async (sql, params) => { credited.push({ seasonId: params[1], peak: params[2] }) },
+    query: async (sql, params) => {
+      if (/FROM seasons/.test(sql)) {
+        const at = params[0]
+        return [seasons.filter(s => s.startsAt <= at && s.endsAt > at).map(s => ({ id: s.id }))]
+      }
+      return [[{ rankedRounds: 1, peakMmr: 900, rewardTier: 1 }]]
+    },
+  }
+  const ctx = { withCurrentSeason: work => work(connection, seasons[1]), toNonNegativeNumber: v => Number(v) || 0, getSeasonRewardTier }
+  const code = source.slice(source.indexOf('async function readUserSeasonStats('), source.indexOf('export async function insertRoundReplay')).replaceAll('export ', '')
+  vm.runInNewContext(code, ctx)
+
+  // Saved at 23:59:59, credited after the new season was created.
+  assert.equal(await ctx.applyUserSeasonProgress(7, { isRankedRound: true, rankMmr: 900, playedAt: '2026-11-14T23:59:59.000Z' }), null)
+  // Played after the boundary, and an old caller with no time, both go to the current season.
+  const current = await ctx.applyUserSeasonProgress(7, { isRankedRound: true, rankMmr: 950, playedAt: '2026-11-15T00:00:01.000Z' })
+  assert.equal(current.season.id, 2)
+  await ctx.applyUserSeasonProgress(7, { isRankedRound: true, rankMmr: 960 })
+  // A placement round played before the boundary still sets no peak.
+  await ctx.applyUserSeasonProgress(7, { isRankedRound: true, isPlaced: false, rankMmr: 2000, playedAt: '2026-11-14T23:59:58.000Z' })
+  assert.deepEqual(credited, [{ seasonId: 1, peak: 900 }, { seasonId: 2, peak: 950 }, { seasonId: 2, peak: 960 }, { seasonId: 1, peak: 0 }])
+})
