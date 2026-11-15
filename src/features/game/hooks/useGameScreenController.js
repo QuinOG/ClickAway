@@ -261,6 +261,7 @@ export function useGameScreenController({
   const [buttonSize, setButtonSize] = useState(resolvedSelectedMode.initialButtonSize)
   const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 })
   const [timeLeft, setTimeLeft] = useState(resolvedSelectedMode.durationSeconds)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [clickFeedbackItems, setClickFeedbackItems] = useState([])
   const [targetSpawnSequence, setTargetSpawnSequence] = useState(0)
   const [activatedPowerup, setActivatedPowerup] = useState(null)
@@ -390,14 +391,13 @@ export function useGameScreenController({
   const pbPace = useMemo(() => {
     if (!isPlaying || !isTimedRound) return null
     if (!playerBestScore || playerBestScore <= 0) return null
-    const elapsedSeconds = roundMode.durationSeconds - timeLeft
     if (elapsedSeconds < 3) return null
     const expectedPace = Math.round(playerBestScore * (elapsedSeconds / roundMode.durationSeconds))
     return {
       status: score >= expectedPace ? "ahead" : "behind",
       delta: score - expectedPace,
     }
-  }, [isPlaying, isTimedRound, playerBestScore, roundMode.durationSeconds, score, timeLeft])
+  }, [elapsedSeconds, isPlaying, isTimedRound, playerBestScore, roundMode.durationSeconds, score])
   const isGuardActive = guardActiveUntilMs > 0
   const displayMode = phase === ROUND_PHASE.READY ? resolvedSelectedMode : roundMode
   const previewPowerupCharges = useMemo(
@@ -573,6 +573,7 @@ export function useGameScreenController({
     setIsRoundEnding(false)
     endingRef.current = false
     clockRef.current = null
+    setElapsedSeconds(0)
     setIsGoCueVisible(false)
     if (goCueTimeoutRef.current) {
       window.clearTimeout(goCueTimeoutRef.current)
@@ -1292,6 +1293,7 @@ export function useGameScreenController({
     let timerId
     const syncClock = () => {
       window.clearTimeout(timerId)
+      setElapsedSeconds((clockRef.current?.elapsedMs() ?? 0) / 1000)
       const remaining = clockRef.current?.secondsLeft() ?? 0
       setTimeLeft(remaining)
       if (remaining <= 0) endCurrentRound()
