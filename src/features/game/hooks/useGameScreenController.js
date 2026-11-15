@@ -835,9 +835,11 @@ export function useGameScreenController({
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs = 0) => {
     mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
+      const remainingBefore = clockRef.current?.remainingMs() ?? 0
       clockRef.current?.boost()
+      const secondsAdded = Math.max(0, Math.round(((clockRef.current?.remainingMs() ?? 0) - remainingBefore) / 10) / 100)
       setTimeLeft(clockRef.current?.secondsLeft() ?? 0)
-      addCenterFeedback("+2s", "power power-time_boost")
+      addCenterFeedback(`+${secondsAdded}s`, "power power-time_boost")
       return
     }
 

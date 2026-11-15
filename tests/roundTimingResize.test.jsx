@@ -156,3 +156,11 @@ test("Time Boost keeps PB pace tied to elapsed play time", async () => {
   act(() => result.current.powerupTrayProps.onUsePowerup("time_boost"))
   expect(result.current.hudProps.pbPaceDelta).toBe(-50)
 })
+
+test.each([[0, "+0s"], [1250, "+1.25s"], [3000, "+2s"]])("Time Boost feedback reports the capped time added at %i ms", async (elapsed, expected) => {
+  vi.useFakeTimers()
+  const { result } = await startGame()
+  act(() => vi.advanceTimersByTime(elapsed))
+  act(() => result.current.powerupTrayProps.onUsePowerup("time_boost"))
+  expect(result.current.arenaProps.clickFeedbackItems.at(-1).value).toBe(expected)
+})
