@@ -1,3 +1,4 @@
+import { getRankImageSrc } from "../../utils/rankUtils.js"
 /*
  * ClickAway illustrated icon set.
  *
@@ -57,13 +58,9 @@ export const IronNerveIcon = art("parts/streak_ironnerve")
 export const SurgeIcon = art("parts/power_surge")
 export const FlashpointIcon = art("parts/tempo_flashpoint")
 
-const RANK_TONES = new Set(["unranked", "bronze", "silver", "gold", "platinum", "diamond"])
-
+// All rank displays resolve through the same image map, including unplaced players.
 export function CrestIcon({ tone = "gold", ...props }) {
-  // Deadeye, the top rank, has its own emblem outside the crest set.
-  if (tone === "deadeye") return <Art src="/ranks/deadeye.svg" {...props} />
-  const rank = RANK_TONES.has(tone) ? tone : "gold"
-  return <Art src={`/art/ranks/${rank}.png`} {...props} />
+  return <Art src={getRankImageSrc(tone) || "/art/ranks/unranked.png"} {...props} />
 }
 
 const MODULE_ICONS = { tempoCore: TempoCoreIcon, streakLens: StreakLensIcon, powerRig: PowerRigIcon }

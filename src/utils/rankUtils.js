@@ -18,12 +18,12 @@ const TOP_RANK = {
   label: "Deadeye",
 }
 const RANK_IMAGE_BY_TONE_ID = {
-  bronze: "/ranks/bronze.png",
-  silver: "/ranks/silver.png",
-  gold: "/ranks/gold.png",
-  platinum: "/ranks/platinum.svg",
-  diamond: "/ranks/diamond.svg",
-  deadeye: "/ranks/deadeye.svg",
+  bronze: "/art/ranks/bronze.png",
+  silver: "/art/ranks/silver.png",
+  gold: "/art/ranks/gold.png",
+  platinum: "/art/ranks/platinum.png",
+  diamond: "/art/ranks/diamond.png",
+  deadeye: "/art/ranks/deadeye.png",
 }
 
 export const RANK_MAJOR_TIERS = [

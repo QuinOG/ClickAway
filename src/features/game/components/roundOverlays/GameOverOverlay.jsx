@@ -272,6 +272,7 @@ export function GameOverOverlay({
   roundDailyGoals = null,
   dailyGoals = null,
   roundRankDelta = 0,
+  rankProgress = null,
   placementLabel = null,
   roundSaveStatus = "idle",
   roundSaveError = "",
@@ -451,10 +452,10 @@ export function GameOverOverlay({
             />
           ) : null}
           {allowsRankProgression && placementLabel ? (
-            <span className="gameOverReward isRank isPlacement"><CrestIcon size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
+            <span className="gameOverReward isRank isPlacement"><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
           ) : null}
           {allowsRankProgression && !placementLabel ? (
-            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
+            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
           ) : null}
           {roundDailyGoals?.goals?.length ? (
             <ul className="gameOverDailyGoals" aria-label="Daily goals completed">

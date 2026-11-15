@@ -95,7 +95,7 @@ function getNewBadgeVariants(prefersReducedMotion) {
 
 function getCrestToneFromLabel(label = "") {
   const tier = String(label).split(" ")[0].toLowerCase()
-  return ["gold", "silver", "bronze", "platinum", "diamond"].includes(tier) ? tier : "unranked"
+  return ["gold", "silver", "bronze", "platinum", "diamond", "deadeye"].includes(tier) ? tier : "unranked"
 }
 
 function DivisionMetalwork({ label }) {
@@ -231,7 +231,7 @@ export default function PromotionModal({
         <span className="gameOverPromotionRays" />
         <span className="gameOverPromotionPedestal" />
         {!isPlacementReveal && getRankImageSrc(currentRankLabel) && (
-          <div className="rankCeremonyPrevious"><div className="divisionCrest"><img src={getRankImageSrc(currentRankLabel)} alt="" /><DivisionMetalwork label={currentRankLabel} /></div><span>{currentRankLabel}</span></div>
+          <div className="rankCeremonyPrevious"><div className="divisionCrest"><img src={getRankImageSrc(currentRankLabel)} alt="" width="128" height="128" /><DivisionMetalwork label={currentRankLabel} /></div><span>{currentRankLabel}</span></div>
         )}
         {getRankImageSrc(projectedRankLabel) ? (
           <div className="divisionCrest divisionCrestNew"><img className="gameOverPromotionMedal" src={getRankImageSrc(projectedRankLabel)} alt="" width="220" height="220" decoding="async" /><DivisionMetalwork label={projectedRankLabel} /></div>

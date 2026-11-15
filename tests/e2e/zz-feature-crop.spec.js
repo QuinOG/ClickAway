@@ -8,7 +8,7 @@ test("feature crop", async ({ browser }) => {
   test.skip(!process.env.OUT, "capture tool; set OUT to run")
   const width = Number(process.env.W || 390)
   const height = Number(process.env.H || 844)
-  const context = await browser.newContext({ viewport: { width, height }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173", reducedMotion: "reduce" })
+  const context = await browser.newContext({ viewport: { width, height }, colorScheme: "dark", baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT || 4173}`, reducedMotion: "reduce" })
   const page = await context.newPage()
   await page.clock.install({ time: new Date("2026-07-12T16:00:00.000Z") })
   await installApiMocks(page)

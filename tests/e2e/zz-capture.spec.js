@@ -9,7 +9,7 @@ const route = (id) => AUTHENTICATED_ROUTES.find((r) => r.id === id)
 let n = 0
 
 async function newPage(browser, progressOverrides = {}) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", baseURL: "http://127.0.0.1:4173" })
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT || 4173}` })
   const page = await context.newPage()
   await page.clock.install({ time: new Date("2026-07-12T16:00:00.000Z") })
   await installApiMocks(page, { progressOverrides })

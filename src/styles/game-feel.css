@@ -2133,7 +2133,7 @@
 /* page number in the corner */
 .helpDoc .helpTopicGroup > :last-child { position: relative; z-index: 1; }
 .leaderboardTopRow { align-items: start !important; }
-.helpDoc .helpTopicGroup .rankTierGrid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 8px !important; }
+.helpDoc .helpTopicGroup .rankTierGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 112px), 1fr)) !important; gap: var(--ca-space-2) !important; }
 
 /* ======================= Round 9 (run 2, round 3) ======================= */
 /* ---- A. Shop items are boxed products: material frame by rarity, a
