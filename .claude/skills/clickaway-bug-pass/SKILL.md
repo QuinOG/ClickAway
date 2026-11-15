@@ -5,6 +5,8 @@ description: Run a ClickAway bug pass. Sol agents each take one narrow feature (
 
 # ClickAway bug pass
 
+> **Who decides (user, 2026-11-15):** Claude is the project manager and makes every final call. Use Sol wherever it helps, as reviewer or implementer, but treat its findings and verdicts as input: confirm, downgrade or reject each with a reason. Never ship or drop something only because Sol said so.
+
 Find and fix real bugs feature by feature, with most of the work done by Sol (Codex `gpt-6.1-sol`).
 
 **Claude's job is small on purpose (user, 2026-11-14).** ChatGPT usage is plentiful and Claude is ahead of its weekly pace. Claude:

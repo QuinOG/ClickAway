@@ -5,6 +5,8 @@ description: Improve ClickAway features through bounded experiments on player ta
 
 # ClickAway Feature RSI
 
+> **Who decides (user, 2026-11-15):** Claude is the project manager and makes every final call. Use Sol wherever it helps, as reviewer or implementer, but treat its findings and verdicts as input: confirm, downgrade or reject each with a reason. Never ship or drop something only because Sol said so.
+
 Improve what players can accomplish and how easily they can accomplish it. Adding, simplifying, repairing, or removing a feature are all valid outcomes. Do not select work to chase a reviewer score or a feature count.
 
 ## Scope and stopping rule
