@@ -13,13 +13,13 @@ const code = source.slice(
   source.indexOf("// Saves only the preferences the client actually sent")
 ).replace("export async function", "async function")
 const helper = source.slice(
-  source.indexOf("async function hasXpRoundToday("),
+  source.indexOf("const TODAY_UTC_WINDOW"),
   source.indexOf("async function getRoundHistoryCount(")
 )
 
 const TODAY = "2026-11-15"
 
-function harness({ playedEarlierToday, todaysRounds = [] }) {
+function harness({ playedEarlierToday, todaysRounds = [], roundTime = null }) {
   const writes = { xp: null, coins: null, historyEntry: null, bonusQueries: 0, goalQueries: 0 }
   const connection = {
     beginTransaction: async () => {},
@@ -33,9 +33,12 @@ function harness({ playedEarlierToday, todaysRounds = [] }) {
     },
     query: async (sql) => {
       if (sql.includes("AS day_key")) return [[{ day_key: TODAY }]]
+      if (sql.includes("AS round_time")) return [[{ round_time: roundTime }]]
       if (sql.includes("FROM round_history") && sql.includes("best_streak AS bestStreak")) {
         writes.goalQueries += 1
         assert.match(sql, /xp_earned > 0/)
+        // Bounded to one day, so a save just before midnight can't see the next day's rows.
+        assert.match(sql, /played_at < \(\(date_trunc\('day', now\(\) AT TIME ZONE 'UTC'\) \+ interval '1 day'\)/)
         assert.match(sql, /date_trunc\('day', now\(\) AT TIME ZONE 'UTC'\)/)
         return [todaysRounds]
       }
@@ -131,4 +134,11 @@ test("rounds that earn no XP never check or complete daily goals", async () => {
 
 test("the day has one goal per slot, each with its reward", () => {
   assert.deepEqual([showUpGoal, skillGoal, varietyGoal].map((goal) => goal.reward), dailyGoals.DAILY_GOAL_REWARDS)
+})
+
+test("a round is stored at the database transaction's time, the clock its daily checks use", async () => {
+  const { ctx, writes } = harness({ playedEarlierToday: true, roundTime: new Date("2026-11-16T00:00:00.250Z") })
+  // The request was timestamped just before midnight; the transaction ran just after.
+  await ctx.completeUserRound(round({ historyEntry: { xpEarned: 160, modeId: "normal", hits: 20, misses: 1, bestStreak: 9, playedAtIso: "2026-11-15T23:59:59.900Z" } }))
+  assert.equal(writes.historyEntry.playedAtIso, "2026-11-16T00:00:00.250Z")
 })

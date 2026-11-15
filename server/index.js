@@ -819,6 +819,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     }
 
     const {
+      historyEntry: savedHistoryEntry = null,
       rankOutcome,
       dailyBonusXp = 0,
       dailyGoalRewards = { goals: [], coins: 0, xp: 0 },
@@ -892,7 +893,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         rankMmr: nextRankMmr,
         isRankedRound: progressionMode === "ranked",
         isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
-        playedAt: historyEntry.playedAtIso,
+        // The saved row's time (the database's), not the request's.
+        playedAt: savedHistoryEntry?.playedAt ?? historyEntry.playedAtIso,
       })
     } catch (error) {
       console.error("Round saved, but the season update failed:", error)

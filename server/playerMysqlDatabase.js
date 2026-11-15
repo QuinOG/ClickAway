@@ -792,11 +792,18 @@ async function getWeeklyRoundCount(executor, userId) {
 
 // Whether the player already had an XP-earning round today (UTC). The first one
 // each day earns double XP; the save and the progress read both ask this.
+// The current UTC day by the database clock. Inside a transaction now() is the
+// transaction's start, and a saved round's played_at uses the same value, so the
+// day a round is checked against is the day it is stored in. The upper bound
+// keeps a round saved just before midnight from seeing the next day's rows.
+const TODAY_UTC_WINDOW = `played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+       AND played_at < ((date_trunc('day', now() AT TIME ZONE 'UTC') + interval '1 day') AT TIME ZONE 'UTC')`
+
 async function hasXpRoundToday(executor, userId) {
   const [rows] = await executor.query(
     `SELECT 1 FROM round_history
      WHERE user_id = ? AND xp_earned > 0
-       AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+       AND ${TODAY_UTC_WINDOW}
      LIMIT 1`,
     [userId]
   )
@@ -817,7 +824,7 @@ async function getTodaysDailyGoalRounds(executor, userId) {
        best_streak AS bestStreak
      FROM round_history
      WHERE user_id = ? AND xp_earned > 0
-       AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')`,
+       AND ${TODAY_UTC_WINDOW}`,
     [userId]
   )
   return { dayKey: String(clock?.day_key ?? clock?.dayKey ?? ""), rounds: rows }
@@ -1861,6 +1868,13 @@ export async function completeUserRound({
       }
     }
 
+    // The round is stored at the transaction's time, the same now() the daily
+    // bonus and goal checks use, so a save that crosses midnight can't be checked
+    // against one day and stored in the next (which would let it pay twice).
+    const [[transactionClock]] = await connection.query("SELECT now() AS round_time")
+    const roundTime = transactionClock?.round_time ?? transactionClock?.roundTime ?? null
+    const storedPlayedAtIso = roundTime ? new Date(roundTime).toISOString() : historyEntry?.playedAtIso
+
     // The first XP-earning round of each UTC day earns its XP twice: a reason to
     // come back daily that never takes anything away. Checked under the user row
     // lock, so two rounds finishing together can't both claim it. Practice and
@@ -1940,6 +1954,7 @@ export async function completeUserRound({
 
     insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
       ...historyEntry,
+      playedAtIso: storedPlayedAtIso,
       coinsEarned: (Number(historyEntry?.coinsEarned) || 0) + dailyGoalRewards.coins,
       xpEarned: totalXp,
       rankDelta: rankOutcome.appliedRankDelta,
