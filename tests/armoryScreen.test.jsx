@@ -11,6 +11,7 @@ import { MACHINE_TARGET_SCALE } from "../src/features/armory/components/ArmoryMa
 import { BUILD_WALKTHROUGH_STATUS } from "../src/constants/buildWalkthrough.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
 import ArmoryPage from "../src/pages/ArmoryPage.jsx"
+import { getUnseenUnlockedParts } from "../src/utils/unlockWallUtils.js"
 
 function renderArmory({ url = "/armory", ...overrides } = {}) {
   const props = {
@@ -172,7 +173,7 @@ describe("Armory screen baseline", () => {
 
   test("renaming the build via the machine nameplate commits a normalized name on Enter", async () => {
     const user = userEvent.setup()
-    const props = renderArmory()
+    const props = renderArmory({ seenUnlockPartIds: getUnseenUnlockedParts(5).map((part) => part.id) })
 
     const machine = screen.getByLabelText("Active build machine")
     await user.click(within(machine).getByRole("button", { name: /Loadout 1/ }))
@@ -410,7 +411,7 @@ describe("Armory parts gallery (Phase 5)", () => {
 
   test("keyboard: arrows rove and Enter equips immediately", async () => {
     const user = userEvent.setup()
-    const props = renderArmory()
+    const props = renderArmory({ seenUnlockPartIds: getUnseenUnlockedParts(5).map((part) => part.id) })
 
     await openStep(user, "Mods")
     const anchorCard = getPartCard(/^Anchor/)
