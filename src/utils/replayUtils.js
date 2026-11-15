@@ -24,7 +24,11 @@ export function computeGhostScoreAtElapsed(replay = {}, elapsedMs = 0, playerLev
   const events = Array.isArray(replay.events) ? replay.events : []
   const elapsed = Math.max(0, Number(elapsedMs) || 0)
   const visibleEvents = events.filter((event) => Number(event?.t) <= elapsed)
-  const outcome = replayRoundEvents(roundRules, visibleEvents)
+  const outcome = replayRoundEvents(roundRules, visibleEvents, replay.loadoutSnapshot?.arenaWidth ? {
+    seed: replay.seed,
+    arenaWidth: replay.loadoutSnapshot.arenaWidth,
+    arenaHeight: replay.loadoutSnapshot.arenaHeight,
+  } : {})
 
   return outcome.valid ? Math.max(0, Number(outcome.score) || 0) : 0
 }

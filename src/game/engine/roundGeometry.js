@@ -1,5 +1,5 @@
 import { getNextButtonSize } from "../../utils/gameMath.js"
-import { ROUND_EVENT_TYPES } from "./roundEngine.js"
+import { BULLSEYE_RADIUS_SHARE, ROUND_EVENT_TYPES } from "./roundEngine.js"
 import { createSeededRng } from "./seededRng.js"
 
 export const FREEZE_MOVEMENT_DURATION_MS = 1000
@@ -45,6 +45,16 @@ export function isPointOnButtonForHit(x, y, position, buttonSize) {
     && x <= position.x + buttonSize + CLICK_TOLERANCE_PX
     && y <= position.y + buttonSize + CLICK_TOLERANCE_PX
   )
+}
+
+export function isBullseyeHit(x, y, position, buttonSize) {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !(buttonSize > 0)) return false
+  const radius = buttonSize / 2
+  const dx = x - (position.x + radius)
+  const dy = y - (position.y + radius)
+  // Include the mathematical boundary despite coordinate subtraction rounding.
+  const roundingSlack = Number.EPSILON * Math.max(Math.abs(x), Math.abs(y), buttonSize) * 2
+  return Math.hypot(dx, dy) <= radius * BULLSEYE_RADIUS_SHARE + roundingSlack
 }
 
 export function isPointClearlyInsideCircle(x, y, position, buttonSize) {

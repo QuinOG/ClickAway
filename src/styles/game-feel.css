@@ -5399,3 +5399,6 @@
     .readyCard.arenaLobby .lobbyModeRail .lobbyModeChoice:not(.isSelected) .lobbyModeEmblem > .gameArt { width: 34px !important; height: 34px !important; }
     .readyCard.arenaLobby .arenaLobbyStart { min-height: 56px !important; }
 }
+
+.clickFeedback.bullseye .clickFeedbackValue { color: #ffe291 !important; }
+.clickFeedback.bullseye .clickFeedbackDetail { color: #ffe291; font-weight: 700; }

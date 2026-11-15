@@ -48,8 +48,23 @@ test.each([
   act(() => vi.advanceTimersByTime(1))
   const recorded = onRoundComplete.mock.calls[0][0]
   expect(validateRoundGeometry(rules, recorded.events, { seed: recorded.seed, arenaWidth: recorded.arenaWidth, arenaHeight: recorded.arenaHeight }).valid).toBe(true)
-  const replay = replayRoundEvents(rules, recorded.events)
+  const replay = replayRoundEvents(rules, recorded.events, { seed: recorded.seed, arenaWidth: recorded.arenaWidth, arenaHeight: recorded.arenaHeight })
   expect(replay.valid).toBe(true)
   expect(replay.score).toBe(recorded.score)
 })
 
+
+test.each([[0.5, true], [0.9, false]])('live click at radius share %s has Bullseye=%s', async (share, bullseye) => {
+  vi.useFakeTimers()
+  const { result } = renderHook(() => useGameScreenController({ activeLoadout: DEFAULT_SAVED_LOADOUTS[0] }))
+  result.current.arenaProps.arenaRef.current = { getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }) }
+  await act(async () => result.current.readyOverlayProps.onStart('normal'))
+  act(() => vi.advanceTimersByTime(3000))
+  const style = result.current.arenaProps.buttonStyle
+  const size = parseFloat(style.width)
+  act(() => result.current.arenaProps.onButtonClick({ stopPropagation() {}, clientX: parseFloat(style.left) + size * share, clientY: parseFloat(style.top) + size / 2 }))
+  expect(result.current.gameOverOverlayProps.score).toBe(bullseye ? 2 : 1)
+  expect(result.current.gameOverOverlayProps.bullseyes).toBe(bullseye ? 1 : 0)
+  const items = result.current.arenaProps.clickFeedbackItems
+  expect(items.some(item => item.detail === 'Bullseye ×2' && item.type === 'hit bullseye')).toBe(bullseye)
+})

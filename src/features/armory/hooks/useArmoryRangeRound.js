@@ -1,10 +1,11 @@
 import { createRoundClock } from "../../../game/engine/roundClock.js"
-import { isKeyboardActivation, measurePlayfield } from "../../../game/engine/roundPlayfield.js"
+import { isKeyboardActivation, mapPlayfieldClick, measurePlayfield } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
   createGeometrySimulation,
+  isBullseyeHit,
 } from "../../../game/engine/roundGeometry.js"
 import {
   FEEDBACK_LIFETIME_MS,
@@ -83,6 +84,7 @@ export function useArmoryRangeRound({
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
+  const [bullseyes, setBullseyes] = useState(0)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
   const [chargesEarned, setChargesEarned] = useState(0)
@@ -206,6 +208,7 @@ export function useArmoryRangeRound({
     setScore(0)
     setStreak(0)
     setBestStreak(0)
+    setBullseyes(0)
     setHits(0)
     setMisses(0)
     setChargesEarned(0)
@@ -295,10 +298,18 @@ export function useArmoryRangeRound({
     const eventTimeMs = getElapsedMs()
     if (isTooSoonAfter(lastClickMsRef.current, eventTimeMs)) return
     lastClickMsRef.current = eventTimeMs
-    const result = simulationRef.current.applyHit(eventTimeMs)
+    const clickCoordinates = mapPlayfieldClick(event, arenaRef.current, dimensionsRef.current)
+    const hitGeometry = geometryRef.current?.getState()
+    // Classify the rounded coordinates before this hit moves or shrinks the target.
+    const bullseye = Boolean(clickCoordinates && hitGeometry && isBullseyeHit(
+      clickCoordinates.x, clickCoordinates.y, hitGeometry.position, hitGeometry.buttonSize
+    ))
+    const isComboSurgeHit = simulationRef.current.getState().comboSurgeHitsRemaining > 0
+    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye })
     setScore(result.score)
     setStreak(result.streak)
     setBestStreak(result.bestStreak)
+    setBullseyes(result.bullseyes)
     setHits(result.hits)
     setPowerupCharges(result.powerupCharges)
     setComboSurgeHitsRemaining(result.comboSurgeHitsRemaining)
@@ -307,7 +318,8 @@ export function useArmoryRangeRound({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      result.comboSurgeHitsRemaining > 0 ? "hit comboHit" : "hit"
+      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}`,
+      bullseye ? "Bullseye ×2" : null
     )
     if (result.grantedPowerups.length > 0) {
       setChargesEarned((count) => count + result.grantedPowerups.length)
@@ -468,7 +480,7 @@ export function useArmoryRangeRound({
     misses,
     chargesEarned,
     comboMultiplier,
-    results: { score, hits, misses, bestStreak, chargesEarned },
+    results: { score, hits, misses, bullseyes, bestStreak, chargesEarned },
     completedRunToken,
     endRound,
     arenaProps: {

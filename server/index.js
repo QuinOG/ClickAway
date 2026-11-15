@@ -774,7 +774,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       }
     }
 
-    const { hits, misses, score, bestStreak } = simulation
+    const { hits, misses, score, bestStreak, bullseyes } = simulation
     const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
     const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
 
@@ -861,7 +861,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
           modeId,
           seed: roundSeed,
           events: submittedEvents,
-          loadoutSnapshot: simulation.loadoutSnapshot,
+          // Retain replay geometry in the existing JSON snapshot, without a schema change.
+          loadoutSnapshot: { ...simulation.loadoutSnapshot, arenaWidth, arenaHeight },
           score,
           hits,
           misses,
@@ -914,6 +915,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     response.json({
       progress,
       // Totals include the daily bonus and daily goal rewards, also reported alone.
+      bullseyes,
       earnedCoins: earnedCoins + dailyGoalRewards.coins,
       earnedXp: earnedXp + dailyBonusXp + dailyGoalRewards.xp,
       dailyBonusXp,
