@@ -141,3 +141,38 @@ export function normalizeDailyGoalRewards(value) {
   if (goals.length === 0) return null
   return { goals, ...sumDailyGoalRewards(goals) }
 }
+
+// A goal of today's that one more round like this one could finish, for the
+// line above Play Again. Uses the day's goal definitions (matched by id) for
+// what each goal measures; `round` is the round just played.
+export function findDailyGoalWithinReach(dailyGoals, round) {
+  if (!dailyGoals?.goals?.length || !dailyGoals.day || !round) return null
+  const definitions = new Map(getDailyGoals(dailyGoals.day).map((goal) => [goal.id, goal]))
+  const hits = toCount(round.hits)
+  const attempts = hits + toCount(round.misses)
+  for (const goal of dailyGoals.goals) {
+    const definition = definitions.get(goal.id)
+    if (goal.isComplete || !definition) continue
+    const left = goal.target - goal.progress
+    let isWithinReach = false
+    switch (definition.kind) {
+      case "rounds":
+        isWithinReach = left <= 1 && (!definition.modeId || definition.modeId === round.modeId)
+        break
+      case "hits":
+        isWithinReach = left <= hits
+        break
+      case "streak":
+        // Close enough to be worth naming: three quarters of the way there.
+        isWithinReach = toCount(round.bestStreak) >= Math.ceil(definition.target * 0.75)
+        break
+      case "accurateRound":
+        isWithinReach = hits >= definition.minHits && attempts > 0 && (hits / attempts) * 100 >= definition.minAccuracy - 5
+        break
+      default:
+        break
+    }
+    if (isWithinReach) return { ...goal, kind: definition.kind }
+  }
+  return null
+}

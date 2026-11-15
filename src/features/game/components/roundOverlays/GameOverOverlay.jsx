@@ -266,6 +266,7 @@ export function GameOverOverlay({
   roundXpEarned = 0,
   roundDailyBonusXp = 0,
   roundDailyGoals = null,
+  dailyGoals = null,
   roundRankDelta = 0,
   placementLabel = null,
   roundSaveStatus = "idle",
@@ -308,6 +309,8 @@ export function GameOverOverlay({
       earnedXp: roundXpEarned,
       // A plain next round earns neither the daily bonus nor goal rewards.
       nextRoundXp: roundXpEarned - roundDailyBonusXp - (Number(roundDailyGoals?.xp) || 0),
+      dailyGoals,
+      round: { modeId: selectedModeId, hits, misses, bestStreak },
     })
     : null
 

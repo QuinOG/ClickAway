@@ -1708,6 +1708,8 @@ export function useGameScreenController({
       roundXpEarned: roundSave.outcome?.earnedXp ?? roundXpEarned,
       roundDailyBonusXp: roundSave.outcome?.dailyBonusXp ?? 0,
       roundDailyGoals: roundSave.outcome?.dailyGoalRewards ?? null,
+      // Applied from the save's progress before the save reports done.
+      dailyGoals: serverDailyGoals,
       roundCoinsEarned: roundSave.outcome?.earnedCoins ?? roundCoinsEarned,
       roundSaveStatus: roundSave.status,
       roundSaveError: roundSave.error ?? "",

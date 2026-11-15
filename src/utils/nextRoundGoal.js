@@ -1,10 +1,11 @@
+import { findDailyGoalWithinReach } from "./dailyGoals.js"
 import { getRequiredXpForLevel } from "./progressionUtils.js"
 import { UNLOCK_WALL_PARTS } from "./unlockWallUtils.js"
 
 // The one goal the very next round could reach, for the line above Play Again.
-// A near miss on the personal best comes first (it pulls hardest); otherwise a
-// level that one more similar round would reach. Nothing when neither is close,
-// so the line only appears when it's true.
+// A near miss on the personal best comes first (it pulls hardest), then a daily
+// goal within one round, then a level that one more similar round would reach.
+// Nothing when none is close, so the line only appears when it's true.
 const NEAR_BEST_SHARE = 0.15
 const NEAR_BEST_MIN_POINTS = 5
 
@@ -28,6 +29,9 @@ export function getNextRoundGoal({
   // What a similar next round would earn; less than earnedXp when this round
   // carried the once-a-day bonus.
   nextRoundXp = earnedXp,
+  // Today's goals as the server reported them after this round, and the round.
+  dailyGoals = null,
+  round = null,
 } = {}) {
   const roundScore = Math.max(0, Number(score) || 0)
   const best = Math.max(0, Number(bestScore) || 0)
@@ -36,6 +40,18 @@ export function getNextRoundGoal({
     if (gap <= Math.max(NEAR_BEST_MIN_POINTS, Math.round(best * NEAR_BEST_SHARE))) {
       return { kind: "best", text: `${gap.toLocaleString()} ${gap === 1 ? "point" : "points"} off your best.` }
     }
+  }
+
+  const dailyGoal = countsLevelProgress ? findDailyGoalWithinReach(dailyGoals, round) : null
+  if (dailyGoal) {
+    const reward = dailyGoal.reward?.coins ? ` (+${dailyGoal.reward.coins} coins)` : ""
+    if (dailyGoal.kind === "streak") {
+      return { kind: "daily", text: `Today's goal: ${dailyGoal.label}${reward}. Your best this round was ${round.bestStreak}.` }
+    }
+    if (dailyGoal.kind === "accurateRound") {
+      return { kind: "daily", text: `Today's goal: ${dailyGoal.label}${reward}. You were close this round.` }
+    }
+    return { kind: "daily", text: `One more round like that finishes today's goal: ${dailyGoal.label}${reward}.` }
   }
 
   const earned = Math.max(0, Number(earnedXp) || 0)

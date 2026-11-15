@@ -7,7 +7,7 @@ import { FeedbackPreferencesProvider } from "../src/app/FeedbackPreferencesConte
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
 import { GameOverFlow } from "../src/features/game/components/roundOverlays/GameOverFlow.jsx"
 import { ReadyOverlay } from "../src/features/game/components/roundOverlays/ReadyOverlay.jsx"
-import { normalizeDailyGoals } from "../src/utils/dailyGoals.js"
+import { getDailyGoals, normalizeDailyGoals } from "../src/utils/dailyGoals.js"
 
 const NOW = Date.UTC(2026, 10, 15, 18, 30)
 const dailyGoals = normalizeDailyGoals({
@@ -108,6 +108,18 @@ describe("Daily goals on Results", () => {
     const list = screen.getByRole("list", { name: "Daily goals completed" })
     expect(within(list).getByText("Hit a 20 streak")).toBeTruthy()
     expect(within(list).getByText("+60 coins · +120 XP")).toBeTruthy()
+  })
+
+  test("points Play Again at a daily goal one more round would finish", () => {
+    const nearGoals = normalizeDailyGoals({
+      day: "2026-11-15",
+      resetsAt: "2026-11-16T00:00:00.000Z",
+      goals: getDailyGoals("2026-11-15").map((goal, index) => ({ ...goal, progress: index === 0 ? goal.target - 1 : 0 })),
+    })
+    const [showUp] = getDailyGoals("2026-11-15")
+    const { container } = wrap(<GameOverFlow {...results} bestScore={0} roundSaveStatus="saved" dailyGoals={nearGoals} />)
+    expect(container.querySelector(".gameOverNextGoal").textContent)
+      .toBe(`One more round like that finishes today's goal: ${showUp.label} (+${showUp.reward.coins} coins).`)
   })
 
   test("shows nothing while saving or when no goal was finished", () => {
