@@ -53,7 +53,8 @@ const rounds = Array.from({ length: 8 }, (_, index) => {
   }
 })
 
-const nextUtcMidnight = new Date((Math.floor(Date.now() / 86400000) + 1) * 86400000).toISOString()
+// Far ahead, so the lobby never shows a clock-dependent countdown in snapshots.
+const nextUtcMidnight = "2099-01-01T00:00:00.000Z"
 
 export const sessionFixture = {
   user: { id: 7, username: "Vector" },
