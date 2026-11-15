@@ -40,6 +40,7 @@ import {
 import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
   createGeometrySimulation,
+  isBullseyeHit,
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
   SIZE_LOCK_DURATION_MS,
@@ -254,6 +255,7 @@ export function useGameScreenController({
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
+  const [bullseyes, setBullseyes] = useState(0)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
   const roundStartTimeRef = useRef(0)
@@ -529,6 +531,7 @@ export function useGameScreenController({
     setScore(simulationState.score)
     setStreak(simulationState.streak)
     setBestStreak(simulationState.bestStreak)
+    setBullseyes(simulationState.bullseyes)
     setHits(simulationState.hits)
     setMisses(simulationState.misses)
     setPowerupCharges(simulationState.powerupCharges)
@@ -545,6 +548,7 @@ export function useGameScreenController({
     setScore(0)
     setStreak(0)
     setBestStreak(0)
+    setBullseyes(0)
     setHits(0)
     setMisses(0)
     setButtonSize(modeSettings.initialButtonSize)
@@ -1007,7 +1011,12 @@ export function useGameScreenController({
     }
 
     const isComboSurgeHit = simulationRef.current.getState().comboSurgeHitsRemaining > 0
-    const result = simulationRef.current.applyHit(eventTimeMs)
+    const hitGeometry = geometryRef.current?.getState()
+    // Classify the rounded coordinates before this hit moves or shrinks the target.
+    const bullseye = Boolean(clickCoordinates && hitGeometry && isBullseyeHit(
+      clickCoordinates.x, clickCoordinates.y, hitGeometry.position, hitGeometry.buttonSize
+    ))
+    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye })
     syncSimulationState(result)
 
     const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
@@ -1028,7 +1037,8 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      isComboSurgeHit ? "hit comboHit" : "hit"
+      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}`,
+      bullseye ? "Bullseye ×2" : null
     )
     if (
       !hasPassedPersonalBestRef.current
@@ -1695,6 +1705,7 @@ export function useGameScreenController({
       onCancel: cancelPendingRoundStart,
     } : null,
     gameOverOverlayProps: {
+      bullseyes: roundSave.outcome?.bullseyes ?? bullseyes,
       score,
       hits,
       misses,

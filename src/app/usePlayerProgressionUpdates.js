@@ -42,6 +42,7 @@ export function usePlayerProgressionUpdates({
         const applied = await applyProgressResponse(ticket, response.progress, applyProgress)
         return {
           ok: true,
+          bullseyes: response.bullseyes ?? 0,
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
           dailyBonusXp: Number(response.dailyBonusXp) || 0,

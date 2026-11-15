@@ -34,7 +34,7 @@ describe("Game screen controller", () => {
         stopPropagation() {}, clientX: 300, clientY: 200,
       }))
       const feedback = result.current.arenaProps.clickFeedbackItems.at(-1)
-      expect(feedback.type).toBe("hit comboHit")
+      expect(feedback.type).toBe(hit === 0 ? "hit comboHit bullseye" : "hit comboHit")
     }
     expect(result.current.powerupTrayProps.powerupSlots[0].comboSurgeHitsRemaining).toBe(0)
     act(() => vi.advanceTimersByTime(100))
@@ -122,7 +122,7 @@ test("passes untimed Practice rules to the power tray", () => {
   expect(result.current.powerupTrayProps.isTimedRound).toBe(false)
 })
 
-test.each([[0, "Miss"], [1, "-1"]])("shows actual score loss from %i points", async (startingHits, expected) => {
+test.each([[0, "Miss"], [1, "-2"]])("shows actual score loss from %i points", async (startingHits, expected) => {
   vi.useFakeTimers()
   try {
     const { result, unmount } = renderHook(() => useGameScreenController({ activeLoadout: DEFAULT_SAVED_LOADOUTS[0] }))

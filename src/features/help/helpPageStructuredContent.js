@@ -18,7 +18,7 @@ export const QUICKSTART_CARDS = [
   {
     eyebrow: "3",
     title: "Hit to build",
-    body: "Click the target to grow streak and multiplier. An unprotected miss resets your streak and applies your build's mode penalty.",
+    body: "Click the target to grow streak and multiplier. A Bullseye lands within the inner third of its radius and doubles the points for that hit. An unprotected miss resets your streak and applies your build's mode penalty.",
   },
   {
     eyebrow: "4",
@@ -55,7 +55,7 @@ export const ROUND_FLOW_STEPS = [
 ]
 
 export const CONTROLS_ROWS = [
-  ["Hit Target", "Left click directly on the moving target."],
+  ["Hit Target", "Left click directly on the moving target; aim at its center for a Bullseye."],
   ["Miss", "Left click the arena outside the target."],
   ["End Practice Round", "Use the End Practice Round button during Practice."],
   ["Use Power Slot 1", "Press 1 during live rounds when the first equipped power is charged."],
