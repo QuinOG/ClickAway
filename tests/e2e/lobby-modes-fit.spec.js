@@ -43,3 +43,26 @@ for (const [width, height] of [[390, 844], [360, 640], [820, 1180]]) {
     })
   }
 }
+
+// Laptop screens: Start is in view and clickable without scrolling, in every
+// mode. It used to sit up to 144px below the fold at 1280x720 with Ranked.
+for (const [width, height] of [[1280, 720], [1366, 768], [1024, 768], [1280, 800], [1440, 900]]) {
+  for (const mode of Object.keys(PANEL_BY_MODE)) {
+    test(`${mode} Start is in view at ${width}x${height}`, async ({ browser }) => {
+      const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce" })
+      const page = await context.newPage()
+      await installApiMocks(page)
+      await gotoRoute(page, AUTHENTICATED_ROUTES.find((route) => route.id === "play"))
+      await page.locator(".lobbyModeChoice", { hasText: mode }).first().click()
+      const start = page.locator(".arenaLobbyStart")
+      const box = await start.boundingBox()
+      expect(box.y + box.height).toBeLessThanOrEqual(height)
+      const isOnTop = await start.evaluate((element) => {
+        const rect = element.getBoundingClientRect()
+        return element.contains(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2))
+      })
+      expect(isOnTop).toBe(true)
+      await context.close()
+    })
+  }
+}

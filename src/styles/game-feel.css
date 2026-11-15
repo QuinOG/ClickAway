@@ -5381,3 +5381,21 @@
 @media (max-width: 820px) {
     .armoryFirstTouchTip { bottom: calc(var(--mobile-dock-height, 66px) + env(safe-area-inset-bottom) + 12px); }
 }
+
+/* ---- Lobby on short desktop screens (laptops 720-860px tall) --------------
+ * The mode column outgrew the panel there and pushed Start below the fold (up
+ * to 144px at 1280x720 with Ranked). Tighten spacing, drop the kicker, and let
+ * unselected modes show only their name and stakes; the selected mode keeps
+ * its full brief.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 901px) and (max-height: 860px) {
+    .readyCard.arenaLobby { padding-top: 16px !important; padding-bottom: 16px !important; row-gap: 10px !important; }
+    .readyCard.arenaLobby .arenaLobbyKicker { display: none !important; }
+    .readyCard.arenaLobby .arenaLobbyHeader h2 { font-size: 30px !important; line-height: 1.05 !important; }
+    .readyCard.arenaLobby .lobbyModeRail { gap: 8px !important; }
+    .readyCard.arenaLobby .lobbyModeChoice:not(.isSelected) { min-height: 0 !important; padding-top: 8px !important; padding-bottom: 8px !important; }
+    .readyCard.arenaLobby .lobbyModeChoice:not(.isSelected) .lobbyModeSummary { display: none !important; }
+    .readyCard.arenaLobby .lobbyModeRail .lobbyModeChoice:not(.isSelected) .lobbyModeEmblem { width: 46px !important; height: 46px !important; left: 22px !important; }
+    .readyCard.arenaLobby .lobbyModeRail .lobbyModeChoice:not(.isSelected) .lobbyModeEmblem > .gameArt { width: 34px !important; height: 34px !important; }
+    .readyCard.arenaLobby .arenaLobbyStart { min-height: 56px !important; }
+}
