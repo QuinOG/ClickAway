@@ -6,6 +6,7 @@ const MOBILE_MAX_WIDTH = 700
 const TABLET_MAX_WIDTH = 1024
 
 function getItemsPerPage(viewportWidth) {
+  if (viewportWidth <= 360) return 1
   if (viewportWidth <= MOBILE_MAX_WIDTH) return 2
   if (viewportWidth <= TABLET_MAX_WIDTH) return 3
   return 5

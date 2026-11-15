@@ -811,6 +811,79 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 .profilePageCenter .profileFormAverage span { color: rgb(206 224 244 / 86%); }
 .profilePageCenter .profileInstrumentDetail { color: rgb(214 230 248 / 84%); }
 
+/* Phone content must size to the panel, rather than its desktop min-content
+   width. Keep these overrides scoped to Profile and below the desktop range. */
+@media (max-width: 600px) {
+    .profilePageCenter .profileCompetitorCard .profilePlayerName {
+        max-width: 100%;
+        overflow: visible;
+        overflow-wrap: anywhere;
+        line-height: 1.2;
+    }
+
+    .profilePageCenter .profileAttributeLabel,
+    .profilePageCenter .profileAttributeLabel > * {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+    .profilePageCenter .profileAttributeDial { max-width: 100%; }
+    .profilePageCenter .profileSheetMain .profileSignalBand .profileSectionKicker {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .profilePageCenter .profileAchievementsSection,
+    .profilePageCenter .achievementHeaderText,
+    .profilePageCenter .achievementsMainArea,
+    .profilePageCenter .achievementsCarousel,
+    .profilePageCenter .achievementsCarouselRowWrap { min-width: 0; }
+
+    .profilePageCenter .profileAchievementsSection .achievementHeaderRow {
+        align-items: stretch !important;
+    }
+    .profilePageCenter .profileStatsSectionTitle {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .profilePageCenter .achievementCategoryTabs {
+        min-width: 0;
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+    .profilePageCenter .achievementCategoryTab {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .profilePageCenter .profileAchievementsSection .achievementTile.isFeaturedBanner {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .profilePageCenter .profileAchievementsSection .achievementTile.isFeaturedBanner .achievementTileHeader {
+        flex-shrink: 1;
+        width: 100%;
+    }
+    .profilePageCenter .profileAchievementsSection .achievementTile.isFeaturedBanner .achievementTitle {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .profilePageCenter .achievementTile.isFeaturedBanner .achievementTileHeaderMain {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    .profilePageCenter .achievementDescription {
+        display: block;
+        overflow: visible;
+        -webkit-line-clamp: unset;
+        overflow-wrap: anywhere;
+    }
+    .profilePageCenter .achievementProgressText {
+        white-space: normal;
+        overflow: visible;
+        overflow-wrap: anywhere;
+    }
+}
+
 /* p08: a player identity hero. The header becomes a spotlit nameplate: a
    larger portrait in a rank-metal frame with a halo, a bigger name, the
    title as a rank-coloured plate, and a quieter stripe so the band reads as
