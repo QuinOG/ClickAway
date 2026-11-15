@@ -737,6 +737,7 @@ export default function LeaderboardPage({
         />
 
         <SeasonBanner season={season} />
+        <p className="leaderboardStandingScope">Rating carries across seasons. Score, streak, accuracy and reaction records are all-time.</p>
 
         <div className="leaderboardTopRow">
           {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (

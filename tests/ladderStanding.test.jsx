@@ -87,3 +87,11 @@ test("Ladder shows a recorded zero reaction time and keeps missing values empty"
   expect(reaction(rows[0])).toBe("0 ms")
   expect(reaction(rows[1])).toBe("\u2014")
 })
+
+
+test("Ladder explains which records carry across seasons", async () => {
+  fetchLeaderboard.mockResolvedValue(result)
+  show()
+  await screen.findByRole("list", { name: /Ladder sorted/ })
+  expect(screen.getByText("Rating carries across seasons. Score, streak, accuracy and reaction records are all-time.")).toBeTruthy()
+})
