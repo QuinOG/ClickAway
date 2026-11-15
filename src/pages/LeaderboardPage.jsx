@@ -284,7 +284,8 @@ function LeaderboardStandingPanel({
       value: formatNumericValue(currentRankProgress?.mmr),
     },
     {
-      label: season ? "Ranked this season" : "Recent games",
+      // Short enough to sit beside Reward; the line above says these are Ranked games.
+      label: season ? "This season" : "Recent games",
       value: formatNumericValue(season ? season.stats?.rankedRounds : normalizedRankedRounds),
     },
   ]
@@ -736,7 +737,6 @@ export default function LeaderboardPage({
         />
 
         <SeasonBanner season={season} />
-        <p className="leaderboardStandingScope">Rating carries across seasons. Score, streak, accuracy and reaction records are all-time.</p>
 
         <div className="leaderboardTopRow">
           {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (

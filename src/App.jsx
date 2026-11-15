@@ -84,6 +84,7 @@ export default function App() {
     selectedModeId,
     setSelectedModeId,
     roundHistory,
+    dailyBonusAvailable,
     lifetimeStats,
     loadoutStats,
     totalRoundCount,
@@ -212,7 +213,8 @@ export default function App() {
     return <SessionLoadingScreen />
   }
 
-  const showArmoryUnlockBadge = hasUnseenUnlockedParts(levelProgress.level, seenUnlockPartIds)
+  // Hidden until the first round, so a new player's first stop is the game.
+  const showArmoryUnlockBadge = totalRoundCount > 0 && hasUnseenUnlockedParts(levelProgress.level, seenUnlockPartIds)
 
   return (
     <MotionConfig reducedMotion={getMotionConfigPreference(preferences)}>
@@ -289,6 +291,7 @@ export default function App() {
                 playerRankedState={rankedState}
                 playerHasRankedHistory={hasRankedHistory}
                 playerRecentRounds={roundHistory}
+                serverDailyBonusAvailable={dailyBonusAvailable}
                 playerBestScore={playerLeaderboardStats.bestScore}
                 lifetimeStats={lifetimeStats}
                 loadoutStats={loadoutStats}

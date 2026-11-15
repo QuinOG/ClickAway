@@ -380,6 +380,7 @@ export function ReadyOverlay({
   showArmoryWalkthroughBadge = false,
   onboardingCoach = null,
   showTrainingSuite = false,
+  dailyBonusAvailable = false,
   trainingDrills = [],
   selectedDrillId = null,
   onSelectDrill,
@@ -508,7 +509,8 @@ export function ReadyOverlay({
           </div>
           {onboardingCoach ? (
             <div className="readyOnboardingCoach" aria-label="First session onboarding">
-              <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span>
+              {onboardingCoach.stepLabel ? <span className="readyOnboardingCoachStep">{onboardingCoach.stepLabel}</span> : null}
+              {onboardingCoach.instruction ? <p className="readyOnboardingCoachNote">{onboardingCoach.instruction}</p> : null}
               {onboardingCoach.note ? <p className="readyOnboardingCoachNote">{onboardingCoach.note}</p> : null}
             </div>
           ) : null}
@@ -526,7 +528,7 @@ export function ReadyOverlay({
 
         <div className="lobbyModeSelector">
           <div className="lobbyModeRail" aria-label="Choose a game mode">
-            {lobbyModes.map((mode) => (
+            {(onboardingCoach?.singleMode ? lobbyModes.filter((mode) => mode.id === selectedMode?.id) : lobbyModes).map((mode) => (
               <ModeChoice
                 key={mode.id}
                 mode={mode}
@@ -570,6 +572,7 @@ export function ReadyOverlay({
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
+            {dailyBonusAvailable ? <p className="arenaLobbyDailyBonus">First round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

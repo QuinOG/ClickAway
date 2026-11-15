@@ -226,7 +226,9 @@ const BUILDCRAFT_POWERUPS = [
   {
     id: "magnet_center",
     label: "Magnet Center",
-    unlockLevel: 4,
+    // Level 2 is reached by most first rounds, so a new player's first round
+    // ends with an unlock.
+    unlockLevel: 2,
     awardEvery: 9,
     description: "Pull the target to center, add 6 size, and freeze movement briefly.",
     effectType: "magnet_center",

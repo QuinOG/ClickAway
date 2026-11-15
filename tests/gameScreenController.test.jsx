@@ -161,3 +161,60 @@ test.each([
   act(() => result.current.gameOverOverlayProps.onChooseMode())
   expect(result.current.readyOverlayProps.sessionStats.netRR).toBe(expectedNetRR)
 })
+
+test.each([
+  ["a brand-new player", { playerRecentRounds: [] }, true],
+  ["a player with rounds", { playerRecentRounds: [{ score: 10 }] }, false],
+  ["a new player opening a duel link", { playerRecentRounds: [], challengeId: 4 }, false],
+])("first-round coach for %s", (_label, props, expectsCoach) => {
+  const onModeChange = vi.fn()
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status: "not_started" },
+    selectedModeId: "hard",
+    onModeChange,
+    playerLevel: 1,
+    seenUnlockPartIds: [],
+    lifetimeStats: {},
+    ...props,
+  }))
+  const ready = result.current.readyOverlayProps
+  expect(ready.onboardingCoach?.title ?? null).toBe(expectsCoach ? "Your first round" : null)
+  if (expectsCoach) {
+    expect(ready.onboardingCoach.startLabel).toBe("Play")
+    expect(ready.showArmoryWalkthroughBadge).toBe(false)
+    expect(ready.canChangeMode).toBe(false)
+    expect(onModeChange).toHaveBeenCalledWith("normal")
+  } else {
+    expect(onModeChange).not.toHaveBeenCalledWith("normal")
+  }
+})
+
+test.each([
+  ["no rounds yet", [], "normal", true],
+  ["an XP round earlier today", [{ xpEarned: 160, playedAtIso: new Date().toISOString() }], "normal", false],
+  ["only yesterday's rounds", [{ xpEarned: 160, playedAtIso: new Date(Date.now() - 2 * 86400000).toISOString() }], "normal", true],
+  ["Practice selected", [], "easy", false],
+])("double-XP notice with %s", (_label, rounds, modeId, expected) => {
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status: "dismissed" },
+    selectedModeId: modeId,
+    playerRecentRounds: rounds,
+    lifetimeStats: {},
+  }))
+  expect(result.current.readyOverlayProps.dailyBonusAvailable).toBe(expected)
+})
+
+test("the server's answer wins over the loaded rounds for the double-XP notice", () => {
+  // e.g. an XP round today that's older than the 50 loaded rounds
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status: "dismissed" },
+    selectedModeId: "normal",
+    playerRecentRounds: [],
+    serverDailyBonusAvailable: false,
+    lifetimeStats: {},
+  }))
+  expect(result.current.readyOverlayProps.dailyBonusAvailable).toBe(false)
+})

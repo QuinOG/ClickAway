@@ -216,6 +216,8 @@ export async function installApiMocks(page, {
           status: "active",
           startsAt: "2026-06-01T00:00:00.000Z",
           endsAt: "2026-09-01T00:00:00.000Z",
+          // The player's season so far: 11 Ranked rounds, peak 812 (Gold, tier 3).
+          stats: { rankedRounds: 11, peakMmr: 812, rewardTier: 3 },
         },
       })
     }

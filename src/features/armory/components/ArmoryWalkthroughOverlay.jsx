@@ -20,6 +20,11 @@ export default function ArmoryWalkthroughOverlay({
     ? `${step.note} This test run uses ${selectedModeLabel}.`
     : step.note
 
+  // On wide screens the card sits on the side away from what the step points
+  // at, so it never covers the parts the player is asked to choose.
+  const isTargetOnRight = Boolean(spotlightRect?.shellWidth)
+    && spotlightRect.left + spotlightRect.width / 2 > spotlightRect.shellWidth / 2
+
   return (
     <div className="armoryWalkthroughOverlay" role="dialog" aria-modal="true" aria-labelledby="armory-walkthrough-title">
       {spotlightRect ? (
@@ -38,7 +43,7 @@ export default function ArmoryWalkthroughOverlay({
         <div className="armoryWalkthroughBlocker armoryWalkthroughBlockerFull" />
       )}
 
-      <section className={`armoryWalkthroughPanel ${spotlightRect ? "" : "isCentered"}`}>
+      <section className={`armoryWalkthroughPanel ${spotlightRect ? "" : "isCentered"} ${isTargetOnRight ? "isLeft" : ""}`.trim()}>
         <div className="armoryWalkthroughPanelHeader">
           <p className="armoryWalkthroughEyebrow">Walkthrough {stepIndex + 1} / {stepCount}</p>
           <button type="button" className="armoryWalkthroughDismiss" onClick={onSkip}>
