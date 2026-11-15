@@ -37,6 +37,14 @@ function renderLobby(overrides = {}) {
 }
 
 describe("Arena lobby", () => {
+  test("wraps Shift+Tab from the initial lobby focus", () => {
+    renderLobby()
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Enter the arena" }).closest("section"))
+    const lastControl = [...document.activeElement.querySelectorAll('button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])')].at(-1)
+    fireEvent.keyDown(document.activeElement, { key: "Tab", shiftKey: true })
+    expect(document.activeElement).toBe(lastControl)
+  })
+
   test("shows an actual zero best score without invalid chart percentages", () => {
     renderLobby({ recentRounds: [{ modeId: "normal", score: 0 }] })
     const record = screen.getByLabelText("Casual record")
