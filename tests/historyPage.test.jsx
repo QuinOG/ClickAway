@@ -88,3 +88,16 @@ test("placement points are labelled separately while legacy rows retain RR", () 
   expect(screen.getAllByText("+14 RR").length).toBeGreaterThan(0)
   expect(screen.getAllByText("+9 RR").length).toBeGreaterThan(0)
 })
+
+test("peak highlight preserves zero reaction times and leaves missing metrics empty", () => {
+  const history = [
+    rounds("latest")[0],
+    { ...rounds("peak")[0], score: 300, bestReactionMs: 0 },
+  ]
+  const view = (rows) => <MemoryRouter><HistoryPage roundHistory={rows} careerBestScore={300} /></MemoryRouter>
+  const { rerender } = render(view(history))
+  expect(screen.getByText("0 ms")).toBeTruthy()
+  rerender(view([history[0], { ...history[1], bestReactionMs: null }]))
+  expect(screen.queryByText("0 ms")).toBeNull()
+  expect(screen.getByText("\u2014", { selector: ".historyHighlightStat" })).toBeTruthy()
+})
