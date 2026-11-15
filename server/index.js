@@ -774,7 +774,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       }
     }
 
-    const { hits, misses, score, bestStreak } = simulation
+    const { hits, misses, score, bestStreak, bullseyes, goldHits } = simulation
     const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
     const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
 
@@ -818,7 +818,12 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       playedAtIso: new Date().toISOString(),
     }
 
-    const { rankOutcome, dailyBonusXp = 0 } = await completeUserRound({
+    const {
+      historyEntry: savedHistoryEntry = null,
+      rankOutcome,
+      dailyBonusXp = 0,
+      dailyGoalRewards = { goals: [], coins: 0, xp: 0 },
+    } = await completeUserRound({
       userId: user.id,
       earnedCoins,
       earnedXp,
@@ -856,7 +861,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
           modeId,
           seed: roundSeed,
           events: submittedEvents,
-          loadoutSnapshot: simulation.loadoutSnapshot,
+          // Retain replay geometry in the existing JSON snapshot, without a schema change.
+          loadoutSnapshot: { ...simulation.loadoutSnapshot, arenaWidth, arenaHeight },
           score,
           hits,
           misses,
@@ -888,7 +894,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         rankMmr: nextRankMmr,
         isRankedRound: progressionMode === "ranked",
         isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
-        playedAt: historyEntry.playedAtIso,
+        // The saved row's time (the database's), not the request's.
+        playedAt: savedHistoryEntry?.playedAt ?? historyEntry.playedAtIso,
       })
     } catch (error) {
       console.error("Round saved, but the season update failed:", error)
@@ -907,10 +914,13 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
 
     response.json({
       progress,
-      earnedCoins,
-      // Includes the first-round-of-the-day bonus, which is also reported alone.
-      earnedXp: earnedXp + dailyBonusXp,
+      // Totals include the daily bonus and daily goal rewards, also reported alone.
+      bullseyes,
+      goldHits,
+      earnedCoins: earnedCoins + dailyGoalRewards.coins,
+      earnedXp: earnedXp + dailyBonusXp + dailyGoalRewards.xp,
       dailyBonusXp,
+      dailyGoalRewards,
       rankDelta,
       rankProgress: {
         previous: rankOutcome.previousRankProgress,

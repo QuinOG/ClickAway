@@ -31,20 +31,22 @@ beforeEach(() => {
 })
 
 describe("Ladder search with no matches", () => {
+  // The search is debounced; under a loaded full-suite run, typing plus the debounce
+  // can outlast the default 1s waits, so this test waits longer (behaviour unchanged).
   test("says no players match the search, without placement advice, and emptying the box restores the full Ladder", async () => {
     const user = userEvent.setup()
     renderLadder()
-    await waitFor(() => expect(ladderNames()).toEqual(["Nova", "Orbit", "Vector"]))
+    await waitFor(() => expect(ladderNames()).toEqual(["Nova", "Orbit", "Vector"]), { timeout: 4000 })
 
     await user.type(searchBox(), "Zephyr")
-    expect(await screen.findByText(/No players match “Zephyr”/)).toBeTruthy()
+    expect(await screen.findByText(/No players match “Zephyr”/, {}, { timeout: 4000 })).toBeTruthy()
     expect(screen.queryByText(/No ranked players yet/)).toBeNull()
     expect(screen.queryByText(/Finish your placement matches/)).toBeNull()
 
     expect(screen.queryByRole("button", { name: "Clear search" })).toBeNull()
     await user.clear(searchBox())
-    await waitFor(() => expect(ladderNames()).toEqual(["Nova", "Orbit", "Vector"]))
-  })
+    await waitFor(() => expect(ladderNames()).toEqual(["Nova", "Orbit", "Vector"]), { timeout: 4000 })
+  }, 15000)
 
   test("a new search after no matches finds the player", async () => {
     const user = userEvent.setup()

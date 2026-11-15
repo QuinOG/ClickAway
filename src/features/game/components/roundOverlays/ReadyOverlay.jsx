@@ -2,7 +2,7 @@ import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { ModeEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
+import { CoinIcon, GemIcon, ModeEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
 import ArenaWorldArt from "../../../../components/art/ArenaWorldArt.jsx"
 
 import { Tooltip } from "../../../../components/ui/index.js"
@@ -333,6 +333,97 @@ function PracticeDrawer({
 
 // The selected mode's track record as a mini scoreboard: best / average /
 // rounds tiles over a bar chart of the last ten scores (oldest left).
+// The current time, refreshed every minute while the lobby is open, so the
+// reset countdown moves and goals from a day that has ended are replaced.
+function useMinuteClock() {
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNowMs(Date.now()), 60000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+  return nowMs
+}
+
+function areDailyGoalsExpired(dailyGoals, nowMs) {
+  const resetsAtMs = Date.parse(dailyGoals?.resetsAt)
+  return Number.isFinite(resetsAtMs) && nowMs >= resetsAtMs
+}
+
+function formatResetsIn(resetsAt, nowMs) {
+  const remainingMs = Date.parse(resetsAt) - nowMs
+  // Outside one day the clock disagrees with the server's; say nothing rather than something wrong.
+  if (!(remainingMs > 0) || remainingMs > 86400000) return ""
+  const hours = Math.floor(remainingMs / 3600000)
+  return hours >= 1 ? `New goals in ${hours}h` : `New goals in ${Math.max(1, Math.ceil(remainingMs / 60000))}m`
+}
+
+
+// Today's three goals with their progress, as of the last progress read (every
+// round save brings a fresh copy). Once their day has ended they're replaced by
+// a note until the next save brings the new day's goals.
+function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable }) {
+  if (!dailyGoals?.goals?.length) return null
+  if (areDailyGoalsExpired(dailyGoals, nowMs)) {
+    return (
+      <section className="lobbyDailyGoals" aria-label="Daily goals">
+        <header className="lobbyDailyGoalsHeader"><span>Daily goals</span></header>
+        <p className="lobbyDailyGoalsNote">New goals are ready. They'll show after your next round.</p>
+      </section>
+    )
+  }
+  const resetsIn = dailyGoals.resetsAt ? formatResetsIn(dailyGoals.resetsAt, nowMs) : ""
+  const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
+  const note = isPracticeSelected
+    ? "Practice rounds don't count toward goals."
+    : dailyBonusAvailable ? "Your first round today earns 2× XP." : ""
+
+  return (
+    <section className="lobbyDailyGoals" aria-label="Daily goals">
+      <header className="lobbyDailyGoalsHeader">
+        <span>Daily goals · {doneCount}/{dailyGoals.goals.length}</span>
+        <small>{resetsIn}</small>
+      </header>
+      <ul>
+        {dailyGoals.goals.map((goal) => (
+          <li key={goal.id} className={goal.isComplete ? "isComplete" : ""}>
+            <span className="lobbyDailyGoalMark" aria-hidden="true">{goal.isComplete ? "✓" : ""}</span>
+            <span className="lobbyDailyGoalLabel">
+              {goal.label}
+              <span className="uiVisuallyHidden">{goal.isComplete ? ", done" : `, ${goal.progress} of ${goal.target}`}</span>
+            </span>
+            <span className="lobbyDailyGoalProgress" aria-hidden="true">
+              {goal.isComplete ? "Done" : `${goal.progress}/${goal.target}`}
+            </span>
+            <span className="lobbyDailyGoalReward">
+              <span className="uiVisuallyHidden">Reward: {goal.reward.coins} coins and {goal.reward.xp} XP</span>
+              <span aria-hidden="true"><CoinIcon size={14} />{goal.reward.coins}</span>
+              <span aria-hidden="true"><GemIcon size={14} />{goal.reward.xp}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {note ? <p className={`lobbyDailyGoalsNote ${isPracticeSelected ? "" : "isBonus"}`}>{note}</p> : null}
+    </section>
+  )
+}
+
+// Phones only: the full list sits below Start, so one line above it says the
+// goals are there and what's next.
+function DailyGoalsSummary({ dailyGoals, nowMs }) {
+  if (!dailyGoals?.goals?.length) return null
+  if (areDailyGoalsExpired(dailyGoals, nowMs)) {
+    return <p className="lobbyDailyGoalsSummary" aria-hidden="true"><span>Daily goals</span><b>New goals after your next round</b></p>
+  }
+  const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
+  const nextGoal = dailyGoals.goals.find((goal) => !goal.isComplete)
+  return (
+    <p className="lobbyDailyGoalsSummary" aria-hidden="true">
+      <span>Daily goals {doneCount}/{dailyGoals.goals.length}</span>
+      {nextGoal ? <b>{nextGoal.label} · {nextGoal.progress}/{nextGoal.target}</b> : <b>All done today</b>}
+    </p>
+  )
+}
+
 function ModeRecord({ mode, recentRounds = [] }) {
   const rounds = recentRounds.filter((round) => round.modeId === mode.id).slice(0, 10)
   if (!rounds.length) return null
@@ -381,6 +472,7 @@ export function ReadyOverlay({
   onboardingCoach = null,
   showTrainingSuite = false,
   dailyBonusAvailable = false,
+  dailyGoals = null,
   trainingDrills = [],
   selectedDrillId = null,
   onSelectDrill,
@@ -394,6 +486,7 @@ export function ReadyOverlay({
   recentRounds = [],
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const dailyGoalsNowMs = useMinuteClock()
   const lobbyRef = useRef(null)
   const previousFocusRef = useRef(null)
   const [localSelectedModeId, setLocalSelectedModeId] = useState(selectedModeId)
@@ -569,10 +662,14 @@ export function ReadyOverlay({
           />
         ) : null}
 
+        <DailyGoalsSummary dailyGoals={dailyGoals} nowMs={dailyGoalsNowMs} />
+        <DailyGoals dailyGoals={dailyGoals} nowMs={dailyGoalsNowMs} isPracticeSelected={selectedMode?.id === "easy"} dailyBonusAvailable={dailyBonusAvailable} />
+
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
-            {dailyBonusAvailable ? <p className="arenaLobbyDailyBonus">First round today earns double XP</p> : null}
+            {/* On wide screens the goals list carries this note; phones keep it here, above Start. */}
+            {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

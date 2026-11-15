@@ -1757,3 +1757,51 @@
     .gameOverSpotlight a.gameOverNextUnlock .gameOverNextUnlockCopy { align-self: center; justify-items: center; text-align: center; }
     .gameOverSpotlight a.gameOverNextUnlock .gameOverNextUnlockCopy strong { white-space: normal; font-size: 28px; }
 }
+
+/* ---- Daily goals finished by this round: one plain row each, full width ---- */
+.gameOverDailyGoals {
+    flex: 1 1 100% !important;
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.gameOverDailyGoals li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+    row-gap: 2px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgb(63 217 154 / 12%);
+    box-shadow: inset 0 0 0 1px rgb(63 217 154 / 35%);
+    text-align: left;
+}
+.gameOverDailyGoalTag { color: #6ff0bd; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.gameOverDailyGoalLabel { flex: 1 1 auto; min-width: 0; color: #e8f1ff; font-size: 14px; font-weight: 700; }
+.gameOverDailyGoalReward { color: #ffd76a; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* ---- A cosmetic this round's coins made affordable: the daily-goal row, in the coin colour ---- */
+.gameOverNowAffordable {
+    flex: 1 1 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+    row-gap: 2px;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgb(255 215 106 / 12%);
+    box-shadow: inset 0 0 0 1px rgb(255 215 106 / 35%);
+    text-align: left;
+}
+.gameOverNowAffordableTag { color: #ffd76a; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.gameOverNowAffordableName { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: #e8f1ff; font-size: 14px; font-weight: 700; }
+.gameOverNowAffordablePrice { color: #ffd76a; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+/* Underlined so it reads as a link without relying on colour. */
+.gameOverNowAffordableLink { color: #ffe9a8; font-size: 13px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.gameOverNowAffordableLink:hover { color: #ffffff; }
+.gameOverNowAffordableLink:focus-visible { outline: 2px solid #ffd76a; outline-offset: 3px; border-radius: 4px; }

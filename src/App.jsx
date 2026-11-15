@@ -85,6 +85,7 @@ export default function App() {
     setSelectedModeId,
     roundHistory,
     dailyBonusAvailable,
+    dailyGoals,
     lifetimeStats,
     loadoutStats,
     totalRoundCount,
@@ -283,6 +284,7 @@ export default function App() {
                 onModeChange={handleModeChange}
                 playerLevel={levelProgress.level}
                 playerCoins={coins}
+                playerOwnedItemIds={ownedItemIds}
                 playerXpIntoLevel={levelProgress.xpIntoLevel}
                 playerXpToNextLevel={levelProgress.xpToNextLevel}
                 playerRankMmr={rankProgress.mmr}
@@ -292,6 +294,7 @@ export default function App() {
                 playerHasRankedHistory={hasRankedHistory}
                 playerRecentRounds={roundHistory}
                 serverDailyBonusAvailable={dailyBonusAvailable}
+                serverDailyGoals={dailyGoals}
                 playerBestScore={playerLeaderboardStats.bestScore}
                 lifetimeStats={lifetimeStats}
                 loadoutStats={loadoutStats}

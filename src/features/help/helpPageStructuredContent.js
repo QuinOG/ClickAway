@@ -18,7 +18,7 @@ export const QUICKSTART_CARDS = [
   {
     eyebrow: "3",
     title: "Hit to build",
-    body: "Click the target to grow streak and multiplier. An unprotected miss resets your streak and applies your build's mode penalty.",
+    body: "Click the target to grow streak and multiplier. A Bullseye lands within the inner third of its radius and doubles the points for that hit. Hit a gold target within 1.5 seconds of its appearance for triple points, stacking with Bullseye. An unprotected miss resets your streak and applies your build's mode penalty.",
   },
   {
     eyebrow: "4",
@@ -55,7 +55,7 @@ export const ROUND_FLOW_STEPS = [
 ]
 
 export const CONTROLS_ROWS = [
-  ["Hit Target", "Left click directly on the moving target."],
+  ["Hit Target", "Left click directly on the moving target; aim at its center for a Bullseye."],
   ["Miss", "Left click the arena outside the target."],
   ["End Practice Round", "Use the End Practice Round button during Practice."],
   ["Use Power Slot 1", "Press 1 during live rounds when the first equipped power is charged."],
@@ -188,6 +188,8 @@ export const PROGRESSION_POINTS = [
   "XP base formula: hits x 5 + bestStreak x 3 + floor(score x 0.2).",
   "XP accuracy bonus: +25 at >=90% accuracy, +10 at >=75% accuracy.",
   "Level XP requirement scales linearly: 100 + (level - 1) x 50.",
+  "Daily bonus: your first Casual or Ranked round each UTC day earns its XP twice.",
+  "Daily goals: three goals a day, the same for everyone, each paying coins and XP once when a Casual or Ranked round finishes it. Practice doesn't count, and new goals arrive at midnight UTC.",
   "History stores mode, score, hits, misses, streak, coins, XP, and ranked result per round.",
 ]
 
@@ -248,6 +250,10 @@ export const FAQ_ITEMS = [
   {
     question: "How is XP calculated?",
     answer: "XP uses hits, best streak, score scaling, plus an accuracy bonus when thresholds are met.",
+  },
+  {
+    question: "What are daily goals?",
+    answer: "Three small goals each day, such as playing a few rounds or hitting a streak. Each pays coins and XP the first time a Casual or Ranked round finishes it, and the lobby shows your progress. Skipping a day costs nothing.",
   },
   {
     question: "Can cosmetics improve rank or score?",

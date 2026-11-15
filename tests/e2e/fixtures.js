@@ -53,9 +53,21 @@ const rounds = Array.from({ length: 8 }, (_, index) => {
   }
 })
 
+// Far ahead, so the lobby never shows a clock-dependent countdown in snapshots.
+const nextUtcMidnight = "2099-01-01T00:00:00.000Z"
+
 export const sessionFixture = {
   user: { id: 7, username: "Vector" },
   progress: {
+    dailyGoals: {
+      day: nextUtcMidnight.slice(0, 10),
+      resetsAt: nextUtcMidnight,
+      goals: [
+        { id: "rounds-3", label: "Play 3 rounds", target: 3, progress: 3, isComplete: true, reward: { coins: 40, xp: 80 } },
+        { id: "streak-20", label: "Hit a 20 streak", target: 20, progress: 14, isComplete: false, reward: { coins: 60, xp: 120 } },
+        { id: "hits-100", label: "Land 100 hits", target: 100, progress: 46, isComplete: false, reward: { coins: 50, xp: 100 } },
+      ],
+    },
     coins: 1850,
     levelXp: 4400,
     rankMmr: 764,

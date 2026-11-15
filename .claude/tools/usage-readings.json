@@ -1,0 +1,50 @@
+[
+  {
+    "at": "2026-11-15T19:28:00.000Z",
+    "page": {
+      "session": 6,
+      "weekly": 49,
+      "fable": 5
+    },
+    "logged": {
+      "session": 1220854,
+      "weekly": 148500350,
+      "fable": 437865
+    }
+  },
+  {
+    "at": "2026-11-15T19:55:00.000Z",
+    "page": {
+      "session": 18,
+      "weekly": 50,
+      "fable": 5
+    },
+    "logged": {
+      "session": 3827525,
+      "weekly": 151107021,
+      "fable": 437865
+    }
+  },
+  {
+    "at": "2026-11-15T19:59:39.104Z",
+    "page": {
+      "weekly": 51
+    },
+    "logged": {
+      "session": 4587309,
+      "weekly": 151866804,
+      "fable": 437865
+    }
+  },
+  {
+    "at": "2026-11-15T20:48:51.160Z",
+    "page": {
+      "session": 73
+    },
+    "logged": {
+      "session": 10591288,
+      "weekly": 156455267,
+      "fable": 1145623
+    }
+  }
+]

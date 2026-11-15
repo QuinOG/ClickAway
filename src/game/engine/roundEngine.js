@@ -1,8 +1,16 @@
+import { BULLSEYE_RADIUS_SHARE, GOLD_POINTS_MULTIPLIER, deriveGoldSeed, isGoldHit, createGeometrySimulation, isBullseyeHit, normalizeArenaDimensions } from "./roundGeometry.js"
+import { ROUND_EVENT_TYPES } from "./roundEvents.js"
+import { createSeededRng } from "./seededRng.js"
 import { getComboMultiplier } from "../../utils/gameMath.js"
 
 // Score-relevant powerup tuning lives here (not in the UI hook) so the client
 // simulation and the server's replay of the submitted event stream can never
 // disagree about what a powerup did.
+// Re-exported so existing imports from the engine keep working; they live in
+// their own modules so the engine and geometry don't import each other.
+export { BULLSEYE_RADIUS_SHARE, ROUND_EVENT_TYPES }
+export const BULLSEYE_POINTS_MULTIPLIER = 2
+
 export const COMBO_SURGE_STREAK_BONUS = 4
 export const COMBO_SURGE_HIT_COUNT = 4
 export const GUARD_CHARGE_DURATION_MS = 8000
@@ -10,12 +18,6 @@ export const SECOND_WIND_DURATION_MS = 5000
 export const OVERCLOCK_DURATION_MS = 5000
 export const OVERCLOCK_SCORE_MULTIPLIER = 1.5
 export const OVERCLOCK_MISS_PENALTY_MULTIPLIER = 2
-
-export const ROUND_EVENT_TYPES = {
-  HIT: "hit",
-  MISS: "miss",
-  POWERUP: "powerup",
-}
 
 function toCount(value) {
   const n = Number(value)
@@ -70,6 +72,8 @@ export function createRoundSimulation(roundRules = {}) {
   let score = 0
   let streak = 0
   let bestStreak = 0
+  let goldHits = 0
+  let bullseyes = 0
   let hits = 0
   let misses = 0
   let comboSurgeHitsRemaining = 0
@@ -82,6 +86,8 @@ export function createRoundSimulation(roundRules = {}) {
       score,
       streak,
       bestStreak,
+      bullseyes,
+      goldHits,
       hits,
       misses,
       comboSurgeHitsRemaining,
@@ -92,7 +98,7 @@ export function createRoundSimulation(roundRules = {}) {
     }
   }
 
-  function applyHit(eventTimeMs = 0) {
+  function applyHit(eventTimeMs = 0, { bullseye = false, gold = false } = {}) {
     const nextStreak = streak + 1
     const effectiveStreak = comboSurgeHitsRemaining > 0
       ? nextStreak + COMBO_SURGE_STREAK_BONUS
@@ -104,7 +110,9 @@ export function createRoundSimulation(roundRules = {}) {
         basePointsPerHit *
         getComboMultiplier(effectiveStreak, comboStep) *
         scoreMultiplier *
-        (isOverclockActive ? OVERCLOCK_SCORE_MULTIPLIER : 1)
+        (isOverclockActive ? OVERCLOCK_SCORE_MULTIPLIER : 1) *
+        (bullseye ? BULLSEYE_POINTS_MULTIPLIER : 1) *
+        (gold ? GOLD_POINTS_MULTIPLIER : 1)
       )
     )
 
@@ -115,6 +123,8 @@ export function createRoundSimulation(roundRules = {}) {
     streak = nextStreak
     bestStreak = Math.max(bestStreak, streak)
     hits += 1
+    if (bullseye) bullseyes += 1
+    if (gold) goldHits += 1
     score += pointsEarned
 
     const grantedPowerups = equippedPowerups.filter(
@@ -191,6 +201,8 @@ export function createRoundSimulation(roundRules = {}) {
   function getSummary() {
     return {
       score: Math.floor(score),
+      bullseyes,
+      goldHits,
       hits,
       misses,
       bestStreak,
@@ -207,16 +219,41 @@ export function createRoundSimulation(roundRules = {}) {
  * invalidate the whole round instead of being skipped, since an honest client
  * can never produce them.
  */
-export function replayRoundEvents(roundRules, events = []) {
+export function replayRoundEvents(roundRules, events = [], { seed = null, arenaWidth, arenaHeight } = {}) {
+  let geometry = null
+  if (seed !== null && seed !== undefined) {
+    const arena = normalizeArenaDimensions(arenaWidth, arenaHeight)
+    if (!arena) return { valid: false, reason: "Invalid arena dimensions." }
+    geometry = createGeometrySimulation({ roundRules, ...arena, rng: createSeededRng(seed), goldRng: createSeededRng(deriveGoldSeed(seed)) })
+  }
   const simulation = createRoundSimulation(roundRules)
 
   for (const event of events) {
     if (event.type === ROUND_EVENT_TYPES.HIT) {
-      simulation.applyHit(event.t)
+      let gold = false
+      let bullseye = false
+      if (geometry) {
+        if (typeof event.x !== "number" || typeof event.y !== "number") {
+          return { valid: false, reason: "Hit missing click coordinates." }
+        }
+        if (!geometry.pointCountsAsHit(event.x, event.y)) {
+          return { valid: false, reason: "Hit click was outside the target." }
+        }
+        const { position, buttonSize } = geometry.getState()
+        bullseye = isBullseyeHit(event.x, event.y, position, buttonSize)
+        gold = isGoldHit(geometry.getState(), event.t)
+        geometry.applyHit(event.t)
+      }
+      simulation.applyHit(event.t, { bullseye, gold })
     } else if (event.type === ROUND_EVENT_TYPES.MISS) {
+      if (geometry && typeof event.x === "number" && typeof event.y === "number" && geometry.pointIsInsideTarget(event.x, event.y)) {
+        return { valid: false, reason: "Miss click was inside the target." }
+      }
+      geometry?.applyMiss(event.t)
       simulation.applyMiss(event.t)
     } else if (event.type === ROUND_EVENT_TYPES.POWERUP) {
       const outcome = simulation.applyPowerup(event.powerupId, event.t)
+      if (outcome.applied) geometry?.applyPowerup(event.powerupId, event.t)
       if (!outcome.applied && outcome.reason !== "untimed_round") {
         return {
           valid: false,

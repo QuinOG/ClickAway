@@ -1,3 +1,4 @@
+import { useGoldTargetWindow } from "./useGoldTargetWindow.js"
 import { createRoundClock } from "../../../game/engine/roundClock.js"
 import { isKeyboardActivation, measurePlayfield, mapPlayfieldClick } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -40,6 +41,9 @@ import {
 import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
 import {
   createGeometrySimulation,
+  isBullseyeHit,
+  isGoldHit,
+  deriveGoldSeed,
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
   SIZE_LOCK_DURATION_MS,
@@ -146,6 +150,7 @@ export function useGameScreenController({
   onModeChange,
   playerLevel = 1,
   playerCoins = 0,
+  playerOwnedItemIds = [],
   playerXpIntoLevel = 0,
   playerXpToNextLevel = 0,
   playerRankMmr = 0,
@@ -155,6 +160,7 @@ export function useGameScreenController({
   playerHasRankedHistory = false,
   playerRecentRounds = [],
   serverDailyBonusAvailable = null,
+  serverDailyGoals = null,
   playerBestScore = 0,
   lifetimeStats = null,
   loadoutStats = [],
@@ -252,6 +258,9 @@ export function useGameScreenController({
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
+  const [bullseyes, setBullseyes] = useState(0)
+  const [goldHits, setGoldHits] = useState(0)
+  const [goldSpawn, setGoldSpawn] = useState(null)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
   const roundStartTimeRef = useRef(0)
@@ -474,8 +483,11 @@ export function useGameScreenController({
     setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
+  const goldRemainingMs = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
+
   const mirrorGeometry = useCallback((state, spawned = false) => {
     if (!state) return
+    setGoldSpawn(state)
     setButtonSize(state.buttonSize)
     setButtonPosition(state.position)
     if (spawned) {
@@ -527,6 +539,8 @@ export function useGameScreenController({
     setScore(simulationState.score)
     setStreak(simulationState.streak)
     setBestStreak(simulationState.bestStreak)
+    setBullseyes(simulationState.bullseyes)
+    setGoldHits(simulationState.goldHits)
     setHits(simulationState.hits)
     setMisses(simulationState.misses)
     setPowerupCharges(simulationState.powerupCharges)
@@ -543,6 +557,9 @@ export function useGameScreenController({
     setScore(0)
     setStreak(0)
     setBestStreak(0)
+    setBullseyes(0)
+    setGoldHits(0)
+    setGoldSpawn(null)
     setHits(0)
     setMisses(0)
     setButtonSize(modeSettings.initialButtonSize)
@@ -1005,7 +1022,13 @@ export function useGameScreenController({
     }
 
     const isComboSurgeHit = simulationRef.current.getState().comboSurgeHitsRemaining > 0
-    const result = simulationRef.current.applyHit(eventTimeMs)
+    const hitGeometry = geometryRef.current?.getState()
+    // Classify the rounded coordinates before this hit moves or shrinks the target.
+    const bullseye = Boolean(clickCoordinates && hitGeometry && isBullseyeHit(
+      clickCoordinates.x, clickCoordinates.y, hitGeometry.position, hitGeometry.buttonSize
+    ))
+    const gold = isGoldHit(hitGeometry, eventTimeMs)
+    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye, gold })
     syncSimulationState(result)
 
     const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
@@ -1026,7 +1049,8 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      isComboSurgeHit ? "hit comboHit" : "hit"
+      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}${gold ? " gold" : ""}`,
+      gold ? (bullseye ? "Gold Bullseye ×6" : "Gold ×3") : bullseye ? "Bullseye ×2" : null
     )
     if (
       !hasPassedPersonalBestRef.current
@@ -1175,6 +1199,7 @@ export function useGameScreenController({
           roundRules: roundMode,
           ...arenaDimensionsRef.current,
           rng: rngRef.current,
+          goldRng: createSeededRng(deriveGoldSeed(roundSeedRef.current)),
         })
         const geometry = geometryRef.current.getState()
         setButtonSize(geometry.buttonSize)
@@ -1613,6 +1638,8 @@ export function useGameScreenController({
       buttonStyle,
       onButtonClick: handleButtonClick,
       isButtonDisabled: !isPlaying,
+      isGold: goldRemainingMs > 0,
+      goldRemainingMs,
       buttonLabel,
       buttonLabelFontSize,
       buttonSkinClass,
@@ -1662,6 +1689,8 @@ export function useGameScreenController({
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,
       dailyBonusAvailable: selectedModeConfig?.allowsLevelProgression === true
         && (serverDailyBonusAvailable ?? !hasXpRoundToday(playerRecentRounds)),
+      // The coached first rounds keep the lobby to one task; goals appear after.
+      dailyGoals: isGameOnboardingActive ? null : serverDailyGoals,
       showTrainingSuite: selectedModeId === DIFFICULTY_IDS.EASY && !isGameOnboardingActive,
       trainingDrills: TRAINING_DRILLS,
       selectedDrillId,
@@ -1691,6 +1720,8 @@ export function useGameScreenController({
       onCancel: cancelPendingRoundStart,
     } : null,
     gameOverOverlayProps: {
+      bullseyes: roundSave.outcome?.bullseyes ?? bullseyes,
+      goldHits: roundSave.outcome?.goldHits ?? goldHits,
       score,
       hits,
       misses,
@@ -1699,12 +1730,17 @@ export function useGameScreenController({
       modeLabel: roundMode.label,
       playerLevel: roundStartLevel,
       playerCoins: roundStartCoins,
+      // Results names a cosmetic the round's coins just made affordable.
+      ownedItemIds: playerOwnedItemIds,
       playerXpIntoLevel: roundStartXpIntoLevel,
       playerXpToNextLevel: roundStartXpToNextLevel,
       // Once the server answers, show what it actually awarded rather than the
       // estimate made when the round ended.
       roundXpEarned: roundSave.outcome?.earnedXp ?? roundXpEarned,
       roundDailyBonusXp: roundSave.outcome?.dailyBonusXp ?? 0,
+      roundDailyGoals: roundSave.outcome?.dailyGoalRewards ?? null,
+      // Applied from the save's progress before the save reports done.
+      dailyGoals: serverDailyGoals,
       roundCoinsEarned: roundSave.outcome?.earnedCoins ?? roundCoinsEarned,
       roundSaveStatus: roundSave.status,
       roundSaveError: roundSave.error ?? "",

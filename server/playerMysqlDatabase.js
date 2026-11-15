@@ -45,6 +45,12 @@ import {
   getMappedShopItemById,
 } from "./serverShopCatalogIdMappings.js"
 import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
+import {
+  buildDailyGoalProgress,
+  getNewlyCompletedDailyGoals,
+  getNextUtcResetMs,
+  sumDailyGoalRewards,
+} from "../src/utils/dailyGoals.js"
 
 const DEFAULT_PROGRESS = {
   coins: 0,
@@ -786,15 +792,54 @@ async function getWeeklyRoundCount(executor, userId) {
 
 // Whether the player already had an XP-earning round today (UTC). The first one
 // each day earns double XP; the save and the progress read both ask this.
+// The current UTC day by the database clock. Inside a transaction now() is the
+// transaction's start, and a saved round's played_at uses the same value, so the
+// day a round is checked against is the day it is stored in. The upper bound
+// keeps a round saved just before midnight from seeing the next day's rows.
+const TODAY_UTC_WINDOW = `played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+       AND played_at < ((date_trunc('day', now() AT TIME ZONE 'UTC') + interval '1 day') AT TIME ZONE 'UTC')`
+
 async function hasXpRoundToday(executor, userId) {
   const [rows] = await executor.query(
     `SELECT 1 FROM round_history
      WHERE user_id = ? AND xp_earned > 0
-       AND played_at >= (date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+       AND ${TODAY_UTC_WINDOW}
      LIMIT 1`,
     [userId]
   )
   return rows.length > 0
+}
+
+// Today's rounds that count toward daily goals (the ones that earned XP), with
+// the UTC day taken from the database clock, matching hasXpRoundToday.
+async function getTodaysDailyGoalRounds(executor, userId) {
+  const [[clock]] = await executor.query(
+    "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day_key"
+  )
+  const [rows] = await executor.query(
+    `SELECT
+       mode AS modeId,
+       hits,
+       misses,
+       best_streak AS bestStreak
+     FROM round_history
+     WHERE user_id = ? AND xp_earned > 0
+       AND ${TODAY_UTC_WINDOW}`,
+    [userId]
+  )
+  return { dayKey: String(clock?.day_key ?? clock?.dayKey ?? ""), rounds: rows }
+}
+
+async function getDailyGoalsSnapshot(executor, userId) {
+  const { dayKey, rounds } = await getTodaysDailyGoalRounds(executor, userId)
+  if (!dayKey) return null
+  return {
+    day: dayKey,
+    resetsAt: new Date(getNextUtcResetMs(Date.parse(`${dayKey}T00:00:00Z`))).toISOString(),
+    goals: buildDailyGoalProgress(dayKey, rounds).map(({ id, label, target, progress, isComplete, reward }) => ({
+      id, label, target, progress, isComplete, reward,
+    })),
+  }
 }
 
 async function getRoundHistoryCount(executor, userId) {
@@ -1242,6 +1287,7 @@ async function buildProgressRecord(executor, userId) {
   // From the server, not the 50 loaded rounds, so the lobby never promises a
   // bonus that an older round today already used.
   const dailyBonusAvailable = !(await hasXpRoundToday(executor, userId))
+  const dailyGoals = await getDailyGoalsSnapshot(executor, userId)
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
     rankMmr: userRow.mmr,
@@ -1255,6 +1301,7 @@ async function buildProgressRecord(executor, userId) {
 
   return {
     dailyBonusAvailable,
+    dailyGoals,
     coins: toNonNegativeNumber(userRow.coins, DEFAULT_PROGRESS.coins),
     levelXp: toNonNegativeNumber(userRow.xp, DEFAULT_PROGRESS.levelXp),
     rankMmr: migratedRankData.rankMmr,
@@ -1799,6 +1846,7 @@ export async function completeUserRound({
   let rankOutcome = null
   let insertedHistoryEntry = null
   let dailyBonusXp = 0
+  let dailyGoalRewards = { goals: [], coins: 0, xp: 0 }
 
   try {
     await connection.beginTransaction()
@@ -1820,6 +1868,13 @@ export async function completeUserRound({
       }
     }
 
+    // The round is stored at the transaction's time, the same now() the daily
+    // bonus and goal checks use, so a save that crosses midnight can't be checked
+    // against one day and stored in the next (which would let it pay twice).
+    const [[transactionClock]] = await connection.query("SELECT now() AS round_time")
+    const roundTime = transactionClock?.round_time ?? transactionClock?.roundTime ?? null
+    const storedPlayedAtIso = roundTime ? new Date(roundTime).toISOString() : historyEntry?.playedAtIso
+
     // The first XP-earning round of each UTC day earns its XP twice: a reason to
     // come back daily that never takes anything away. Checked under the user row
     // lock, so two rounds finishing together can't both claim it. Practice and
@@ -1827,9 +1882,28 @@ export async function completeUserRound({
     if ((Number(earnedXp) || 0) > 0 && !(await hasXpRoundToday(connection, userId))) {
       dailyBonusXp = Number(earnedXp)
     }
-    const totalXp = (Number(earnedXp) || 0) + dailyBonusXp
+    // Daily goals this round finishes pay once. Progress comes from today's
+    // XP-earning rounds, read under the same row lock, so two rounds finishing
+    // together can't both complete (and be paid for) the same goal.
+    if ((Number(earnedXp) || 0) > 0) {
+      const { dayKey, rounds } = await getTodaysDailyGoalRounds(connection, userId)
+      const completedGoals = dayKey
+        ? getNewlyCompletedDailyGoals(dayKey, rounds, {
+          modeId: historyEntry?.modeId,
+          hits: historyEntry?.hits,
+          misses: historyEntry?.misses,
+          bestStreak: historyEntry?.bestStreak,
+        })
+        : []
+      dailyGoalRewards = {
+        goals: completedGoals.map(({ id, label, reward }) => ({ id, label, reward })),
+        ...sumDailyGoalRewards(completedGoals),
+      }
+    }
+    const totalXp = (Number(earnedXp) || 0) + dailyBonusXp + dailyGoalRewards.xp
+    const totalCoins = (Number(earnedCoins) || 0) + dailyGoalRewards.coins
 
-    const coins = Math.min(maxCoins, Math.max(0, (Number(userRow.coins) || 0) + (Number(earnedCoins) || 0)))
+    const coins = Math.min(maxCoins, Math.max(0, (Number(userRow.coins) || 0) + totalCoins))
     const levelXp = Math.min(maxXp, Math.max(0, (Number(userRow.xp) || 0) + totalXp))
 
     const isCurrentRankSystem = Number(userRow.rankSystemVersion) === RANK_SYSTEM_VERSION
@@ -1880,6 +1954,8 @@ export async function completeUserRound({
 
     insertedHistoryEntry = await insertRoundHistoryEntry(connection, userId, {
       ...historyEntry,
+      playedAtIso: storedPlayedAtIso,
+      coinsEarned: (Number(historyEntry?.coinsEarned) || 0) + dailyGoalRewards.coins,
       xpEarned: totalXp,
       rankDelta: rankOutcome.appliedRankDelta,
       rankResultKind: historyEntry?.progressionMode === 'ranked'
@@ -1890,6 +1966,9 @@ export async function completeUserRound({
     if (countsTowardStats) {
       const committedHistoryEntry = {
         ...historyEntry,
+        // Coins earned include daily goal rewards, matching the wallet and the
+        // history row, so lifetime coin totals and coin achievements count them.
+        coinsEarned: (Number(historyEntry?.coinsEarned) || 0) + dailyGoalRewards.coins,
         rankDelta: rankOutcome.appliedRankDelta,
         // Placement rounds award a placement score, not a ranked win.
         rankedWin: !rankOutcome.previousRankProgress?.isUnranked && !rankOutcome.previousRankProgress?.isPlacement && rankOutcome.appliedRankDelta > 0,
@@ -1970,6 +2049,7 @@ export async function completeUserRound({
     historyEntry: insertedHistoryEntry,
     rankOutcome,
     dailyBonusXp,
+    dailyGoalRewards,
   }
 }
 

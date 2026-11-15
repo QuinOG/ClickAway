@@ -110,3 +110,26 @@ describe("Shop category keyboard navigation", () => {
     expect(onChange).toHaveBeenLastCalledWith("Buttons", buttons[1])
   })
 })
+
+
+describe("Shop cosmetic names for screen readers", () => {
+  test.each([
+    [{ coins: 100 }, "Unlock: Test Skin"],
+    [{ ownedItemIds: [baseItem.id] }, "Equip: Test Skin"],
+    [{ coins: 0 }, "Need 100 more: Test Skin"],
+  ])("names the cosmetic in its card action", (overrides, name) => {
+    renderCard(overrides)
+    expect(screen.getByRole("button", { name: new RegExp(name) })).not.toBeNull()
+  })
+
+  test("includes the selected portrait in the loadout preview name", () => {
+    render(<ShopHeroHeader
+      buttonSkin={{ name: "Classic" }}
+      arenaTheme={{ name: "Classic Arena" }}
+      selectedItem={{ id: "profile_racoon", type: "profile_image", name: "Raccoon Scout" }}
+      selectedItemStatus={{ state: "owned", isOwned: true }}
+    />)
+    expect(screen.getByRole("img", { name: /Selected preview.*Raccoon Scout/ })).not.toBeNull()
+    expect(screen.getByRole("button", { name: "Equip Profile: Raccoon Scout" })).not.toBeNull()
+  })
+})

@@ -1,6 +1,18 @@
 import { getNextButtonSize } from "../../utils/gameMath.js"
-import { ROUND_EVENT_TYPES } from "./roundEngine.js"
+import { ROUND_EVENT_TYPES } from "./roundEvents.js"
 import { createSeededRng } from "./seededRng.js"
+
+export const GOLD_TARGET_CHANCE = 0.1
+export const GOLD_TARGET_WINDOW_MS = 1500
+export const GOLD_POINTS_MULTIPLIER = 3
+
+// A separate stream preserves every existing seed's target positions.
+export const deriveGoldSeed = (seed) => (seed ^ 0x9e3779b9) >>> 0
+
+export function isGoldHit(state, eventTimeMs) {
+  return Boolean(state?.isGold && eventTimeMs >= state.spawnedAtMs
+    && eventTimeMs - state.spawnedAtMs <= GOLD_TARGET_WINDOW_MS)
+}
 
 export const FREEZE_MOVEMENT_DURATION_MS = 1000
 export const MAGNET_CENTER_FREEZE_MS = 400
@@ -45,6 +57,19 @@ export function isPointOnButtonForHit(x, y, position, buttonSize) {
     && x <= position.x + buttonSize + CLICK_TOLERANCE_PX
     && y <= position.y + buttonSize + CLICK_TOLERANCE_PX
   )
+}
+
+// A hit within this share of the target's radius from its centre is a Bullseye.
+export const BULLSEYE_RADIUS_SHARE = 1 / 3
+
+export function isBullseyeHit(x, y, position, buttonSize) {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !(buttonSize > 0)) return false
+  const radius = buttonSize / 2
+  const dx = x - (position.x + radius)
+  const dy = y - (position.y + radius)
+  // Include the mathematical boundary despite coordinate subtraction rounding.
+  const roundingSlack = Number.EPSILON * Math.max(Math.abs(x), Math.abs(y), buttonSize) * 2
+  return Math.hypot(dx, dy) <= radius * BULLSEYE_RADIUS_SHARE + roundingSlack
 }
 
 export function isPointClearlyInsideCircle(x, y, position, buttonSize) {
@@ -92,6 +117,7 @@ export function createGeometrySimulation({
   arenaHeight,
   rng = Math.random,
   initialPosition = null,
+  goldRng = null,
 } = {}) {
   const initialButtonSize = Number(roundRules.initialButtonSize) || 100
   const powerupsById = Object.fromEntries(
@@ -99,6 +125,9 @@ export function createGeometrySimulation({
       .map((powerup) => [powerup.id, powerup])
   )
 
+  let spawnIndex = 0
+  let spawnedAtMs = 0
+  let isGold = false
   let buttonSize = initialButtonSize
   let position = initialPosition ? { ...initialPosition } : getCenteredPosition(arenaWidth, arenaHeight, buttonSize)
   let freezeMovementUntilMs = 0
@@ -106,6 +135,9 @@ export function createGeometrySimulation({
 
   function getState() {
     return {
+      spawnIndex,
+      spawnedAtMs,
+      isGold,
       buttonSize,
       position: { ...position },
       freezeMovementUntilMs,
@@ -126,6 +158,9 @@ export function createGeometrySimulation({
   }
 
   function applyHit(eventTimeMs = 0) {
+    spawnIndex += 1
+    spawnedAtMs = eventTimeMs
+    isGold = goldRng ? goldRng() < GOLD_TARGET_CHANCE : false
     if (eventTimeMs >= sizeLockUntilMs) {
       buttonSize = getNextButtonSize(buttonSize, roundRules)
     }
@@ -141,6 +176,7 @@ export function createGeometrySimulation({
     return getState()
   }
 
+  // Freeze, Magnet and Grow change geometry; only hits create spawns.
   function applyPowerup(powerupId, eventTimeMs = 0) {
     const powerup = powerupsById[powerupId]
     if (!powerup) return getState()

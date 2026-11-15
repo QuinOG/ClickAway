@@ -2,6 +2,7 @@ import { useCallback } from "react"
 
 import { submitRound } from "../services/clickAwayHttpApiClient.js"
 import { applyProgressResponse, beginProgressRequest, settleProgressMutation } from "./progressResponseGuard.js"
+import { normalizeDailyGoalRewards } from "../utils/dailyGoals.js"
 
 export function usePlayerProgressionUpdates({
   isAuthed,
@@ -41,9 +42,13 @@ export function usePlayerProgressionUpdates({
         const applied = await applyProgressResponse(ticket, response.progress, applyProgress)
         return {
           ok: true,
+          // Missing from older servers: Results then keeps the client's own count.
+          goldHits: Number.isFinite(Number(response.goldHits)) && response.goldHits !== null ? Number(response.goldHits) : null,
+          bullseyes: Number.isFinite(Number(response.bullseyes)) && response.bullseyes !== null ? Number(response.bullseyes) : null,
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
           dailyBonusXp: Number(response.dailyBonusXp) || 0,
+          dailyGoalRewards: normalizeDailyGoalRewards(response.dailyGoalRewards),
           rankDelta: response.rankDelta,
           rankProgress: response.rankProgress ?? null,
           followUpError: [

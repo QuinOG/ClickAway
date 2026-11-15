@@ -203,7 +203,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
       setChallenges(challengeResponse.status === "fulfilled" && Array.isArray(challengeResponse.value?.challenges)
         ? challengeResponse.value.challenges : [])
       setReplays(replayResponse.status === "fulfilled" && Array.isArray(replayResponse.value?.replays)
-        ? replayResponse.value.replays : [])
+        ? replayResponse.value.replays.filter((replay) => replay.visibility !== "private") : [])
       if (challengeResponse.status === "rejected") {
         setLoadError(challengeResponse.reason?.message || "Unable to load challenges.")
       }

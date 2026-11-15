@@ -4,7 +4,6 @@ import {
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getMaxClickEvents, MIN_CLICK_INTERVAL_MS, replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
-import { validateRoundGeometry } from "../src/game/engine/roundGeometry.js"
 import { calculateRoundCoins } from "../src/utils/roundRewards.js"
 import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
@@ -144,32 +143,22 @@ export function simulateRound(events, modeId, {
     ? buildRoundRules(mode, normalizedSnapshot)
     : mode
 
-  const replay = replayRoundEvents(roundRules, events)
+  const hasRoundSeed = roundSeed !== null && roundSeed !== undefined
+  const replay = replayRoundEvents(roundRules, events, hasRoundSeed ? { seed: roundSeed, arenaWidth, arenaHeight } : {})
   if (!replay.valid) return replay
 
   const deadlineCheck = validateRoundDeadline(roundRules, mode, events)
   if (!deadlineCheck.valid) return deadlineCheck
 
-  const hasRoundSeed = roundSeed !== null && roundSeed !== undefined
   if (mode.allowsRankProgression && !hasRoundSeed) {
     return { valid: false, reason: "Ranked rounds require a round seed." }
-  }
-
-  // Any server-seeded round has its click positions checked, whatever the mode.
-  // Leaving out the arena size used to skip this for Casual; it now fails the
-  // check instead (validateRoundGeometry rejects missing dimensions).
-  if (hasRoundSeed) {
-    const geometryCheck = validateRoundGeometry(roundRules, events, {
-      seed: roundSeed,
-      arenaWidth,
-      arenaHeight,
-    })
-    if (!geometryCheck.valid) return geometryCheck
   }
 
   return {
     valid: true,
     hits: replay.hits,
+    bullseyes: replay.bullseyes,
+    goldHits: replay.goldHits,
     misses: replay.misses,
     score: replay.score,
     bestStreak: replay.bestStreak,
