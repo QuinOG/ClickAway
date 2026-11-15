@@ -1,8 +1,9 @@
 {
-  "calibratedAt": "2026-11-13T23:56:59.242Z",
-  "calibrationNote": "From the Claude usage page: session 69% used (resets 1h54m), weekly 10% used (resets 4d0h). Budgets are tokens per 100%; recalibrate only if limits change or the estimate drifts.",
-  "claudeFiveHourBudget": 47676833,
-  "claudeWeeklyBudget": 2442634617,
+  "calibratedAt": "2026-11-15T19:28:00.000Z",
+  "calibrationNote": "From the Claude usage page at 2026-11-15 19:28Z: session 6% used (resets 4h32m), weekly 49% used (resets 2d4h), Weekly \u00b7 Fable 5% used. Logged then: ~3.6M weighted tokens in the session, 319M this week (Fable excluded), 1.23M Fable. Budgets are tokens per 100%. The 2026-11-13 weekly budget was ~4x too high (meter showed 13% vs 49% real): recalibrate whenever the page and the meter differ by more than ~10 points.",
+  "claudeFiveHourBudget": 60000000,
+  "claudeWeeklyBudget": 652000000,
   "claudeWeeklyResetAt": "2026-11-17T23:56:59.242000Z",
-  "claudeSessionResetAt": "2026-11-14T01:50:59.242000Z"
+  "claudeSessionResetAt": "2026-11-16T00:00:00.000Z",
+  "fableWeeklyBudget": 24600000
 }

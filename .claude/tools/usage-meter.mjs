@@ -78,17 +78,15 @@ function codex() {
 // ---- Claude Code: weighted tokens from transcripts
 // Weights approximate how much each kind counts toward limits; cache reads are cheap.
 const W = budget.claudeWeights ?? { input: 1, cacheCreate: 1.25, cacheRead: 0.1, output: 5 }
-// Per-model price relative to Opus (user, 2026-11-15: Fable is $8/$40 per
-// million input/output tokens against Opus's $4/$20, so it counts double).
-const MODEL_MULTIPLIERS = budget.claudeModelMultipliers ?? { fable: 2 }
-function modelMultiplier(model = "") {
-  const key = Object.keys(MODEL_MULTIPLIERS).find((name) => String(model).toLowerCase().includes(name))
-  return key ? MODEL_MULTIPLIERS[key] : 1
-}
+// Fable has its own weekly limit on the usage page ("Weekly · Fable"), so its
+// tokens are counted separately and kept out of Claude's session and weekly totals.
+// (It also costs about twice Opus per token: $8/$40 vs $4/$20 per million.)
+const isFableModel = (model = "") => String(model).toLowerCase().includes("fable")
 function claude() {
   const files = walk(join(HOME, ".claude", "projects"), (n) => n.endsWith(".jsonl"))
     .filter((f) => NOW - f.mtime < WEEK)
   const events = []
+  const fableEvents = []
   for (const file of files) {
     for (const line of readFileSync(file.path, "utf8").split("\n")) {
       if (!line.includes('"usage"')) continue
@@ -97,10 +95,11 @@ function claude() {
       const usage = event?.message?.usage
       const at = Date.parse(event?.timestamp ?? "")
       if (!usage || !at || NOW - at > WEEK) continue
-      events.push([at, ((usage.input_tokens ?? 0) * W.input
+      const weighted = (usage.input_tokens ?? 0) * W.input
         + (usage.cache_creation_input_tokens ?? 0) * W.cacheCreate
         + (usage.cache_read_input_tokens ?? 0) * W.cacheRead
-        + (usage.output_tokens ?? 0) * W.output) * modelMultiplier(event?.message?.model)])
+        + (usage.output_tokens ?? 0) * W.output
+      ;(isFableModel(event?.message?.model) ? fableEvents : events).push([at, weighted])
     }
   }
   events.sort((a, b) => a[0] - b[0])
@@ -127,6 +126,7 @@ function claude() {
     weekStart = reset - WEEK
   }
   const week = events.filter(([at]) => at >= weekStart).reduce((sum, [, w]) => sum + w, 0)
+  const fableWeek = fableEvents.filter(([at]) => at >= weekStart).reduce((sum, [, w]) => sum + w, 0)
 
   const pct = (value, cap) => (cap ? Math.round((value / cap) * 100) : null)
   const sessionReset = sessionActive ? windowStart + FIVE_HOURS : null
@@ -136,6 +136,9 @@ function claude() {
     weightedTokens7d: Math.round(week),
     fiveHourPercent: pct(fiveHour, budget.claudeFiveHourBudget),
     weeklyPercent: pct(week, budget.claudeWeeklyBudget),
+    weekElapsedPercent: Math.round(((NOW - weekStart) / WEEK) * 100),
+    fableWeightedTokens7d: Math.round(fableWeek),
+    fableWeeklyPercent: pct(fableWeek, budget.fableWeeklyBudget),
     minutesToSessionReset: sessionReset ? Math.round((sessionReset - NOW) / 60000) : null,
     fiveHourPace: sessionReset ? pace(pct(fiveHour, budget.claudeFiveHourBudget) ?? 0, sessionReset, FIVE_HOURS).status : "idle",
   }
@@ -151,5 +154,5 @@ if (process.argv.includes("--json")) {
     ? `Codex  5h: ${c.fiveHour.usedPercent}% used (${c.fiveHour.status}, ${c.fiveHour.elapsedPercent}% of window elapsed, resets in ${c.fiveHour.minutesToReset} min) | week: ${c.weekly?.usedPercent}% (${c.weekly?.status})`
     : "Codex  no rate-limit data found in ~/.codex/sessions")
   const k = report.claude
-  console.log(`Claude 5h: ${k.fiveHourPercent ?? "?"}% est (${k.fiveHourPace}${k.minutesToSessionReset !== null ? `, resets in ${k.minutesToSessionReset} min` : ""}) | week: ${k.weeklyPercent ?? "?"}% est [${k.source}]`)
+  console.log(`Claude 5h: ${k.fiveHourPercent ?? "?"}% est (${k.fiveHourPace}${k.minutesToSessionReset !== null ? `, resets in ${k.minutesToSessionReset} min` : ""}) | week: ${k.weeklyPercent ?? "?"}% est, ${k.weekElapsedPercent}% of week elapsed | Fable week: ${k.fableWeeklyPercent ?? "?"}% est [${k.source}]`)
 }
