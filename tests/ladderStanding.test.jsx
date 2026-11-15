@@ -72,3 +72,18 @@ test("a new season has no reward despite the carried rating", async () => {
   const panel = screen.getByRole("region", { name: "Your leaderboard standing" })
   expect(within(within(panel).getByText("Reward").closest("article")).getByText("None yet")).toBeTruthy()
 })
+
+
+test("Ladder shows a recorded zero reaction time and keeps missing values empty", async () => {
+  fetchLeaderboard.mockResolvedValue({ ...result, rows: [
+    { ...player, bestReactionMs: 0 },
+    { ...player, rank: 2, userId: 8, username: "NoReaction", bestReactionMs: null },
+  ] })
+  show()
+  await screen.findByRole("list", { name: /Ladder sorted/ })
+  const rows = document.querySelectorAll(".ladderPlate")
+  const reaction = row => Array.from(row.querySelectorAll(".ladderPlateStat"))
+    .find(stat => stat.querySelector("dt").textContent === "Reaction").querySelector("dd").textContent
+  expect(reaction(rows[0])).toBe("0 ms")
+  expect(reaction(rows[1])).toBe("\u2014")
+})

@@ -198,7 +198,7 @@ function LeaderboardTableSkeleton() {
 
 function formatLadderStat(player, key) {
   if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
-  if (key === "bestReactionMs") return player.bestReactionMs ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
+  if (key === "bestReactionMs") return player.bestReactionMs !== null ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
   if (key === "mmr") return formatNumericValue(player.mmr)
   return formatNumericValue(player[key])
 }
