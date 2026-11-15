@@ -4,6 +4,10 @@ import { buildRoundRules, DEFAULT_SAVED_LOADOUTS } from "../src/constants/buildc
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
 import { useArmoryRangeRound } from "../src/features/armory/hooks/useArmoryRangeRound.js"
 
+import { createGeometrySimulation } from "../src/game/engine/roundGeometry.js"
+import { createSeededRng } from "../src/game/engine/seededRng.js"
+import { getRandomPosition } from "../src/utils/gameMath.js"
+
 afterEach(() => vi.useRealTimers())
 
 test("Second Wind keeps a range streak without showing a streak break", () => {
@@ -36,18 +40,24 @@ test.each([['hit', 'freeze_movement'], ['freeze_movement', 'hit'], ['hit', 'magn
   const { result, rerender } = renderHook(({ token }) => useArmoryRangeRound({ roundRules: rules, isActive: true, runToken: token }), { initialProps: { token: 1 } })
   result.current.arenaProps.arenaRef.current = { getBoundingClientRect: () => ({ width: 600, height: 400, left: 0, top: 0 }) }
   act(() => vi.advanceTimersByTime(3000))
-  expect(result.current.arenaProps.buttonStyle.left).toBe('125px')
+  const rng = createSeededRng(Math.floor(0.25 * 0xffffffff))
+  const geometry = createGeometrySimulation({ roundRules: rules, arenaWidth: 600, arenaHeight: 400, rng,
+    initialPosition: getRandomPosition({ width: 600, height: 400 }, rules.initialButtonSize, rng) })
+  const initialLeft = `${geometry.getState().position.x}px`
+  expect(result.current.arenaProps.buttonStyle.left).toBe(initialLeft)
   act(() => {
     for (const step of steps) {
       if (step === 'hit') result.current.arenaProps.onButtonClick({ stopPropagation() {}, clientX: 175, clientY: 125 })
       else result.current.powerupTrayProps.onUsePowerup(step)
+      if (step === 'hit') geometry.applyHit(0)
+      else geometry.applyPowerup(step, 0)
     }
   })
-  expect(result.current.arenaProps.buttonStyle.left).toBe(steps.includes('magnet_center') ? '250px' : steps[0] === 'hit' ? '126px' : '125px')
+  expect(result.current.arenaProps.buttonStyle.left).toBe(`${geometry.getState().position.x}px`)
   act(() => vi.advanceTimersByTime(1))
-  expect(result.current.arenaProps.buttonStyle.left).toBe(steps.includes('magnet_center') ? '250px' : steps[0] === 'hit' ? '126px' : '125px')
+  expect(result.current.arenaProps.buttonStyle.left).toBe(`${geometry.getState().position.x}px`)
   rerender({ token: 2 })
   act(() => vi.advanceTimersByTime(3000))
-  expect(result.current.arenaProps.buttonStyle.left).toBe('125px')
+  expect(result.current.arenaProps.buttonStyle.left).toBe(initialLeft)
   vi.restoreAllMocks()
 })

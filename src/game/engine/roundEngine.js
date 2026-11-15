@@ -1,4 +1,4 @@
-import { BULLSEYE_RADIUS_SHARE, createGeometrySimulation, isBullseyeHit, normalizeArenaDimensions } from "./roundGeometry.js"
+import { BULLSEYE_RADIUS_SHARE, GOLD_POINTS_MULTIPLIER, deriveGoldSeed, isGoldHit, createGeometrySimulation, isBullseyeHit, normalizeArenaDimensions } from "./roundGeometry.js"
 import { ROUND_EVENT_TYPES } from "./roundEvents.js"
 import { createSeededRng } from "./seededRng.js"
 import { getComboMultiplier } from "../../utils/gameMath.js"
@@ -72,6 +72,7 @@ export function createRoundSimulation(roundRules = {}) {
   let score = 0
   let streak = 0
   let bestStreak = 0
+  let goldHits = 0
   let bullseyes = 0
   let hits = 0
   let misses = 0
@@ -86,6 +87,7 @@ export function createRoundSimulation(roundRules = {}) {
       streak,
       bestStreak,
       bullseyes,
+      goldHits,
       hits,
       misses,
       comboSurgeHitsRemaining,
@@ -96,7 +98,7 @@ export function createRoundSimulation(roundRules = {}) {
     }
   }
 
-  function applyHit(eventTimeMs = 0, { bullseye = false } = {}) {
+  function applyHit(eventTimeMs = 0, { bullseye = false, gold = false } = {}) {
     const nextStreak = streak + 1
     const effectiveStreak = comboSurgeHitsRemaining > 0
       ? nextStreak + COMBO_SURGE_STREAK_BONUS
@@ -109,7 +111,8 @@ export function createRoundSimulation(roundRules = {}) {
         getComboMultiplier(effectiveStreak, comboStep) *
         scoreMultiplier *
         (isOverclockActive ? OVERCLOCK_SCORE_MULTIPLIER : 1) *
-        (bullseye ? BULLSEYE_POINTS_MULTIPLIER : 1)
+        (bullseye ? BULLSEYE_POINTS_MULTIPLIER : 1) *
+        (gold ? GOLD_POINTS_MULTIPLIER : 1)
       )
     )
 
@@ -121,6 +124,7 @@ export function createRoundSimulation(roundRules = {}) {
     bestStreak = Math.max(bestStreak, streak)
     hits += 1
     if (bullseye) bullseyes += 1
+    if (gold) goldHits += 1
     score += pointsEarned
 
     const grantedPowerups = equippedPowerups.filter(
@@ -198,6 +202,7 @@ export function createRoundSimulation(roundRules = {}) {
     return {
       score: Math.floor(score),
       bullseyes,
+      goldHits,
       hits,
       misses,
       bestStreak,
@@ -219,12 +224,13 @@ export function replayRoundEvents(roundRules, events = [], { seed = null, arenaW
   if (seed !== null && seed !== undefined) {
     const arena = normalizeArenaDimensions(arenaWidth, arenaHeight)
     if (!arena) return { valid: false, reason: "Invalid arena dimensions." }
-    geometry = createGeometrySimulation({ roundRules, ...arena, rng: createSeededRng(seed) })
+    geometry = createGeometrySimulation({ roundRules, ...arena, rng: createSeededRng(seed), goldRng: createSeededRng(deriveGoldSeed(seed)) })
   }
   const simulation = createRoundSimulation(roundRules)
 
   for (const event of events) {
     if (event.type === ROUND_EVENT_TYPES.HIT) {
+      let gold = false
       let bullseye = false
       if (geometry) {
         if (typeof event.x !== "number" || typeof event.y !== "number") {
@@ -235,9 +241,10 @@ export function replayRoundEvents(roundRules, events = [], { seed = null, arenaW
         }
         const { position, buttonSize } = geometry.getState()
         bullseye = isBullseyeHit(event.x, event.y, position, buttonSize)
+        gold = isGoldHit(geometry.getState(), event.t)
         geometry.applyHit(event.t)
       }
-      simulation.applyHit(event.t, { bullseye })
+      simulation.applyHit(event.t, { bullseye, gold })
     } else if (event.type === ROUND_EVENT_TYPES.MISS) {
       if (geometry && typeof event.x === "number" && typeof event.y === "number" && geometry.pointIsInsideTarget(event.x, event.y)) {
         return { valid: false, reason: "Miss click was inside the target." }

@@ -1,3 +1,4 @@
+import { useGoldTargetWindow } from "./useGoldTargetWindow.js"
 import { createRoundClock } from "../../../game/engine/roundClock.js"
 import { isKeyboardActivation, measurePlayfield, mapPlayfieldClick } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -41,6 +42,8 @@ import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from 
 import {
   createGeometrySimulation,
   isBullseyeHit,
+  isGoldHit,
+  deriveGoldSeed,
   FREEZE_MOVEMENT_DURATION_MS,
   MAGNET_CENTER_FREEZE_MS,
   SIZE_LOCK_DURATION_MS,
@@ -256,6 +259,8 @@ export function useGameScreenController({
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
   const [bullseyes, setBullseyes] = useState(0)
+  const [goldHits, setGoldHits] = useState(0)
+  const [goldSpawn, setGoldSpawn] = useState(null)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
   const roundStartTimeRef = useRef(0)
@@ -478,8 +483,11 @@ export function useGameScreenController({
     setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
+  const goldRemainingMs = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
+
   const mirrorGeometry = useCallback((state, spawned = false) => {
     if (!state) return
+    setGoldSpawn(state)
     setButtonSize(state.buttonSize)
     setButtonPosition(state.position)
     if (spawned) {
@@ -532,6 +540,7 @@ export function useGameScreenController({
     setStreak(simulationState.streak)
     setBestStreak(simulationState.bestStreak)
     setBullseyes(simulationState.bullseyes)
+    setGoldHits(simulationState.goldHits)
     setHits(simulationState.hits)
     setMisses(simulationState.misses)
     setPowerupCharges(simulationState.powerupCharges)
@@ -549,6 +558,8 @@ export function useGameScreenController({
     setStreak(0)
     setBestStreak(0)
     setBullseyes(0)
+    setGoldHits(0)
+    setGoldSpawn(null)
     setHits(0)
     setMisses(0)
     setButtonSize(modeSettings.initialButtonSize)
@@ -1016,7 +1027,8 @@ export function useGameScreenController({
     const bullseye = Boolean(clickCoordinates && hitGeometry && isBullseyeHit(
       clickCoordinates.x, clickCoordinates.y, hitGeometry.position, hitGeometry.buttonSize
     ))
-    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye })
+    const gold = isGoldHit(hitGeometry, eventTimeMs)
+    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye, gold })
     syncSimulationState(result)
 
     const feedbackEventId = `round-${roundNonceRef.current}-event-${roundEventsRef.current.length}`
@@ -1037,8 +1049,8 @@ export function useGameScreenController({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}`,
-      bullseye ? "Bullseye ×2" : null
+      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}${gold ? " gold" : ""}`,
+      gold ? (bullseye ? "Gold Bullseye ×6" : "Gold ×3") : bullseye ? "Bullseye ×2" : null
     )
     if (
       !hasPassedPersonalBestRef.current
@@ -1187,6 +1199,7 @@ export function useGameScreenController({
           roundRules: roundMode,
           ...arenaDimensionsRef.current,
           rng: rngRef.current,
+          goldRng: createSeededRng(deriveGoldSeed(roundSeedRef.current)),
         })
         const geometry = geometryRef.current.getState()
         setButtonSize(geometry.buttonSize)
@@ -1625,6 +1638,8 @@ export function useGameScreenController({
       buttonStyle,
       onButtonClick: handleButtonClick,
       isButtonDisabled: !isPlaying,
+      isGold: goldRemainingMs > 0,
+      goldRemainingMs,
       buttonLabel,
       buttonLabelFontSize,
       buttonSkinClass,
@@ -1706,6 +1721,7 @@ export function useGameScreenController({
     } : null,
     gameOverOverlayProps: {
       bullseyes: roundSave.outcome?.bullseyes ?? bullseyes,
+      goldHits: roundSave.outcome?.goldHits ?? goldHits,
       score,
       hits,
       misses,

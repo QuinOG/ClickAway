@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createRoundSimulation, replayRoundEvents } from "../src/game/engine/roundEngine.js"
-import { createGeometrySimulation, isBullseyeHit } from "../src/game/engine/roundGeometry.js"
+import { createGeometrySimulation, deriveGoldSeed, isGoldHit, isBullseyeHit } from "../src/game/engine/roundGeometry.js"
 import { createSeededRng } from "../src/game/engine/seededRng.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { computeGhostScoreAtElapsed } from "../src/utils/replayUtils.js"
@@ -40,7 +40,7 @@ test("Bullseye multiplies the per-hit product with combos, surge and overclock w
 test("server derives Bullseyes from seeded pre-hit geometry and agrees with live and ghost scoring", () => {
   const rules = getDifficultyById("normal")
   const options = { seed: 9876, arenaWidth: 600, arenaHeight: 400 }
-  const geometry = createGeometrySimulation({ roundRules: rules, ...options, rng: createSeededRng(options.seed) })
+  const geometry = createGeometrySimulation({ roundRules: rules, ...options, rng: createSeededRng(options.seed), goldRng: createSeededRng(deriveGoldSeed(options.seed)) })
   const live = createRoundSimulation(rules)
   const events = []
   for (let i = 0; i < 12; i++) {
@@ -49,7 +49,7 @@ test("server derives Bullseyes from seeded pre-hit geometry and agrees with live
     const y = Math.round((position.y + buttonSize / 2) * 100) / 100
     const t = i * 100
     events.push({ type: "hit", x, y, t, bullseye: Boolean(i % 2) })
-    live.applyHit(t, { bullseye: isBullseyeHit(x, y, position, buttonSize) })
+    live.applyHit(t, { bullseye: isBullseyeHit(x, y, position, buttonSize), gold: isGoldHit(geometry.getState(), t) })
     geometry.applyHit(t)
   }
   const result = simulateRound(events, "normal", { ...options, roundSeed: options.seed })

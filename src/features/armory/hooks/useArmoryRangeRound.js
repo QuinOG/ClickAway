@@ -1,3 +1,5 @@
+import { createRandomSeed, createSeededRng } from "../../../game/engine/seededRng.js"
+import { useGoldTargetWindow } from "../../game/hooks/useGoldTargetWindow.js"
 import { createRoundClock } from "../../../game/engine/roundClock.js"
 import { isKeyboardActivation, mapPlayfieldClick, measurePlayfield } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -6,6 +8,8 @@ import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engi
 import {
   createGeometrySimulation,
   isBullseyeHit,
+  isGoldHit,
+  deriveGoldSeed,
 } from "../../../game/engine/roundGeometry.js"
 import {
   FEEDBACK_LIFETIME_MS,
@@ -78,6 +82,7 @@ export function useArmoryRangeRound({
   const [completedRunToken, setCompletedRunToken] = useState(null)
   const activationCueTimeoutRef = useRef(null)
   const rngRef = useRef(Math.random)
+  const goldRngRef = useRef(null)
 
   const [phase, setPhase] = useState(RANGE_PHASE.COUNTDOWN)
   const [countdownValue, setCountdownValue] = useState(READY_COUNTDOWN_START)
@@ -85,6 +90,8 @@ export function useArmoryRangeRound({
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
   const [bullseyes, setBullseyes] = useState(0)
+  const [goldHits, setGoldHits] = useState(0)
+  const [goldSpawn, setGoldSpawn] = useState(null)
   const [hits, setHits] = useState(0)
   const [misses, setMisses] = useState(0)
   const [chargesEarned, setChargesEarned] = useState(0)
@@ -107,6 +114,8 @@ export function useArmoryRangeRound({
     clockRef.current?.elapsedMs() ?? 0
   ), [])
 
+  const goldRemainingMs = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
+
   const clearFeedbackTimeouts = useCallback(() => {
     feedbackTimeoutIdsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId))
     feedbackTimeoutIdsRef.current = []
@@ -121,6 +130,7 @@ export function useArmoryRangeRound({
 
   const mirrorGeometry = useCallback((state, spawned = false) => {
     if (!state) return
+    setGoldSpawn(state)
     setButtonSize(state.buttonSize)
     setButtonPosition(state.position)
     if (spawned) setTargetSpawnSequence((sequence) => sequence + 1)
@@ -138,6 +148,7 @@ export function useArmoryRangeRound({
       arenaWidth: rect.width,
       arenaHeight: rect.height,
       rng: rngRef.current,
+      goldRng: goldRngRef.current,
       initialPosition: getRandomPosition(rect, roundRules.initialButtonSize, rngRef.current),
     })
     mirrorGeometry(geometryRef.current.getState(), true)
@@ -196,7 +207,9 @@ export function useArmoryRangeRound({
       window.clearTimeout(endTimeoutRef.current)
       endTimeoutRef.current = null
     }
-    rngRef.current = Math.random
+    const seed = createRandomSeed()
+    rngRef.current = createSeededRng(seed)
+    goldRngRef.current = createSeededRng(deriveGoldSeed(seed))
     roundStartTimeRef.current = 0
     geometryRef.current = null
     clockRef.current = null
@@ -209,6 +222,8 @@ export function useArmoryRangeRound({
     setStreak(0)
     setBestStreak(0)
     setBullseyes(0)
+    setGoldHits(0)
+    setGoldSpawn(null)
     setHits(0)
     setMisses(0)
     setChargesEarned(0)
@@ -305,11 +320,13 @@ export function useArmoryRangeRound({
       clickCoordinates.x, clickCoordinates.y, hitGeometry.position, hitGeometry.buttonSize
     ))
     const isComboSurgeHit = simulationRef.current.getState().comboSurgeHitsRemaining > 0
-    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye })
+    const gold = isGoldHit(hitGeometry, eventTimeMs)
+    const result = simulationRef.current.applyHit(eventTimeMs, { bullseye, gold })
     setScore(result.score)
     setStreak(result.streak)
     setBestStreak(result.bestStreak)
     setBullseyes(result.bullseyes)
+    setGoldHits(result.goldHits)
     setHits(result.hits)
     setPowerupCharges(result.powerupCharges)
     setComboSurgeHitsRemaining(result.comboSurgeHitsRemaining)
@@ -318,8 +335,8 @@ export function useArmoryRangeRound({
       event.clientX,
       event.clientY,
       `+${result.pointsEarned}`,
-      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}`,
-      bullseye ? "Bullseye ×2" : null
+      `hit${isComboSurgeHit ? " comboHit" : ""}${bullseye ? " bullseye" : ""}${gold ? " gold" : ""}`,
+      gold ? (bullseye ? "Gold Bullseye ×6" : "Gold ×3") : bullseye ? "Bullseye ×2" : null
     )
     if (result.grantedPowerups.length > 0) {
       setChargesEarned((count) => count + result.grantedPowerups.length)
@@ -480,7 +497,7 @@ export function useArmoryRangeRound({
     misses,
     chargesEarned,
     comboMultiplier,
-    results: { score, hits, misses, bullseyes, bestStreak, chargesEarned },
+    results: { score, hits, misses, bullseyes, goldHits, bestStreak, chargesEarned },
     completedRunToken,
     endRound,
     arenaProps: {
@@ -495,6 +512,8 @@ export function useArmoryRangeRound({
       },
       onButtonClick: handleButtonClick,
       isButtonDisabled: !isPlaying,
+      isGold: goldRemainingMs > 0,
+      goldRemainingMs,
       buttonLabel: getButtonLabel(buttonSize),
       buttonLabelFontSize: getButtonLabelFontSize(buttonSize),
       clickFeedbackItems,

@@ -1,5 +1,5 @@
 import { createSeededRng } from "../../src/game/engine/seededRng.js"
-import { createGeometrySimulation, isBullseyeHit } from "../../src/game/engine/roundGeometry.js"
+import { createGeometrySimulation, deriveGoldSeed, isGoldHit, isBullseyeHit } from "../../src/game/engine/roundGeometry.js"
 import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../src/game/engine/roundEngine.js"
 import { getDifficultyById } from "../../src/constants/gameModesConfig.js"
 import { applyRankedMatchResult } from "../../src/utils/rankUtils.js"
@@ -26,7 +26,7 @@ export function usernameSeed(username) {
 export function generateDemoRound({ seed, modeId, skill, playedAtIso = null }) {
   const rng = createSeededRng(seed ^ 0xa53a9)
   const rules = getDifficultyById(modeId)
-  const geometry = createGeometrySimulation({ roundRules: rules, ...DEMO_ARENA, rng: createSeededRng(seed) })
+  const geometry = createGeometrySimulation({ roundRules: rules, ...DEMO_ARENA, rng: createSeededRng(seed), goldRng: createSeededRng(deriveGoldSeed(seed)) })
   const engine = createRoundSimulation(rules)
   const events = []
   let t = 250 + Math.floor(rng() * 500)
@@ -40,7 +40,7 @@ export function generateDemoRound({ seed, modeId, skill, playedAtIso = null }) {
       const radius = rng() < skill.bullseyeRate ? 0 : buttonSize * (0.2 + rng() * 0.22)
       x = position.x + buttonSize / 2 + Math.cos(angle) * radius
       y = position.y + buttonSize / 2 + Math.sin(angle) * radius
-      engine.applyHit(t, { bullseye: isBullseyeHit(x, y, position, buttonSize) })
+      engine.applyHit(t, { bullseye: isBullseyeHit(x, y, position, buttonSize), gold: isGoldHit(geometry.getState(), t) })
       geometry.applyHit(t)
     } else {
       // Opposite arena corner is safely outside the target, including at minimum size.
@@ -55,7 +55,7 @@ export function generateDemoRound({ seed, modeId, skill, playedAtIso = null }) {
   }
   const summary = engine.getSummary()
   const verified = simulateRound(events, modeId, { roundSeed: seed, ...DEMO_ARENA })
-  if (!verified.valid || ["score", "hits", "misses", "bestStreak", "bullseyes"].some((key) => summary[key] !== verified[key])) {
+  if (!verified.valid || ["score", "hits", "misses", "bestStreak", "bullseyes", "goldHits"].some((key) => summary[key] !== verified[key])) {
     throw new Error(`Generated replay failed validation: ${verified.reason || "score mismatch"}`)
   }
   return {
