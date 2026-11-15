@@ -7,6 +7,8 @@ description: Improve ClickAway features through bounded experiments on player ta
 
 > **Who decides (user, 2026-11-15):** Claude is the project manager and makes every final call. Use Sol wherever it helps, as reviewer or implementer, but treat its findings and verdicts as input: confirm, downgrade or reject each with a reason. Never ship or drop something only because Sol said so.
 
+> **Hard problems: Fable 5.2 (user, 2026-11-15).** For a problem beyond Claude's own reasoning level (subtle concurrency or data-integrity design, a bug that resisted Claude, a deep architecture call), bring in Fable 5.2 at high reasoning, sparingly: `delegate_task` with target `{"providerInstanceId":"claudeAgent","model":"<the Fable 5.2 id>","options":{"effort":"high"}}`. Check `orchestrator_capabilities` (search "fable") first. As of 2026-11-15 5.2 isn't listed: until it is, Opus 5.5 handles these itself; don't substitute another Fable version. Its answer is input to Claude's decision, like Sol's, and it counts against the Claude budget.
+
 Improve what players can accomplish and how easily they can accomplish it. Adding, simplifying, repairing, or removing a feature are all valid outcomes. Do not select work to chase a reviewer score or a feature count.
 
 ## Scope and stopping rule
