@@ -137,7 +137,7 @@ test("keyboard navigation, mobile More, and settings focus restoration stay cohe
 
 test("touch and pointer inputs expose the same navigation and mode detail", async ({ browser, page }) => {
   const touchContext = await browser.newContext({
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT || 4173}`,
     hasTouch: true,
     isMobile: true,
     viewport: { width: 390, height: 844 },

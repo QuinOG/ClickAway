@@ -298,14 +298,6 @@
 }
 .helpPowerupEmblem svg { width: 28px; height: 28px; }
 .helpPowerupMeta { display: inline-block; margin-top: 6px; font-size: 12px; color: #ffd25c; font-weight: 700; }
-.helpRulebook { margin-top: 16px; border: 2px solid #040912; border-radius: 10px; background: rgb(6 12 22 / 70%); }
-.helpRulebook > summary {
-    cursor: pointer; padding: 12px 16px; list-style: none;
-    font-family: var(--ca-font-display); text-transform: uppercase; letter-spacing: 0.06em; color: #8fb3dd;
-}
-.helpRulebook > summary::before { content: "▸ "; color: #ffd25c; }
-.helpRulebook[open] > summary::before { content: "▾ "; }
-.helpRulebookBody { padding: 0 14px 14px; }
 @media (max-width: 900px) {
     .helpRuleCards, .helpModeCards, .helpPowerupCards { grid-template-columns: 1fr; }
 }
@@ -2382,22 +2374,6 @@
 .helpDoc .helpTopicGroup .helpPowerupCard :is(h3, h4, p, strong, span, b, small):not(.helpPowerupEmblem *) { color: #2a1c0e !important; text-shadow: none !important; }
 .helpDoc .helpTopicGroup .helpPowerupCard .helpPowerupMeta { color: #9a4a08 !important; font-weight: 800; }
 .helpDoc .helpTopicGroup .helpPowerupEmblem { box-shadow: 0 0 0 2px #2a1c0e !important; }
-/* the "Full rulebook" drawer is an inked tab */
-.helpDoc .helpTopicGroup .helpRulebook > summary {
-    border: 2px solid #2a1c0e !important;
-    background: #2a1c0e !important;
-    color: #f3e6c8 !important;
-}
-.helpDoc .helpTopicGroup .helpRulebook[open] .helpRulebookBody { color: #2a1c0e; }
-.helpDoc .helpTopicGroup .helpBlock {
-    border: 2px solid #2a1c0e !important;
-    background: rgb(255 250 235 / 45%) !important;
-    box-shadow: 3px 3px 0 rgb(42 28 14 / 22%) !important;
-}
-.helpDoc .helpTopicGroup .helpBlock > :is(h2, h3, p, .cardH2, .muted) { color: #2a1c0e !important; text-shadow: none !important; }
-.helpDoc .helpTopicGroup .helpBlock .muted { color: #6a4a24 !important; }
-.helpDoc .helpTopicGroup .helpBlock :is(p, li, dt, dd, summary, h3, h4, strong, span, a) { color: #2a1c0e !important; text-shadow: none !important; }
-.helpDoc .helpTopicGroup .helpBlock :is(summary, dt, h3, strong) { color: #7a3d08 !important; font-weight: 800; }
 .helpDoc .helpTopicGroup .rankTierCard {
     border: 2px solid #040912 !important;
     background: linear-gradient(180deg, #1d2c46, #101a2c) !important;
@@ -4044,16 +4020,6 @@
 }
 #faq .faqQuestion { margin: 0 0 6px !important; color: #2a1a08 !important; font-family: var(--ca-font-display); font-size: 15px; letter-spacing: .01em; }
 #faq .faqAnswer { margin: 0 !important; color: #3d3020 !important; font-size: 13px; line-height: 1.5; }
-
-.helpDoc .helpTopicGroup .helpRulebook > summary, .helpRulebook > summary {
-  border: 2px solid #3b2a14 !important; border-radius: 6px !important; color: #2a1600 !important;
-  background:
-    radial-gradient(circle at 12px 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 12px) 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
-    linear-gradient(180deg, #f6d27a, #d9a441 55%, #a8792a) !important;
-  box-shadow: inset 0 2px 0 rgb(255 255 255 / 45%), 0 3px 0 #3b2a14 !important;
-}
-.helpRulebook > summary * , .helpRulebook > summary::marker { color: #2a1600 !important; }
 @media (max-width: 720px) { #faq .faqList { grid-template-columns: 1fr; } }
 
 /* Round 17: History load-more as a brass plate; recent averages as an LED strip */
@@ -4074,7 +4040,6 @@
 }
 .historyTrendStrip strong, .historyTrendStrip b { color: #ffcf55 !important; text-shadow: 0 0 6px rgb(255 190 70 / 55%); font-family: var(--ca-font-display); }
 .historyTrendStrip .historyTrendStatValue { color: #ffcf55 !important; text-shadow: 0 0 6px rgb(255 190 70 / 55%); font-family: var(--ca-font-display); }
-.helpDoc .helpTopicGroup .helpRulebook > summary::before { color: #5a3a08 !important; }
 
 /* Round 17: Armory riveted steel bezels on the stat cells and swap report (content and layout unchanged) */
 .armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure,
@@ -4912,7 +4877,6 @@
 .helpTopicGroup > .helpSubhead + * { margin-top: 0 !important; }
 .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
 .helpTopicGroup > .helpSubhead { margin: 24px 0 8px !important; }
-.helpTopicGroup > .helpRulebook { margin-top: 24px !important; }
 .profileCompetitorCard > .profilePlayerTitle { justify-self: center; }
 .profileCompetitorCard > .profileCardBanner { margin-left: -24px !important; margin-right: -24px !important; }
 .helpDoc .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
@@ -4988,10 +4952,6 @@
 .gameOverAchievementHint { padding: 8px 16px !important; }
 .gameOverCardWithDifficulty > .gameOverActions { padding-top: 8px !important; gap: 16px !important; }
 .gameOverCardWithDifficulty > .gameOverBody > * { margin-top: 0 !important; margin-bottom: 0 !important; }
-
-/* Round 42: Help chapter rulebooks as labelled compact toggles */
-.helpDoc .helpTopicGroup .helpRulebook:not([open]) { width: fit-content; min-width: 280px; }
-.helpDoc .helpTopicGroup .helpRulebook > summary { white-space: nowrap; }
 
 /* Round 43: Profile - achievement progress centred under its medal; card actions on one row */
 .profileAchievementsSection .achievementsRow .achievementProgressMeta { justify-content: center; }
