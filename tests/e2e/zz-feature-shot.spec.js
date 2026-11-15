@@ -40,6 +40,10 @@ for (const [label, width, height] of SIZES) {
     if (process.env.DAILY_BONUS) {
       await page.route("**/api/round/complete", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ progress: null, earnedCoins: 16, earnedXp: 320, dailyBonusXp: 160, rankDelta: 0, replay: null }) }))
     }
+    // DAILY_GOAL=1: the round save reports a daily goal finished by this round.
+    if (process.env.DAILY_GOAL) {
+      await page.route("**/api/round/complete", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ progress: null, earnedCoins: 76, earnedXp: 280, dailyBonusXp: 0, dailyGoalRewards: { goals: [{ id: "streak-20", label: "Hit a 20 streak", reward: { coins: 60, xp: 120 } }], coins: 60, xp: 120 }, rankDelta: 0, replay: null }) }))
+    }
     await page.addInitScript((prefs) => localStorage.setItem("clickaway.feedback-preferences.v1", JSON.stringify(prefs)), PREFS)
     const route = AUTHENTICATED_ROUTES.find((entry) => entry.id === ROUTE)
     // HEADING=<text> when the page heading differs for this state (e.g. a new player).

@@ -664,3 +664,86 @@
     font-weight: 800;
     color: #ffd76a;
 }
+
+/* ---- Daily goals: three small tasks a day --------------------------------
+ * One plain line per goal (mark, label, progress, coin and XP reward); a done
+ * goal gets a check and dims. The mode column has no room left above Start, so
+ * on wide screens the list sits on the open stage (top left), and on phones it
+ * follows Start.
+ * ------------------------------------------------------------------------ */
+.lobbyDailyGoals {
+    position: relative;
+    z-index: 1;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: start;
+    justify-self: start;
+    width: min(380px, 100%);
+    background: rgb(4 9 18 / 78%) !important;
+    display: grid;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    background: rgb(0 0 0 / 22%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+}
+.lobbyDailyGoalsHeader { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.lobbyDailyGoalsHeader span {
+    color: #ffd76a;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.lobbyDailyGoalsHeader small { color: rgb(255 255 255 / 60%); font-size: 11px; font-weight: 700; }
+.lobbyDailyGoalsHeader small.isBonus { color: #ffd76a; }
+.lobbyDailyGoals ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.lobbyDailyGoals li {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) auto auto;
+    column-gap: 8px;
+    align-items: center;
+    min-height: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e8f1ff;
+}
+.lobbyDailyGoalMark {
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 28%);
+    font-size: 10px;
+    line-height: 1;
+}
+.lobbyDailyGoalLabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lobbyDailyGoalProgress { font-variant-numeric: tabular-nums; color: #7fc8ff; font-size: 12px; font-weight: 800; text-align: right; }
+.lobbyDailyGoalReward { display: inline-flex; gap: 8px; color: #ffd76a; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lobbyDailyGoalReward > span[aria-hidden] { display: inline-flex; align-items: center; gap: 2px; }
+.lobbyDailyGoalReward > span[aria-hidden]:last-child { color: #8fe3ff; }
+.lobbyDailyGoals li.isComplete { color: rgb(232 241 255 / 55%); }
+.lobbyDailyGoals li.isComplete .lobbyDailyGoalMark { background: #3fd99a; box-shadow: none; color: #04120b; }
+.lobbyDailyGoals li.isComplete .lobbyDailyGoalProgress { color: #6ff0bd; }
+.lobbyDailyGoals li.isComplete .lobbyDailyGoalReward { opacity: 0.45; }
+@media (max-width: 900px) {
+    .lobbyDailyGoals { grid-column: 2; grid-row: 6; width: auto; justify-self: stretch; }
+    .lobbyDailyGoalLabel { white-space: normal; }
+}
+.lobbyDailyGoalsSummary { display: none; }
+@media (max-width: 900px) {
+    .lobbyDailyGoalsSummary {
+        grid-column: 2;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        min-width: 0;
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: #e8f1ff;
+    }
+    .lobbyDailyGoalsSummary span { flex: none; color: #ffd76a; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+    .lobbyDailyGoalsSummary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+}

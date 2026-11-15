@@ -265,6 +265,7 @@ export function GameOverOverlay({
   roundCoinsEarned = 0,
   roundXpEarned = 0,
   roundDailyBonusXp = 0,
+  roundDailyGoals = null,
   roundRankDelta = 0,
   placementLabel = null,
   roundSaveStatus = "idle",
@@ -305,7 +306,8 @@ export function GameOverOverlay({
       level: playerLevel,
       xpIntoLevel: playerXpIntoLevel,
       earnedXp: roundXpEarned,
-      nextRoundXp: roundXpEarned - roundDailyBonusXp,
+      // A plain next round earns neither the daily bonus nor goal rewards.
+      nextRoundXp: roundXpEarned - roundDailyBonusXp - (Number(roundDailyGoals?.xp) || 0),
     })
     : null
 
@@ -435,6 +437,19 @@ export function GameOverOverlay({
           ) : null}
           {allowsRankProgression && !placementLabel ? (
             <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
+          ) : null}
+          {roundDailyGoals?.goals?.length ? (
+            <ul className="gameOverDailyGoals" aria-label="Daily goals completed">
+              {roundDailyGoals.goals.map((goal) => (
+                <li key={goal.id}>
+                  <span className="gameOverDailyGoalTag">Daily goal done</span>
+                  <span className="gameOverDailyGoalLabel">{goal.label}</span>
+                  <span className="gameOverDailyGoalReward">
+                    {[goal.reward.coins ? `+${formatNumber(goal.reward.coins)} coins` : "", goal.reward.xp ? `+${formatNumber(goal.reward.xp)} XP` : ""].filter(Boolean).join(" · ")}
+                  </span>
+                </li>
+              ))}
+            </ul>
           ) : null}
         </MotionDiv>
       ) : null}

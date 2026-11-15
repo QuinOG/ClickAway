@@ -2,7 +2,7 @@ import { motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { ModeEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
+import { CoinIcon, GemIcon, ModeEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
 import ArenaWorldArt from "../../../../components/art/ArenaWorldArt.jsx"
 
 import { Tooltip } from "../../../../components/ui/index.js"
@@ -333,6 +333,69 @@ function PracticeDrawer({
 
 // The selected mode's track record as a mini scoreboard: best / average /
 // rounds tiles over a bar chart of the last ten scores (oldest left).
+function formatResetsIn(resetsAt, nowMs) {
+  const remainingMs = Date.parse(resetsAt) - nowMs
+  // Outside one day the clock disagrees with the server's; say nothing rather than something wrong.
+  if (!(remainingMs > 0) || remainingMs > 86400000) return ""
+  const hours = Math.floor(remainingMs / 3600000)
+  return hours >= 1 ? `New goals in ${hours}h` : `New goals in ${Math.max(1, Math.ceil(remainingMs / 60000))}m`
+}
+
+
+// Today's three goals with their progress, as of the last progress read (every
+// round save brings a fresh copy, including the next day's goals).
+function DailyGoals({ dailyGoals, isPracticeSelected, dailyBonusAvailable }) {
+  // Read once when the lobby opens; an hour-level countdown needn't tick.
+  const [nowMs] = useState(() => Date.now())
+  if (!dailyGoals?.goals?.length) return null
+  const resetsIn = dailyGoals.resetsAt ? formatResetsIn(dailyGoals.resetsAt, nowMs) : ""
+  const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
+
+  return (
+    <section className="lobbyDailyGoals" aria-label="Daily goals">
+      <header className="lobbyDailyGoalsHeader">
+        <span>Daily goals · {doneCount}/{dailyGoals.goals.length}</span>
+        <small className={dailyBonusAvailable && !isPracticeSelected ? "isBonus" : ""}>
+          {isPracticeSelected ? "Practice doesn't count" : dailyBonusAvailable ? "First round today: 2× XP" : resetsIn}
+        </small>
+      </header>
+      <ul>
+        {dailyGoals.goals.map((goal) => (
+          <li key={goal.id} className={goal.isComplete ? "isComplete" : ""}>
+            <span className="lobbyDailyGoalMark" aria-hidden="true">{goal.isComplete ? "✓" : ""}</span>
+            <span className="lobbyDailyGoalLabel">
+              {goal.label}
+              <span className="uiVisuallyHidden">{goal.isComplete ? ", done" : `, ${goal.progress} of ${goal.target}`}</span>
+            </span>
+            <span className="lobbyDailyGoalProgress" aria-hidden="true">
+              {goal.isComplete ? "Done" : `${goal.progress}/${goal.target}`}
+            </span>
+            <span className="lobbyDailyGoalReward">
+              <span className="uiVisuallyHidden">Reward: {goal.reward.coins} coins and {goal.reward.xp} XP</span>
+              <span aria-hidden="true"><CoinIcon size={14} />{goal.reward.coins}</span>
+              <span aria-hidden="true"><GemIcon size={14} />{goal.reward.xp}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+// Phones only: the full list sits below Start, so one line above it says the
+// goals are there and what's next.
+function DailyGoalsSummary({ dailyGoals }) {
+  if (!dailyGoals?.goals?.length) return null
+  const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
+  const nextGoal = dailyGoals.goals.find((goal) => !goal.isComplete)
+  return (
+    <p className="lobbyDailyGoalsSummary" aria-hidden="true">
+      <span>Daily goals {doneCount}/{dailyGoals.goals.length}</span>
+      {nextGoal ? <b>{nextGoal.label} · {nextGoal.progress}/{nextGoal.target}</b> : <b>All done today</b>}
+    </p>
+  )
+}
+
 function ModeRecord({ mode, recentRounds = [] }) {
   const rounds = recentRounds.filter((round) => round.modeId === mode.id).slice(0, 10)
   if (!rounds.length) return null
@@ -381,6 +444,7 @@ export function ReadyOverlay({
   onboardingCoach = null,
   showTrainingSuite = false,
   dailyBonusAvailable = false,
+  dailyGoals = null,
   trainingDrills = [],
   selectedDrillId = null,
   onSelectDrill,
@@ -569,10 +633,14 @@ export function ReadyOverlay({
           />
         ) : null}
 
+        <DailyGoalsSummary dailyGoals={dailyGoals} />
+        <DailyGoals dailyGoals={dailyGoals} isPracticeSelected={selectedMode?.id === "easy"} dailyBonusAvailable={dailyBonusAvailable} />
+
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
-            {dailyBonusAvailable ? <p className="arenaLobbyDailyBonus">First round today earns double XP</p> : null}
+            {/* With goals showing, their header carries the double-XP note. */}
+            {dailyBonusAvailable && !dailyGoals?.goals?.length ? <p className="arenaLobbyDailyBonus">First round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

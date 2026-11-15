@@ -10,6 +10,7 @@ import {
   normalizeBuildWalkthrough,
 } from "../constants/buildWalkthrough.js"
 import { normalizeSeenUnlockPartIds } from "../utils/unlockWallUtils.js"
+import { normalizeDailyGoals } from "../utils/dailyGoals.js"
 import { DEFAULT_EQUIPPED_IDS } from "../constants/clientStorageKeysAndEquippedDefaults.js"
 import { DEFAULT_DIFFICULTY_ID as DEFAULT_MODE_ID, getDifficultyById } from "../constants/gameModesConfig.js"
 import { getLevelProgress } from "../utils/progressionUtils.js"
@@ -86,6 +87,8 @@ function normalizeProgress(progress = {}) {
     // Server-reported; null when unknown (older responses), and the lobby then
     // falls back to the loaded rounds.
     dailyBonusAvailable: typeof progress.dailyBonusAvailable === "boolean" ? progress.dailyBonusAvailable : null,
+    // Server-reported; null from older servers, and the lobby then shows no goals.
+    dailyGoals: normalizeDailyGoals(progress.dailyGoals),
     coins: Math.max(0, Number(progress.coins) || 0),
     levelXp,
     rankMmr: migratedRankData.rankMmr,
@@ -181,6 +184,7 @@ export function useAppPlayerState() {
   const [buildWalkthrough, setBuildWalkthrough] = useState(DEFAULT_PROGRESS.buildWalkthrough)
   const [seenUnlockPartIds, setSeenUnlockPartIds] = useState(DEFAULT_PROGRESS.seenUnlockPartIds)
   const [dailyBonusAvailable, setDailyBonusAvailable] = useState(null)
+  const [dailyGoals, setDailyGoals] = useState(null)
 
   const applyProgress = useCallback((progress = {}) => {
     const normalizedProgress = normalizeProgress(progress)
@@ -203,6 +207,7 @@ export function useAppPlayerState() {
     setBuildWalkthrough(normalizedProgress.buildWalkthrough)
     setSeenUnlockPartIds(normalizedProgress.seenUnlockPartIds)
     setDailyBonusAvailable(normalizedProgress.dailyBonusAvailable)
+    setDailyGoals(normalizedProgress.dailyGoals)
 
     return normalizedProgress
   }, [])
@@ -274,6 +279,7 @@ export function useAppPlayerState() {
     roundHistory,
     setRoundHistory,
     dailyBonusAvailable,
+    dailyGoals,
     lifetimeStats,
     setLifetimeStats,
     loadoutStats,

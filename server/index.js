@@ -818,7 +818,11 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       playedAtIso: new Date().toISOString(),
     }
 
-    const { rankOutcome, dailyBonusXp = 0 } = await completeUserRound({
+    const {
+      rankOutcome,
+      dailyBonusXp = 0,
+      dailyGoalRewards = { goals: [], coins: 0, xp: 0 },
+    } = await completeUserRound({
       userId: user.id,
       earnedCoins,
       earnedXp,
@@ -907,10 +911,11 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
 
     response.json({
       progress,
-      earnedCoins,
-      // Includes the first-round-of-the-day bonus, which is also reported alone.
-      earnedXp: earnedXp + dailyBonusXp,
+      // Totals include the daily bonus and daily goal rewards, also reported alone.
+      earnedCoins: earnedCoins + dailyGoalRewards.coins,
+      earnedXp: earnedXp + dailyBonusXp + dailyGoalRewards.xp,
       dailyBonusXp,
+      dailyGoalRewards,
       rankDelta,
       rankProgress: {
         previous: rankOutcome.previousRankProgress,

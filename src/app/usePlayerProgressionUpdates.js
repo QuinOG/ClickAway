@@ -2,6 +2,7 @@ import { useCallback } from "react"
 
 import { submitRound } from "../services/clickAwayHttpApiClient.js"
 import { applyProgressResponse, beginProgressRequest, settleProgressMutation } from "./progressResponseGuard.js"
+import { normalizeDailyGoalRewards } from "../utils/dailyGoals.js"
 
 export function usePlayerProgressionUpdates({
   isAuthed,
@@ -44,6 +45,7 @@ export function usePlayerProgressionUpdates({
           earnedCoins: response.earnedCoins,
           earnedXp: response.earnedXp,
           dailyBonusXp: Number(response.dailyBonusXp) || 0,
+          dailyGoalRewards: normalizeDailyGoalRewards(response.dailyGoalRewards),
           rankDelta: response.rankDelta,
           rankProgress: response.rankProgress ?? null,
           followUpError: [
