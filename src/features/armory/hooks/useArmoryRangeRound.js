@@ -1,5 +1,5 @@
 import { createRoundClock } from "../../../game/engine/roundClock.js"
-import { measurePlayfield } from "../../../game/engine/roundPlayfield.js"
+import { isKeyboardActivation, measurePlayfield } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
@@ -285,7 +285,7 @@ export function useArmoryRangeRound({
 
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()
-    if (!isPlaying || isEndingRef.current || !simulationRef.current) return
+    if (!isPlaying || isEndingRef.current || !simulationRef.current || isKeyboardActivation(event)) return
 
     if (clockRef.current?.remainingMs() <= 0) {
       setTimeLeft(0)
@@ -322,7 +322,7 @@ export function useArmoryRangeRound({
   }, [addCenterFeedback, addClickFeedback, endRound, getElapsedMs, isPlaying, mirrorGeometry])
 
   const handleArenaClick = useCallback((event) => {
-    if (!isPlaying || isEndingRef.current || !simulationRef.current) return
+    if (!isPlaying || isEndingRef.current || !simulationRef.current || isKeyboardActivation(event)) return
 
     if (clockRef.current?.remainingMs() <= 0) {
       setTimeLeft(0)

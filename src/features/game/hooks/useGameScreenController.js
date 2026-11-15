@@ -1,5 +1,5 @@
 import { createRoundClock } from "../../../game/engine/roundClock.js"
-import { measurePlayfield, mapPlayfieldClick } from "../../../game/engine/roundPlayfield.js"
+import { isKeyboardActivation, measurePlayfield, mapPlayfieldClick } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import {
@@ -956,7 +956,7 @@ export function useGameScreenController({
 
   const handleButtonClick = useCallback((event) => {
     event.stopPropagation()
-    if (!isPlaying || !simulationRef.current) return
+    if (!isPlaying || !simulationRef.current || isKeyboardActivation(event)) return
 
     if (endingRef.current) return
     if (roundMode.isTimedRound && clockRef.current?.remainingMs() <= 0) {
@@ -1064,7 +1064,7 @@ export function useGameScreenController({
   ])
 
   const handleArenaClick = useCallback((event) => {
-    if (!isPlaying || !simulationRef.current) return
+    if (!isPlaying || !simulationRef.current || isKeyboardActivation(event)) return
 
     if (endingRef.current) return
     if (roundMode.isTimedRound && clockRef.current?.remainingMs() <= 0) {

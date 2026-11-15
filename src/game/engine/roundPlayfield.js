@@ -7,6 +7,12 @@ export function measurePlayfield(element, bottomReserve = 0) {
   }
 }
 
+// Enter/Space on a button fires a click with detail 0 at (0, 0). The target is a
+// pointer game: such a click has no aim, so it must not score or count as a miss.
+export function isKeyboardActivation(event) {
+  return event?.detail === 0 && event.clientX === 0 && event.clientY === 0
+}
+
 export function mapPlayfieldClick(event, element, dimensions, bottomReserve = 0) {
   if (!element) return null
   const rect = element.getBoundingClientRect()
