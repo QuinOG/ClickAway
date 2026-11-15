@@ -96,6 +96,7 @@ function claude() {
     .filter((f) => NOW - f.mtime < WEEK)
   const events = []
   const fableEvents = []
+  const sessionOnlyEvents = []
   // A reply is written over several transcript lines that repeat its usage;
   // count each reply once (by message id + request id).
   const seen = new Set()
@@ -116,7 +117,14 @@ function claude() {
         + (usage.cache_creation_input_tokens ?? 0) * W.cacheCreate
         + (usage.cache_read_input_tokens ?? 0) * W.cacheRead
         + (usage.output_tokens ?? 0) * W.output
-      ;(isFableModel(event?.message?.model) ? fableEvents : events).push([at, weighted])
+      if (isFableModel(event?.message?.model)) {
+        fableEvents.push([at, weighted])
+        // Fable has its own weekly allowance but still draws on the shared 5-hour
+        // session, at about twice Opus's price per token.
+        sessionOnlyEvents.push([at, weighted * 2])
+      } else {
+        events.push([at, weighted])
+      }
     }
   }
   events.sort((a, b) => a[0] - b[0])
@@ -132,7 +140,7 @@ function claude() {
     if (windowStart === null || at >= windowStart + FIVE_HOURS) windowStart = at
   }
   const sessionActive = windowStart !== null && NOW < windowStart + FIVE_HOURS
-  const fiveHour = sessionActive ? events.filter(([at]) => at >= windowStart).reduce((sum, [, w]) => sum + w, 0) : 0
+  const fiveHour = sessionActive ? [...events, ...sessionOnlyEvents].filter(([at]) => at >= windowStart).reduce((sum, [, w]) => sum + w, 0) : 0
 
   // Weekly window: anchored to a reset time read once from the usage page,
   // rolled forward a week at a time.

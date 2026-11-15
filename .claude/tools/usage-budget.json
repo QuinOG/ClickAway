@@ -1,7 +1,7 @@
 {
-  "calibratedAt": "2026-11-15T19:59:39.104Z",
+  "calibratedAt": "2026-11-15T20:48:51.160Z",
   "calibrationNote": "From the Claude usage page at 2026-11-15 19:28Z: session 6% used (resets 4h32m), weekly 49% used (resets 2d4h), Weekly · Fable 5% used. Logged then: ~3.6M weighted tokens in the session, 319M this week (Fable excluded), 1.23M Fable. Budgets are tokens per 100%. The 2026-11-13 weekly budget was ~4x too high (meter showed 13% vs 49% real): recalibrate whenever the page and the meter differ by more than ~10 points. Rescaled the same day after the meter started counting each reply once (it had been adding a reply's usage once per transcript line, ~2-3x). Session budget re-read at 19:55Z: page 18% used, meter logged 3890164 weighted tokens; weekly 50% matched.",
-  "claudeFiveHourBudget": 21172382,
+  "claudeFiveHourBudget": 14930297,
   "claudeWeeklyBudget": 300947417,
   "claudeWeeklyResetAt": "2026-11-17T23:56:59.242000Z",
   "claudeSessionResetAt": "2026-11-16T00:00:00.000Z",
