@@ -30,7 +30,7 @@ function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPrev
     <div
       className={`shopCommandLoadoutStage shopInspectStage stageFocus-${focusType} ${arenaTheme?.effectClass ?? "theme-default"}${isPreviewing ? " isPreviewing" : ""}`}
       role="img"
-      aria-label={`${isPreviewing ? "Selected" : "Equipped"} preview with ${buttonSkin?.name ?? "button skin"} and ${arenaTheme?.name ?? "arena theme"}`}
+      aria-label={`${isPreviewing ? "Selected" : "Equipped"} preview with ${buttonSkin?.name ?? "button skin"} and ${arenaTheme?.name ?? "arena theme"}, with ${profileImage?.name ?? "profile portrait"}`}
     >
       <ArenaWorldArt className="shopStageWorld" />
       <span className="shopSceneryFrame" aria-hidden="true" />
@@ -196,6 +196,7 @@ export default function ShopHeroHeader({
                 <button
                   type="button"
                   className={`primaryButton shopPreviewActionButton is-${selectedState}`}
+                  aria-label={`${selectedActionLabel}: ${selectedItem?.name ?? "cosmetic"}`}
                   onClick={handleSelectedAction}
                   disabled={isSelectedActionDisabled}
                 >

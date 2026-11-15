@@ -230,6 +230,7 @@ export default function ShopItemCard({
         <button
           type="button"
           className={actionButtonClassName}
+          aria-label={`${actionLabelDisplay}: ${item.name}${!isOwned ? ` (${formatCoins(item.cost)} coins)` : ""}`}
           onClick={handleAction}
           disabled={isActionDisabled || isSubmitting || isShopBusy}
         >
