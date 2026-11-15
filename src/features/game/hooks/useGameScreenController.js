@@ -1663,7 +1663,8 @@ export function useGameScreenController({
       sessionStats: sessionStats.rounds > 0 ? sessionStats : null,
       dailyBonusAvailable: selectedModeConfig?.allowsLevelProgression === true
         && (serverDailyBonusAvailable ?? !hasXpRoundToday(playerRecentRounds)),
-      dailyGoals: serverDailyGoals,
+      // The coached first rounds keep the lobby to one task; goals appear after.
+      dailyGoals: isGameOnboardingActive ? null : serverDailyGoals,
       showTrainingSuite: selectedModeId === DIFFICULTY_IDS.EASY && !isGameOnboardingActive,
       trainingDrills: TRAINING_DRILLS,
       selectedDrillId,

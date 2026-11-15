@@ -218,3 +218,18 @@ test("the server's answer wins over the loaded rounds for the double-XP notice",
   }))
   expect(result.current.readyOverlayProps.dailyBonusAvailable).toBe(false)
 })
+
+test.each([
+  ["coached onboarding", "casual_pending", null],
+  ["after onboarding", "dismissed", "goals"],
+])("daily goals in the lobby during %s", (_label, status, expected) => {
+  const serverDailyGoals = { day: "2026-11-15", resetsAt: null, goals: [{ id: "rounds-3", label: "Play 3 rounds", target: 3, progress: 0, isComplete: false, reward: { coins: 40, xp: 80 } }] }
+  const { result } = renderHook(() => useGameScreenController({
+    activeLoadout: DEFAULT_SAVED_LOADOUTS[0],
+    buildWalkthrough: { status },
+    selectedModeId: "normal",
+    serverDailyGoals,
+    lifetimeStats: {},
+  }))
+  expect(result.current.readyOverlayProps.dailyGoals).toBe(expected === "goals" ? serverDailyGoals : null)
+})
