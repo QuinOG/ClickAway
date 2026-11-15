@@ -30,7 +30,7 @@ Bug pass, run {{RUN}}. You own ONE narrow feature of the ClickAway repo (React +
 
 ## Review: what did not work (avoid it)
 - **Overlap:** stay in your feature's scope and use Cross-feature notes.
-- **Heavier fixes than needed:** use the smallest fix.
+- **Heavier fixes than needed:** use the smallest fix. For a 7+ plan, lead with the smallest guard that closes the hole (pass an existing value, clamp a reading, ignore a bad input) and give a redesign only as a fallback. In run 9, three of four plans proposed redesigns that a few-line guard replaced.
 - **Ignoring existing accounts, stored data or both DB startup paths:**
   - `DB_AUTO_MIGRATE` on means initializeSchema;
   - off means numbered migrations, verifySchema and migration 011 grants.

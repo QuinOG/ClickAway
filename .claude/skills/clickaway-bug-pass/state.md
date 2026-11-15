@@ -1,6 +1,6 @@
 # Bug pass state
 
-Open PR: #23 on `bug-pass-7` (runs 7 and 8). Runs 1–6 merged to main in PR #21 (2026-11-13). Before deploying, run migrations `012_add_consumed_round_tokens.sql` and `013_add_rank_result_kind.sql`. Next run: branch from main and open a new PR.
+Open PR: bug pass 9 on `bug-pass-run-9` (opened 2026-11-15). Runs 1–6 merged in PR #21, runs 7–8 in PR #23. Before deploying, migrations `012_add_consumed_round_tokens.sql` and `013_add_rank_result_kind.sql` must have been run. Next run: branch from main once this PR merges. Name the run branch `bug-pass-run-N`: `bug-pass-N` can't be created while `bug-pass-N/<slug>` feature branches exist.
 
 ## Fixed (do not re-report)
 - **Run 1 (a94b38a):**
@@ -132,9 +132,19 @@ Open PR: #23 on `bug-pass-7` (runs 7 and 8). Runs 1–6 merged to main in PR #21
   - Armory dialog focus trap, Profile/Compare Bench accessibility;
   - release-matrix and visual-cohesion suites passing (112 checks), snapshots refreshed.
 
+- **Run 9 (bug-pass-run-9):**
+  - keyboard Enter/Space on the target no longer scores (pointer-only target, out of the Tab order) in live rounds and the Test Range;
+  - round clock never runs backwards when the system clock is set back;
+  - season credit goes to the season the round was played in (`playedAt` passed to `applyUserSeasonProgress`);
+  - Ranked lobby RR total excludes placement points;
+  - PB pace and Time Boost "+Ns" follow the real clock;
+  - Ladder season banner scope copy and 0 ms reactions;
+  - lobby Shift+Tab focus wrap; Collection drop focus trap and Escape.
+
 ## Deferred (with reason)
 - **Server doesn't apply drill rules:** M; the client builds drill-specific rules the server doesn't replay.
 - **Login doesn't apply the 72-byte password limit:** enforcing it would lock out older accounts. Product decision.
 - **Existing accounts with stats inflated by unverified rounds:** a one-off repair would be needed; history doesn't record verification.
 - **Grow can push an edge target a few pixels off the arena:** the clamp changes the geometry the server checks clicks against; needs versioned replay geometry so old ghosts keep their paths.
+- **Profile's weekly round count includes tokenless rounds:** needs a stored verified flag (migration) and a policy for older rows that don't record it. Small display stat.
 - **Duel race lost if its replay write fails after commit:** the round is reported saved with a note, but the duel stays unsettled. Needs the replay and duel writes inside the round transaction.
