@@ -87,12 +87,7 @@ export function useArmoryScreenController({
   // Unlock ceremony queue (Phase 11): frozen at mount, so a visit reveals
   // whatever crossed the unlock wall since the last time this page opened.
   const [ceremonyParts] = useState(() => getUnseenUnlockedParts(playerLevel, seenUnlockPartIds))
-  // A first-time visitor gets the build tour instead: the unlock was already
-  // announced on Results, and two dialogs at once buried the tour's first step.
-  // The batch is still marked seen below, so it doesn't come back next visit.
-  const [ceremonyQueue, setCeremonyQueue] = useState(() => (
-    shouldAutoStartArmoryWalkthrough(buildWalkthrough?.status ?? BUILD_WALKTHROUGH_STATUS.DISMISSED) ? [] : ceremonyParts
-  ))
+  const [ceremonyQueue, setCeremonyQueue] = useState(ceremonyParts)
   const hasAcknowledgedCeremonyRef = useRef(false)
   const [isUnlockWallOpen, setIsUnlockWallOpen] = useState(false)
   const [blueprintNotice, setBlueprintNotice] = useState(null)
@@ -367,15 +362,19 @@ export function useArmoryScreenController({
     onSeenUnlockPartIdsChange?.(normalizeSeenUnlockPartIds([...seenUnlockPartIds, ...partIds]))
   }, [onSeenUnlockPartIdsChange, seenUnlockPartIds])
 
+  // The build tour goes first: two dialogs at once buried its first step. The
+  // unlock dialog waits until the tour is closed (or was dismissed before).
+  const isCeremonyHeld = isWalkthroughVisible || shouldAutoStartArmoryWalkthrough(buildWalkthroughStatus)
+
   // A reveal is "seen" once it has actually been presented, not only after
-  // the player chooses an action. Persist the frozen batch immediately so
-  // navigating away with the dialog open cannot reconstruct the same queue
-  // on the next Armory visit.
+  // the player chooses an action. Persist the frozen batch as soon as it shows
+  // so navigating away with the dialog open cannot reconstruct the same queue
+  // on the next Armory visit; while it's held behind the tour nothing is marked.
   useEffect(() => {
-    if (hasAcknowledgedCeremonyRef.current || ceremonyParts.length === 0) return
+    if (hasAcknowledgedCeremonyRef.current || ceremonyParts.length === 0 || isCeremonyHeld) return
     hasAcknowledgedCeremonyRef.current = true
     markUnlockPartsSeen(ceremonyParts.map((part) => part.id))
-  }, [ceremonyParts, markUnlockPartsSeen])
+  }, [ceremonyParts, isCeremonyHeld, markUnlockPartsSeen])
 
   const advanceCeremonyQueue = useCallback(() => {
     setCeremonyQueue((queue) => queue.slice(1))
@@ -789,7 +788,7 @@ export function useArmoryScreenController({
       close: closeUnlockWall,
     },
     ceremonyApi: {
-      part: ceremonyQueue[0] ?? null,
+      part: isCeremonyHeld ? null : ceremonyQueue[0] ?? null,
       parts: ceremonyParts,
       remainingCount: ceremonyQueue.length,
       installNow: installCeremonyPartNow,
