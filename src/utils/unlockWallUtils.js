@@ -31,12 +31,15 @@ export function normalizeSeenUnlockPartIds(values = []) {
 
 // Parts unlocked by the player's current level that the ceremony has not yet
 // shown, oldest unlock first so the queue plays back in the order the player
-// actually earned them.
+// actually earned them. Level 1 parts are the starter kit every player begins
+// with, so they are never announced as unlocks.
+const STARTER_UNLOCK_LEVEL = 1
+
 export function getUnseenUnlockedParts(playerLevel = 1, seenUnlockPartIds = []) {
   const seenSet = new Set(seenUnlockPartIds)
 
   return UNLOCK_WALL_PARTS
-    .filter((part) => part.unlockLevel <= playerLevel && !seenSet.has(part.id))
+    .filter((part) => part.unlockLevel > STARTER_UNLOCK_LEVEL && part.unlockLevel <= playerLevel && !seenSet.has(part.id))
     .sort((a, b) => a.unlockLevel - b.unlockLevel)
 }
 

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { useState } from "react"
 import { MemoryRouter } from "react-router-dom"
 import { describe, expect, test, vi } from "vitest"
 
@@ -644,6 +645,47 @@ describe("Armory collection flow (Phase D2b)", () => {
 
     expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
     expect(onSeenUnlockPartIdsChange).toHaveBeenCalledTimes(1)
+  })
+
+  test("a first-time visitor gets the build tour first; earned parts are announced after it", async () => {
+    const user = userEvent.setup()
+    const onSeenUnlockPartIdsChange = vi.fn()
+    // Holds the tour status the way App does, so closing the tour updates it.
+    function FirstVisit() {
+      const [buildWalkthrough, setBuildWalkthrough] = useState({ status: BUILD_WALKTHROUGH_STATUS.NOT_STARTED })
+      return (
+        <ArmoryPage
+          modes={DIFFICULTIES}
+          selectedModeId="normal"
+          onModeChange={vi.fn()}
+          playerLevel={5}
+          savedLoadouts={DEFAULT_SAVED_LOADOUTS}
+          activeLoadoutId="loadout_1"
+          onLoadoutStateChange={vi.fn()}
+          buildWalkthrough={buildWalkthrough}
+          onBuildWalkthroughChange={setBuildWalkthrough}
+          seenUnlockPartIds={[]}
+          onSeenUnlockPartIdsChange={onSeenUnlockPartIdsChange}
+        />
+      )
+    }
+    render(<MemoryRouter initialEntries={["/armory"]}><FirstVisit /></MemoryRouter>)
+
+    // Results only shows the highest part a round reached, so nothing is marked
+    // seen while the tour holds the dialog back.
+    expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
+    expect(onSeenUnlockPartIdsChange).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole("button", { name: /skip/i }))
+
+    const ceremony = await screen.findByRole("dialog", { name: "Part unlocked" })
+    expect(within(ceremony).getByText(/Collection drop/)).not.toBeNull()
+    expect(onSeenUnlockPartIdsChange).toHaveBeenCalledWith(["magnet_center", "tempo_bastion"])
+  })
+
+  test("the starter kit alone doesn't open the unlock dialog", () => {
+    renderArmory({ playerLevel: 1, seenUnlockPartIds: [] })
+    expect(screen.queryByRole("dialog", { name: "Part unlocked" })).toBeNull()
   })
 })
 

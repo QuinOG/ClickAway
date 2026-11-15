@@ -16,13 +16,15 @@ export default function GameStatusRow({ streak, comboMultiplier, comboStep = 5, 
         <span key={`combo-${comboMultiplier}`} className="hudComboValue">{"\u00d7"}{comboMultiplier}</span>
         <span className="hudComboLabel">Combo</span>
       </div>
-      <div className="hudComboNext" aria-label={`${hitsToNext} hits to combo times ${comboMultiplier + 1}`}>
+      <div className="hudComboNext">
         <span className="hudComboNextPips" aria-hidden="true">
           {Array.from({ length: step }, (_, index) => (
             <span key={index} className={index < intoStep ? "isLit" : ""} />
           ))}
         </span>
-        <span className="hudComboNextLabel">{"×"}{comboMultiplier + 1} in {hitsToNext}</span>
+        <span className="hudComboNextLabel" aria-hidden="true">{"×"}{comboMultiplier + 1} in {hitsToNext}</span>
+        {/* Phones hide the visible label, so screen readers get this one everywhere. */}
+        <span className="uiVisuallyHidden">{hitsToNext} hits to combo times {comboMultiplier + 1}</span>
       </div>
       <span className="hudBestReadout">Best {bestStreak}</span>
       <span className="uiVisuallyHidden" role="status" aria-live="polite" aria-atomic="true">
