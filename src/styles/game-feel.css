@@ -5402,3 +5402,18 @@
 
 .clickFeedback.bullseye .clickFeedbackValue { color: #ffe291 !important; }
 .clickFeedback.bullseye .clickFeedbackDetail { color: #ffe291; font-weight: 700; }
+
+/* ---- Bullseye zone: a faint ring at a third of the target's radius ----------
+ * Marks where a hit scores Bullseye ×2 (BULLSEYE_RADIUS_SHARE in roundGeometry.js).
+ * `closest-side` makes 100% the radius, so 33.333% is the zone's edge on any size;
+ * the centre pip is kept as the first layer.
+ * ------------------------------------------------------------------------ */
+.arena .bigCircleButton::after {
+    background:
+        radial-gradient(circle, #ffffff 0 5%, var(--skin-ink) 5.5% 8%, transparent 8.5%),
+        radial-gradient(circle closest-side,
+            transparent calc(33.333% - 1.5px),
+            rgb(255 255 255 / 55%) calc(33.333% - 1.5px) calc(33.333% + 0.5px),
+            rgb(4 9 18 / 35%) calc(33.333% + 0.5px) calc(33.333% + 1.5px),
+            transparent calc(33.333% + 1.5px)) !important;
+}
