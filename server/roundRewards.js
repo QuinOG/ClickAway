@@ -158,6 +158,7 @@ export function simulateRound(events, modeId, {
     valid: true,
     hits: replay.hits,
     bullseyes: replay.bullseyes,
+    goldHits: replay.goldHits,
     misses: replay.misses,
     score: replay.score,
     bestStreak: replay.bestStreak,

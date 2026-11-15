@@ -774,7 +774,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       }
     }
 
-    const { hits, misses, score, bestStreak, bullseyes } = simulation
+    const { hits, misses, score, bestStreak, bullseyes, goldHits } = simulation
     const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
     const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
 
@@ -916,6 +916,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       progress,
       // Totals include the daily bonus and daily goal rewards, also reported alone.
       bullseyes,
+      goldHits,
       earnedCoins: earnedCoins + dailyGoalRewards.coins,
       earnedXp: earnedXp + dailyBonusXp + dailyGoalRewards.xp,
       dailyBonusXp,
