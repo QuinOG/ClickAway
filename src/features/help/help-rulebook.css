@@ -95,9 +95,9 @@
   justify-content: center;
   text-align: center;
   width: min(460px, 100%);
-  margin-inline: auto;
+  margin: 24px auto 16px !important;
   min-height: 72px;
-  padding: 14px 18%;
+  padding: 14px min(70px, 12vw);
   background: url('/art/help-strip/help-banner-small.png') center / 100% 100% no-repeat;
 }
 .helpDoc .helpTopicGroup .helpGroupTitle {
@@ -117,8 +117,9 @@
 }
 .helpDoc .helpRulebook .helpTable thead { background: transparent; }
 @media (max-width: 600px) {
+  .helpDoc > .helpTopicGroup { padding: 8px 12px 12px !important; }
   .helpDoc .helpTopicGroup > .helpGroupHeader {
     min-height: 60px;
-    padding: 12px 18%;
+    padding: 12px 32px;
   }
 }
