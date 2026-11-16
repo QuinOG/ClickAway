@@ -122,6 +122,19 @@ describe("Daily goals on Results", () => {
       .toBe(`One more round like that finishes today's goal: ${showUp.label} (+${showUp.reward.coins} coins).`)
   })
 
+  test("doesn't point Play Again at the goal this round just finished", () => {
+    // Goals still one short: the post-save progress read didn't land.
+    const staleGoals = normalizeDailyGoals({
+      day: "2026-11-15",
+      resetsAt: "2026-11-16T00:00:00.000Z",
+      goals: getDailyGoals("2026-11-15").map((goal, index) => ({ ...goal, progress: index === 0 ? goal.target - 1 : 0 })),
+    })
+    const [showUp] = getDailyGoals("2026-11-15")
+    const justFinished = { goals: [{ id: showUp.id, label: showUp.label, reward: showUp.reward }], ...showUp.reward }
+    const { container } = wrap(<GameOverFlow {...results} bestScore={0} roundSaveStatus="saved" dailyGoals={staleGoals} roundDailyGoals={justFinished} />)
+    expect(container.querySelector(".gameOverNextGoal")?.textContent ?? "").not.toContain(showUp.label)
+  })
+
   test("shows nothing while saving or when no goal was finished", () => {
     const { unmount } = wrap(<GameOverFlow {...results} roundSaveStatus="saving" roundDailyGoals={finished} />)
     expect(screen.queryByRole("list", { name: "Daily goals completed" })).toBeNull()

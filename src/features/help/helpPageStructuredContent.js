@@ -98,12 +98,12 @@ export const MODE_TUNING_ROWS = [
 ]
 
 export const RANK_TIER_ROWS = [
-  { id: "bronze", label: "Bronze I-III", mmrRange: "0-299 Rating", imageSrc: "/ranks/bronze.png" },
-  { id: "silver", label: "Silver I-III", mmrRange: "300-599 Rating", imageSrc: "/ranks/silver.png" },
-  { id: "gold", label: "Gold I-III", mmrRange: "600-899 Rating", imageSrc: "/ranks/gold.png" },
-  { id: "platinum", label: "Platinum I-III", mmrRange: "900-1199 Rating", imageSrc: "/ranks/platinum.svg" },
-  { id: "diamond", label: "Diamond I-III", mmrRange: "1200-1499 Rating", imageSrc: "/ranks/diamond.svg" },
-  { id: "deadeye", label: "Deadeye", mmrRange: "1500+ Rating", imageSrc: "/ranks/deadeye.svg" },
+  { id: "bronze", label: "Bronze I-III", mmrRange: "0-299 Rating" },
+  { id: "silver", label: "Silver I-III", mmrRange: "300-599 Rating" },
+  { id: "gold", label: "Gold I-III", mmrRange: "600-899 Rating" },
+  { id: "platinum", label: "Platinum I-III", mmrRange: "900-1199 Rating" },
+  { id: "diamond", label: "Diamond I-III", mmrRange: "1200-1499 Rating" },
+  { id: "deadeye", label: "Deadeye", mmrRange: "1500+ Rating" },
 ]
 
 export const RANK_RULES_POINTS = [

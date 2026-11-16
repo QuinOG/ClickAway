@@ -98,6 +98,7 @@ export function GameOverFlow({
   const advanceTo = (phase) => () => setActivePhase(phase)
 
   const summaryProps = {
+    rankProgress: projectedRankProgress,
     score,
     hits,
     bullseyes,

@@ -40,3 +40,11 @@ test.each([undefined, 0, 2])("reads server gold count %s while leaving missing c
   const outcome = await result.current.handleRoundComplete({ modeId: "normal" })
   expect(outcome.goldHits).toBe(goldHits ?? null)
 })
+
+test("sends the round's seed and arena so a tokenless round can be scored with Bullseye and Gold", async () => {
+  submitRound.mockResolvedValue({ progress: null })
+  fetchCurrentUser.mockRejectedValue(new Error("Offline"))
+  const { result } = renderHook(() => usePlayerProgressionUpdates({ isAuthed: true, applyProgress: vi.fn() }))
+  await result.current.handleRoundComplete({ modeId: "practice", seed: 38, arenaWidth: 600, arenaHeight: 400 })
+  expect(submitRound).toHaveBeenLastCalledWith(expect.objectContaining({ roundToken: null, seed: 38, arenaWidth: 600, arenaHeight: 400 }))
+})

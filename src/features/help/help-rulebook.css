@@ -1,0 +1,82 @@
+/* Purpose: readable reference rules for arena players. Tone: the current dark
+   arena panels. Constraints: native disclosures, 360px tables, reduced motion.
+   Visual anchor: inset rule panels with the field guide's accent borders. */
+.helpDoc .helpTopicGroup .helpRulebook {
+  margin-top: var(--ca-space-6);
+  min-width: 0;
+  border: 1px solid var(--ca-color-line);
+  border-radius: var(--ca-radius-control);
+  background: var(--ca-color-surface-panel);
+  color: var(--ca-color-ink);
+}
+.helpRulebook > summary {
+  cursor: pointer;
+  padding: var(--ca-space-4);
+  font-family: var(--ca-font-display);
+  font-size: var(--ca-type-label);
+  font-weight: var(--ca-font-weight-bold);
+  color: var(--ca-color-accent);
+}
+.helpRulebook > summary:focus-visible {
+  outline: 2px solid var(--ca-color-accent);
+  outline-offset: 3px;
+}
+.helpRulebookBody {
+  display: grid;
+  gap: var(--ca-space-4);
+  padding: var(--ca-space-4);
+  border-top: 1px solid var(--ca-color-line-subtle);
+}
+.helpRulebookBody .helpGrid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--ca-space-4);
+  min-width: 0;
+}
+.helpDoc .helpTopicGroup .helpRulebook .helpBlock {
+  min-width: 0;
+  margin: 0;
+  padding: var(--ca-space-4);
+  border: 1px solid var(--ca-color-line-subtle) !important;
+  border-image: none !important;
+  border-radius: var(--ca-radius-control) !important;
+  background: var(--ca-color-env-base);
+  box-shadow: none !important;
+  overflow-x: auto;
+}
+.helpRulebook .helpBlock::after { content: none; }
+.helpRulebook .helpBlock .cardH2,
+.helpRulebook .quickStartTitle {
+  color: var(--ca-color-ink-strong);
+  font-family: var(--ca-font-display);
+  font-size: var(--ca-type-title-sm);
+  margin: 0 0 var(--ca-space-3);
+}
+.helpRulebook :is(.quickStartCard, .helpFlowStep, .helpList li) {
+  border: 1px solid var(--ca-color-line-subtle);
+  border-radius: var(--ca-radius-control);
+  background: var(--ca-color-surface-panel);
+  padding: var(--ca-space-3);
+  box-shadow: none;
+}
+.helpRulebook :is(.quickStartLead, .quickStartCardBody, .helpFlowBody, .helpList li, .muted) {
+  color: var(--ca-color-ink-muted);
+  font-size: var(--ca-type-body-sm);
+  line-height: var(--ca-leading-body);
+}
+.helpRulebook :is(.quickStartCardTitle, .helpFlowTitle) { color: var(--ca-color-ink-strong); font-size: var(--ca-type-body); }
+.helpRulebook :is(.quickStartCardEyebrow, .helpFlowIndex) { background: var(--ca-color-env-high); color: var(--ca-color-accent); box-shadow: none; font-family: var(--ca-font-numeric); }
+.helpRulebook .helpTable { width: 100%; font-size: var(--ca-type-body-sm); }
+.helpRulebook .helpTable thead { background: var(--ca-color-env-high); }
+.helpRulebook .helpTable :is(th, td) { padding: var(--ca-space-3); color: var(--ca-color-ink); border-color: var(--ca-color-line-subtle); }
+.helpRulebook .helpTable th { color: var(--ca-color-accent); font-size: var(--ca-type-caption); }
+.helpRulebook .helpTable td:first-child { color: var(--ca-color-ink-strong); }
+.helpRulebook .helpArmoryLink { border-color: var(--ca-color-line); color: var(--ca-color-accent); background: var(--ca-color-env-high); font-size: var(--ca-type-label); }
+@media (max-width: 600px) {
+  .helpRulebookBody { padding: var(--ca-space-2); }
+  .helpDoc .helpTopicGroup .helpRulebook .helpBlock { padding: var(--ca-space-3); }
+}
+@media (max-width: 600px) {
+  .helpPageScene .helpDoc.card { padding: var(--ca-space-2) !important; }
+  .helpDoc > .helpTopicGroup { padding: var(--ca-space-3) !important; }
+  .helpDoc > .helpTopicGroup::before { display: none; }
+}

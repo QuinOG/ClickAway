@@ -298,14 +298,6 @@
 }
 .helpPowerupEmblem svg { width: 28px; height: 28px; }
 .helpPowerupMeta { display: inline-block; margin-top: 6px; font-size: 12px; color: #ffd25c; font-weight: 700; }
-.helpRulebook { margin-top: 16px; border: 2px solid #040912; border-radius: 10px; background: rgb(6 12 22 / 70%); }
-.helpRulebook > summary {
-    cursor: pointer; padding: 12px 16px; list-style: none;
-    font-family: var(--ca-font-display); text-transform: uppercase; letter-spacing: 0.06em; color: #8fb3dd;
-}
-.helpRulebook > summary::before { content: "▸ "; color: #ffd25c; }
-.helpRulebook[open] > summary::before { content: "▾ "; }
-.helpRulebookBody { padding: 0 14px 14px; }
 @media (max-width: 900px) {
     .helpRuleCards, .helpModeCards, .helpPowerupCards { grid-template-columns: 1fr; }
 }
@@ -2141,7 +2133,7 @@
 /* page number in the corner */
 .helpDoc .helpTopicGroup > :last-child { position: relative; z-index: 1; }
 .leaderboardTopRow { align-items: start !important; }
-.helpDoc .helpTopicGroup .rankTierGrid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 8px !important; }
+.helpDoc .helpTopicGroup .rankTierGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 112px), 1fr)) !important; gap: var(--ca-space-2) !important; }
 
 /* ======================= Round 9 (run 2, round 3) ======================= */
 /* ---- A. Shop items are boxed products: material frame by rarity, a
@@ -2382,22 +2374,6 @@
 .helpDoc .helpTopicGroup .helpPowerupCard :is(h3, h4, p, strong, span, b, small):not(.helpPowerupEmblem *) { color: #2a1c0e !important; text-shadow: none !important; }
 .helpDoc .helpTopicGroup .helpPowerupCard .helpPowerupMeta { color: #9a4a08 !important; font-weight: 800; }
 .helpDoc .helpTopicGroup .helpPowerupEmblem { box-shadow: 0 0 0 2px #2a1c0e !important; }
-/* the "Full rulebook" drawer is an inked tab */
-.helpDoc .helpTopicGroup .helpRulebook > summary {
-    border: 2px solid #2a1c0e !important;
-    background: #2a1c0e !important;
-    color: #f3e6c8 !important;
-}
-.helpDoc .helpTopicGroup .helpRulebook[open] .helpRulebookBody { color: #2a1c0e; }
-.helpDoc .helpTopicGroup .helpBlock {
-    border: 2px solid #2a1c0e !important;
-    background: rgb(255 250 235 / 45%) !important;
-    box-shadow: 3px 3px 0 rgb(42 28 14 / 22%) !important;
-}
-.helpDoc .helpTopicGroup .helpBlock > :is(h2, h3, p, .cardH2, .muted) { color: #2a1c0e !important; text-shadow: none !important; }
-.helpDoc .helpTopicGroup .helpBlock .muted { color: #6a4a24 !important; }
-.helpDoc .helpTopicGroup .helpBlock :is(p, li, dt, dd, summary, h3, h4, strong, span, a) { color: #2a1c0e !important; text-shadow: none !important; }
-.helpDoc .helpTopicGroup .helpBlock :is(summary, dt, h3, strong) { color: #7a3d08 !important; font-weight: 800; }
 .helpDoc .helpTopicGroup .rankTierCard {
     border: 2px solid #040912 !important;
     background: linear-gradient(180deg, #1d2c46, #101a2c) !important;
@@ -4044,16 +4020,6 @@
 }
 #faq .faqQuestion { margin: 0 0 6px !important; color: #2a1a08 !important; font-family: var(--ca-font-display); font-size: 15px; letter-spacing: .01em; }
 #faq .faqAnswer { margin: 0 !important; color: #3d3020 !important; font-size: 13px; line-height: 1.5; }
-
-.helpDoc .helpTopicGroup .helpRulebook > summary, .helpRulebook > summary {
-  border: 2px solid #3b2a14 !important; border-radius: 6px !important; color: #2a1600 !important;
-  background:
-    radial-gradient(circle at 12px 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
-    radial-gradient(circle at calc(100% - 12px) 50%, #fff8dc 0 1.5px, #8a5c16 2px 3px, transparent 3.5px),
-    linear-gradient(180deg, #f6d27a, #d9a441 55%, #a8792a) !important;
-  box-shadow: inset 0 2px 0 rgb(255 255 255 / 45%), 0 3px 0 #3b2a14 !important;
-}
-.helpRulebook > summary * , .helpRulebook > summary::marker { color: #2a1600 !important; }
 @media (max-width: 720px) { #faq .faqList { grid-template-columns: 1fr; } }
 
 /* Round 17: History load-more as a brass plate; recent averages as an LED strip */
@@ -4074,7 +4040,6 @@
 }
 .historyTrendStrip strong, .historyTrendStrip b { color: #ffcf55 !important; text-shadow: 0 0 6px rgb(255 190 70 / 55%); font-family: var(--ca-font-display); }
 .historyTrendStrip .historyTrendStatValue { color: #ffcf55 !important; text-shadow: 0 0 6px rgb(255 190 70 / 55%); font-family: var(--ca-font-display); }
-.helpDoc .helpTopicGroup .helpRulebook > summary::before { color: #5a3a08 !important; }
 
 /* Round 17: Armory riveted steel bezels on the stat cells and swap report (content and layout unchanged) */
 .armoryWorkspace > .armoryInstruments .armoryInstrument.isMeasure,
@@ -4912,7 +4877,6 @@
 .helpTopicGroup > .helpSubhead + * { margin-top: 0 !important; }
 .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
 .helpTopicGroup > .helpSubhead { margin: 24px 0 8px !important; }
-.helpTopicGroup > .helpRulebook { margin-top: 24px !important; }
 .profileCompetitorCard > .profilePlayerTitle { justify-self: center; }
 .profileCompetitorCard > .profileCardBanner { margin-left: -24px !important; margin-right: -24px !important; }
 .helpDoc .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
@@ -4988,10 +4952,6 @@
 .gameOverAchievementHint { padding: 8px 16px !important; }
 .gameOverCardWithDifficulty > .gameOverActions { padding-top: 8px !important; gap: 16px !important; }
 .gameOverCardWithDifficulty > .gameOverBody > * { margin-top: 0 !important; margin-bottom: 0 !important; }
-
-/* Round 42: Help chapter rulebooks as labelled compact toggles */
-.helpDoc .helpTopicGroup .helpRulebook:not([open]) { width: fit-content; min-width: 280px; }
-.helpDoc .helpTopicGroup .helpRulebook > summary { white-space: nowrap; }
 
 /* Round 43: Profile - achievement progress centred under its medal; card actions on one row */
 .profileAchievementsSection .achievementsRow .achievementProgressMeta { justify-content: center; }
@@ -5093,15 +5053,6 @@
 .gameOverSpotlight .gameOverNextUnlockIcon > :is(svg, img):not(.gameOverUnlockRig) { position: relative; z-index: 1; width: 52px; height: 52px; object-fit: contain; transform: translateY(-9px); }
 .gameOverSpotlight .gameOverNextUnlockIcon .gameOverNextUnlockBadge { z-index: 2; }
 
-/* Round 50: History highlights - illustrated medals (target and laurel for the best, rising chevrons for the RR surge) */
-.historyHighlightCard::before {
-  content: "" !important; width: 76px !important; height: 76px !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
-  background: url("/art/history/best-score-medal.png") center / contain no-repeat !important;
-  filter: drop-shadow(0 4px 4px rgb(40 22 4 / 45%));
-}
-.historyHighlightCard + .historyHighlightCard::before, .historyHighlightCard:nth-child(2)::before {
-  content: "" !important; background: url("/art/history/rank-surge-medal.png") center / contain no-repeat !important;
-}
 /* Round 50: Help - power keys shown as larger illustrated pictures (generated art) */
 .helpDoc .helpPowerupCards .helpPowerupCard > .helpPowerupEmblem:has(.helpPowerupArt) { width: 66px !important; height: 66px !important; flex: none; border: 0 !important; background: none !important; box-shadow: none !important; }
 .helpPowerupEmblem .helpPowerupArt { width: 66px; height: 66px; display: block; filter: drop-shadow(0 3px 2px rgb(40 22 4 / 35%)); }
@@ -5406,16 +5357,17 @@
 /* ---- Bullseye zone: a faint ring at a third of the target's radius ----------
  * Marks where a hit scores Bullseye ×2 (BULLSEYE_RADIUS_SHARE in roundGeometry.js).
  * `closest-side` makes 100% the radius, so 33.333% is the zone's edge on any size;
- * the centre pip is kept as the first layer.
+ * the centre pip is kept as the first layer. The ring is drawn inside that edge
+ * and ends on it, so every painted pixel scores, even on a 10px target.
  * ------------------------------------------------------------------------ */
 .arena .bigCircleButton::after {
     background:
         radial-gradient(circle, #ffffff 0 5%, var(--skin-ink) 5.5% 8%, transparent 8.5%),
         radial-gradient(circle closest-side,
-            transparent calc(33.333% - 1.5px),
-            rgb(255 255 255 / 55%) calc(33.333% - 1.5px) calc(33.333% + 0.5px),
-            rgb(4 9 18 / 35%) calc(33.333% + 0.5px) calc(33.333% + 1.5px),
-            transparent calc(33.333% + 1.5px)) !important;
+            transparent calc(33.333% - 3px),
+            rgb(4 9 18 / 35%) calc(33.333% - 3px) calc(33.333% - 2px),
+            rgb(255 255 255 / 55%) calc(33.333% - 2px) 33.333%,
+            transparent 33.333%) !important;
 }
 
 /* ---- Gold targets: gold rim and a draining ring for the ×3 window ---- */
@@ -5424,6 +5376,17 @@
 .arena .bigCircleButton.isGoldTarget { outline: 5px solid #ffd34d !important; outline-offset: 4px !important; box-shadow: 0 0 0 3px #fff0a0, 0 0 30px 10px #ffd34d88 !important; }
 .goldTargetRing { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; transform: rotate(-90deg); z-index: 5; }
 .goldTargetRing circle { fill: none; stroke: #fff0a0; stroke-width: 3; stroke-dasharray: 1; transition: stroke-dashoffset 50ms linear; }
+/* Reduced motion (OS or in-app): the ring stays full instead of draining; the
+   gold rim still drops when the window closes. */
 @media (prefers-reduced-motion: reduce) {
-  .goldTargetRing { display: none; }
+  .goldTargetRing circle { stroke-dashoffset: 0 !important; transition: none; }
+}
+html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !important; }
+
+/* Reserve enough space for streak and combo without cropping either readout. */
+@media (max-width: 380px) {
+    .gameHud .hudPrimaryRow {
+        grid-template-columns: minmax(76px, 0.85fr) minmax(0, 1.5fr) 58px;
+        gap: 4px;
+    }
 }

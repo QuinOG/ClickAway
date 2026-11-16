@@ -1,0 +1,540 @@
+{
+  "before": [
+    {
+      "device": "phone-tiny",
+      "width": 320,
+      "height": 640,
+      "results": {
+        "play": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "armory": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\"",
+            "button.primaryButton.armoryPartFeatureInstall \"Install Anchor\" cut by section.armoryStepCard.armoryStepCard-pa"
+          ]
+        },
+        "shop": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\"",
+            "span.shopItemStateTag.is-owned \"OWNED\" cut by span.shopItemStateTag.is-owned \"OWNED\"",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"OWNED CORE\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"COMMON\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"AFFORDABLE COMMON\"",
+            "span.shopItemRarity \"RARE\" cut by div.shopItemHeader \"AFFORDABLE RARE\"",
+            "span.shopItemRarity \"EPIC\" cut by div.shopItemHeader \"AFFORDABLE EPIC\"",
+            "span.shopItemRarity \"LEGENDARY\" cut by div.shopItemHeader \"AFFORDABLE LEGENDARY"
+          ]
+        },
+        "ladder": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "duels": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "history": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "help": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "login": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "signup": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "first-round-lobby": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "live-round": {
+          "clipped": [
+            "span.hudStreakLabel \"STREAK\" cut by div.hudCenterChannel \"STREAK 8 ×2 COMBO ",
+            "span.hudStreakValue \"8\" cut by div.hudCenterChannel \"STREAK 8 ×2 COMBO "
+          ]
+        },
+        "results": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    },
+    {
+      "device": "phone-small",
+      "width": 360,
+      "height": 740,
+      "results": {
+        "play": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "armory": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "shop": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\"",
+            "span.shopItemStateTag.is-owned \"OWNED\" cut by span.shopItemStateTag.is-owned \"OWNED\"",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"OWNED CORE\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"COMMON\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"AFFORDABLE COMMON\"",
+            "span.shopItemRarity \"RARE\" cut by div.shopItemHeader \"AFFORDABLE RARE\"",
+            "span.shopItemRarity \"EPIC\" cut by div.shopItemHeader \"AFFORDABLE EPIC\"",
+            "span.shopItemRarity \"LEGENDARY\" cut by div.shopItemHeader \"AFFORDABLE LEGENDARY"
+          ]
+        },
+        "ladder": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "duels": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "history": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "help": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "login": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "signup": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "first-round-lobby": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": [
+            "span.brand \"ClickAway\" cut by span.brandText \"ClickAway\""
+          ]
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    },
+    {
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "results": {
+        "play": {
+          "clipped": []
+        },
+        "armory": {
+          "clipped": []
+        },
+        "shop": {
+          "clipped": []
+        },
+        "ladder": {
+          "clipped": []
+        },
+        "duels": {
+          "clipped": []
+        },
+        "history": {
+          "clipped": []
+        },
+        "help": {
+          "clipped": []
+        },
+        "login": {
+          "clipped": []
+        },
+        "signup": {
+          "clipped": []
+        },
+        "first-round-lobby": {
+          "clipped": []
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": []
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    },
+    {
+      "device": "laptop-small",
+      "width": 1280,
+      "height": 800,
+      "results": {
+        "play": {
+          "clipped": []
+        },
+        "armory": {
+          "clipped": [
+            "span.armoryInstrumentValue \"4.0%/hit\" cut by span.armoryInstrumentReadout \"4.0%/hit\"",
+            "span.armoryInstrumentLabel \"POWER TEMPO\" cut by span.armoryInstrumentLabel \"POWER TEMPO\""
+          ]
+        },
+        "shop": {
+          "clipped": [
+            "span.shopItemStateTag.is-owned \"OWNED\" cut by span.shopItemStateTag.is-owned \"OWNED\"",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"OWNED CORE\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"COMMON\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"AFFORDABLE COMMON\"",
+            "span.shopItemRarity \"RARE\" cut by div.shopItemHeader \"AFFORDABLE RARE\"",
+            "span.shopItemRarity \"EPIC\" cut by div.shopItemHeader \"AFFORDABLE EPIC\"",
+            "span.shopItemRarity \"LEGENDARY\" cut by div.shopItemHeader \"AFFORDABLE LEGENDARY",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"CORE\""
+          ]
+        },
+        "ladder": {
+          "clipped": []
+        },
+        "duels": {
+          "clipped": []
+        },
+        "history": {
+          "clipped": []
+        },
+        "help": {
+          "clipped": []
+        },
+        "login": {
+          "clipped": []
+        },
+        "signup": {
+          "clipped": []
+        },
+        "first-round-lobby": {
+          "clipped": []
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": []
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    }
+  ],
+  "after": [
+    {
+      "device": "phone-tiny",
+      "width": 320,
+      "height": 640,
+      "results": {
+        "play": {
+          "clipped": []
+        },
+        "armory": {
+          "clipped": []
+        },
+        "shop": {
+          "clipped": [
+            "span.shopItemStateTag.is-owned \"OWNED\" cut by span.shopItemStateTag.is-owned \"OWNED\"",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"OWNED CORE\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"COMMON\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"AFFORDABLE COMMON\"",
+            "span.shopItemRarity \"RARE\" cut by div.shopItemHeader \"AFFORDABLE RARE\"",
+            "span.shopItemRarity \"EPIC\" cut by div.shopItemHeader \"AFFORDABLE EPIC\"",
+            "span.shopItemRarity \"LEGENDARY\" cut by div.shopItemHeader \"AFFORDABLE LEGENDARY"
+          ]
+        },
+        "ladder": {
+          "clipped": []
+        },
+        "duels": {
+          "clipped": []
+        },
+        "history": {
+          "clipped": []
+        },
+        "help": {
+          "clipped": []
+        },
+        "login": {
+          "clipped": []
+        },
+        "signup": {
+          "clipped": []
+        },
+        "first-round-lobby": {
+          "error": "\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed"
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": []
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    },
+    {
+      "device": "phone-small",
+      "width": 360,
+      "height": 740,
+      "results": {
+        "play": {
+          "clipped": []
+        },
+        "armory": {
+          "clipped": []
+        },
+        "shop": {
+          "clipped": []
+        },
+        "ladder": {
+          "clipped": []
+        },
+        "duels": {
+          "clipped": []
+        },
+        "history": {
+          "clipped": []
+        },
+        "help": {
+          "clipped": []
+        },
+        "login": {
+          "clipped": []
+        },
+        "signup": {
+          "clipped": []
+        },
+        "first-round-lobby": {
+          "clipped": []
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": []
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    },
+    {
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "results": {
+        "play": {
+          "clipped": []
+        },
+        "armory": {
+          "clipped": []
+        },
+        "shop": {
+          "clipped": []
+        },
+        "ladder": {
+          "clipped": []
+        },
+        "duels": {
+          "clipped": []
+        },
+        "history": {
+          "clipped": []
+        },
+        "help": {
+          "clipped": []
+        },
+        "login": {
+          "clipped": []
+        },
+        "signup": {
+          "clipped": []
+        },
+        "first-round-lobby": {
+          "clipped": []
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": []
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    },
+    {
+      "device": "laptop-small",
+      "width": 1280,
+      "height": 800,
+      "results": {
+        "play": {
+          "clipped": []
+        },
+        "armory": {
+          "clipped": [
+            "span.armoryInstrumentValue \"4.0%/hit\" cut by span.armoryInstrumentReadout \"4.0%/hit\"",
+            "span.armoryInstrumentLabel \"POWER TEMPO\" cut by span.armoryInstrumentLabel \"POWER TEMPO\""
+          ]
+        },
+        "shop": {
+          "clipped": [
+            "span.shopItemStateTag.is-owned \"OWNED\" cut by span.shopItemStateTag.is-owned \"OWNED\"",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"OWNED CORE\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"COMMON\"",
+            "span.shopItemRarity \"COMMON\" cut by div.shopItemHeader \"AFFORDABLE COMMON\"",
+            "span.shopItemRarity \"RARE\" cut by div.shopItemHeader \"AFFORDABLE RARE\"",
+            "span.shopItemRarity \"EPIC\" cut by div.shopItemHeader \"AFFORDABLE EPIC\"",
+            "span.shopItemRarity \"LEGENDARY\" cut by div.shopItemHeader \"AFFORDABLE LEGENDARY",
+            "span.shopItemRarity \"CORE\" cut by div.shopItemHeader \"CORE\""
+          ]
+        },
+        "ladder": {
+          "clipped": []
+        },
+        "duels": {
+          "clipped": []
+        },
+        "history": {
+          "clipped": []
+        },
+        "help": {
+          "clipped": []
+        },
+        "login": {
+          "clipped": []
+        },
+        "signup": {
+          "clipped": []
+        },
+        "first-round-lobby": {
+          "clipped": []
+        },
+        "live-round": {
+          "clipped": []
+        },
+        "results": {
+          "clipped": []
+        },
+        "settings": {
+          "clipped": []
+        },
+        "armory-compare": {
+          "clipped": []
+        },
+        "armory-spec": {
+          "clipped": []
+        },
+        "armory-unlocks": {
+          "clipped": []
+        }
+      }
+    }
+  ]
+}

@@ -69,6 +69,10 @@ function formatNumber(value = 0) {
   return Number(value).toLocaleString()
 }
 
+function formatCount(value, singular, plural) {
+  return `${formatNumber(value)} ${Number(value) === 1 ? singular : plural}`
+}
+
 function formatReactionTime(value) {
   const normalizedValue = Number(value)
   if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) return "\u2014"
@@ -272,6 +276,7 @@ export function GameOverOverlay({
   roundDailyGoals = null,
   dailyGoals = null,
   roundRankDelta = 0,
+  rankProgress = null,
   placementLabel = null,
   roundSaveStatus = "idle",
   roundSaveError = "",
@@ -315,6 +320,7 @@ export function GameOverOverlay({
       // A plain next round earns neither the daily bonus nor goal rewards.
       nextRoundXp: roundXpEarned - roundDailyBonusXp - (Number(roundDailyGoals?.xp) || 0),
       dailyGoals,
+      roundDailyGoals,
       round: { modeId: selectedModeId, hits, misses, bestStreak },
     })
     : null
@@ -418,7 +424,7 @@ export function GameOverOverlay({
         <span className="gameOverScoreLockRail" aria-hidden="true"><i /></span>
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
-        <p className="gameOverScoreTally">{formatNumber(hits)} hits · {formatNumber(misses)} misses{bullseyes > 0 ? ` · ${formatNumber(bullseyes)} bullseyes` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
+        <p className="gameOverScoreTally">{formatCount(hits, "hit", "hits")} · {formatCount(misses, "miss", "misses")}{bullseyes > 0 ? ` · ${formatCount(bullseyes, "bullseye", "bullseyes")}` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}
@@ -451,10 +457,10 @@ export function GameOverOverlay({
             />
           ) : null}
           {allowsRankProgression && placementLabel ? (
-            <span className="gameOverReward isRank isPlacement"><CrestIcon size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
+            <span className="gameOverReward isRank isPlacement"><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
           ) : null}
           {allowsRankProgression && !placementLabel ? (
-            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
+            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
           ) : null}
           {roundDailyGoals?.goals?.length ? (
             <ul className="gameOverDailyGoals" aria-label="Daily goals completed">

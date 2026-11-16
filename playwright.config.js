@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test"
 
+const port = Number(process.env.PLAYWRIGHT_PORT || 4173)
+const baseURL = `http://127.0.0.1:${port}`
+
 export default defineConfig({
   testDir: "./tests/e2e",
   outputDir: "./test-results/playwright",
@@ -19,7 +22,7 @@ export default defineConfig({
   },
   use: {
     ...devices["Desktop Chrome"],
-    baseURL: "http://127.0.0.1:4173",
+    baseURL,
     colorScheme: "dark",
     locale: "en-US",
     timezoneId: "America/New_York",
@@ -27,8 +30,8 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4173",
-    url: "http://127.0.0.1:4173/login",
+    command: `npm run dev -- --host 127.0.0.1 --port ${port} --strictPort`,
+    url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
