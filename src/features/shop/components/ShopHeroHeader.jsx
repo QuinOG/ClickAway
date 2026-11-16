@@ -1,3 +1,4 @@
+import "../../../styles/social-scenery.css"
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
 import { getProfileAvatarStyle } from "../../../utils/profileAvatarStyling.js"
@@ -32,6 +33,10 @@ function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPrev
       aria-label={`${isPreviewing ? "Selected" : "Equipped"} preview with ${buttonSkin?.name ?? "button skin"} and ${arenaTheme?.name ?? "arena theme"}, with ${profileImage?.name ?? "profile portrait"}`}
     >
       <ArenaWorldArt className="shopStageWorld" />
+      <span className="shopSceneryFrame" aria-hidden="true" />
+      <span className="shopStageSpot" aria-hidden="true" />
+      <span className="shopStageCounter" aria-hidden="true" />
+      <span className="shopCommandLoadoutPedestal" aria-hidden="true" />
 
       <div className="shopCommandLoadoutAvatarFrame">
         <span
@@ -42,7 +47,7 @@ function LoadoutStage({ playerName, buttonSkin, arenaTheme, profileImage, isPrev
           {hasProfileImage ? (
             <img className="shopCommandLoadoutAvatarImage" src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
           ) : (
-            <PlayerPortrait name={playerName} size={80} />
+            <PlayerPortrait name={playerName} size={64} />
           )}
         </span>
       </div>

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useEffect } from "react"
-import { useLocation, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 
 import { BUILD_WALKTHROUGH_STATUS } from "../../constants/buildWalkthrough.js"
 import { ARMORY_STEP_IDS, LEGACY_ARMORY_STEP_ALIASES } from "./armoryConstants.js"
@@ -28,7 +28,6 @@ export function useArmoryUrlState({
   savedLoadoutIds = [],
   activateLoadout,
 }) {
-  const { pathname } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const urlInitDone = useRef(false)
 
@@ -68,10 +67,7 @@ export function useArmoryUrlState({
   ])
 
   useEffect(() => {
-    // An outgoing animated route can still receive the next location.
-    // Never let its query sync navigate the player back into the Armory.
-    if (!urlInitDone.current || pathname !== "/armory"
-      || window.location.pathname !== "/armory") return
+    if (!urlInitDone.current) return
 
     const next = new URLSearchParams(searchParams)
     next.set("step", activeStepId)
@@ -105,7 +101,6 @@ export function useArmoryUrlState({
     activeModuleSlotId,
     activeStepId,
     editingPowerSlotIndex,
-    pathname,
     searchParams,
     setSearchParams,
   ])

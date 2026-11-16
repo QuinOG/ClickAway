@@ -6,6 +6,8 @@ import { describe, expect, test, vi } from "vitest"
 
 import { DEFAULT_SAVED_LOADOUTS } from "../src/constants/buildcraft.js"
 import { buildLoadoutPresentation } from "../src/constants/buildcraftPresentation.js"
+import { BAY_TARGET_SCALE } from "../src/features/armory/components/ArmoryBayWall.jsx"
+import { MACHINE_TARGET_SCALE } from "../src/features/armory/components/ArmoryMachine.jsx"
 import { BUILD_WALKTHROUGH_STATUS } from "../src/constants/buildWalkthrough.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
 import ArmoryPage from "../src/pages/ArmoryPage.jsx"
@@ -265,6 +267,10 @@ describe("Armory scene shell", () => {
 describe("Armory machine", () => {
   const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
 
+  function expectedTargetSize(loadout) {
+    const { roundRules } = buildLoadoutPresentation(normalMode, loadout)
+    return `${Math.round(roundRules.initialButtonSize * MACHINE_TARGET_SCALE)}px`
+  }
 
   function getMachine() {
     return screen.getByLabelText("Active build machine")
@@ -290,18 +296,27 @@ describe("Armory machine", () => {
     expect(rack.querySelectorAll(".armoryMachineRackKey")).toHaveLength(3)
   })
 
-  test("target facts track the installed parts in plain language", async () => {
+  test("target size tracks the build's computed initial button size", async () => {
     const user = userEvent.setup()
     renderArmory()
-    const facts = screen.getByLabelText("Target details")
-    expect(facts.textContent).toContain("Target size: Big")
-    expect(facts.textContent).toContain("100 pixels across")
+
+    const target = document.querySelector(".armoryMachineTarget")
+    const allRounder = DEFAULT_SAVED_LOADOUTS.find((loadout) => loadout.id === "loadout_1")
+    expect(target.style.width).toBe(expectedTargetSize(allRounder))
+
+    // Installing Anchor (bigger targets) visibly grows the machine's target.
     await openStep(user, "Mods")
     await equipPart(user, screen.getByRole("button", { name: /^Anchor/ }))
-    const loadout = DEFAULT_SAVED_LOADOUTS[0]
-    const rules = buildLoadoutPresentation(normalMode, { ...loadout, moduleIds: { ...loadout.moduleIds, tempoCoreId: "tempo_anchor" } }).roundRules
-    expect(facts.textContent).toContain(`${rules.initialButtonSize} pixels across`)
-    expect(facts.textContent).toContain(`down to ${rules.minButtonSize} pixels`)
+
+    const anchorLoadout = {
+      ...allRounder,
+      moduleIds: { ...allRounder.moduleIds, tempoCoreId: "tempo_anchor" },
+    }
+    const anchorSize = expectedTargetSize(anchorLoadout)
+    expect(target.style.width).toBe(anchorSize)
+    expect(parseInt(anchorSize, 10)).toBeGreaterThan(
+      parseInt(expectedTargetSize(allRounder), 10)
+    )
   })
 
   test("default modules read as neutral plates; specialist modules light their lane", async () => {
@@ -335,7 +350,25 @@ describe("Armory machine", () => {
     expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
   })
 
+  test("the shop-equipped image skin dresses the target", () => {
+    renderArmory({
+      buttonSkinImageSrc: "/skins/cd.png",
+      buttonSkinImageScale: 120,
+    })
 
+    const target = document.querySelector(".armoryMachineTarget")
+    expect(target.className).toContain("hasImage")
+    expect(target.style.backgroundImage).toContain("/skins/cd.png")
+    expect(target.style.backgroundSize).toBe("120%")
+  })
+
+  test("a class-based skin applies its effect class when no image is set", () => {
+    renderArmory({ buttonSkinClass: "skin-cd" })
+
+    const target = document.querySelector(".armoryMachineTarget")
+    expect(target.className).toContain("skin-cd")
+    expect(target.className).not.toContain("hasImage")
+  })
 })
 
 describe("Armory parts gallery (Phase 5)", () => {
@@ -658,12 +691,23 @@ describe("Armory collection flow (Phase D2b)", () => {
 })
 
 describe("Armory bay wall", () => {
+  const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
 
-  test("class list keeps three numbered loadouts without tiny machine previews", () => {
+  function expectedMiniTargetSize(loadout) {
+    const { roundRules } = buildLoadoutPresentation(normalMode, loadout)
+    return `${Math.round(roundRules.initialButtonSize * BAY_TARGET_SCALE)}px`
+  }
+
+  test("bay mini targets scale with each saved build", () => {
     renderArmory()
-    const bays = getBayWall()
-    expect([...bays.querySelectorAll(".armoryCartSpine")].map((node) => node.textContent)).toEqual(["1", "2", "3"])
-    expect(bays.querySelectorAll(".armoryCartWindow")).toHaveLength(0)
+
+    const bayWall = getBayWall()
+    const miniTargets = bayWall.querySelectorAll(".armoryBayMiniTarget")
+    expect(miniTargets).toHaveLength(3)
+
+    DEFAULT_SAVED_LOADOUTS.forEach((loadout, index) => {
+      expect(miniTargets[index].style.width).toBe(expectedMiniTargetSize(loadout))
+    })
   })
 
   test("inactive bays only offer comparison", () => {

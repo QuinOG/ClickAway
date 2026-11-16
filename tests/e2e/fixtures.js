@@ -14,7 +14,7 @@ export const AUTHENTICATED_ROUTES = [
   { id: "ladder", path: "/leaderboard", heading: "Climb the field" },
   { id: "duels", path: "/challenges", heading: "Duel command" },
   { id: "history", path: "/history", heading: "Match history" },
-  { id: "help", path: "/help", heading: "Field Guide" },
+  { id: "help", path: "/help", heading: "Learn by sight" },
 ]
 
 const FIXED_NOW = "2026-07-12T16:00:00.000Z"

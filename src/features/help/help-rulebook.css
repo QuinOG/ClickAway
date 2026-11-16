@@ -1,10 +1,10 @@
 /* Purpose: readable reference rules for arena players. Tone: the current dark
    arena panels. Constraints: native disclosures, 360px tables, reduced motion.
-   Visual anchor: illustrated chapter strips above quiet, shared arena surfaces. */
+   Visual anchor: inset rule panels with the field guide's accent borders. */
 .helpDoc .helpTopicGroup .helpRulebook {
   margin-top: var(--ca-space-6);
   min-width: 0;
-  border: 0;
+  border: 1px solid var(--ca-color-line);
   border-radius: var(--ca-radius-control);
   background: var(--ca-color-surface-panel);
   color: var(--ca-color-ink);
@@ -36,10 +36,10 @@
   min-width: 0;
   margin: 0;
   padding: var(--ca-space-4);
-  border: 0 !important;
+  border: 1px solid var(--ca-color-line-subtle) !important;
   border-image: none !important;
   border-radius: var(--ca-radius-control) !important;
-  background: transparent;
+  background: var(--ca-color-env-base);
   box-shadow: none !important;
   overflow-x: auto;
 }
@@ -52,7 +52,7 @@
   margin: 0 0 var(--ca-space-3);
 }
 .helpRulebook :is(.quickStartCard, .helpFlowStep, .helpList li) {
-  border: 0;
+  border: 1px solid var(--ca-color-line-subtle);
   border-radius: var(--ca-radius-control);
   background: var(--ca-color-surface-panel);
   padding: var(--ca-space-3);
@@ -64,13 +64,13 @@
   line-height: var(--ca-leading-body);
 }
 .helpRulebook :is(.quickStartCardTitle, .helpFlowTitle) { color: var(--ca-color-ink-strong); font-size: var(--ca-type-body); }
-.helpRulebook :is(.quickStartCardEyebrow, .helpFlowIndex) { background: var(--ca-color-surface-panel); color: var(--ca-color-accent); box-shadow: none; font-family: var(--ca-font-numeric); }
+.helpRulebook :is(.quickStartCardEyebrow, .helpFlowIndex) { background: var(--ca-color-env-high); color: var(--ca-color-accent); box-shadow: none; font-family: var(--ca-font-numeric); }
 .helpRulebook .helpTable { width: 100%; font-size: var(--ca-type-body-sm); }
-.helpRulebook .helpTable thead { background: var(--ca-color-surface-panel); }
+.helpRulebook .helpTable thead { background: var(--ca-color-env-high); }
 .helpRulebook .helpTable :is(th, td) { padding: var(--ca-space-3); color: var(--ca-color-ink); border-color: var(--ca-color-line-subtle); }
 .helpRulebook .helpTable th { color: var(--ca-color-accent); font-size: var(--ca-type-caption); }
 .helpRulebook .helpTable td:first-child { color: var(--ca-color-ink-strong); }
-.helpRulebook .helpArmoryLink { border-color: var(--ca-color-line); color: var(--ca-color-accent); background: var(--ca-color-surface-panel); font-size: var(--ca-type-label); }
+.helpRulebook .helpArmoryLink { border-color: var(--ca-color-line); color: var(--ca-color-accent); background: var(--ca-color-env-high); font-size: var(--ca-type-label); }
 @media (max-width: 600px) {
   .helpRulebookBody { padding: var(--ca-space-2); }
   .helpDoc .helpTopicGroup .helpRulebook .helpBlock { padding: var(--ca-space-3); }
@@ -79,47 +79,4 @@
   .helpPageScene .helpDoc.card { padding: var(--ca-space-2) !important; }
   .helpDoc > .helpTopicGroup { padding: var(--ca-space-3) !important; }
   .helpDoc > .helpTopicGroup::before { display: none; }
-}
-
-/* Image strips keep the manual character; rules share the app's quiet surfaces. */
-.helpDoc .helpTopicGroup {
-  background: var(--ca-color-surface-panel) !important;
-  color: var(--ca-color-ink);
-  border: 0;
-  box-shadow: none !important;
-}
-.helpDoc .helpTopicGroup::before,
-.helpDoc .helpTopicGroup::after { content: none; }
-.helpDoc > .helpTopicGroup { padding: 8px 24px 24px !important; }
-.helpDoc .helpTopicGroup > .helpGroupHeader {
-  justify-content: center;
-  text-align: center;
-  width: min(460px, 100%);
-  margin: 24px auto 16px !important;
-  min-height: 72px;
-  padding: 14px min(70px, 12vw);
-  background: url('/art/help-strip/help-banner-small.png') center / 100% 100% no-repeat;
-}
-.helpDoc .helpTopicGroup .helpGroupTitle {
-  color: #2a1c0e !important;
-  font-size: clamp(15px, 1.4vw, 18px) !important;
-  white-space: normal;
-  text-shadow: none !important;
-}
-.helpDoc .helpTopicGroup .helpSubhead { color: var(--ca-color-ink-muted) !important; }
-.helpDoc .helpTopicGroup .helpRulebook { background: transparent; }
-.helpRulebookBody { border-top: 0; }
-.helpRulebook > summary { color: var(--ca-color-ink); }
-.helpDoc .helpRulebook :is(.quickStartCard, .helpFlowStep, .helpList li) {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-}
-.helpDoc .helpRulebook .helpTable thead { background: transparent; }
-@media (max-width: 600px) {
-  .helpDoc > .helpTopicGroup { padding: 8px 12px 12px !important; }
-  .helpDoc .helpTopicGroup > .helpGroupHeader {
-    min-height: 60px;
-    padding: 12px 32px;
-  }
 }

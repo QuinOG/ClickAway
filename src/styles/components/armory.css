@@ -170,8 +170,13 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 
     .armoryScene {
         transition: none;
-    }/* Static machine: no idle loop, size changes snap. */
+    }
 
+    /* Static machine: no idle loop, size changes snap. */
+    .armoryMachineTarget {
+        animation: none;
+        transition: none;
+    }
 }
 
 .armoryRail {
@@ -644,6 +649,11 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         rgba(7, 12, 23, 0.32);
 }
 
+.armoryBayMiniTarget {
+    border-radius: var(--armory-radius-pill);
+    background: linear-gradient(145deg, #6af0ca, #34b892);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
 
 .armoryBayMiniModules {
     position: absolute;
@@ -948,6 +958,13 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     }
 }
 
+.armoryMachineCore {
+    position: relative;
+    width: 100%;
+    min-height: clamp(330px, 44vh, 470px);
+    display: grid;
+    place-items: center;
+}
 
 .armoryRailHelp {
     color: rgba(197, 219, 243, 0.72);
@@ -982,23 +999,107 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
 .armoryPage :is(button, a, summary, input):focus-visible {
     outline: 2px solid rgba(var(--armory-accent), 0.9);
     outline-offset: 2px;
-}/* Bench glow: the key light pooling under the machine ties it to the weather. */
+}
+
+/* Bench glow: the key light pooling under the machine ties it to the weather. */
+.armoryMachineCore::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 74%;
+    height: 44px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(
+        ellipse at center,
+        color-mix(in srgb, var(--armory-key-light) 22%, transparent),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
 /* The live target. Defaults mirror the in-game button's material so the bench
    and the arena read as the same object; shop image skins override it. */
+.armoryMachineTarget {
+    z-index: 1;
+    border-radius: var(--armory-radius-pill);
+    background: linear-gradient(145deg, #6af0ca, #34b892);
+    box-shadow:
+        0 18px 30px rgba(0, 0, 0, 0.4),
+        0 0 34px color-mix(in srgb, var(--armory-key-light) 24%, transparent);
+    transition: width 0.3s var(--armory-motion-ease), height 0.3s var(--armory-motion-ease);
+    animation: armoryMachineIdle var(--armory-motion-idle) var(--armory-motion-loop-ease) infinite;
+}
 
-
+.armoryMachineTarget.hasImage {
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
 /* Idle life per identity: Control breathes slowly, Pressure ticks fast.
    Transform-only so the idle loop stays on the compositor. */
+@keyframes armoryMachineIdle {
+    0%,
+    100% {
+        transform: scale(1);
+    }
 
+    50% {
+        transform: scale(1.035);
+    }
+}
 
+.armoryScene[data-identity="control"] .armoryMachineTarget {
+    animation-duration: var(--armory-motion-idle-control);
+}
+
+.armoryScene[data-identity="pressure"] .armoryMachineTarget {
+    animation-duration: var(--armory-motion-idle-pressure);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.4, 1);
+}
+
+.armoryScene[data-identity="utility"] .armoryMachineTarget {
+    animation-duration: var(--armory-motion-idle-utility);
+}
 
 /* Module housings rack above the target, mirroring the tool rack below it. */
+.armoryMachineAssembly {
+    position: relative;
+    width: min(600px, 100%);
+    height: clamp(340px, 42vh, 420px);
+    display: grid;
+    place-items: center;
+}
 
+.armoryMachineConduits {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
 
+.armoryMachineConduits path,
+.armoryMachineConduits circle {
+    fill: none;
+    stroke: rgba(var(--armory-line), 0.16);
+    stroke-width: 2;
+    stroke-dasharray: 5 7;
+}
 
+.armoryMachineConduits path {
+    transition:
+        stroke var(--armory-motion-fast) var(--armory-motion-ease),
+        filter var(--armory-motion-fast) var(--armory-motion-ease);
+}
 
-
+.armoryMachineHousingRow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
 
 .armoryMachineHousing {
     position: absolute;
@@ -1041,6 +1142,12 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         0 0 28px color-mix(in srgb, var(--armory-key-light) 18%, transparent);
 }
 
+.armoryMachineAssembly:has(.housing-tempoCore.isSelected) .conduit-tempoCore,
+.armoryMachineAssembly:has(.housing-streakLens.isSelected) .conduit-streakLens,
+.armoryMachineAssembly:has(.housing-powerRig.isSelected) .conduit-powerRig {
+    stroke: var(--armory-key-light);
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--armory-key-light) 72%, transparent));
+}
 
 .armoryMachineHousing.tone-tempoCore {
     border-color: rgba(var(--armory-tone-tempo), 0.42);
@@ -1276,8 +1383,27 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     letter-spacing: 0.2px;
 }
 
+.armoryMachineIdentity {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(149, 204, 255, 0.78);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+}
 
+.armoryMachineIdentityGlyph {
+    display: grid;
+    place-items: center;
+    color: var(--armory-key-light);
+}
 
+.armoryMachineIdentityGlyph svg {
+    width: 12px;
+    height: 12px;
+}
 
 .armoryStepCard,
 .armoryLanePanel,
@@ -1917,6 +2043,9 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     gap: var(--armory-space-md);
 }
 
+.armoryMachineTarget {
+    position: relative;
+}
 
 /* Housings are buttons now: clicking one opens its lane's parts gallery. */
 .armoryMachineHousing {
@@ -2351,6 +2480,9 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         overflow: visible;
     }
 
+    .armoryMachineCore {
+        min-height: 280px;
+    }
 
     .armoryStepToggle {
         grid-template-columns: 1fr;
@@ -2389,9 +2521,29 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
         padding: var(--armory-space-lg);
     }
 
+    .armoryMachineCore {
+        min-height: 0;
+        gap: var(--armory-space-md);
+        padding-top: var(--armory-space-lg);
+    }
 
+    .armoryMachineAssembly {
+        height: auto;
+        gap: var(--armory-space-xl);
+    }
 
+    .armoryMachineConduits {
+        display: none;
+    }
 
+    .armoryMachineHousingRow {
+        position: relative;
+        inset: auto;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--armory-space-xs);
+        width: min(320px, 100%);
+    }
 
     .armoryMachineHousing,
     .armoryMachineHousing.housing-tempoCore,
@@ -3552,10 +3704,13 @@ body:has(.armoryRange, .armoryCompareBench, .armorySpecSheet, .armoryUnlockWall,
     .armoryInstruments { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .armoryInstrument { padding: 10px 12px; gap: 5px; }
     .armoryInstrumentLabel { font-size: 11px; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-}/* Round 2: every buildcraft glyph is a stroked pictogram, never a filled blob. */
+}
+
+/* Round 2: every buildcraft glyph is a stroked pictogram, never a filled blob. */
 .armoryPartGlyph svg,
 .armoryMachineHousingGlyph svg,
 .armoryMachineRackGlyph svg,
+.armoryMachineIdentityGlyph svg,
 .armoryCommandIdentityGlyph svg,
 .armoryBayCard svg {
     fill: none;

@@ -1,13 +1,14 @@
 import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
 
+import ArenaWorldArt from "../../../components/art/ArenaWorldArt.jsx"
 import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
 import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
 // Pedestals communicate rarity consistently across the button catalog.
 const RARITY_CRADLES = {
-  core: "ring",
-  common: "ring",
-  rare: "dish",
+  core: "dish",
+  common: "dish",
+  rare: "ring",
   epic: "claw",
   legendary: "cushion",
 }
@@ -54,13 +55,27 @@ function StateIcon({ state }) {
 function getRarity(item) {
   if (item.builtIn || !item.cost) return { id: "core", label: "Core" }
   if (item.cost <= 300) return { id: "common", label: "Common" }
-  if (item.cost <= 800) return { id: "rare", label: "Uncommon" }
+  if (item.cost <= 800) return { id: "rare", label: "Rare" }
   if (item.cost <= 1200) return { id: "epic", label: "Epic" }
   return { id: "legendary", label: "Legendary" }
 }
 
 function getTypeClass(type) {
   return String(type ?? "cosmetic").replace(/_/g, "-")
+}
+
+function ArenaThemeScene({ effectClass }) {
+  return (
+    <div className={`shopArenaScene ${effectClass}`} aria-hidden="true">
+      <ArenaWorldArt className="shopArenaWorld" />
+      <span className="shopArenaSceneFloor" />
+      <span className="shopArenaSceneCorner isTL" />
+      <span className="shopArenaSceneCorner isTR" />
+      <span className="shopArenaSceneCorner isBL" />
+      <span className="shopArenaSceneCorner isBR" />
+      <span className="shopArenaSceneTarget" />
+    </div>
+  )
 }
 
 function getPreviewStyle(item) {
@@ -190,7 +205,7 @@ export default function ShopItemCard({
                 aria-hidden="true"
               />
             ) : item.type === "arena_theme" ? (
-              <img className="shopThemeCardArt" src={`/art/shop/arena-${item.id}.png`} alt="" aria-hidden="true" width="960" height="600" decoding="async" />
+              <ArenaThemeScene effectClass={item.effectClass} />
             ) : item.type === "profile_image" && !hasImage ? (
               <span className="shopPreviewPortrait" aria-hidden="true">
                 <PlayerPortrait name={playerName} size={104} />
