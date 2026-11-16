@@ -3265,3 +3265,56 @@
         letter-spacing: 0;
     }
 }
+
+/* Class-select kit (fix list 2026-11-16): each bay lists its three parts by
+   name, like a shooter's class card, instead of a miniature machine. */
+.armoryCart .armoryCartKit {
+    grid-column: 2;
+    display: grid;
+    align-content: center;
+    gap: 7px;
+    margin: 8px 10px 6px;
+}
+.armoryCart .armoryCartKitRow {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.armoryCart .armoryCartKitIcon {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: rgb(4 10 20 / 55%);
+}
+.armoryCart .armoryCartKitRow.part-tempoCore .armoryCartKitIcon { color: rgb(var(--armory-tone-tempo)); }
+.armoryCart .armoryCartKitRow.part-streakLens .armoryCartKitIcon { color: rgb(var(--armory-tone-streak)); }
+.armoryCart .armoryCartKitRow.part-powerRig .armoryCartKitIcon { color: rgb(var(--armory-tone-power)); }
+.armoryCart .armoryCartKitIcon :is(svg, .gameIcon, img) { width: 18px; height: 18px; }
+.armoryCart .armoryCartKitText { display: grid; min-width: 0; line-height: 1.15; }
+.armoryCart .armoryCartKitText small {
+    color: rgb(190 208 232 / 72%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.armoryCart .armoryCartKitText b {
+    color: #eef5ff;
+    font-size: 12.5px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.armoryCart:not(.isActive) .armoryCartKit { opacity: 0.82; }
+/* The active card's border already marks it; the leftover lamp read as a stray dot. */
+.armoryBayWall .armoryCart .armoryCartLamp { display: none; }
+/* Narrow desktop rail: icons carry the slot colour, so drop the slot label
+   and keep each part name on one or two short lines. */
+.armoryBayWall .armoryCart { container-type: inline-size; }
+@container (max-width: 190px) {
+    .armoryCart .armoryCartKitText small { display: none; }
+    .armoryCart .armoryCartKit { gap: 6px; }
+}

@@ -49,7 +49,7 @@ function MachineHousing({ module, isSelected = false, onOpenLane }) {
   )
 }
 
-function MachineNameplate({ loadout, presentation, nameplateRef, machineApi }) {
+function MachineNameplate({ loadout, nameplateRef, machineApi }) {
   return (
     <div className="armoryMachineNameplate" ref={nameplateRef}>
       {machineApi.isEditingName ? (
@@ -83,9 +83,6 @@ function MachineNameplate({ loadout, presentation, nameplateRef, machineApi }) {
           <span className="armoryMachineNameHint" aria-hidden="true">Rename</span>
         </button>
       )}
-      <span className="armoryMachineIdentity">
-        {presentation.titleLine}
-      </span>
     </div>
   )
 }
@@ -150,7 +147,6 @@ export default function ArmoryMachine({
         <header className="armoryMachineHeader">
           <MachineNameplate
             loadout={loadout}
-            presentation={presentation}
             nameplateRef={nameplateRef}
             machineApi={machineApi}
           />

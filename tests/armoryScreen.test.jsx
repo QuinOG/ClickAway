@@ -6,7 +6,6 @@ import { describe, expect, test, vi } from "vitest"
 
 import { DEFAULT_SAVED_LOADOUTS } from "../src/constants/buildcraft.js"
 import { buildLoadoutPresentation } from "../src/constants/buildcraftPresentation.js"
-import { BAY_TARGET_SCALE } from "../src/features/armory/components/ArmoryBayWall.jsx"
 import { MACHINE_TARGET_SCALE } from "../src/features/armory/components/ArmoryMachine.jsx"
 import { BUILD_WALKTHROUGH_STATUS } from "../src/constants/buildWalkthrough.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
@@ -693,20 +692,17 @@ describe("Armory collection flow (Phase D2b)", () => {
 describe("Armory bay wall", () => {
   const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
 
-  function expectedMiniTargetSize(loadout) {
-    const { roundRules } = buildLoadoutPresentation(normalMode, loadout)
-    return `${Math.round(roundRules.initialButtonSize * BAY_TARGET_SCALE)}px`
-  }
-
-  test("bay mini targets scale with each saved build", () => {
+  test("each bay lists its equipped parts by name", () => {
     renderArmory()
 
-    const bayWall = getBayWall()
-    const miniTargets = bayWall.querySelectorAll(".armoryBayMiniTarget")
-    expect(miniTargets).toHaveLength(3)
+    const bays = getBayWall().querySelectorAll(".armoryCartKit")
+    expect(bays).toHaveLength(3)
 
     DEFAULT_SAVED_LOADOUTS.forEach((loadout, index) => {
-      expect(miniTargets[index].style.width).toBe(expectedMiniTargetSize(loadout))
+      const { moduleStack } = buildLoadoutPresentation(normalMode, loadout)
+      moduleStack.forEach((module) => {
+        expect(within(bays[index]).getByText(module.label)).not.toBeNull()
+      })
     })
   })
 
