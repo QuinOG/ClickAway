@@ -3268,28 +3268,30 @@
 .armoryMachineAimReadout em { color: #fff; font-size: 12px; white-space: nowrap; }
 
 /* Shared card layout leaves room for long names and comparison values. */
-.armoryWorkspace .armoryPartFeature,
-.armoryWorkspace .armoryPartFeature:has(.armoryChargeRhythm) {
-    grid-template-columns: 96px minmax(0, 1fr);
-    grid-template-areas: "glyph head" "install install" "trade trade";
-    gap: 10px 14px;
-    min-width: 0;
-}
+.armoryWorkspace .armoryPartFeature { min-width: 0; }
 .armoryWorkspace .armoryPartFeature.tone-powerRig {
     --tone: 255, 211, 106;
     background: radial-gradient(ellipse at top left, rgba(var(--tone), 0.16), transparent 75%);
     border-top: 2px solid rgba(var(--tone), 0.65);
     padding-top: 12px;
 }
-.armoryWorkspace .armoryPartFeatureName { font-size: 26px; line-height: 1.15; overflow-wrap: anywhere; }
-.armoryWorkspace .armoryPartFeatureInstall { justify-self: stretch; min-width: 0; white-space: normal; }
-.armoryWorkspace .armoryPartFeatureInstalled { grid-area: install; }
+.armoryWorkspace .armoryPartFeatureName { overflow-wrap: anywhere; }
+.armoryWorkspace .armoryPartFeatureInstall { min-width: 0; }
 .armoryWorkspace .armorySwapReportHead > span,
 .armoryWorkspace .armorySwapReportRow > * { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 .armoryWorkspace .armorySwapReportHead > span:nth-child(3) { flex-wrap: wrap; }
 .armoryWorkspace .armorySwapReportGauge { max-width: 100%; }
 /* Phones only: the three columns need to share a narrow card. */
 @media (max-width: 600px) {
+    .armoryWorkspace .armoryPartFeature,
+    .armoryWorkspace .armoryPartFeature:has(.armoryChargeRhythm) {
+        grid-template-columns: 96px minmax(0, 1fr);
+        grid-template-areas: "glyph head" "install install" "trade trade";
+        gap: 10px 14px;
+    }
+    .armoryWorkspace .armoryPartFeatureName { font-size: 26px; line-height: 1.15; }
+    .armoryWorkspace .armoryPartFeatureInstall { justify-self: stretch; white-space: normal; }
+    .armoryWorkspace .armoryPartFeatureInstalled { grid-area: install; }
     .armoryWorkspace .armorySwapReport { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1fr); }
     .armoryWorkspace .armorySwapReportLabel { flex-wrap: wrap; gap: 4px; padding: 6px; }
     .armoryWorkspace .armorySwapReportRow > .armorySwapReportTo { font-size: 15px; padding: 6px; text-align: right; }
