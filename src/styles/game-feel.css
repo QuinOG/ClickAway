@@ -5303,3 +5303,33 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
 }
 .shellIdentityPopover.shellIdentityPass .shellPassIdentity { min-width: 0; padding-right: 0; }
 .shellIdentityPopover.shellIdentityPass .shellPassHero { height: auto; }
+
+/* Loadout showcase: the stadium, skin and portrait carry the scene. */
+.shopInspectStage.shopCommandLoadoutStage {
+    padding-top: 0;
+    box-shadow: inset 0 0 0 1px #8c754b, 0 4px 0 #040912 !important;
+}
+.shopInspectStage .shopStageWorld {
+    height: 100% !important;
+    opacity: 1 !important;
+}
+.shopInspectStage .shopStageWorld .arenaWorldPlate { object-fit: cover; }
+.shopInspectStage .shopCommandLoadoutButton { bottom: 35px !important; }
+.shopInspectStage .shopCommandLoadoutAvatarFrame { top: 16px !important; right: 16px; }
+.shopCommandSurface .shopCommandLoadoutAvatar { width: 64px; height: 64px; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatarFrame {
+    top: auto !important;
+    bottom: 28px;
+}
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatar { width: 160px; height: 160px; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutButton { top: 16px !important; bottom: auto !important; }
+
+/* Lower rarities use quieter existing art; Epic and Legendary keep their displays. */
+.shopItemCard:is(.rarity-core, .rarity-common) .shopItemCradle {
+    width: 62%;
+    filter: grayscale(1) brightness(.8) drop-shadow(0 3px 3px rgb(4 9 18 / 45%));
+}
+.shopItemCard.rarity-rare .shopItemCradle {
+    width: 68%;
+    filter: saturate(.65) drop-shadow(0 4px 3px rgb(4 9 18 / 45%));
+}
