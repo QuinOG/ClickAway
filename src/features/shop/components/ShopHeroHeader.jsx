@@ -1,5 +1,5 @@
 import "../../../styles/social-scenery.css"
-import { Check, Coins, Eye, LockKey, Package } from "@phosphor-icons/react"
+import { Check, Coins, LockKey, Package } from "@phosphor-icons/react"
 
 import { getProfileAvatarStyle } from "../../../utils/profileAvatarStyling.js"
 import PlayerPortrait from "../../../components/art/PlayerPortrait.jsx"
@@ -158,24 +158,16 @@ export default function ShopHeroHeader({
         <div className="shopCommandDetails">
           <div className="shopCommandLoadoutHeader">
             <div className="shopCommandPreviewIdentity">
-              <span className="shopCommandPreviewEyebrow">
-                <Eye weight="bold" aria-hidden="true" />
-                {isPreviewing ? "Previewing" : "Live loadout"}
-              </span>
               <strong className="shopCommandPreviewTitle">
-                {selectedItem?.name ?? "Equipped cosmetics"}
+                {isPreviewing ? "Previewing" : "Your loadout"}
               </strong>
             </div>
-            <span className={`shopCommandPreviewState is-${selectedState}`}>
-              <StateIcon state={selectedState} />
-              {selectedState}
-            </span>
           </div>
 
           <div className="shopCommandLoadoutMeta" aria-label="Preview item summary">
-            <span className={selectedItem?.type === "button_skin" ? "isPreviewSlot" : ""}><strong>Button</strong><span>{previewButtonSkin?.name ?? "Default"}</span></span>
-            <span className={selectedItem?.type === "arena_theme" ? "isPreviewSlot" : ""}><strong>Arena</strong><span>{previewArenaTheme?.name ?? "Default"}</span></span>
-            <span className={selectedItem?.type === "profile_image" ? "isPreviewSlot" : ""}><strong>Profile</strong><span>{previewProfileImage?.name ?? "Pilot Portrait"}</span></span>
+            <span><strong>Button</strong><span>{previewButtonSkin?.name ?? "Default"}</span></span>
+            <span><strong>Arena</strong><span>{previewArenaTheme?.name ?? "Default"}</span></span>
+            <span><strong>Profile</strong><span>{previewProfileImage?.name ?? "Pilot Portrait"}</span></span>
           </div>
 
           <div className="shopCommandFooter">

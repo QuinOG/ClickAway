@@ -270,51 +270,6 @@
     white-space: normal;
 }
 
-.shopCommandPreviewState {
-    min-height: 30px;
-    padding: 0 10px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    color: #dce9fb;
-    background: rgba(255, 255, 255, 0.04);
-    font-size: 11px;
-    font-weight: 850;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.shopCommandPreviewState svg {
-    width: 15px;
-    height: 15px;
-}
-
-.shopCommandPreviewState.is-equipped {
-    border-color: rgba(116, 241, 183, 0.44);
-    color: #bff8dc;
-    background: rgba(70, 198, 139, 0.11);
-}
-
-.shopCommandPreviewState.is-owned {
-    border-color: rgba(125, 199, 255, 0.34);
-    color: #cdeaff;
-    background: rgba(80, 156, 231, 0.1);
-}
-
-.shopCommandPreviewState.is-affordable {
-    border-color: rgba(255, 202, 104, 0.42);
-    color: #ffe0a2;
-    background: rgba(224, 157, 56, 0.11);
-}
-
-.shopCommandPreviewState.is-locked {
-    color: #aeb9ca;
-    background: rgba(100, 110, 129, 0.12);
-}
-
 .shopCommandLoadoutStage {
     min-height: 228px;
     width: 100%;
@@ -503,21 +458,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #dce8f7;
-}
-
-.shopCommandLoadoutMeta > .isPreviewSlot {
-    position: relative;
-    padding-left: 9px;
-}
-
-.shopCommandLoadoutMeta > .isPreviewSlot::before {
-    content: "";
-    position: absolute;
-    inset: 1px auto 1px 0;
-    width: 3px;
-    border-radius: 99px;
-    background: #79cbff;
-    box-shadow: 0 0 10px rgba(121, 203, 255, 0.45);
 }
 
 .shopCommandPreviewAction {
@@ -1425,10 +1365,6 @@
 
     .shopCommandPreviewTitle {
         font-size: 19px;
-    }
-
-    .shopCommandPreviewState {
-        padding: 0 8px;
     }
 
     .shopCommandPreviewButtons {
