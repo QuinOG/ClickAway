@@ -24,6 +24,8 @@ describe("Branded auth arrival", () => {
     const user = userEvent.setup()
     const onSignup = vi.fn()
     renderPage(<SignupPage onSignup={onSignup} />)
+    expect(screen.getByLabelText("Username").maxLength).toBe(24)
+    expect(screen.getByText("3-24 characters. Shown on your profile and leaderboard.")).not.toBeNull()
 
     await user.type(screen.getByLabelText("Username"), "ab")
     await user.type(screen.getByLabelText("Password"), "short")

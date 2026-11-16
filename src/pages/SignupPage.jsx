@@ -9,7 +9,7 @@ function getUsernameError(username = "") {
   const trimmedUsername = username.trim()
   if (!trimmedUsername) return "Choose a username."
   if (trimmedUsername.length < 3) return "Username must be at least 3 characters."
-  if (trimmedUsername.length > 32) return "Username must be 32 characters or less."
+  if (trimmedUsername.length > 24) return "Username must be 24 characters or less."
   return ""
 }
 
@@ -35,7 +35,7 @@ function getUsernameHint(username = "", shouldShowValidation = false) {
 
   if (!trimmedUsername) {
     return {
-      text: "This is the name shown on your profile and leaderboard.",
+      text: "3-24 characters. Shown on your profile and leaderboard.",
       tone: "neutral",
     }
   }
@@ -179,7 +179,7 @@ export default function SignupPage({ onSignup }) {
             autoFocus
             required
             minLength={3}
-            maxLength={32}
+            maxLength={24}
             disabled={isSubmitting}
           />
 

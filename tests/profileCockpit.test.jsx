@@ -75,7 +75,7 @@ describe("Player identity cockpit", () => {
     const nearestGoal = container.querySelector(".profileNearestGoal")
     expect(nearestGoal).not.toBeNull()
     expect(within(nearestGoal).getByText("Nearest achievement")).not.toBeNull()
-    expect(nearestGoal.querySelector(".profileGoalTrack span")).not.toBeNull()
+    expect(nearestGoal.querySelector(".gameProgressFill")).not.toBeNull()
   })
 
   test("keeps the achievement constellation browsable below the cockpit", () => {
@@ -83,8 +83,7 @@ describe("Player identity cockpit", () => {
 
     expect(screen.getByRole("heading", { name: "Achievement constellation" })).not.toBeNull()
     expect(screen.getByRole("tablist", { name: "Achievement categories" })).not.toBeNull()
-    expect(screen.getByRole("link", { name: "View milestones" }).getAttribute("href"))
-      .toBe("#achievement-constellation")
+    expect(screen.queryByRole("link", { name: "View milestones" })).toBeNull()
   })
 })
 

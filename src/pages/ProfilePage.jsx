@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { FEEDBACK_EVENTS } from "../constants/feedbackEvents.js"
 import { useActionFeedback } from "../hooks/useActionFeedback.js"
 
+import ProgressBar from "../components/achievements/ProgressBar.jsx"
 import AchievementTile from "../components/achievements/AchievementTile.jsx"
 import AchievementsCarousel from "../components/achievements/AchievementsCarousel.jsx"
 import {
@@ -16,7 +17,7 @@ import {
 import { getModeLabelFromHistoryEntry, isRankedModeEntry } from "../utils/gameModeLabelsAndRankedFilters.js"
 import { getProfileAvatarStyle } from "../utils/profileAvatarStyling.js"
 import PlayerPortrait from "../components/art/PlayerPortrait.jsx"
-import { ArmoryIcon, FlameIcon, StopwatchIcon, TargetIcon, TrophyIcon } from "../components/art/GameIcons.jsx"
+import { ArmoryIcon, TrophyIcon } from "../components/art/GameIcons.jsx"
 import {
   PLACEMENT_MATCH_COUNT,
   getRankImageSrc,
@@ -109,11 +110,10 @@ function getStrongestTrait(profileStats, reactionStats) {
 
 const GAUGE_PIPS = 12
 
-function AttributeRow({ icon, label, detail, value, fill, isStrongest = false }) {
+function AttributeRow({ label, detail, value, fill, isStrongest = false }) {
   const lit = Math.round(Math.max(0, Math.min(1, Number(fill) || 0)) * GAUGE_PIPS)
   return (
     <li className={`profileAttribute ${isStrongest ? "isStrongest" : ""}`}>
-      <span className="profileAttributeEmblem" aria-hidden="true">{icon}</span>
       <span className="profileAttributeLabel">
         <strong>{label}</strong>
         <small>{detail}</small>
@@ -286,12 +286,9 @@ export default function ProfilePage({
             <div className="profileXpReadout">
               <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
               <span>{formatNumber(xpToNextLevel)} XP</span>
-              <span className="profileXpTrack" aria-hidden="true">
-                <i style={{ width: `${Math.max(0, Math.min(100, levelProgressPercent))}%` }} />
-              </span>
+              <ProgressBar percent={levelProgressPercent} label={`XP to level ${nextLevelValue}`} />
             </div>
             <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
-              <a className="profileTextAction" href="#achievement-constellation">View milestones</a>
               <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
             </div>
           </aside>
@@ -306,7 +303,6 @@ export default function ProfilePage({
               </div>
               <ul className="profileAttributeList">
                 <AttributeRow
-                  icon={<TargetIcon size={30} />}
                   label="Accuracy"
                   detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
                   value={`${profileStats.accuracyPercent}%`}
@@ -314,7 +310,6 @@ export default function ProfilePage({
                   isStrongest={strongestTrait.key === "precision"}
                 />
                 <AttributeRow
-                  icon={<FlameIcon size={30} />}
                   label="Best streak"
                   detail="unbroken targets"
                   value={formatNumber(profileStats.bestStreak)}
@@ -322,7 +317,6 @@ export default function ProfilePage({
                   isStrongest={strongestTrait.key === "chain"}
                 />
                 <AttributeRow
-                  icon={<StopwatchIcon size={30} />}
                   label="Reaction"
                   detail={reactionStats.bestReactionMs !== null ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
                   value={formatReactionTime(reactionStats.avgReactionMs)}
@@ -330,7 +324,6 @@ export default function ProfilePage({
                   isStrongest={strongestTrait.key === "tempo"}
                 />
                 <AttributeRow
-                  icon={<TrophyIcon size={30} />}
                   label="Peak score"
                   detail={`${formatNumber(profileStats.roundsThisWeek)} rounds this week`}
                   value={formatNumber(profileStats.bestScore)}
@@ -385,10 +378,7 @@ export default function ProfilePage({
                 <div>
                   <span className="profileSectionKicker">Nearest achievement</span>
                   <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>
-                  <div className="profileGoalTrack" aria-hidden="true">
-                    <span style={{ width: `${Math.max(0, Math.min(100, toNumber(nearestAchievement?.percent)))}%` }} />
-                  </div>
-                  <span className="profileGoalProgress">{nearestAchievement?.progressText ?? "Awaiting progress"}</span>
+                  <ProgressBar percent={nearestAchievement?.percent ?? 0} label="Nearest achievement" progressText={nearestAchievement?.progressText ?? "Awaiting progress"} />
                 </div>
               </section>
             </div>

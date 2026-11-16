@@ -5282,3 +5282,15 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
         gap: 4px;
     }
 }
+
+/* Keep legacy player names readable within their identity surfaces. */
+.profilePageCenter .profileCompetitorCard .profilePlayerName,
+.shellIdentityPopover.shellIdentityPass .shellPassName,
+.profileHoverIdentityName,
+.authIdentityCopy > strong,
+.leaderboardPodium .podiumFigure > strong {
+  min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere;
+  word-break: normal; height: auto; text-overflow: clip;
+}
+.shellIdentityPopover.shellIdentityPass .shellPassIdentity { min-width: 0; padding-right: 0; }
+.shellIdentityPopover.shellIdentityPass .shellPassHero { height: auto; }
