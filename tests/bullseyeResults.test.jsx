@@ -38,3 +38,8 @@ test("Results forwards gold through GameOverFlow and omits an empty gold count",
   renderResults({ bullseyes: 4, goldHits: 2 })
   expect(screen.getByText("8 hits \u00b7 0 misses \u00b7 4 bullseyes \u00b7 2 gold")).toBeTruthy()
 })
+
+test("a count of one is singular in the tally", () => {
+  renderResults({ hits: 1, misses: 1, bullseyes: 1, goldHits: 1 })
+  expect(screen.getByText("1 hit · 1 miss · 1 bullseye · 1 gold")).toBeTruthy()
+})
