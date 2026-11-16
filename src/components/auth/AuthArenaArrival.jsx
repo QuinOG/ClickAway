@@ -11,7 +11,7 @@ export default function AuthArenaArrival({ mode = "login", name = "", children }
       </div>
       <div className="authTitleScreen" aria-hidden="true">
         <span className="authTitleMark">
-          <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
+          <img src="/brand/clickaway-mark.png" alt="" width="96" height="96" decoding="async" />
         </span>
         <span className="authWordmark">ClickAway</span>
         <span className="authTagline">Precision arena · Season 1</span>
@@ -45,7 +45,7 @@ export default function AuthArenaArrival({ mode = "login", name = "", children }
           <span className="authMobileMode" data-mode="casual" aria-hidden="true"><i /></span>
           <span className="authMobileMode" data-mode="ranked" aria-hidden="true"><i /></span>
           <span className="authMobileTarget" aria-hidden="true">
-            <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
+            <img src="/brand/clickaway-mark.png" alt="" width="96" height="96" decoding="async" />
           </span>
         </div>
 
@@ -60,7 +60,7 @@ export default function AuthArenaArrival({ mode = "login", name = "", children }
           <span className="authDemoTarget authDemoTargetTwo" />
           <span className="authDemoTarget authDemoTargetThree" />
           <span className="authImpactLocus">
-            <img src="/brand/clickaway-mark.svg" alt="" width="96" height="96" decoding="async" />
+            <img src="/brand/clickaway-mark.png" alt="" width="96" height="96" decoding="async" />
           </span>
         </div>
 
