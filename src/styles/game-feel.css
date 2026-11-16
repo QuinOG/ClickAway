@@ -20,15 +20,14 @@
     pointer-events: none;
     background: var(--gf-world) center bottom / cover no-repeat;
 }
-
 /* ---- 2. Frames --------------------------------------------------------- */
+
 .card, .cardWide,
 .shopCommandSurface, .shopItemCard,
 .profileCockpit, .profileCommandHeader, .achievementTile,
 .leaderboardPodium, .leaderboardStandingPanel,
 .challengeCard, .duelComposer,
-.historyTrajectory, .historyHighlightCard, .historyRoundCard,
-.helpMissionMap, .helpBlock,
+.historyTrajectory, .historyHighlightCard, .historyRoundCard, .helpBlock,
 .uiDialogSurface {
     border-style: solid !important;
     border-width: 12px !important;
@@ -242,18 +241,8 @@
 .authButton:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #a8620e, 0 1px 0 2px #040912 !important; }
 @keyframes gfFloat { 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .authTitleMark { animation: none; } }
-
 /* ---- Round 2: Help as an illustrated manual ---------------------------- */
-.helpMissionGlyph {
-    width: 54px !important; height: 54px !important;
-    border-radius: 50% !important;
-    border: 2px solid #040912 !important;
-    background: radial-gradient(circle at 50% 30%, #3a5a86, #0e1a2c 72%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #c98a24, 0 0 0 5px #040912 !important;
-    color: #ffd25c !important;
-    font-size: 28px;
-}
-.helpMissionGlyph svg { width: 28px; height: 28px; filter: drop-shadow(0 2px 0 #040912); }
+
 .helpSubhead { margin: 22px 0 10px; font-size: 18px; color: #ffd25c; }
 .helpRuleCards, .helpModeCards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 6px 0 4px; }
 .helpRuleCard, .helpModeCard, .helpPowerupCard {
@@ -308,9 +297,6 @@
 @keyframes gfStamp { from { transform: rotate(-30deg) scale(2.4); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
 @property --gf-ray { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 @keyframes gfRays { to { --gf-ray: 360deg; } }
-@media (prefers-reduced-motion: reduce) {
-
-}
 
 /* ---- Round 2: History climb track replaces the axis chart -------------- */
 .historyClimb {
@@ -861,18 +847,7 @@
 .helpDoc { counter-reset: gfChapter; }
 .helpTopicGroup { counter-increment: gfChapter; }
 .helpGroupHeader { align-items: center; gap: 14px !important; margin: 34px 0 14px !important; }
-.helpGroupHeader::before {
-    content: "CH." counter(gfChapter);
-    flex: none;
-    padding: 6px 12px 7px;
-    border: 2px solid #040912;
-    border-radius: 8px;
-    background: linear-gradient(180deg, #fff1b0, #ffd04a 50%, #e8941c);
-    color: #2a1500;
-    font: 400 15px var(--ca-font-display);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 3px 0 #040912;
-}
-.helpGroupHeader::after { height: 3px !important; background: linear-gradient(90deg, #c98a24, rgb(201 138 36 / 0)) !important; }
+
 .helpGroupTitle {
     padding-left: 0 !important;
     border-left: 0 !important;
@@ -881,30 +856,8 @@
     color: #fff !important;
     text-shadow: 0 3px 0 #040912;
 }
-
 /* field guide: chapter bookmarks instead of six small tiles */
-.helpMissionGrid { gap: 14px !important; }
-.helpMissionCard {
-    min-height: 0 !important;
-    padding: 16px 12px 30px !important;
-    justify-items: center !important;
-    text-align: center;
-    border: 2px solid #040912 !important;
-    border-radius: 0 !important;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 18px), 0 100%) !important;
-    background: linear-gradient(180deg, var(--tab, #2a6fb8), color-mix(in srgb, var(--tab, #2a6fb8) 45%, #0b1424)) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%) !important;
-}
-.helpMissionCard:nth-child(1) { --tab: #2b8a5a; }
-.helpMissionCard:nth-child(2) { --tab: #8a3fb0; }
-.helpMissionCard:nth-child(3) { --tab: #2a6fb8; }
-.helpMissionCard:nth-child(4) { --tab: #b8741c; }
-.helpMissionCard:nth-child(5) { --tab: #a83246; }
-.helpMissionCard:nth-child(6) { --tab: #2a7f8f; }
-.helpMissionIndex { position: absolute; top: 6px; right: 8px; color: rgb(255 255 255 / 55%) !important; }
-.helpMissionCard strong { font: 400 15px var(--ca-font-display) !important; color: #fff !important; text-shadow: 0 2px 0 #040912; }
-.helpMissionCard small { color: rgb(255 255 255 / 75%) !important; }
-.helpMissionCard > svg { display: none; }
+
 @media (max-width: 900px) {
     .helpRoundStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .helpRoundPanel:nth-child(2)::after { display: none; }
@@ -2291,7 +2244,7 @@
 }
 .helpDoc .helpTopicGroup::before { color: rgb(150 90 20 / 14%) !important; -webkit-text-stroke: 2px rgb(110 60 10 / 22%) !important; }
 .helpDoc .helpTopicGroup .helpGroupTitle { color: #2a1c0e !important; text-shadow: none !important; }
-.helpDoc .helpTopicGroup .helpGroupHeader::after { background: linear-gradient(90deg, #7a4a12, rgb(122 74 18 / 0)) !important; }
+
 .helpDoc .helpTopicGroup .helpSubhead { color: #8a4a10 !important; font-family: var(--ca-font-display); font-weight: 400; }
 /* text-heavy power cards are printed straight onto the page */
 .helpDoc .helpTopicGroup .helpPowerupCard {
@@ -2711,19 +2664,8 @@
 .historyPage .secondaryButton, .historyLoadMore, button.historyLoadOlder {
     font-family: var(--ca-font-display);
 }
-
 /* ---- F. Help: the field-guide index is the manual's contents page ------ */
-.helpDoc .helpMissionMap {
-    border-image: none !important;
-    border: 2px solid #040912 !important;
-    border-radius: 4px 12px 12px 4px !important;
-    background:
-        repeating-linear-gradient(180deg, transparent 0 31px, rgb(120 80 30 / 13%) 31px 32px),
-        radial-gradient(ellipse at 30% 20%, #fbf2da, #efdfb8 70%, #e2cc9a) !important;
-    box-shadow: 5px 5px 0 -1px #d9c493, 5px 5px 0 1px #040912, 0 12px 20px rgb(0 0 0 / 40%) !important;
-}
-.helpDoc .helpMissionMap :is(h2, h3, p, span):not(.helpMissionCard *) { color: #2a1c0e !important; text-shadow: none !important; }
-.helpDoc .helpMissionMap .helpMissionMapHeader h2::before { content: "Contents · "; color: #8a4a10; }
+
 /* dark art plates are mounted on the page with a cream border and a shadow */
 .helpDoc .helpTopicGroup :is(.helpRoundPanel, .helpRuleCard, .helpModeCard, .rankTierCard) {
     box-shadow: 0 0 0 3px #fbf2da, 0 0 0 5px #2a1c0e, 6px 7px 0 4px rgb(42 28 14 / 28%) !important;
@@ -3377,10 +3319,7 @@
 .readyCard.arenaLobby .lobbyStageRig { position: absolute; left: calc((100% - 480px) / 2); top: 44%; width: calc(clamp(150px, 16vw, 230px) * 1.30435); height: auto; transform: translate(-50%, -33.82%); pointer-events: none; }
 @media (max-width: 900px) { .readyCard.arenaLobby .lobbyStageRig { left: 50%; top: 36%; width: 101.74px; } }
 
-
 /* Illustrated round rewards */
-
-@media (max-width: 480px) {  }
 
 /* Live power keys: the state remains inside each physical slot. */
 .powerupTray .powerupItem {
@@ -4562,7 +4501,6 @@
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(2) { left:calc(7% + 33px - 60px); top:138px; }
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModuleLabel:nth-child(3) { right:calc(7% + 36px - 60px); top:138px; text-align:center; }
 
-
 /* Round 27: Login and signup pass credential detail */
 .authIdentity { position: relative; overflow: hidden; isolation: isolate; }
 .authCredentialDetail { position: absolute; inset: 14px; pointer-events: none; color: #cba967; z-index: -1; }
@@ -4620,7 +4558,6 @@
   .rankCeremony .rankCeremonyPrevious span::before { content: 'Was '; color: #a88c5c; }
   .rankCeremony .rankCeremonyPrevious::before { bottom: -10px; width: 150px; height: 34px; background: linear-gradient(#d7a14b 0 10%, #66401f 11% 30%, #a8732c 31% 42%, #2a1d14 43% 80%, #171b24 81%); clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); }
 }
-
 
 /* Round 30: Profile printed match receipts */
 .profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken { gap: 4px; }
@@ -4735,11 +4672,6 @@
 .shopInspectStage .shopCommandLoadoutButton { bottom: 30px !important; }
 
 /* Round 37: Results without the repeated hit/miss bar; unlock copy gets the width */
-
-@media (min-width: 1000px) {
-
-
-}
 
 /* Round 37: Rank-up says the promotion once; actions spaced apart */
 .gameOverPromotionEyebrow, .gameOverPromotionLead {
@@ -4967,7 +4899,6 @@
 }
 .leaderboardTopRow .standingShield .leaderboardStandingSpotlightLabel { color: #e8f6ff !important; text-shadow: 0 1px 0 #04263f; }
 
-
 /* Art pass: Shop button skins rest on item-specific illustrated supports */
 .shopGrid .shopItemCard .shopItemPreviewFrame.is-button { position: relative; }
 .shopItemPreviewFrame .shopItemCradle { position: absolute; left: 50%; bottom: 6%; width: 74%; height: auto; transform: translateX(-50%); z-index: 0; pointer-events: none; filter: drop-shadow(0 5px 4px rgb(4 9 18 / 55%)); }
@@ -4989,7 +4920,6 @@
 .armoryMachine .armoryMachineRigMount.mount-powerRig > .gameArt { width: 56px !important; height: 56px !important; transform: translateY(-8px); }
 
 /* r53 (Sol i52 #5): the unlocked part fills the rig's socket */
-
 
 /* ---- r54 (Sol i53 #2): Compare mounts show their parts at readable size -- */
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule > .gameArt { width: 46px !important; height: 46px !important; object-fit: contain; transform: none !important; }

@@ -1,17 +1,6 @@
 import "../features/help/help-rulebook.css"
 import { Link } from "react-router-dom"
 
-import {
-  ArrowDown,
-  ClockCountdown,
-  Coins,
-  Crosshair,
-  GameController,
-  Question,
-  ShieldChevron,
-  Target,
-} from "@phosphor-icons/react"
-
 import { CommandHeader } from "../components/RouteScene.jsx"
 import HelpFlowSection from "../features/help/components/HelpFlowSection.jsx"
 import HelpFaqSection from "../features/help/components/HelpFaqSection.jsx"
@@ -45,57 +34,12 @@ import {
   TRACKING_POINTS,
 } from "../features/help/helpPageStructuredContent.js"
 
-const GUIDE_DESTINATIONS = Object.freeze([
-  { id: "start", title: "First round", hint: "Ready → hit → reward", glyph: "play" },
-  { id: "core", title: "Aim & powers", hint: "Score, combo, hotbar", glyph: "target" },
-  { id: "modes", title: "Modes & rank", hint: "Pressure and stakes", glyph: "rank" },
-  { id: "progression", title: "Rewards", hint: "XP, coins, cosmetics", glyph: "reward" },
-  { id: "account", title: "Player record", hint: "Profile, history, ladder", glyph: "record" },
-  { id: "faq", title: "Quick answers", hint: "Common field fixes", glyph: "question" },
-])
-
-function GuideGlyph({ glyph }) {
-  switch (glyph) {
-    case "play": return <GameController weight="duotone" />
-    case "target": return <Crosshair weight="duotone" />
-    case "rank": return <ShieldChevron weight="duotone" />
-    case "reward": return <Coins weight="duotone" />
-    case "record": return <ClockCountdown weight="duotone" />
-    default: return <Question weight="duotone" />
-  }
-}
-
 function Rulebook({ label, children }) {
   return (
     <details className="helpRulebook">
       <summary>{label ? `${label} rules` : "Full rulebook"}</summary>
       <div className="helpRulebookBody">{children}</div>
     </details>
-  )
-}
-
-function HelpMissionMap() {
-  return (
-    <section className="helpMissionMap" aria-labelledby="help-mission-map-title">
-      <div className="helpMissionMapHeader">
-        <div>
-          <p className="commandHeaderEyebrow">Choose a system</p>
-          <h2 id="help-mission-map-title">Field guide</h2>
-        </div>
-        <span><i /> Updated for this season</span>
-      </div>
-      <nav className="helpMissionGrid" aria-label="Field guide sections">
-        {GUIDE_DESTINATIONS.map((item, index) => (
-          <a key={item.id} className="helpMissionCard" href={`#${item.id}`}>
-            <span className="helpMissionIndex">0{index + 1}</span>
-            <span className="helpMissionGlyph" aria-hidden="true"><GuideGlyph glyph={item.glyph} /></span>
-            <strong>{item.title}</strong>
-            <small>{item.hint}</small>
-            <ArrowDown weight="bold" aria-hidden="true" />
-          </a>
-        ))}
-      </nav>
-    </section>
   )
 }
 
@@ -106,12 +50,9 @@ export default function HelpPage() {
         <CommandHeader
           routeId="help"
           eyebrow="Arena field manual"
-          title="Learn by sight"
+          title="Field Guide"
           subtitle="Pick a system, see its shape, then open the exact rules only when you need them."
-          status={<span className="helpGuideStatus"><Target weight="bold" /> 6 systems</span>}
         />
-
-        <HelpMissionMap />
 
         <section id="start" className="helpTopicGroup" aria-label="Start here">
           <div className="helpGroupHeader">
