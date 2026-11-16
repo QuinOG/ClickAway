@@ -6,10 +6,10 @@ import { getShopItemStatus } from "../../../utils/shopUtils.js"
 
 // Pedestals communicate rarity consistently across the button catalog.
 const RARITY_CRADLES = {
-  core: "dish",
-  common: "dish",
-  rare: "ring",
-  epic: "claw",
+  core: "plain",
+  common: "plain",
+  rare: "stool",
+  epic: "dish",
   legendary: "cushion",
 }
 

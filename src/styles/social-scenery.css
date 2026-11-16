@@ -5,21 +5,3 @@
 }
 .duelFightComposer .duelRunTokens.duelRunTokens::after { display: none !important; }
 .duelFightComposer .duelLaunchStep.duelLaunchStep { background: linear-gradient(180deg, #1b2c45, #111d30) !important; }
-.shopInspectStage.shopInspectStage .shopStageAwning,
-.shopInspectStage.shopInspectStage .shopStageCounter { display: none !important; }
-.shopInspectStage.shopInspectStage::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: url('/art/shop/booth-frame.png') center / 100% 100% no-repeat;
-  pointer-events: none;
-}
-.shopInspectStage .shopSceneryFrame {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: url('/art/shop/booth-frame.png') center / 100% 100% no-repeat;
-  pointer-events: none;
-}
-
