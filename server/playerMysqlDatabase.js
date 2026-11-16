@@ -2342,6 +2342,7 @@ export async function findUserReplays(userId, { limit = 10 } = {}) {
      FROM round_replays
      WHERE user_id = ?
        AND loadout_snapshot_json->>'arenaWidth' IS NOT NULL
+       AND loadout_snapshot_json->>'arenaHeight' IS NOT NULL
      ORDER BY played_at DESC, id DESC
      LIMIT ?`,
     [userId, normalizedLimit]
