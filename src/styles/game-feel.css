@@ -5333,3 +5333,30 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
     width: 68%;
     filter: saturate(.65) drop-shadow(0 4px 3px rgb(4 9 18 / 45%));
 }
+
+/* Live Loadout: the market stall is a window onto the arena. */
+.shopInspectStage .shopSceneryFrame {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-style: solid;
+    border-width: 80px 52px 21px 52px;
+    border-image: url('/art/shop/booth-window.png') 430 282 114 280 stretch;
+    pointer-events: none;
+}
+.shopInspectStage .shopStageWorld {
+    inset: 44px 28px 16px !important;
+    overflow: hidden;
+    width: auto !important;
+    height: auto !important;
+}
+.shopInspectStage .shopCommandLoadoutButton { width: 118px !important; height: 118px !important; bottom: 20px !important; }
+.shopInspectStage .shopCommandLoadoutAvatarFrame { top: 84px !important; right: 50px; }
+.shopInspectStage .shopStageWorld .arenaWorldPlate { object-position: 50% 20%; }
+.shopCommandSurface .shopCommandLoadoutAvatar { width: 56px; height: 56px; }
+@media (max-width: 760px) {
+    .shopInspectStage .shopCommandLoadoutButton { width: 96px !important; height: 96px !important; bottom: 24px !important; }
+    .shopInspectStage .shopCommandLoadoutAvatarFrame { top: 82px !important; right: 46px; }
+    .shopCommandSurface .shopCommandLoadoutAvatar { width: 46px; height: 46px; }
+    .shopInspectStage .shopStageWorld .arenaWorldPlate { transform: translateY(12%) scale(1.25); transform-origin: 50% 0; }
+}
