@@ -1805,3 +1805,15 @@
 .gameOverNowAffordableLink { color: #ffe9a8; font-size: 13px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
 .gameOverNowAffordableLink:hover { color: #ffffff; }
 .gameOverNowAffordableLink:focus-visible { outline: 2px solid #ffd76a; outline-offset: 3px; border-radius: 4px; }
+
+/* Server details occupy a stable slot while the round saves. */
+.gameOverServerRewards { flex: 0 0 100% !important; height: 180px; overflow: auto; display: flex; flex-wrap: wrap; gap: 8px; align-content: start; }
+.gameOverSpotlight, .gameOverSpotlight:empty { display: grid; height: 240px; overflow: auto; }
+.gameOverNextGoal { height: 42px; overflow: auto; }
+.gameOverHeader { min-height: 112px; }
+@media (max-width: 600px) { .gameOverSpotlight, .gameOverSpotlight:empty { height: 320px; } }
+
+.gameOverStatusSlot { height: 40px; overflow: auto; }
+
+.gameOverRewards > .gameOverReward { width: 200px; min-height: 68px; box-sizing: border-box; }
+.gameOverRewards > .gameOverXpTally { height: 60px; box-sizing: border-box; }

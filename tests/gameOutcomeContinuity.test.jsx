@@ -65,13 +65,22 @@ describe("B3 outcome and reward continuity", () => {
     expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
   })
 
-  test.each(["idle", "saving", "failed"])("does not claim rewards or unlocks while save status is %s", (roundSaveStatus) => {
+  test.each(["idle", "failed"])("does not claim rewards or unlocks while save status is %s", (roundSaveStatus) => {
     renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, roundSaveStatus, roundXpEarned: 1000 })
     expect(screen.queryByLabelText("Round rewards")).toBeNull()
     expect(screen.queryByLabelText(/Unlocked .*Open Armory/)).toBeNull()
     expect(screen.queryByText(/Level up to/)).toBeNull()
     expect(screen.getByLabelText("Final score 128")).not.toBeNull()
     if (roundSaveStatus === "failed") expect(screen.getByRole("alert").textContent).toContain("couldn't be saved")
+  })
+
+  test("shows pending client coins and XP while saving", () => {
+    renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, roundSaveStatus: "saving" })
+    const rewards = screen.getByLabelText("Round rewards")
+    expect(rewards.textContent).toContain("+18")
+    expect(rewards.textContent).toContain("+42")
+    expect(rewards.textContent).toContain("pending")
+    expect(screen.getByLabelText("Level 4 progress")).not.toBeNull()
   })
 
   test.each(["saving", "failed"])("does not claim a practice record when %s", (roundSaveStatus) => {

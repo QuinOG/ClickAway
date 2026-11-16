@@ -45,7 +45,7 @@ function getCardVariants(prefersReducedMotion) {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: "spring", stiffness: 280, damping: 26, delay: 0.06 },
+      transition: { duration: 0.35, ease: "easeOut" },
     },
     exit: {
       opacity: 0,
@@ -240,7 +240,7 @@ function XpTally({ level, xpIntoLevel, xpToNextLevel, earned, prefersReducedMoti
           style={{ left: `${startPercent}%` }}
           initial={prefersReducedMotion ? false : { width: 0 }}
           animate={{ width: `${Math.max(0, endPercent - startPercent)}%` }}
-          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.7, duration: 0.9, ease: "easeOut" }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }}
         />
       </span>
     </span>
@@ -297,6 +297,7 @@ export function GameOverOverlay({
 
   const isPracticeMode = !allowsCoinRewards && !allowsLevelProgression && !allowsRankProgression
   const isRoundSaved = roundSaveStatus === "saved"
+  const showRoundRewards = isRoundSaved || roundSaveStatus === "saving"
   const hasCleanRun = misses === 0
   const isNewBestScore = score > bestScore
   const resolvedLoadoutPresentation = useMemo(
@@ -354,7 +355,7 @@ export function GameOverOverlay({
   useEffect(() => {
     const timeoutId = window.setTimeout(
       () => primaryActionRef.current?.focus(),
-      prefersReducedMotion ? 0 : 900
+      prefersReducedMotion ? 0 : 400
     )
     return () => window.clearTimeout(timeoutId)
   }, [prefersReducedMotion])
@@ -375,7 +376,7 @@ export function GameOverOverlay({
     const timeoutId = window.setTimeout(() => {
       fire(65, { x: 0.1, y: 0.58 })
       fire(115, { x: 0.9, y: 0.58 })
-    }, 780)
+    }, 350)
 
     return () => {
       window.clearTimeout(timeoutId)
@@ -384,7 +385,7 @@ export function GameOverOverlay({
   }, [effectivePreferences.flashes, isNewBestScore, prefersReducedMotion])
 
   const animatedScore = useCountUpNumber(score, {
-    durationMs: 700,
+    durationMs: 400,
     disabled: prefersReducedMotion,
   })
   const isScoreAnimationDone = prefersReducedMotion || animatedScore === score
@@ -401,6 +402,7 @@ export function GameOverOverlay({
       <header className="gameOverHeader">
         <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? " · New personal best" : hasCleanRun && hits > 0 ? " · Flawless" : ""}</p>
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
+        <div className="gameOverStatusSlot">
         {roundSaveStatus === "saving" ? (
           <p className="gameOverSaveStatus isSaving" role="status">Saving round…</p>
         ) : null}
@@ -412,6 +414,7 @@ export function GameOverOverlay({
             This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}
           </p>
         ) : null}
+        </div>
       </header>
 
       <MotionDiv
@@ -419,9 +422,8 @@ export function GameOverOverlay({
         aria-label={`Final score ${score}`}
         initial={prefersReducedMotion ? false : { opacity: 0, y: 16, scale: 0.84 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 360, damping: 24, delay: 0.16 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }}
       >
-        <span className="gameOverScoreLockRail" aria-hidden="true"><i /></span>
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
         <p className="gameOverScoreTally">{formatCount(hits, "hit", "hits")} · {formatCount(misses, "miss", "misses")}{bullseyes > 0 ? ` · ${formatCount(bullseyes, "bullseye", "bullseyes")}` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
@@ -433,19 +435,19 @@ export function GameOverOverlay({
         ) : null}
       </MotionDiv>
 
-      {isRoundSaved && (allowsCoinRewards || allowsLevelProgression || allowsRankProgression) ? (
+      {showRoundRewards && (allowsCoinRewards || allowsLevelProgression || allowsRankProgression) ? (
         <MotionDiv
           className="gameOverRewards"
           aria-label="Round rewards"
           initial={prefersReducedMotion ? false : { opacity: 0, y: 10, scale: 0.94 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 340, damping: 22, delay: 0.42 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
         >
           {allowsCoinRewards ? (
-            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
+            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{!isRoundSaved ? "coins pending" : playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
           ) : null}
           {allowsLevelProgression ? (
-            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>{roundDailyBonusXp > 0 ? "XP · 2× today" : "XP"}</small></span>
+            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>{!isRoundSaved ? "XP pending" : roundDailyBonusXp > 0 ? "XP · 2× today" : "XP"}</small></span>
           ) : null}
           {allowsLevelProgression ? (
             <XpTally
@@ -456,6 +458,7 @@ export function GameOverOverlay({
               prefersReducedMotion={prefersReducedMotion}
             />
           ) : null}
+          <div className="gameOverServerRewards" aria-hidden={!isRoundSaved} style={{ visibility: isRoundSaved ? "visible" : "hidden" }}>
           {allowsRankProgression && placementLabel ? (
             <span className="gameOverReward isRank isPlacement"><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
           ) : null}
@@ -489,6 +492,7 @@ export function GameOverOverlay({
               </Link>
             </p>
           ) : null}
+          </div>
         </MotionDiv>
       ) : null}
 
@@ -497,7 +501,7 @@ export function GameOverOverlay({
           className="outcomeContinuityBoard"
           initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.34, duration: 0.3 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.3 }}
         >
           <PersonalBestComparison score={score} bestScore={bestScore} />
           <OutcomeInstruments
@@ -548,19 +552,21 @@ export function GameOverOverlay({
         ) : null}
       </div>
 
-      {isRoundSaved && allowsLevelProgression ? (
+      {showRoundRewards && allowsLevelProgression ? (
         <MotionDiv
           className="gameOverSpotlight"
+          aria-hidden={!isRoundSaved}
+          style={{ visibility: isRoundSaved ? "visible" : "hidden" }}
           initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 22, delay: 0.56 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
         >
-          <NextUnlock
+          {isRoundSaved ? <NextUnlock
             level={playerLevel}
             xpIntoLevel={playerXpIntoLevel}
             xpToNextLevel={playerXpToNextLevel}
             earned={roundXpEarned}
-          />
+          /> : null}
         </MotionDiv>
       ) : null}
 
@@ -568,10 +574,10 @@ export function GameOverOverlay({
         className="overlayActions gameOverActions"
         initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.72, duration: 0.24 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.15, duration: 0.24 }}
       >
-        {nextRoundGoal ? (
-          <p className="gameOverNextGoal" data-goal={nextRoundGoal.kind}>{nextRoundGoal.text}</p>
+        {showRoundRewards && !isPracticeMode ? (
+          <p className="gameOverNextGoal" data-goal={nextRoundGoal?.kind}>{nextRoundGoal?.text || "\u00a0"}</p>
         ) : null}
         <button
           ref={primaryActionRef}
