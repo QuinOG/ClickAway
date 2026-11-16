@@ -5282,3 +5282,13 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
         gap: 4px;
     }
 }
+
+/* Supporting details use crisp ink; headings keep their engraved finish. */
+.historyHighlightCard :is(.historyHighlightMeta, .historyHighlightStat) {
+    color: #160d02 !important;
+    -webkit-text-fill-color: #160d02 !important;
+    text-shadow: none !important;
+    font-size: 12px;
+}
+.historyHighlightCard .historyHighlightMeta { font-size: 13px; }
+.historyHighlightCard .historyHighlightStat { background: rgb(90 60 18 / 8%) !important; }
