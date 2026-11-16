@@ -249,7 +249,7 @@ export default function Navbar({
             aria-label={isAuthed ? "ClickAway â€” go to Play" : "ClickAway â€” go to log in"}
           >
             <span className="brandLogo" aria-hidden="true">
-              <img className="brandLogoImage" src="/brand/clickaway-mark.svg" alt="" width="128" height="128" decoding="async" />
+              <img className="brandLogoImage" src="/brand/clickaway-mark.png" alt="" width="128" height="128" decoding="async" />
             </span>
             <span className="brandText">
               <span className="brand">ClickAway</span>

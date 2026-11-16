@@ -49,7 +49,7 @@ function SessionLoadingScreen() {
         <span className="sessionCalibrationRing" />
         <span className="sessionCalibrationRing sessionCalibrationRingInner" />
       </div>
-      <img className="sessionArrivalMark" src="/brand/clickaway-mark.svg" alt="" width="128" height="128" decoding="async" />
+      <img className="sessionArrivalMark" src="/brand/clickaway-mark.png" alt="" width="128" height="128" decoding="async" />
       <span className="sessionArrivalEyebrow">Precision Arena</span>
       <h1 id="session-arrival-title">Calibrating your session</h1>
       <p>Restoring your competitor profile and arena settings…</p>
