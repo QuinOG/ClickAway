@@ -94,13 +94,15 @@
 .helpDoc .helpTopicGroup > .helpGroupHeader {
   justify-content: center;
   text-align: center;
-  min-height: 112px;
-  padding: 24px 16%;
-  background: url('/art/help-strip/help-banner.png') center / 100% 100% no-repeat;
+  width: min(460px, 100%);
+  margin-inline: auto;
+  min-height: 72px;
+  padding: 14px 18%;
+  background: url('/art/help-strip/help-banner-small.png') center / 100% 100% no-repeat;
 }
 .helpDoc .helpTopicGroup .helpGroupTitle {
   color: #2a1c0e !important;
-  font-size: clamp(16px, 2vw, 24px) !important;
+  font-size: clamp(15px, 1.4vw, 18px) !important;
   white-space: normal;
   text-shadow: none !important;
 }
@@ -116,8 +118,7 @@
 .helpDoc .helpRulebook .helpTable thead { background: transparent; }
 @media (max-width: 600px) {
   .helpDoc .helpTopicGroup > .helpGroupHeader {
-    min-height: 88px;
-    padding: 18px 16%;
-    background-image: url('/art/help-strip/help-banner-small.png');
+    min-height: 60px;
+    padding: 12px 18%;
   }
 }
