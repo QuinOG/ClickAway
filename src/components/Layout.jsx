@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react"
 import { Toaster } from "react-hot-toast"
 import { useLocation, useOutlet } from "react-router-dom"
-import { AnimatePresence, motion } from "motion/react"
 
 import { AUTHENTICATED_ROUTES, getRouteMetadata, shouldCollapseShell } from "../app/routeMetadata.js"
 import { scheduleIdleRoutePrefetch } from "../app/routeModules.js"
@@ -15,28 +14,9 @@ import {
   RouteSceneBackdrop,
 } from "./RouteScene.jsx"
 
-const MotionDiv = motion.div
 const FeedbackSettingsSheet = lazy(() => import("./FeedbackSettingsSheet.jsx"))
 const GAME_ROUTE_BODY_CLASS = "gameRouteActive"
 const ARMORY_ROUTE_BODY_CLASS = "armoryRouteActive"
-const PAGE_EASE = [0.22, 1, 0.36, 1]
-const PAGE_ROUTE_MOTION = Object.freeze({
-  variants: Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 18 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0, y: -10, scale: 0.993 }),
-  }),
-  transition: Object.freeze({ duration: 0.2, ease: PAGE_EASE }),
-})
-const GAME_ROUTE_MOTION = Object.freeze({
-  variants: Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 4 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0 }),
-  }),
-  transition: Object.freeze({ duration: 0.13, ease: PAGE_EASE }),
-})
-
 function RouteFallback({ route }) {
   if (route) return <BrandedRouteFallback route={route} />
 
@@ -95,7 +75,6 @@ export default function Layout({
     && settingsOrigin?.location === location
     && settingsOrigin?.gamePhase === gamePhase
   const resolvedPlayerName = playerUsername || playerName || "Player"
-  const routeMotion = isGameRoute ? GAME_ROUTE_MOTION : PAGE_ROUTE_MOTION
   const resolvedProfileImage = equippedProfileImage ?? {
     imageSrc: profileImageSrc,
     effectClass: profileImageClassName,
@@ -198,26 +177,21 @@ export default function Layout({
       <main className={mainClassName}>
         <RouteSceneBackdrop route={currentRoute} isLiveRound={isLiveRound} />
         <Suspense
+          key={pathname}
           fallback={(
             <div className="routeOutlet">
               <RouteFallback route={currentRoute} />
             </div>
           )}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <MotionDiv
-              key={pathname}
-              className="routeOutlet"
-              data-transition-tone={currentRoute?.transitionTone ?? "utility"}
-              variants={routeMotion.variants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={routeMotion.transition}
-            >
-              {outlet}
-            </MotionDiv>
-          </AnimatePresence>
+          {/* Route content follows the URL immediately; an exiting lazy outlet must not hold the next route. */}
+          <div
+            key={pathname}
+            className="routeOutlet"
+            data-transition-tone={currentRoute?.transitionTone ?? "utility"}
+          >
+            {outlet}
+          </div>
         </Suspense>
       </main>
 
