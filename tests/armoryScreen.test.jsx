@@ -302,6 +302,8 @@ describe("Armory machine", () => {
     const target = document.querySelector(".armoryMachineTarget")
     const allRounder = DEFAULT_SAVED_LOADOUTS.find((loadout) => loadout.id === "loadout_1")
     expect(target.style.width).toBe(expectedTargetSize(allRounder))
+    expect(target.getAttribute("aria-label")).toBe("Target starts at 100 pixels and shrinks with each hit")
+    expect(target.textContent).toContain("Starts at100 pixelsShrinks with each hit")
 
     // Installing Anchor (bigger targets) visibly grows the machine's target.
     await openStep(user, "Mods")
@@ -313,6 +315,7 @@ describe("Armory machine", () => {
     }
     const anchorSize = expectedTargetSize(anchorLoadout)
     expect(target.style.width).toBe(anchorSize)
+    expect(target.getAttribute("aria-label")).toBe("Target starts at 112 pixels and shrinks with each hit")
     expect(parseInt(anchorSize, 10)).toBeGreaterThan(
       parseInt(expectedTargetSize(allRounder), 10)
     )
