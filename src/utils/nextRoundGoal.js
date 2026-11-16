@@ -32,6 +32,9 @@ export function getNextRoundGoal({
   // Today's goals as the server reported them after this round, and the round.
   dailyGoals = null,
   round = null,
+  // The goals this round finished (the save's dailyGoalRewards). Skipped even if
+  // dailyGoals is the pre-round copy because the post-save read didn't land.
+  roundDailyGoals = null,
 } = {}) {
   const roundScore = Math.max(0, Number(score) || 0)
   const best = Math.max(0, Number(bestScore) || 0)
@@ -42,7 +45,14 @@ export function getNextRoundGoal({
     }
   }
 
-  const dailyGoal = countsLevelProgress ? findDailyGoalWithinReach(dailyGoals, round) : null
+  // Only rounds that earn XP count toward goals, so a round like this one that
+  // earned none (no hits) can't finish one.
+  const nextRoundCountsForGoals = countsLevelProgress && (Number(nextRoundXp) || 0) > 0
+  const finishedGoalIds = new Set((roundDailyGoals?.goals ?? []).map((goal) => goal?.id))
+  const goalsLeft = dailyGoals?.goals
+    ? { ...dailyGoals, goals: dailyGoals.goals.filter((goal) => !finishedGoalIds.has(goal.id)) }
+    : dailyGoals
+  const dailyGoal = nextRoundCountsForGoals ? findDailyGoalWithinReach(goalsLeft, round) : null
   if (dailyGoal) {
     const reward = dailyGoal.reward?.coins ? ` (+${dailyGoal.reward.coins} coins)` : ""
     if (dailyGoal.kind === "streak") {

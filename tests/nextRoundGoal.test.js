@@ -101,3 +101,21 @@ test("a near personal best still comes first, and finished or missing goals say 
   // Practice (no progression) never points at goals it can't count toward.
   assert.equal(getNextRoundGoal({ ...base, countsLevelProgress: false, dailyGoals: nearGoal, round: plainRound }), null)
 })
+
+test("a round that earned no XP isn't told one more like it finishes a goal", () => {
+  // Goals count only XP-earning rounds; an all-miss round earns none.
+  const day = findDay(() => true)
+  const [showUp] = getDailyGoals(day)
+  const dailyGoals = goalsFor(day, { [showUp.id]: showUp.target - 1 })
+  const missRound = { modeId: "normal", hits: 0, misses: 12, bestStreak: 0 }
+  assert.equal(getNextRoundGoal({ ...base, score: 0, earnedXp: 0, dailyGoals, round: missRound }), null)
+})
+
+test("a goal this round just finished isn't offered again from a stale goals copy", () => {
+  // The post-save progress read failed, so dailyGoals still shows the goal one short.
+  const day = findDay(() => true)
+  const [showUp] = getDailyGoals(day)
+  const staleGoals = goalsFor(day, { [showUp.id]: showUp.target - 1 })
+  const roundDailyGoals = { goals: [{ id: showUp.id, label: showUp.label, reward: showUp.reward }] }
+  assert.equal(getNextRoundGoal({ ...base, dailyGoals: staleGoals, roundDailyGoals, round: plainRound }), null)
+})

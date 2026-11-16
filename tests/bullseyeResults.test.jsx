@@ -43,3 +43,8 @@ test("a count of one is singular in the tally", () => {
   renderResults({ hits: 1, misses: 1, bullseyes: 1, goldHits: 1 })
   expect(screen.getByText("1 hit · 1 miss · 1 bullseye · 1 gold")).toBeTruthy()
 })
+
+test("the tally says 1 hit, 1 miss and 1 bullseye in the singular", () => {
+  renderResults({ hits: 1, misses: 1, bullseyes: 1 })
+  expect(screen.getByText("1 hit \u00b7 1 miss \u00b7 1 bullseye")).toBeTruthy()
+})
