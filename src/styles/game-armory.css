@@ -3075,15 +3075,11 @@
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing .armoryMachineHousingLabel { font-size: 13px; }
 .armoryMachine .armoryMachineRigMount.mount-powerRig {
     background:
-        linear-gradient(color-mix(in srgb, currentColor 75%, #000), color-mix(in srgb, currentColor 75%, #000)) 26% calc(100% - 13px) / 18% 14px no-repeat,
-        linear-gradient(color-mix(in srgb, currentColor 75%, #000), color-mix(in srgb, currentColor 75%, #000)) 74% calc(100% - 13px) / 18% 9px no-repeat,
-        linear-gradient(#070d18, #070d18) 26% calc(100% - 10px) / 28% 22px no-repeat,
-        linear-gradient(#070d18, #070d18) 74% calc(100% - 10px) / 28% 22px no-repeat,
         linear-gradient(90deg, transparent 49%, rgb(0 0 0 / 55%) 49% 51%, transparent 51%),
         radial-gradient(circle at 50% 34%, color-mix(in srgb, currentColor 32%, #1a2840), #0d1626 70%),
         linear-gradient(180deg, #2f4262, #16223a);
 }
-.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0 0 24px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0; }
 .armoryMachine .armoryMachineBench em { left: 7%; transform: none; }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { top: calc(50% + 70px); }
@@ -3262,12 +3258,14 @@
     }
 }
 
-/* Readable target instructions over every skin. */
-.armoryMachineAimReadout { width: 124px; max-width: 86%; padding: 8px 5px; border-radius: 12px; background: rgb(6 12 23 / 92%); gap: 3px; text-shadow: none; }
-.armoryMachineAimReadout small { color: #e2ecfa; font-size: 12px; letter-spacing: 0; text-transform: none; }
-.armoryMachineAimReadout b { font-size: 28px; }
-.armoryMachineAimReadout b span { display: block; font-size: 12px; line-height: 1.2; }
-.armoryMachineAimReadout em { color: #fff; font-size: 12px; line-height: 1.3; white-space: normal; }
+/* Readable target instructions sit straight on the target art: no box, a
+   hard ink outline so the words read over any skin colour. */
+.armoryMachineAimReadout { gap: 2px; text-shadow: 0 2px 0 #050a14, 0 0 10px rgb(0 0 0 / 85%); }
+.armoryMachineAimReadout :is(small, b, em) { -webkit-text-stroke: 3px #050a14; paint-order: stroke fill; }
+.armoryMachineAimReadout small { color: #fff; font-size: 12px; letter-spacing: 0.08em; }
+.armoryMachineAimReadout b { font-size: 40px; }
+.armoryMachineAimReadout b span { font-size: 16px; }
+.armoryMachineAimReadout em { color: #fff; font-size: 12px; white-space: nowrap; }
 
 /* Shared card layout leaves room for long names and comparison values. */
 .armoryWorkspace .armoryPartFeature,
@@ -3286,13 +3284,16 @@
 .armoryWorkspace .armoryPartFeatureName { font-size: 26px; line-height: 1.15; overflow-wrap: anywhere; }
 .armoryWorkspace .armoryPartFeatureInstall { justify-self: stretch; min-width: 0; white-space: normal; }
 .armoryWorkspace .armoryPartFeatureInstalled { grid-area: install; }
-.armoryWorkspace .armorySwapReport { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1fr); }
 .armoryWorkspace .armorySwapReportHead > span,
 .armoryWorkspace .armorySwapReportRow > * { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
 .armoryWorkspace .armorySwapReportHead > span:nth-child(3) { flex-wrap: wrap; }
-.armoryWorkspace .armorySwapReportRow > .armorySwapReportTo { font-size: 15px; padding: 6px; text-align: right; }
-.armoryWorkspace .armorySwapReportLabel { flex-wrap: wrap; gap: 4px; padding: 6px; }
 .armoryWorkspace .armorySwapReportGauge { max-width: 100%; }
+/* Phones only: the three columns need to share a narrow card. */
+@media (max-width: 600px) {
+    .armoryWorkspace .armorySwapReport { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1fr); }
+    .armoryWorkspace .armorySwapReportLabel { flex-wrap: wrap; gap: 4px; padding: 6px; }
+    .armoryWorkspace .armorySwapReportRow > .armorySwapReportTo { font-size: 15px; padding: 6px; text-align: right; }
+}
 
 /* Class-select kit (fix list 2026-11-16): each bay lists its three parts by
    name, like a shooter's class card, instead of a miniature machine. */

@@ -20,7 +20,7 @@ for (const shot of ["default-desktop", "default-phone", "powerrig-desktop", "pow
     if (phase === "after") {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
       const target = page.locator(".armoryMachineAimReadout")
-      await expect(target).toContainText("Shrinks with each hit")
+      await expect(target).toContainText("Shrinks as you hit")
       await expect(page.locator(".armoryPartCard").first()).toBeAttached()
       expect(await page.locator(".armoryPartCard").first().evaluate(el => getComputedStyle(el, "::after").content)).toBe("none")
       if (shot === "powerrig-desktop" || shot === "default-phone") {

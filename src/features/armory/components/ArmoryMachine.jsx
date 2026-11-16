@@ -199,9 +199,9 @@ export default function ArmoryMachine({
               >
                 {/* Keep the first explanation short; exact rules live in the spec sheet. */}
                 <span className="armoryMachineAimReadout">
-                  <small>Starts at</small>
-                  <b>{presentation.roundRules.initialButtonSize}<span> pixels</span></b>
-                  <em>Shrinks with each hit</em>
+                  <small>TARGET SIZE</small>
+                  <b>{presentation.roundRules.initialButtonSize}<span>px</span></b>
+                  <em>Shrinks as you hit</em>
                 </span>
               </span>
             </div>
