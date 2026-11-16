@@ -5,20 +5,15 @@ description: Run a ClickAway bug pass. Sol agents each take one narrow feature (
 
 # ClickAway bug pass
 
-> **Who decides (user, 2026-11-15):** Claude is the project manager and makes every final call. Use Sol wherever it helps, as reviewer or implementer, but treat its findings and verdicts as input: confirm, downgrade or reject each with a reason. Never ship or drop something only because Sol said so.
+## Team roles (user, 2026-11-15; supersedes earlier role notes)
+| Who | Role | Gets |
+|---|---|---|
+| **Claude (Opus 5.5)** | Head of the project and senior programmer. Makes every final call. | The highest-value work: risk 7+ plans and their implementation, approvals, tricky fixes, final check, skill updates. |
+| **Sol** (Codex `gpt-6.1-sol`, high) | Junior programmers. | Feature reviews, risk 1–6 fixes, merges, running lint/tests/build/browser checks, PR drafts. Its verdicts are input: confirm, downgrade or reject each with a reason. |
+| **Gemini** (OpenCode Go `gemini-4-argon`) | Bulk reader, to save Claude tokens. | Reading long reports, diffs and logs, then returning short summaries; second-opinion reads. Read-only. Never DeepSeek. |
+| **Fable 5.2** | "God programmer", called very rarely. | Only after Claude has tried a problem itself and it did not work out. Target `{"providerInstanceId":"claudeAgent","model":"claude-fable-5-2","options":{"effort":"high"}}`. Counts against the Claude budget. |
 
-> **Hard problems: Fable 5.2 (user, 2026-11-15).** For a problem beyond Claude's own reasoning level (subtle concurrency or data-integrity design, a bug that resisted Claude, a deep architecture call), bring in Fable 5.2 at high reasoning, sparingly: `delegate_task` with target `{"providerInstanceId":"claudeAgent","model":"claude-fable-5-2","options":{"effort":"high"}}`. Check `orchestrator_capabilities` (search "fable") first. It became available on 2026-11-15; if it's ever missing, Opus 5.5 handles these itself rather than substituting another Fable version. Its answer is input to Claude's decision, like Sol's, and it counts against the Claude budget.
-
-Find and fix real bugs feature by feature, with most of the work done by Sol (Codex `gpt-6.1-sol`).
-
-**Claude's job is small on purpose (user, 2026-11-14).** ChatGPT usage is plentiful and Claude is ahead of its weekly pace. Claude:
-- delegates;
-- reads one summary table per run;
-- reviews and approves high-risk fix plans;
-- does a final check before pushing;
-- updates this skill.
-
-Claude does not read full reports or write routine fixes. The aim is about 90% of the quality for a fraction of Claude's usage, with Claude's judgement kept for risky changes.
+**ChatGPT is plentiful right now** (the user has 2 Codex resets), so lean on Sol freely for anything below the senior-programmer bar. Claude does not read full reports when Gemini can summarise them.
 
 Before launching, restate in 3–4 lines:
 - the features in this run;
@@ -70,7 +65,12 @@ Usage limits are per 5-hour window. Spread a run across the window rather than s
 - **Meter:** `node .claude/tools/usage-meter.mjs` (add `--json` for agents). Codex numbers are exact; Claude numbers are estimates from `usage-budget.json`. Resets don't need recalibration. If the Claude estimate is off by more than about 15 points from the usage page, re-read the page and update the budgets and the two reset anchors (`claudeSessionResetAt`, `claudeWeeklyResetAt`).
   - Codex numbers are exact: the 5-hour and weekly used % from Codex's own logs.
   - Claude numbers are estimated from transcript token counts against `.claude/tools/usage-budget.json`. Calibrate it from one reading of the Claude usage page: budget = logged tokens ÷ the page's %.
-- **Pacing gate:** run the meter before launching each agent. If the window's used % is more than about 10 points above the % of the window elapsed, don't launch; wait (ScheduleWakeup for long gaps), then check again. Same for the weekly window.
+- **Pacing gate (user, 2026-11-15):** run the meter before launching each agent.
+  - Claude weekly: stop when used % is more than 10 points above the % of the week elapsed.
+  - Claude 5-hour session: ahead as soon as used % exceeds elapsed %, with no slack. Finish the task in hand, then stop and wait for the user.
+  - Codex weekly: may run up to 20 points ahead (2 resets available).
+  - Keep context under ~250–300k; a huge context, not agent count, caused the worst session spikes.
+  - When the user says Claude is ahead, wrap up and stop.
 - **Token-saving rules** (each should keep 70–80% of earlier runs' quality; learning.md tracks yield per agent, and loosens a rule if quality drops below that):
   - About 6 features per run, chosen by recent high/medium yield and code changed since the last run. Low-yield features rotate in every other run. A feature that missed review goes first.
   - High reasoning only for risky features (round saving, live round, login, duels). Display-heavy ones (History, Ladder, Profile, Help/menus, Armory tools) use medium.

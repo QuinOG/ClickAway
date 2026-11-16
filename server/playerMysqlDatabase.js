@@ -811,11 +811,17 @@ async function hasXpRoundToday(executor, userId) {
 }
 
 // Today's rounds that count toward daily goals (the ones that earned XP), with
-// the UTC day taken from the database clock, matching hasXpRoundToday.
+// the UTC day taken from the database clock, matching hasXpRoundToday. The
+// rounds are bounded by that same day key rather than a second now(): outside
+// a transaction the two reads could straddle midnight and pair yesterday's
+// goals with today's (empty) rounds.
 async function getTodaysDailyGoalRounds(executor, userId) {
   const [[clock]] = await executor.query(
     "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day_key"
   )
+  const dayKey = String(clock?.day_key ?? clock?.dayKey ?? "")
+  const dayStartMs = Date.parse(`${dayKey}T00:00:00Z`)
+  if (!Number.isFinite(dayStartMs)) return { dayKey, rounds: [] }
   const [rows] = await executor.query(
     `SELECT
        mode AS modeId,
@@ -824,10 +830,10 @@ async function getTodaysDailyGoalRounds(executor, userId) {
        best_streak AS bestStreak
      FROM round_history
      WHERE user_id = ? AND xp_earned > 0
-       AND ${TODAY_UTC_WINDOW}`,
-    [userId]
+       AND played_at >= ? AND played_at < ?`,
+    [userId, new Date(dayStartMs).toISOString(), new Date(dayStartMs + 86_400_000).toISOString()]
   )
-  return { dayKey: String(clock?.day_key ?? clock?.dayKey ?? ""), rounds: rows }
+  return { dayKey, rounds: rows }
 }
 
 async function getDailyGoalsSnapshot(executor, userId) {
@@ -2335,6 +2341,7 @@ export async function findUserReplays(userId, { limit = 10 } = {}) {
        played_at AS playedAt
      FROM round_replays
      WHERE user_id = ?
+       AND loadout_snapshot_json->>'arenaWidth' IS NOT NULL
      ORDER BY played_at DESC, id DESC
      LIMIT ?`,
     [userId, normalizedLimit]

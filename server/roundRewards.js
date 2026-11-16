@@ -4,6 +4,7 @@ import {
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getMaxClickEvents, MIN_CLICK_INTERVAL_MS, replayRoundEvents, ROUND_EVENT_TYPES } from "../src/game/engine/roundEngine.js"
+import { normalizeArenaDimensions } from "../src/game/engine/roundGeometry.js"
 import { calculateRoundCoins } from "../src/utils/roundRewards.js"
 import { calculateRoundXp } from "../src/utils/progressionUtils.js"
 import { calculatePlacementMatchScore, calculateRoundRankDelta } from "../src/utils/rankUtils.js"
@@ -114,6 +115,24 @@ function validateRoundDeadline(roundRules, mode, events) {
  * `{ modeId, events }` submissions replay against the base mode exactly as
  * before.
  */
+// A round without a token (Practice when /round/start failed, or a free ghost
+// race) still carries the seed the client played. Using it only for target
+// geometry lets Bullseye and Gold score the same as on screen. It never
+// replaces the token seed for replay storage, duels or rewards, and a missing
+// or invalid seed or arena falls back to seedless scoring as before.
+// Replays saved before Bullseye and Gold (feature 015) have no arena size, so
+// their targets can't be rebuilt and their score used different rules. They
+// stay in History but can't be raced or used for duels.
+export function isRaceableReplay(replay) {
+  const snapshot = replay?.loadoutSnapshot
+  return Boolean(normalizeArenaDimensions(snapshot?.arenaWidth, snapshot?.arenaHeight))
+}
+
+export function getTokenlessGeometrySeed(seed, arenaWidth, arenaHeight) {
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) return null
+  return normalizeArenaDimensions(arenaWidth, arenaHeight) ? seed : null
+}
+
 export function simulateRound(events, modeId, {
   loadoutSnapshot = null,
   playerLevel = 1,

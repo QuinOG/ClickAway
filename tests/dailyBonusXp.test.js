@@ -31,15 +31,17 @@ function harness({ playedEarlierToday, todaysRounds = [], roundTime = null }) {
       if (sql.includes("UPDATE users SET coins")) { writes.coins = params[0]; writes.xp = params[1]; return [{ affectedRows: 1 }] }
       return [{ affectedRows: 1 }]
     },
-    query: async (sql) => {
+    query: async (sql, params) => {
       if (sql.includes("AS day_key")) return [[{ day_key: TODAY }]]
       if (sql.includes("AS round_time")) return [[{ round_time: roundTime }]]
       if (sql.includes("FROM round_history") && sql.includes("best_streak AS bestStreak")) {
         writes.goalQueries += 1
         assert.match(sql, /xp_earned > 0/)
-        // Bounded to one day, so a save just before midnight can't see the next day's rows.
-        assert.match(sql, /played_at < \(\(date_trunc\('day', now\(\) AT TIME ZONE 'UTC'\) \+ interval '1 day'\)/)
-        assert.match(sql, /date_trunc\('day', now\(\) AT TIME ZONE 'UTC'\)/)
+        // Bounded to the clock's day key (not a second now()), so the rounds always
+        // match the goals' day, and a save just before midnight can't see the next day's rows.
+        assert.match(sql, /played_at >= \? AND played_at < \?/)
+        assert.doesNotMatch(sql, /now\(\)/)
+        assert.deepEqual([...params].slice(1), [`${TODAY}T00:00:00.000Z`, new Date(Date.parse(`${TODAY}T00:00:00Z`) + 86_400_000).toISOString()])
         return [todaysRounds]
       }
       if (sql.includes("FROM round_history") && sql.includes("xp_earned > 0")) {

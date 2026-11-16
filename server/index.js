@@ -46,7 +46,7 @@ import {
   verifySchema,
   LEADERBOARD_BOARDS,
 } from "./playerMysqlDatabase.js"
-import { calculateRoundRewards, simulateRound } from "./roundRewards.js"
+import { calculateRoundRewards, simulateRound, getTokenlessGeometrySeed, isRaceableReplay } from "./roundRewards.js"
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
 import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
@@ -460,6 +460,11 @@ app.get("/api/replays/:replayId", requireAuth, async (request, response) => {
       return
     }
 
+    if (!isRaceableReplay(replay)) {
+      response.status(410).json({ error: "This run was recorded before Bullseye and Gold targets, so it can't be raced." })
+      return
+    }
+
     response.json({ replay })
   } catch (error) {
     handleRouteError(error, response)
@@ -535,6 +540,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
 
     if (replay.visibility === "private") {
       response.status(400).json({ error: "Private runs cannot be used for duels. Choose a public run." })
+      return
+    }
+
+    if (!isRaceableReplay(replay)) {
+      response.status(400).json({ error: "This run was recorded before Bullseye and Gold targets. Choose a newer run." })
       return
     }
 
@@ -674,6 +684,7 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
         || challenge.status !== "accepted"
         || challenge.modeId !== modeId
         || challenge.replaySeed === null
+        || !isRaceableReplay(await findReplayById(challenge.replayId))
       ) {
         response.status(400).json({ error: "That duel cannot be raced right now." })
         return
@@ -701,7 +712,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     return
   }
 
-  const { modeId, events, loadoutSnapshot, roundToken, arenaWidth, arenaHeight, drillId } = request.body ?? {}
+  const { modeId, events, loadoutSnapshot, roundToken, seed: clientSeed, arenaWidth, arenaHeight, drillId } = request.body ?? {}
   const mode = getDifficultyById(String(modeId || ""))
 
   if (!mode || mode.id !== String(modeId || "")) {
@@ -755,7 +766,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const simulation = simulateRound(events, modeId, {
       loadoutSnapshot: loadoutSnapshot ?? null,
       playerLevel,
-      roundSeed,
+      roundSeed: roundSeed ?? getTokenlessGeometrySeed(clientSeed, arenaWidth, arenaHeight),
       arenaWidth,
       arenaHeight,
     })
