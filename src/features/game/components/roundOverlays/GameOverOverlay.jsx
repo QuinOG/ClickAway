@@ -69,6 +69,10 @@ function formatNumber(value = 0) {
   return Number(value).toLocaleString()
 }
 
+function formatCount(value, singular, plural) {
+  return `${formatNumber(value)} ${Number(value) === 1 ? singular : plural}`
+}
+
 function formatReactionTime(value) {
   const normalizedValue = Number(value)
   if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) return "\u2014"
@@ -315,6 +319,7 @@ export function GameOverOverlay({
       // A plain next round earns neither the daily bonus nor goal rewards.
       nextRoundXp: roundXpEarned - roundDailyBonusXp - (Number(roundDailyGoals?.xp) || 0),
       dailyGoals,
+      roundDailyGoals,
       round: { modeId: selectedModeId, hits, misses, bestStreak },
     })
     : null
@@ -418,7 +423,7 @@ export function GameOverOverlay({
         <span className="gameOverScoreLockRail" aria-hidden="true"><i /></span>
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
-        <p className="gameOverScoreTally">{formatNumber(hits)} hits · {formatNumber(misses)} misses{bullseyes > 0 ? ` · ${formatNumber(bullseyes)} bullseyes` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
+        <p className="gameOverScoreTally">{formatCount(hits, "hit", "hits")} · {formatCount(misses, "miss", "misses")}{bullseyes > 0 ? ` · ${formatCount(bullseyes, "bullseye", "bullseyes")}` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}
