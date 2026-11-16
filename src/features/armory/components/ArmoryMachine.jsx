@@ -1,27 +1,9 @@
 import { MODULE_SLOTS } from "../../../constants/buildcraft.js"
-import {
-  ModuleSlotGlyph,
-  PowerupGlyph,
-} from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
-import { getExactMetric } from "../armoryExactMetrics.js"
-
-// The bench renders the target larger than in-round so it reads as the hero
-// object, while size differences between builds stay proportional and visible.
-export const MACHINE_TARGET_SCALE = 1.65
 
 const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
   MODULE_SLOTS.map((slot) => [slot.id, slot.defaultModuleId])
 )
-
-function getTargetSkinStyle({ targetSize, imageSrc, imageScale }) {
-  return {
-    width: `${targetSize}px`,
-    height: `${targetSize}px`,
-    backgroundImage: imageSrc ? `url(${imageSrc})` : undefined,
-    backgroundSize: imageSrc ? `${imageScale ?? 100}%` : undefined,
-  }
-}
 
 function MachineHousing({ module, isSelected = false, onOpenLane }) {
   const isNeutral = module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId]
@@ -49,7 +31,7 @@ function MachineHousing({ module, isSelected = false, onOpenLane }) {
   )
 }
 
-function MachineNameplate({ loadout, presentation, nameplateRef, machineApi }) {
+function MachineNameplate({ loadout, nameplateRef, machineApi }) {
   return (
     <div className="armoryMachineNameplate" ref={nameplateRef}>
       {machineApi.isEditingName ? (
@@ -83,9 +65,7 @@ function MachineNameplate({ loadout, presentation, nameplateRef, machineApi }) {
           <span className="armoryMachineNameHint" aria-hidden="true">Rename</span>
         </button>
       )}
-      <span className="armoryMachineIdentity">
-        {presentation.titleLine}
-      </span>
+
     </div>
   )
 }
@@ -135,93 +115,33 @@ export default function ArmoryMachine({
   machineRef,
   machineApi,
 }) {
-  const { buttonSkinClass = "", buttonSkinImageSrc = "", buttonSkinImageScale = 100 } = machineApi
-  const hasSkinImage = Boolean(buttonSkinImageSrc)
-  const targetSize = Math.round(
-    presentation.roundRules.initialButtonSize * MACHINE_TARGET_SCALE
-  )
   return (
     <section className="armoryStage" aria-label="Active build machine">
       {/* Keyed by bay so switching bays rolls a fresh machine onto the stage
           (reduced motion crossfades instead — see armory.css). */}
       <div className="armoryMachine" key={loadout.id} ref={machineRef}>
-        {/* One build header: the name (click to rename), its identity and the
-            build tools sit together above the machine. */}
+        {/* Keep the editable name and build tools together. */}
         <header className="armoryMachineHeader">
           <MachineNameplate
             loadout={loadout}
-            presentation={presentation}
             nameplateRef={nameplateRef}
             machineApi={machineApi}
           />
           <MachineWorkshopActions machineApi={machineApi} />
         </header>
 
-        <div className="armoryMachineCore">
-          <div className="armoryMachineAssembly">
-            {/* The workbench cradle the instrument is bolted to. */}
-            <span className="armoryMachineBench" aria-hidden="true">
-              <i /><i /><i /><i />
-              <em>CA-01</em>
-            </span>
-            <div className="armoryMachineCoreStage">
-              <span className="armoryMachineRig" aria-hidden="true">
-                <span className="armoryMachineRigRing">
-                  {presentation.moduleStack.map((module) => (
-                    <i
-                      key={module.slotId}
-                      className={`armoryMachineRigArc arc-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"}`}
-                    />
-                  ))}
-                </span>
-                <span className="armoryMachineRigTicks" />
-                {presentation.moduleStack.map((module) => (
-                  <span
-                    key={`conduit-${module.slotId}`}
-                    className={`armoryMachineRigConduit conduit-${module.slotId} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
-                  />
-                ))}
-                {presentation.moduleStack.map((module) => (
-                  <span
-                    key={module.slotId}
-                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
-                  >
-                    <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
-                  </span>
-                ))}
-                <span className="armoryMachineRigBed" />
-              </span>
-
-              <span
-                className={`armoryMachineTarget ${hasSkinImage ? "hasImage" : buttonSkinClass}`}
-                style={getTargetSkinStyle({
-                  targetSize,
-                  imageSrc: buttonSkinImageSrc,
-                  imageScale: buttonSkinImageScale,
-                })}
-                aria-hidden="true"
-              >
-                {/* Live aim window: the target is drawn at this build's start
-                    size, and its centre states that size, the shrink pace
-                    and the floor it shrinks to. */}
-                <span className="armoryMachineAimReadout">
-                  <small>Aim window</small>
-                  <b>{presentation.roundRules.initialButtonSize}px</b>
-                  <em>{getExactMetric("Shrink Pace", presentation.roundRules).text} · floor {presentation.roundRules.minButtonSize}px</em>
-                </span>
-              </span>
-            </div>
-
-            <div className="armoryMachineHousingRow" aria-label="Passive stack">
-              {presentation.moduleStack.map((module) => (
-                <MachineHousing
-                  key={module.slotId}
-                  module={module}
-                  isSelected={machineApi.selectedModuleSlotId === module.slotId}
-                  onOpenLane={machineApi.openModuleLane}
-                />
-              ))}
-            </div>
+        <div className="armoryClassSheet">
+          <div className="armoryClassFacts" aria-label="Target details">
+            <p>Target size: <strong>{presentation.roundRules.initialButtonSize >= 100 ? "Big" : presentation.roundRules.initialButtonSize >= 80 ? "Medium" : "Small"}</strong></p>
+            <p>Starts at {presentation.roundRules.initialButtonSize} pixels across.</p>
+            <p>Shrinks with each hit, down to {presentation.roundRules.minButtonSize} pixels.</p>
+          </div>
+          <div className="armoryClassParts" aria-label="Passive stack">
+            {presentation.moduleStack.map((module) => (
+              <MachineHousing key={module.slotId} module={module}
+                isSelected={machineApi.selectedModuleSlotId === module.slotId}
+                onOpenLane={machineApi.openModuleLane} />
+            ))}
           </div>
         </div>
 

@@ -676,9 +676,6 @@ export function useArmoryScreenController({
     activeLoadout,
     activePresentation,
     machineApi: {
-      buttonSkinClass,
-      buttonSkinImageSrc,
-      buttonSkinImageScale,
       nameDraft,
       setNameDraft,
       isEditingName: isEditingNameplate,
