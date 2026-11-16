@@ -14,6 +14,7 @@ import {
 import { normalizeSeenUnlockPartIds } from "../src/utils/unlockWallUtils.js"
 import { ACHIEVEMENTS } from "../src/game/achievements/achievementsList.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
+import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 import {
   evaluateAchievements,
   getUnlockedAchievementIds,
@@ -1474,6 +1475,64 @@ export async function updateUserRole({ id, role }) {
 
 export async function createDefaultUserProgress(userId) {
   return buildProgressRecord(pool, userId)
+}
+
+// One statement supplies a coherent snapshot for simulation; legacy accounts
+// still use the writable full read to initialize their lifetime statistics.
+export async function findRoundCompletionContext(userId) {
+  const [rows] = await pool.query(
+    `SELECT u.xp, u.mmr,
+       u.rank_system_version AS rankSystemVersion,
+       u.placement_matches_played AS placementMatchesPlayed,
+       u.demotion_protection_rounds AS demotionProtectionRounds,
+       ls.user_id AS lifetimeUserId, ls.ranked_rounds AS rankedRounds,
+       recent.history AS roundHistory
+     FROM users u
+     LEFT JOIN user_lifetime_stats ls ON ls.user_id = u.id
+     LEFT JOIN LATERAL (
+       SELECT json_agg(json_build_object(
+         'modeId', h.mode, 'progressionMode', h.progression_mode
+       ) ORDER BY h.played_at DESC, h.id DESC) AS history
+       FROM (
+         SELECT mode, progression_mode, played_at, id
+         FROM round_history
+         WHERE user_id = u.id
+         ORDER BY played_at DESC, id DESC
+         LIMIT ?
+       ) h
+     ) recent ON true
+     WHERE u.id = ?`,
+    [RECENT_HISTORY_LIMIT, userId]
+  )
+  const row = rows[0]
+  if (!row) throw new Error("Round completion user no longer exists.")
+  if (row.lifetimeUserId === null || row.lifetimeUserId === undefined) {
+    const progress = await findUserProgressByUserId(userId)
+    return {
+      levelXp: progress.levelXp,
+      rankMmr: progress.rankMmr,
+      rankedState: progress.rankedState,
+      hasRankedHistory: (progress.lifetimeStats?.rankedRounds ?? 0) > 0
+        || progress.roundHistory.some(isRankedModeEntry),
+    }
+  }
+  const roundHistory = (row.roundHistory || []).map(buildHistoryEntry)
+  const migratedRankData = migrateLegacyRankData({
+    rankMmr: row.mmr,
+    rankedState: {
+      rankSystemVersion: row.rankSystemVersion,
+      placementMatchesPlayed: row.placementMatchesPlayed,
+      demotionProtectionRounds: row.demotionProtectionRounds,
+    },
+    roundHistory,
+  })
+  return {
+    levelXp: toNonNegativeNumber(row.xp, DEFAULT_PROGRESS.levelXp),
+    rankMmr: migratedRankData.rankMmr,
+    rankedState: migratedRankData.rankedState,
+    hasRankedHistory: mapLifetimeStatsRow(row).rankedRounds > 0
+      || roundHistory.some(isRankedModeEntry),
+  }
 }
 
 // Read one writable snapshot: legacy progress reads may backfill stats.
