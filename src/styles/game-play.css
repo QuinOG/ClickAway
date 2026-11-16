@@ -1817,3 +1817,10 @@
 
 .gameOverRewards > .gameOverReward { width: 200px; min-height: 68px; box-sizing: border-box; }
 .gameOverRewards > .gameOverXpTally { height: 60px; box-sizing: border-box; }
+
+/* Image art supplies its own bevel; keep the arena shadow on the hit circle. */
+.arena .bigCircleButton.hasImage {
+    background-color: transparent;
+    box-shadow: 0 0 18px rgb(0 0 0 / 40%), 0 0 30px rgb(79 216 255 / 34%);
+}
+.arena .bigCircleButton.hasImage::before { display: none; }

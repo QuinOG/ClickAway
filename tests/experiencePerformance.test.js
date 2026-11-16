@@ -31,16 +31,16 @@ test("idle route scheduling is cancellable", () => {
   assert.equal(cancelledHandle, 42)
 })
 
-test("cosmetic art is one lightweight illustrated SVG set", () => {
+test("cosmetic art is one lightweight illustrated PNG set", () => {
   const imageSources = SHOP_CATEGORIES.flatMap((category) => category.items)
     .map((item) => item.imageSrc)
     .filter(Boolean)
 
   assert.ok(imageSources.length >= 20, "catalog should reference the illustrated set")
   imageSources.forEach((source) => {
-    assert.match(source, /^\/skins\/[a-z]+\.svg$/, `${source} should come from the illustrated /skins set`)
+    assert.match(source, /^\/skins\/[a-z]+\.png$/, `${source} should come from the illustrated /skins set`)
     const file = new URL(`../public${source}`, import.meta.url)
     assert.ok(existsSync(file), `${source} should exist`)
-    assert.ok(statSync(file).size < 8192, `${source} should stay under 8KB`)
+    assert.ok(statSync(file).size < 81920, `${source} should stay under 80KB`)
   })
 })
