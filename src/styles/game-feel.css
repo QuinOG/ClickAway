@@ -5366,16 +5366,17 @@
 /* ---- Bullseye zone: a faint ring at a third of the target's radius ----------
  * Marks where a hit scores Bullseye ×2 (BULLSEYE_RADIUS_SHARE in roundGeometry.js).
  * `closest-side` makes 100% the radius, so 33.333% is the zone's edge on any size;
- * the centre pip is kept as the first layer.
+ * the centre pip is kept as the first layer. The ring is drawn inside that edge
+ * and ends on it, so every painted pixel scores, even on a 10px target.
  * ------------------------------------------------------------------------ */
 .arena .bigCircleButton::after {
     background:
         radial-gradient(circle, #ffffff 0 5%, var(--skin-ink) 5.5% 8%, transparent 8.5%),
         radial-gradient(circle closest-side,
-            transparent calc(33.333% - 1.5px),
-            rgb(255 255 255 / 55%) calc(33.333% - 1.5px) calc(33.333% + 0.5px),
-            rgb(4 9 18 / 35%) calc(33.333% + 0.5px) calc(33.333% + 1.5px),
-            transparent calc(33.333% + 1.5px)) !important;
+            transparent calc(33.333% - 3px),
+            rgb(4 9 18 / 35%) calc(33.333% - 3px) calc(33.333% - 2px),
+            rgb(255 255 255 / 55%) calc(33.333% - 2px) 33.333%,
+            transparent 33.333%) !important;
 }
 
 /* ---- Gold targets: gold rim and a draining ring for the ×3 window ---- */
@@ -5384,9 +5385,12 @@
 .arena .bigCircleButton.isGoldTarget { outline: 5px solid #ffd34d !important; outline-offset: 4px !important; box-shadow: 0 0 0 3px #fff0a0, 0 0 30px 10px #ffd34d88 !important; }
 .goldTargetRing { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; transform: rotate(-90deg); z-index: 5; }
 .goldTargetRing circle { fill: none; stroke: #fff0a0; stroke-width: 3; stroke-dasharray: 1; transition: stroke-dashoffset 50ms linear; }
+/* Reduced motion (OS or in-app): the ring stays full instead of draining; the
+   gold rim still drops when the window closes. */
 @media (prefers-reduced-motion: reduce) {
-  .goldTargetRing { display: none; }
+  .goldTargetRing circle { stroke-dashoffset: 0 !important; transition: none; }
 }
+html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !important; }
 
 /* Reserve enough space for streak and combo without cropping either readout. */
 @media (max-width: 380px) {

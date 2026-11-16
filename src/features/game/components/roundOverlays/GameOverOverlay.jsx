@@ -419,7 +419,7 @@ export function GameOverOverlay({
         <span className="gameOverScoreLockRail" aria-hidden="true"><i /></span>
         <p className="gameOverScoreLabel">Final Score</p>
         <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
-        <p className="gameOverScoreTally">{formatNumber(hits)} hits · {formatNumber(misses)} misses{bullseyes > 0 ? ` · ${formatNumber(bullseyes)} bullseyes` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
+        <p className="gameOverScoreTally">{formatNumber(hits)} {hits === 1 ? "hit" : "hits"} · {formatNumber(misses)} {misses === 1 ? "miss" : "misses"}{bullseyes > 0 ? ` · ${formatNumber(bullseyes)} ${bullseyes === 1 ? "bullseye" : "bullseyes"}` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
         {loadoutSnapshot?.loadoutName ? (
           <p className="gameOverLoadoutBadge">
             {loadoutSnapshot.loadoutName}
