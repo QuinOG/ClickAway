@@ -1441,28 +1441,56 @@
 }
 .arena .bigCircleButton.hasImage::before { display: none; }
 
-/* Result ceremony: score, loot, next round. */
+/* Round ceremony: the original arcade materials, with one clear reading path. */
 .resultCeremony {
-    position: relative; width: min(560px, 100%); max-height: calc(100dvh - 32px);
-    overflow: auto; padding: 28px 36px 22px; display: flex; flex-direction: column;
-    gap: 18px; text-align: center; border: 1px solid var(--skin-cyan);
-    border-radius: 18px; background: linear-gradient(160deg, var(--skin-face), var(--skin-face-low));
-    box-shadow: 0 24px 80px #040912b3; color: var(--ca-color-ink);
+    --result-edge: #637d9b;
+    position: relative; width: min(560px, 100%); max-height: calc(100dvh - 130px);
+    overflow: auto; padding: 20px 30px; display: flex; flex-direction: column;
+    gap: 14px; text-align: center; border: 2px solid #080f1c;
+    border-radius: 12px; background: linear-gradient(160deg, #192a40, #0c1727 75%);
+    box-shadow: inset 0 2px 0 #ffffff12, 0 0 0 2px var(--result-edge), 0 8px 0 #040912, 0 24px 80px #040912b3;
+    color: var(--ca-color-ink); flex-shrink: 0;
 }
 .gameOverlay:has(> .resultCeremony) { align-items: flex-start; }
-.resultCeremony::before { content: ""; position: absolute; top: 0; left: calc(50% - 24px); width: 48px; height: 4px; background: var(--skin-gold); border-radius: 0 0 4px 4px; }
 .resultCeremony p { margin: 0; }
-.gameOverEyebrow { color: var(--ca-color-ink-muted); font-size: 12px; }
-.gameOverEyebrow span, .isPersonalBest .resultBest { color: var(--skin-gold); }
-.gameOverTitle { margin: 8px 0 0; font: 400 22px/1.2 var(--ca-font-display); text-transform: uppercase; letter-spacing: .12em; }
-.gameOverScorePanel { padding: 0; }
-.gameOverScoreValue { display: flex; align-items: center; justify-content: center; gap: 16px; color: var(--ca-color-ink); font: 400 96px/1.1 var(--ca-font-display); font-variant-numeric: tabular-nums; }
-.isPersonalBest .gameOverScoreValue { color: var(--skin-gold); }
-.gameOverScoreValue i { font-size: 16px; font-style: normal; }
-.resultGrade { font: 400 14px/1.5 var(--ca-font-display); text-transform: uppercase; letter-spacing: .14em; }
-.resultGrade strong { color: var(--skin-cyan); }
-.resultCeremony .resultBest { margin-top: 8px; font-size: 13px; color: var(--ca-color-ink-muted); }
-.gameOverRewards { position: relative; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 18px 0 22px; border-block: 1px solid rgb(255 255 255 / 12%); min-height: 80px; }
+.gameOverEyebrow { color: var(--ca-color-ink-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; }
+/* Reuse the original gold ribbon treatment. */
+.gameOverTitle {
+    margin: 7px auto 0; padding: 9px 26px 11px;
+    font: 400 clamp(20px, 2.3vw, 28px)/1.1 var(--ca-font-display); text-transform: uppercase; letter-spacing: .04em;
+    color: #2a1500; text-shadow: 0 2px 0 #ffffff73;
+    background: linear-gradient(180deg, #fff1b0 0%, #ffd04a 50%, #e8941c 100%);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 50%, 100% 100%, 0 100%, 20px 50%);
+}
+/* Original score plate and rays; the number is the sole large focal point. */
+.gameOverScorePanel {
+    position: relative; isolation: isolate; padding: 12px 10px 16px; border-radius: 16px;
+    border: 2px solid #040912; background: radial-gradient(circle at 50% 42%, #24406a, #0c182b 72%);
+    box-shadow: inset 0 2px 0 #ffffff1f, inset 0 0 0 4px #ffc94a20, 0 0 0 2px #c98a24;
+}
+.gameOverScorePanel::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background: repeating-conic-gradient(from 0deg at 50% 42%, #ffd25c12 0deg 9deg, transparent 9deg 22deg);
+}
+.gameOverScoreLabel { font: 400 11px/1.5 var(--ca-font-display); letter-spacing: .18em; text-transform: uppercase; color: #ffda7a; }
+.gameOverScoreValue {
+    font: 400 96px/1.05 var(--ca-font-display); font-variant-numeric: tabular-nums;
+    color: #ffda72; -webkit-text-stroke: 2px #040912; paint-order: stroke fill;
+    text-shadow: 0 5px 0 #040912, 0 0 24px #ffb43c33;
+}
+.resultStanding { display: flex; align-items: center; justify-content: center; gap: 18px; min-height: 64px; text-align: left; }
+.resultGrade {
+    display: grid; justify-items: center; width: 58px; padding: 4px; flex-shrink: 0;
+    border: 2px solid #040912; border-radius: 10px; background: radial-gradient(circle at 50% 35%, #1d6a45, #0a2a1c 75%);
+    box-shadow: inset 0 2px 0 #ffffff33, 0 0 0 2px #3ee59a, 0 3px 0 4px #040912;
+    transform: rotate(-6deg); font-family: var(--ca-font-display);
+}
+.resultGrade span { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: #b7e9d3; }
+.resultGrade strong { color: #96f4c7; font-size: 34px; line-height: 1; font-weight: 400; }
+.resultStandingLabel { font: 400 14px/1.4 var(--ca-font-display); }
+.isPersonalBest .resultStandingLabel { color: var(--skin-gold); }
+.resultCeremony .resultBest { margin-top: 3px; font-size: 12px; color: var(--ca-color-ink-muted); }
+.gameOverRewards { position: relative; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px 0 20px; border-block: 1px solid #ffffff18; min-height: 76px; }
 .gameOverReward { display: grid; grid-template-columns: 28px auto; column-gap: 6px; text-align: left; min-width: 80px; }
 .gameOverReward > :first-child { grid-row: span 2; }
 .gameOverReward strong { font: 400 21px/1 var(--ca-font-display); font-variant-numeric: tabular-nums; }
@@ -1472,32 +1500,67 @@
 .gameOverXpTally { flex: 1; min-width: 100px; max-width: 180px; }
 .gameOverXpTallyHeader { display: block; font-size: 11px; white-space: nowrap; text-align: left; }
 .gameOverXpTallyHeader small { font-size: inherit; color: var(--ca-color-ink-muted); }
-.gameOverXpTallyTrack { display: block; position: relative; height: 5px; margin-top: 8px; background: rgb(255 255 255 / 12%); overflow: hidden; border-radius: 4px; }
+.gameOverXpTallyTrack { display: block; position: relative; height: 6px; margin-top: 8px; background: #ffffff1f; overflow: hidden; border-radius: 4px; }
 .gameOverXpTallyGain { position: absolute; inset: 0 auto 0 0; background: var(--skin-cyan); }
 .resultRank { color: var(--skin-cyan); font-size: 12px; min-width: 48px; }
 .resultSave { position: absolute; bottom: 3px; left: 0; right: 0; height: 14px; font-size: 10px; color: var(--ca-color-ink-muted); }
 .resultPendingTag { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.gameOverReward.isPending strong { opacity: 0.7; }
+.gameOverReward.isPending { opacity: .6; }
 .resultEvents { display: grid; gap: 6px; font-size: 12px; text-align: center; }
 .resultEvents a { color: var(--skin-cyan); text-underline-offset: 3px; }
+.resultUnlock { display: flex; align-items: center; gap: 12px; padding: 8px 12px; text-align: left; background: linear-gradient(110deg, #ffd25c15, #111f32); border: 1px solid #c98a2470; border-radius: 12px; }
+.resultUnlock > .gameIcon { flex-shrink: 0; object-fit: contain; filter: drop-shadow(0 3px 3px #040912); }
+.resultUnlock > div { flex: 1; min-width: 0; }
+.resultUnlockLabel { font-size: 10px; color: #ffda7a; text-transform: uppercase; letter-spacing: .08em; }
+.resultUnlock strong { font: 400 17px/1.4 var(--ca-font-display); }
+.resultEquip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 7px 12px; border: 2px solid #040912; border-radius: 9px; background: linear-gradient(#ffe89c, #ffca49); color: #201600; box-shadow: inset 0 1px 0 #fff8, 0 3px 0 #040912; text-decoration: none; font: 400 13px/1.2 var(--ca-font-display); }
 .gameOverActions { display: grid; gap: 12px; }
-.gameOverNextGoal { font-size: 12px; color: var(--ca-color-ink-muted); }
-.gameOverActions > .primaryButton { width: 100%; min-height: 52px; background: var(--skin-gold); color: var(--skin-ink); }
-.resultFooter { display: flex; justify-content: center; align-items: start; gap: 24px; position: relative; }
+.gameOverNextGoal { font-size: 11px; color: var(--ca-color-ink-muted); }
+.gameOverActions > .primaryButton {
+    width: 100%; min-height: 52px; border: 2px solid #040912; border-radius: 11px;
+    background: linear-gradient(#ffe89c, #ffca49 60%, #eea526); color: #201600;
+    box-shadow: inset 0 2px 0 #fff9, 0 5px 0 #040912, 0 7px 0 #86602d;
+    font: 400 18px/1.2 var(--ca-font-display); text-shadow: 0 1px 0 #fff6;
+}
+.resultFooter { display: flex; justify-content: center; align-items: start; gap: 10px; position: relative; }
 .resultDetails { font-size: 12px; }
-.resultDetails summary { cursor: pointer; list-style: none; color: var(--ca-color-ink-muted); padding: 4px; }
-.resultDetails[open] { width: 100%; }
+.resultDetails summary, .resultSecondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px;
+    padding: 7px 14px; cursor: pointer; list-style: none; border: 2px solid #040912; border-radius: 8px;
+    background: linear-gradient(#30445f, #1b2c43); color: #dbe8f5;
+    box-shadow: inset 0 1px 0 #ffffff26, 0 3px 0 #040912; text-decoration: none;
+    font: 400 11px/1.3 var(--ca-font-display);
+}
+.resultDetails summary::-webkit-details-marker { display: none; }
+.resultDetails[open] { width: 100%; text-align: left; }
 .resultDetails[open] + .resultSecondary { position: absolute; top: 0; right: 0; }
 .resultDetails[open] summary span { display: inline-block; transform: rotate(45deg); }
-.resultBreakdown { margin-top: 16px; text-align: left; display: grid; gap: 10px; }
-.resultSecondary { border: 0; background: none; color: var(--ca-color-ink-muted); font: inherit; font-size: 12px; padding: 4px; cursor: pointer; text-decoration: underline; }
-.resultCeremony .outcomeRating { display: block; padding: 0; background: none; border: 0; box-shadow: none; }
+.resultBreakdown { margin-top: 16px; text-align: left; display: grid; gap: 10px; font-size: 12px; color: var(--ca-color-ink-muted); }
+.resultStatList { display: grid; gap: 7px; margin: 0; }
+.resultStatList > div { display: flex; justify-content: space-between; gap: 12px; }
+.resultStatList dd { margin: 0; color: var(--ca-color-ink); font-variant-numeric: tabular-nums; }
+.resultEquip:hover, .resultSecondary:hover, .resultDetails summary:hover { filter: brightness(1.15); }
+.resultCeremony :is(button, a, summary):focus-visible { outline: 3px solid #8fe3ff; outline-offset: 3px; }
 .gameOverSaveStatus.isFailed { color: #ffd2cc; font-size: 13px; }
 @media (max-width: 600px) {
-    .resultCeremony { padding: 24px 20px 20px; gap: 16px; }
-    .gameOverTitle { font-size: 19px; }
-    .gameOverScoreValue { font-size: 76px; gap: 10px; }
-    .gameOverRewards { flex-wrap: wrap; gap: 12px; }
-    .gameOverXpTally { max-width: 140px; }
-    .gameOverXpTallyHeader { font-size: 10px; }
+    .resultCeremony { padding: 16px 18px; gap: 12px; max-height: calc(100dvh - 170px); }
+    .gameOverTitle { font-size: 20px; padding-inline: 20px; }
+    .gameOverScoreValue { font-size: 80px; }
+    .gameOverRewards { gap: 8px; }
+    .gameOverXpTally { min-width: 92px; max-width: 115px; }
+    .gameOverXpTallyHeader { font-size: 9px; }
+    .resultUnlock { gap: 8px; padding: 7px 8px; }
+    .resultUnlock > .gameIcon { width: 54px; height: 54px; }
+    .resultUnlock strong { font-size: 14px; }
+    .resultUnlockLabel { font-size: 8px; }
+    .resultEquip { padding-inline: 9px; font-size: 12px; }
+    .resultGrade { width: 52px; }
+}
+@media (max-height: 760px) and (min-width: 601px) {
+    .resultCeremony { gap: 10px; padding-block: 14px; }
+    .gameOverScorePanel { padding-block: 8px; }
+    .gameOverScoreValue { font-size: 76px; }
+    .gameOverTitle { font-size: 24px; padding-block: 7px; }
+    .resultStanding { min-height: 58px; }
+    .resultUnlock > .gameIcon { width: 54px; height: 54px; }
 }
