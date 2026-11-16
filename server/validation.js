@@ -15,7 +15,7 @@ export const PASSWORD_MAX_BYTES = 72
 export function validateUsername(username) {
   if (!username) return "Username is required."
   if (username.length < 3) return "Username must be at least 3 characters."
-  if (username.length > 32) return "Username must be 32 characters or less."
+  if (username.length > 24) return "Username must be 24 characters or less."
   return ""
 }
 
