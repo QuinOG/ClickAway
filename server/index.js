@@ -6,6 +6,7 @@ import express from "express"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import { existsSync } from "fs"
+import { performance } from "node:perf_hooks"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -32,6 +33,7 @@ import {
   findRoundHistoryPage,
   findUserByUsernameForChallenge,
   findUserProgressByUserId,
+  findRoundCompletionContext,
   findUserById,
   findUserByUsername,
   findUserReplays,
@@ -53,7 +55,6 @@ import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername 
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
-import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
 const app = express()
 // Rate limits key on the client IP. Only trust X-Forwarded-For when a proxy we
@@ -706,6 +707,24 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
 })
 
 app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, response) => {
+  const startedAt = performance.now()
+  const timings = { context: 0, simulate: 0, save: 0, followups: 0, progress: 0 }
+  // Apply to every response, including validation and save failures.
+  const sendJson = response.json.bind(response)
+  response.json = (body) => {
+    response.setHeader("Server-Timing", Object.entries({
+      ...timings, total: performance.now() - startedAt,
+    }).map(([label, duration]) => `${label};dur=${duration.toFixed(2)}`).join(", "))
+    return sendJson(body)
+  }
+  const measure = async (label, operation) => {
+    const start = performance.now()
+    try {
+      return await operation()
+    } finally {
+      timings[label] = performance.now() - start
+    }
+  }
   const user = await findUserById(request.auth.userId)
   if (!user) {
     response.status(401).json({ error: "Session is no longer valid." })
@@ -758,18 +777,17 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
   }
 
   try {
-    const currentProgress = await findUserProgressByUserId(user.id)
-    const hasRankedHistory = (currentProgress.lifetimeStats?.rankedRounds ?? 0) > 0
-      || currentProgress.roundHistory.some(isRankedModeEntry)
+    const currentProgress = await measure("context", () => findRoundCompletionContext(user.id))
+    const { hasRankedHistory } = currentProgress
     const playerLevel = getLevelProgress(currentProgress.levelXp).level
 
-    const simulation = simulateRound(events, modeId, {
+    const simulation = await measure("simulate", () => simulateRound(events, modeId, {
       loadoutSnapshot: loadoutSnapshot ?? null,
       playerLevel,
       roundSeed: roundSeed ?? getTokenlessGeometrySeed(clientSeed, arenaWidth, arenaHeight),
       arenaWidth,
       arenaHeight,
-    })
+    }))
     if (!simulation.valid) {
       response.status(400).json({ error: simulation.reason })
       return
@@ -834,7 +852,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       rankOutcome,
       dailyBonusXp = 0,
       dailyGoalRewards = { goals: [], coins: 0, xp: 0 },
-    } = await completeUserRound({
+    } = await measure("save", () => completeUserRound({
       userId: user.id,
       earnedCoins,
       earnedXp,
@@ -849,7 +867,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       },
       countsTowardStats: Boolean(roundTokenId),
       historyEntry,
-    })
+    }))
 
     const rankDelta = rankOutcome.appliedRankDelta
     const nextRankMmr = rankOutcome.nextMmr
@@ -863,6 +881,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     let seasonProgress = null
     let completedChallenge = null
     let followUpError = null
+    const followupsStartedAt = performance.now()
     try {
       const submittedEvents = Array.isArray(events) ? events : []
       if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
@@ -913,12 +932,14 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       followUpError = followUpError || "Your round was saved, but its season progress couldn't be updated."
     }
 
+    timings.followups = performance.now() - followupsStartedAt
+
     // Read last, after the replay, season and duel writes, so the response is the
     // newest state this request produced. If even this read fails, the round is
     // still saved; the client refreshes its progress on the next request.
     let progress = null
     try {
-      progress = await findUserProgressByUserId(user.id)
+      progress = await measure("progress", () => findUserProgressByUserId(user.id))
     } catch (error) {
       console.error("Round saved, but reading progress failed:", error)
     }
