@@ -1806,14 +1806,23 @@
 .gameOverNowAffordableLink:hover { color: #ffffff; }
 .gameOverNowAffordableLink:focus-visible { outline: 2px solid #ffd76a; outline-offset: 3px; border-radius: 4px; }
 
-/* Server details occupy a stable slot while the round saves. */
-.gameOverServerRewards { flex: 0 0 100% !important; height: 180px; overflow: auto; display: flex; flex-wrap: wrap; gap: 8px; align-content: start; }
-.gameOverSpotlight, .gameOverSpotlight:empty { display: grid; height: 240px; overflow: auto; }
-.gameOverNextGoal { height: 42px; overflow: auto; }
+/* Server details grow below the immediate rewards without empty reserved slots. */
+.gameOverServerRewards { flex: 0 0 100% !important; display: flex; flex-wrap: wrap; gap: 8px; align-content: start; }
+.gameOverServerRewards:empty, .gameOverSpotlight:empty { display: none; }
+.gameOverStatusSlot { min-height: 40px; }
 .gameOverHeader { min-height: 112px; }
-@media (max-width: 600px) { .gameOverSpotlight, .gameOverSpotlight:empty { height: 320px; } }
-
-.gameOverStatusSlot { height: 40px; overflow: auto; }
-
 .gameOverRewards > .gameOverReward { width: 200px; min-height: 68px; box-sizing: border-box; }
-.gameOverRewards > .gameOverXpTally { height: 60px; box-sizing: border-box; }
+.gameOverRewards > .gameOverXpTally { min-height: 60px; box-sizing: border-box; }
+@media (max-width: 600px) {
+    .gameOverRewards > .gameOverReward { width: 100%; flex-basis: 100%; }
+}
+
+.gameOverlay:has(> .gameOverCard) { align-items: start; }
+
+.gameOverServerRewards { order: 10; }
+@media (min-width: 1000px) {
+    .gameOverCardWithDifficulty {
+        grid-template-rows: auto auto auto auto auto;
+        grid-template-areas: "header header" "score body" "rewards rewards" "spot spot" "actions actions";
+    }
+}

@@ -458,7 +458,7 @@ export function GameOverOverlay({
               prefersReducedMotion={prefersReducedMotion}
             />
           ) : null}
-          <div className="gameOverServerRewards" aria-hidden={!isRoundSaved} style={{ visibility: isRoundSaved ? "visible" : "hidden" }}>
+          {isRoundSaved ? <div className="gameOverServerRewards">
           {allowsRankProgression && placementLabel ? (
             <span className="gameOverReward isRank isPlacement"><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
           ) : null}
@@ -492,7 +492,7 @@ export function GameOverOverlay({
               </Link>
             </p>
           ) : null}
-          </div>
+          </div> : null}
         </MotionDiv>
       ) : null}
 
@@ -552,7 +552,7 @@ export function GameOverOverlay({
         ) : null}
       </div>
 
-      {showRoundRewards && allowsLevelProgression ? (
+      {isRoundSaved && allowsLevelProgression ? (
         <MotionDiv
           className="gameOverSpotlight"
           aria-hidden={!isRoundSaved}
@@ -576,7 +576,7 @@ export function GameOverOverlay({
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.15, duration: 0.24 }}
       >
-        {showRoundRewards && !isPracticeMode ? (
+        {isRoundSaved && !isPracticeMode && nextRoundGoal?.text ? (
           <p className="gameOverNextGoal" data-goal={nextRoundGoal?.kind}>{nextRoundGoal?.text || "\u00a0"}</p>
         ) : null}
         <button

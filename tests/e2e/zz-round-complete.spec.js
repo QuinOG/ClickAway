@@ -4,7 +4,7 @@ import { prepareDeterministicPage } from "./fixtures.js"
 for (const width of [1440, 390]) {
   test(`round complete pending rewards and stable save at ${width}px`, async ({ page }) => {
     test.setTimeout(120_000)
-    await page.setViewportSize({ width, height: width === 390 ? 2400 : 1100 })
+    await page.setViewportSize({ width, height: width === 390 ? 1800 : 900 })
     await prepareDeterministicPage(page)
     await page.clock.install()
     let release
@@ -23,16 +23,18 @@ for (const width of [1440, 390]) {
     await expect(page.locator(".gameOverReward.isXp")).toContainText("pending")
     await expect(page.locator(".gameOverXpTally")).toBeVisible()
     await page.waitForTimeout(600)
-    const before = await page.locator(".gameOverActions").boundingBox()
+    const before = await page.locator(".gameOverReward.isXp").boundingBox()
     await page.locator(".gameOverRewards").evaluate((element) => { element.dataset.original = "yes" })
     release()
     await expect(page.locator(".gameOverReward.isCoins")).toContainText("+16")
     await expect(page.locator(".gameOverReward.isXp")).toContainText("+160")
     await expect(page.locator(".gameOverRewards")).toHaveAttribute("data-original", "yes")
-    const after = await page.locator(".gameOverActions").boundingBox()
+    const after = await page.locator(".gameOverReward.isXp").boundingBox()
     expect(after.y).toBeCloseTo(before.y, 0)
     await page.evaluate(() => document.fonts.ready)
-    await page.locator(".gameOverCard").screenshot({
+    await expect(page.locator(".gameOverCard")).toBeVisible()
+    await page.locator(".gameOverCard").scrollIntoViewIfNeeded()
+    await page.screenshot({
       path: `docs/feature-improvement/shots/round-complete/after-card-${width === 390 ? "phone" : "desktop"}.png`,
       animations: "disabled",
     })
