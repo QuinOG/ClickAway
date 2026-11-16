@@ -140,7 +140,6 @@
     border-radius: 16px;
 }
 
-.helpMissionMap,
 .historyTrajectory,
 .leaderboardPodium,
 .duelComposer,
@@ -174,7 +173,6 @@
 .challengeRivalCrest .playerPortrait,
 .duelCombatantCrest .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
 
-.helpGuideStatus,
 .historyArchiveCount,
 .leaderboardFieldCount,
 .duelNetworkStatus,
@@ -260,9 +258,8 @@
     filter: none;
     opacity: 1;
 }
-
 /* Round 3 finishing: one eyebrow per section, rounded guide cards, sentence-case stat labels. */
-.helpMissionCard { border-radius: 10px; }
+
 .helpTopicGroup .helpSectionEyebrow { display: none; }
 
 .profileInstrumentLabel,
