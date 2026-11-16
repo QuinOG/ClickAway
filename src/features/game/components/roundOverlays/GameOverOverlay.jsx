@@ -1,25 +1,17 @@
-import "./roundResultsArt.css"
-import { CoinIcon, CrestIcon, GemIcon, PartEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
+import { CoinIcon, GemIcon } from "../../../../components/art/GameIcons.jsx"
 import {
   Crosshair,
   Fire,
   Gauge,
   Timer,
-  TrendDown,
   TrendUp,
 } from "@phosphor-icons/react"
 import { motion } from "motion/react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Link } from "react-router-dom"
 
-import { useFeedbackPreferences } from "../../../../app/useFeedbackPreferences.js"
 import { buildLoadoutPresentation } from "../../../../constants/buildcraftPresentation.js"
 import { getDifficultyById as getModeById } from "../../../../constants/gameModesConfig.js"
-import { evaluateAchievements } from "../../../../game/achievements/evaluateAchievements.js"
-import {
-  cancelCelebrationEffects,
-  fireConfetti,
-} from "../../../../services/celebrationEffects.js"
 import { UNLOCK_WALL_PARTS } from "../../../../utils/unlockWallUtils.js"
 import { getRequiredXpForLevel } from "../../../../utils/progressionUtils.js"
 import { getNextRoundGoal } from "../../../../utils/nextRoundGoal.js"
@@ -79,44 +71,6 @@ function formatReactionTime(value) {
   return `${Math.round(normalizedValue)} ms`
 }
 
-function PersonalBestComparison({ score, bestScore }) {
-  const normalizedBest = Math.max(0, Number(bestScore) || 0)
-  const delta = score - normalizedBest
-  const isNewBest = delta > 0
-  const comparisonCeiling = Math.max(1, score, normalizedBest)
-  const currentPercent = Math.max(4, (score / comparisonCeiling) * 100)
-  const bestPercent = normalizedBest > 0
-    ? Math.max(4, (normalizedBest / comparisonCeiling) * 100)
-    : 0
-
-  let comparisonCopy = "First score on record"
-  if (normalizedBest > 0 && isNewBest) comparisonCopy = `New best by ${formatNumber(delta)}`
-  if (normalizedBest > 0 && !isNewBest && delta === 0) comparisonCopy = "Personal best matched"
-  if (normalizedBest > 0 && delta < 0) comparisonCopy = `${formatNumber(normalizedBest)} — keep climbing`
-
-  return (
-    <section className={`outcomeBestComparison ${isNewBest ? "isNewBest" : ""}`} aria-label="Personal best comparison">
-      <div className="outcomeBestHeader">
-        <span>Personal best</span>
-        <strong>
-          {isNewBest ? <TrendUp weight="bold" aria-hidden="true" /> : <TrendDown weight="bold" aria-hidden="true" />}
-          {comparisonCopy}
-        </strong>
-      </div>
-      <div className="outcomeBestTracks" aria-hidden="true">
-        <span className="outcomeBestTrack">
-          <i style={{ width: `${bestPercent}%` }} />
-          <b>Previous {normalizedBest ? formatNumber(normalizedBest) : "\u2014"}</b>
-        </span>
-        <span className="outcomeBestTrack isCurrent">
-          <i style={{ width: `${currentPercent}%` }} />
-          <b>This round {formatNumber(score)}</b>
-        </span>
-      </div>
-    </section>
-  )
-}
-
 const clampRating = (value) => Math.max(0, Math.min(10, Math.round(value)))
 
 function getRoundGrade(average) {
@@ -129,7 +83,7 @@ function getRoundGrade(average) {
 
 // Round performance as a rated stat card: each readout becomes a 10-segment
 // bar and the average becomes a letter grade.
-function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore }) {
+function getPerformanceStats({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore }) {
   const accuracyValue = Number.parseFloat(String(accuracy).replace("%", "")) || 0
   const avgMs = Number(avgReactionMs)
   const bestMs = Number(bestReactionMs)
@@ -141,16 +95,12 @@ function OutcomeInstruments({ accuracy, bestStreak, avgReactionMs, bestReactionM
     { label: "Fastest", value: formatReactionTime(bestReactionMs), rating: bestMs > 0 ? clampRating((520 - bestMs) / 35) : 0, icon: <Crosshair weight="bold" aria-hidden="true" /> },
     { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 10, icon: <TrendUp weight="bold" aria-hidden="true" /> },
   ]
-  const average = stats.reduce((sum, stat) => sum + stat.rating, 0) / stats.length
-  const grade = getRoundGrade(average)
+  return stats
+}
 
+function OutcomeInstruments({ stats }) {
   return (
-    <div className={`outcomeInstruments outcomeRating grade-${grade}`} aria-label="Round performance details">
-      <div className="outcomeRatingGrade" aria-label={`Round grade ${grade}`}>
-        <span>Grade</span>
-        <strong>{grade}</strong>
-        <small>{average.toFixed(1)} / 10</small>
-      </div>
+    <div className="outcomeRating" aria-label="Round performance details">
       <div className="outcomeRatingBars">
         {stats.map(({ label, value, rating, icon }) => (
           <div className={`outcomeInstrument outcomeRatingRow ${rating >= 8 ? "isHigh" : rating <= 3 ? "isLow" : ""}`} key={label}>
@@ -185,64 +135,13 @@ function getLevelAfterRound(level, xpIntoLevel, earned) {
   }
 }
 
-function NextUnlock({ level, xpIntoLevel, earned }) {
-  const { reachedLevel } = getLevelAfterRound(level, xpIntoLevel, earned)
-  const justUnlocked = reachedLevel > level
-    ? [...UNLOCK_WALL_PARTS]
-      .filter((part) => part.unlockLevel > level && part.unlockLevel <= reachedLevel)
-      .sort((a, b) => b.unlockLevel - a.unlockLevel)[0] ?? null
-    : null
-  const nextPart = justUnlocked ?? [...UNLOCK_WALL_PARTS]
-    .filter((part) => part.unlockLevel > reachedLevel)
-    .sort((a, b) => a.unlockLevel - b.unlockLevel)[0]
-
-  if (!nextPart) return null
-
+function XpTally({ level, xpIntoLevel, earned, prefersReducedMotion }) {
+  const { reachedLevel, xpIntoReachedLevel, xpToNextLevel: remaining } = getLevelAfterRound(level, xpIntoLevel, earned)
+  const percent = xpIntoReachedLevel / getRequiredXpForLevel(reachedLevel) * 100
   return (
-    <Link
-      className={`gameOverNextUnlock ${justUnlocked ? "isUnlocked" : ""}`}
-      // Lands where the part is installed: the powerup keys, or the part's lane.
-      to={nextPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(nextPart.slotId)}`}
-      aria-label={justUnlocked ? `Unlocked ${nextPart.label}. Open Armory` : `Next unlock ${nextPart.label} at level ${nextPart.unlockLevel}. Open Armory`}
-    >
-      <span className="gameOverNextUnlockIcon" aria-hidden="true">
-        {nextPart.kind === "power" ? <PowerEmblem powerupId={nextPart.id} size={96} /> : <><img className="gameOverUnlockRig" src="/art/results/unlock-rig.png" alt="" width="384" height="384" decoding="async" /><PartEmblem partId={nextPart.id} slotId={nextPart.slotId} size={72} /></>}
-        <i className="gameOverNextUnlockBadge">{justUnlocked ? "NEW" : `Lv ${nextPart.unlockLevel}`}</i>
-      </span>
-      <span className="gameOverNextUnlockCopy">
-        <small>{justUnlocked ? "Unlocked" : `Unlocks at Lv ${nextPart.unlockLevel}`} · {nextPart.kind === "power" ? "Powerup" : "Armory part"}</small>
-        <strong>{nextPart.label}</strong>
-        {nextPart.description ? <span className="gameOverNextUnlockBenefit">{nextPart.description}</span> : null}
-      </span>
-      <span className="gameOverNextUnlockCta" aria-hidden="true">{justUnlocked ? "Equip" : "Preview"} {"›"}</span>
-    </Link>
-  )
-}
-
-function XpTally({ level, xpIntoLevel, xpToNextLevel, earned, prefersReducedMotion }) {
-  const span = Math.max(1, Number(xpIntoLevel) + Number(xpToNextLevel))
-  const startPercent = Math.min(100, (Number(xpIntoLevel) / span) * 100)
-  const endXp = Number(xpIntoLevel) + Number(earned)
-  const { reachedLevel } = getLevelAfterRound(level, xpIntoLevel, earned)
-  const levelsUp = reachedLevel > level
-  const endPercent = levelsUp ? 100 : Math.min(100, (endXp / span) * 100)
-
-  return (
-    <span className={`gameOverXpTally ${levelsUp ? "isLevelUp" : ""}`} aria-label={`Level ${level} progress`}>
-      <span className="gameOverXpTallyHeader">
-        <b>Lv {level}</b>
-        <small>{levelsUp ? `Level up to ${reachedLevel}!` : `${Math.max(0, span - endXp).toLocaleString()} XP to Lv ${level + 1}`}</small>
-      </span>
-      <span className="gameOverXpTallyTrack">
-        <i className="gameOverXpTallyBase" style={{ width: `${startPercent}%` }} />
-        <MotionDiv
-          className="gameOverXpTallyGain"
-          style={{ left: `${startPercent}%` }}
-          initial={prefersReducedMotion ? false : { width: 0 }}
-          animate={{ width: `${Math.max(0, endPercent - startPercent)}%` }}
-          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.4, ease: "easeOut" }}
-        />
-      </span>
+    <span className="gameOverXpTally" aria-label={`Level ${level} progress`}>
+      <span className="gameOverXpTallyHeader"><b>Lv {reachedLevel}</b><small> · {formatNumber(remaining)} XP to {reachedLevel + 1}</small></span>
+      <span className="gameOverXpTallyTrack"><MotionDiv className="gameOverXpTallyGain" initial={false} animate={{ width: `${percent}%` }} transition={{ duration: prefersReducedMotion ? 0 : 0.3 }} /></span>
     </span>
   )
 }
@@ -265,9 +164,6 @@ export function GameOverOverlay({
   bestReactionMs = null,
   loadoutSnapshot = null,
   loadoutPresentation = null,
-  workshopNote = null,
-  achievementStats = {},
-  unlockedAchievementIds = [],
   primaryActionLabel = "Play Again",
   onPrimaryAction,
   roundCoinsEarned = 0,
@@ -276,29 +172,25 @@ export function GameOverOverlay({
   roundDailyGoals = null,
   dailyGoals = null,
   roundRankDelta = 0,
-  rankProgress = null,
+  rankEventLabel = null,
   placementLabel = null,
   roundSaveStatus = "idle",
   roundSaveError = "",
   roundSaveNote = "",
   playerLevel = 1,
   playerXpIntoLevel = 0,
-  playerXpToNextLevel = 0,
   playerCoins = null,
   ownedItemIds = [],
   secondaryActionLabel = null,
   onSecondaryAction = null,
 }) {
-  const { effectivePreferences } = useFeedbackPreferences()
   const prefersReducedMotion = usePrefersReducedMotion()
   const primaryActionRef = useRef(null)
   const cardVariants = useMemo(() => getCardVariants(prefersReducedMotion), [prefersReducedMotion])
-  const [isWorkshopNoteDismissed, setIsWorkshopNoteDismissed] = useState(false)
 
   const isPracticeMode = !allowsCoinRewards && !allowsLevelProgression && !allowsRankProgression
   const isRoundSaved = roundSaveStatus === "saved"
   const showRoundRewards = isRoundSaved || roundSaveStatus === "saving"
-  const hasCleanRun = misses === 0
   const isNewBestScore = score > bestScore
   const resolvedLoadoutPresentation = useMemo(
     () => loadoutPresentation ?? (
@@ -337,21 +229,6 @@ export function GameOverOverlay({
     : null
 
   const tone = getGameOverTone({ hits, misses, accuracy, bestStreak })
-  const nearestAchievement = useMemo(() => {
-    if (!achievementStats || Object.keys(achievementStats).length === 0) return null
-    const evaluated = evaluateAchievements(achievementStats, {
-      persistedUnlockedIds: unlockedAchievementIds,
-    })
-    return evaluated
-      .filter((achievement) => (
-        !achievement.isUnlocked &&
-        achievement.type === "metric" &&
-        achievement.isProgressAvailable &&
-        achievement.percent > 0
-      ))
-      .sort((a, b) => b.percent - a.percent)[0] ?? null
-  }, [achievementStats, unlockedAchievementIds])
-
   useEffect(() => {
     const timeoutId = window.setTimeout(
       () => primaryActionRef.current?.focus(),
@@ -360,239 +237,66 @@ export function GameOverOverlay({
     return () => window.clearTimeout(timeoutId)
   }, [prefersReducedMotion])
 
-  useEffect(() => {
-    if (!isNewBestScore || prefersReducedMotion || !effectivePreferences.flashes) return undefined
-
-    const fire = (angle, origin) => fireConfetti({
-      particleCount: 36,
-      angle,
-      spread: 52,
-      startVelocity: 32,
-      decay: 0.88,
-      origin,
-      colors: ["#53d7b3", "#4ab8ff", "#ffffff", "#c084fc"],
-      zIndex: 9999,
-    })
-    const timeoutId = window.setTimeout(() => {
-      fire(65, { x: 0.1, y: 0.58 })
-      fire(115, { x: 0.9, y: 0.58 })
-    }, 350)
-
-    return () => {
-      window.clearTimeout(timeoutId)
-      cancelCelebrationEffects()
-    }
-  }, [effectivePreferences.flashes, isNewBestScore, prefersReducedMotion])
-
   const animatedScore = useCountUpNumber(score, {
     durationMs: 400,
     disabled: prefersReducedMotion,
   })
-  const isScoreAnimationDone = prefersReducedMotion || animatedScore === score
+  const stats = getPerformanceStats({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore })
+  const grade = getRoundGrade(stats.reduce((sum, stat) => sum + stat.rating, 0) / stats.length)
+  const reachedLevel = getLevelAfterRound(playerLevel, playerXpIntoLevel, roundXpEarned).reachedLevel
+  const unlockedPart = allowsLevelProgression ? [...UNLOCK_WALL_PARTS]
+    .filter((part) => part.unlockLevel > playerLevel && part.unlockLevel <= reachedLevel)
+    .sort((a, b) => b.unlockLevel - a.unlockLevel)[0] : null
+  const events = []
+  if (isRoundSaved && !isPracticeMode) {
+    if (allowsRankProgression && (placementLabel || rankEventLabel)) events.push(<span key="rank">{placementLabel || rankEventLabel}</span>)
+    for (const goal of roundDailyGoals?.goals ?? []) {
+      events.push(<span key={`goal-${goal.id}`}>Daily goal done: {goal.label} · +{formatNumber(goal.reward?.coins || 0)} coins</span>)
+    }
+    if (unlockedPart) events.push(<span key="unlock">Unlocked: {unlockedPart.label} · <Link to={unlockedPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(unlockedPart.slotId)}`} aria-label={`Unlocked ${unlockedPart.label}. Open Armory`}>Equip</Link></span>)
+    if (!events.length && nowAffordableItem) events.push(<span key="shop" className="gameOverNowAffordable">Now affordable: {nowAffordableItem.name} · <Link to="/shop" aria-label={`Open Shop to buy ${nowAffordableItem.name}`}>Shop</Link></span>)
+  }
 
   return (
-    <MotionSection
-      className={`gameOverCard gameOverCardWithDifficulty difficultyMood-${selectedModeId} gameOverTone-${tone}`}
-      aria-labelledby="game-over-title"
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-    >
+    <MotionSection className={`gameOverCard resultCeremony difficultyMood-${selectedModeId} gameOverTone-${tone} ${isNewBestScore ? "isPersonalBest" : ""}`}
+      aria-labelledby="game-over-title" variants={cardVariants} initial="hidden" animate="visible" exit="exit">
       <header className="gameOverHeader">
-        <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? " · New personal best" : hasCleanRun && hits > 0 ? " · Flawless" : ""}</p>
+        <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? <span> · New personal best</span> : null}</p>
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
-        <div className="gameOverStatusSlot">
-        {roundSaveStatus === "saving" ? (
-          <p className="gameOverSaveStatus isSaving" role="status">Saving round…</p>
-        ) : null}
-        {roundSaveStatus === "saved" && roundSaveNote ? (
-          <p className="gameOverSaveStatus isSaving" role="status">{roundSaveNote}</p>
-        ) : null}
-        {roundSaveStatus === "failed" ? (
-          <p className="gameOverSaveStatus isFailed" role="alert">
-            This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}
-          </p>
-        ) : null}
-        </div>
       </header>
-
-      <MotionDiv
-        className={`gameOverScorePanel ${isScoreAnimationDone ? "isComplete" : "isLocking"}`}
-        aria-label={`Final score ${score}`}
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 16, scale: 0.84 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }}
-      >
-        <p className="gameOverScoreLabel">Final Score</p>
-        <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
-        <p className="gameOverScoreTally">{formatCount(hits, "hit", "hits")} · {formatCount(misses, "miss", "misses")}{bullseyes > 0 ? ` · ${formatCount(bullseyes, "bullseye", "bullseyes")}` : ""}{goldHits > 0 ? ` · ${formatNumber(goldHits)} gold` : ""}</p>
-        {loadoutSnapshot?.loadoutName ? (
-          <p className="gameOverLoadoutBadge">
-            {loadoutSnapshot.loadoutName}
-            {resolvedLoadoutPresentation?.titleLine ? ` \u2022 ${resolvedLoadoutPresentation.titleLine}` : ""}
-          </p>
-        ) : null}
-      </MotionDiv>
-
-      {showRoundRewards && (allowsCoinRewards || allowsLevelProgression || allowsRankProgression) ? (
-        <MotionDiv
-          className="gameOverRewards"
-          aria-label="Round rewards"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 10, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
-        >
-          {allowsCoinRewards ? (
-            <span className="gameOverReward isCoins"><CoinIcon size={34} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>{!isRoundSaved ? "coins pending" : playerCoins === null ? "coins" : `coins · ${formatNumber(Number(playerCoins) + Number(roundCoinsEarned))} total`}</small></span>
-          ) : null}
-          {allowsLevelProgression ? (
-            <span className="gameOverReward isXp"><GemIcon size={34} /><strong>+{formatNumber(roundXpEarned)}</strong><small>{!isRoundSaved ? "XP pending" : roundDailyBonusXp > 0 ? "XP · 2× today" : "XP"}</small></span>
-          ) : null}
-          {allowsLevelProgression ? (
-            <XpTally
-              level={playerLevel}
-              xpIntoLevel={playerXpIntoLevel}
-              xpToNextLevel={playerXpToNextLevel}
-              earned={roundXpEarned}
-              prefersReducedMotion={prefersReducedMotion}
-            />
-          ) : null}
-          {isRoundSaved ? <div className="gameOverServerRewards">
-          {allowsRankProgression && placementLabel ? (
-            <span className="gameOverReward isRank isPlacement"><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{formatNumber(roundRankDelta)}</strong><small>Placement score · {placementLabel}</small></span>
-          ) : null}
-          {allowsRankProgression && !placementLabel ? (
-            <span className={`gameOverReward isRank ${roundRankDelta < 0 ? "isLoss" : ""}`}><CrestIcon tone={rankProgress?.toneId || "unranked"} size={34} /><strong>{roundRankDelta > 0 ? "+" : ""}{formatNumber(roundRankDelta)}</strong><small>RR</small></span>
-          ) : null}
-          {roundDailyGoals?.goals?.length ? (
-            <ul className="gameOverDailyGoals" aria-label="Daily goals completed">
-              {roundDailyGoals.goals.map((goal) => (
-                <li key={goal.id}>
-                  <span className="gameOverDailyGoalTag">Daily goal done</span>
-                  <span className="gameOverDailyGoalLabel">{goal.label}</span>
-                  <span className="gameOverDailyGoalReward">
-                    {[goal.reward.coins ? `+${formatNumber(goal.reward.coins)} coins` : "", goal.reward.xp ? `+${formatNumber(goal.reward.xp)} XP` : ""].filter(Boolean).join(" · ")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {nowAffordableItem ? (
-            <p className="gameOverNowAffordable">
-              <span className="gameOverNowAffordableTag">Now affordable</span>
-              <span className="gameOverNowAffordableName">{nowAffordableItem.name}</span>
-              <span className="gameOverNowAffordablePrice">{formatNumber(nowAffordableItem.cost)} coins</span>
-              <Link
-                className="gameOverNowAffordableLink"
-                to="/shop"
-                aria-label={`Open Shop to buy ${nowAffordableItem.name}`}
-              >
-                Open Shop
-              </Link>
-            </p>
-          ) : null}
-          </div> : null}
-        </MotionDiv>
-      ) : null}
-
-      <div className="gameOverBody">
-        <MotionDiv
-          className="outcomeContinuityBoard"
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1, duration: 0.3 }}
-        >
-          <PersonalBestComparison score={score} bestScore={bestScore} />
-          <OutcomeInstruments
-            accuracy={accuracy}
-            bestStreak={bestStreak}
-            avgReactionMs={avgReactionMs}
-            bestReactionMs={bestReactionMs}
-            score={score}
-            bestScore={bestScore}
-          />
-        </MotionDiv>
-
-        {isPracticeMode ? (
-          <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No economy or rank was changed.</p>
-        ) : null}
-
-        {nearestAchievement ? (
-          <div className="gameOverAchievementHint" aria-label="Nearest achievement">
-            <span className="gameOverAchievementHintLabel">Next up</span>
-            <span className="gameOverAchievementHintName">{nearestAchievement.title}</span>
-            <span className="gameOverAchievementHintProgress">{nearestAchievement.progressText}</span>
-          </div>
-        ) : null}
-
-        {workshopNote && !isWorkshopNoteDismissed ? (
-          <div className="gameOverWorkshopHint" aria-label="Workshop notes">
-            <span className="gameOverWorkshopHintLabel">Workshop notes</span>
-            <span className="gameOverWorkshopHintText">{workshopNote}</span>
-            <div className="gameOverWorkshopHintActions">
-              {loadoutSnapshot?.loadoutId ? (
-                <Link
-                  className="gameOverWorkshopHintLink"
-                  to={`/armory?bay=${encodeURIComponent(loadoutSnapshot.loadoutId)}`}
-                >
-                  Open in Armory
-                </Link>
-              ) : null}
-              <button
-                type="button"
-                className="gameOverWorkshopHintDismiss"
-                onClick={() => setIsWorkshopNoteDismissed(true)}
-                aria-label="Dismiss workshop note"
-              >
-                {"\u00d7"}
-              </button>
-            </div>
-          </div>
-        ) : null}
+      <div className="gameOverScorePanel" aria-label={`Final score ${score}`}>
+        <p className="gameOverScoreValue" aria-hidden="true">{isNewBestScore ? <i>✦</i> : null}{formatNumber(animatedScore)}{isNewBestScore ? <i>✦</i> : null}</p>
+        <p className="resultGrade" aria-label={`Round grade ${grade}`}>Grade <strong>{grade}</strong></p>
+        <p className="resultBest">{isNewBestScore ? `+${formatNumber(score - bestScore)} over your previous best` : `Personal best ${formatNumber(bestScore)}`}</p>
       </div>
-
-      {isRoundSaved && allowsLevelProgression ? (
-        <MotionDiv
-          className="gameOverSpotlight"
-          aria-hidden={!isRoundSaved}
-          style={{ visibility: isRoundSaved ? "visible" : "hidden" }}
-          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
-        >
-          {isRoundSaved ? <NextUnlock
-            level={playerLevel}
-            xpIntoLevel={playerXpIntoLevel}
-            xpToNextLevel={playerXpToNextLevel}
-            earned={roundXpEarned}
-          /> : null}
-        </MotionDiv>
+      {showRoundRewards && !isPracticeMode ? (
+        <div className="gameOverRewards" aria-label="Round rewards">
+          {allowsCoinRewards ? <span className={`gameOverReward isCoins ${isRoundSaved ? "" : "isPending"}`}><CoinIcon size={28} /><strong>+{formatNumber(roundCoinsEarned)}</strong><small>coins{isRoundSaved ? null : <span className="resultPendingTag"> pending</span>}</small></span> : null}
+          {allowsLevelProgression ? <span className={`gameOverReward isXp ${isRoundSaved ? "" : "isPending"}`}><GemIcon size={28} /><strong>+{formatNumber(roundXpEarned)}</strong><small>XP{isRoundSaved ? null : <span className="resultPendingTag"> pending</span>}</small></span> : null}
+          {allowsLevelProgression ? <XpTally level={playerLevel} xpIntoLevel={playerXpIntoLevel} earned={roundXpEarned} prefersReducedMotion={prefersReducedMotion} /> : null}
+          {allowsRankProgression ? <span className="resultRank">{isRoundSaved && !placementLabel ? `${roundRankDelta > 0 ? "+" : ""}${formatNumber(roundRankDelta)} RR` : ""}</span> : null}
+          <span className="resultSave" role="status">{!isRoundSaved ? "Saving round…" : ""}</span>
+        </div>
       ) : null}
-
-      <MotionDiv
-        className="overlayActions gameOverActions"
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.15, duration: 0.24 }}
-      >
-        {isRoundSaved && !isPracticeMode && nextRoundGoal?.text ? (
-          <p className="gameOverNextGoal" data-goal={nextRoundGoal?.kind}>{nextRoundGoal?.text || "\u00a0"}</p>
-        ) : null}
-        <button
-          ref={primaryActionRef}
-          className="primaryButton primaryButton-lg"
-          type="button"
-          onClick={onPrimaryAction}
-        >
-          {primaryActionLabel}
-        </button>
-        {secondaryActionLabel && onSecondaryAction ? (
-          <button className="secondaryButton gameOverRematch" type="button" onClick={onSecondaryAction}>
-            {secondaryActionLabel}
-          </button>
-        ) : null}
-      </MotionDiv>
+      {events.length ? <div className="resultEvents" aria-label="Round events">{events.slice(0, 2).map((event) => <p key={event.key}>{event}</p>)}</div> : null}
+      {isPracticeMode ? <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No economy or rank was changed.</p> : null}
+      {roundSaveStatus === "idle" && roundSaveNote ? <p className="gameOverPracticeNote">{roundSaveNote}</p> : null}
+      {roundSaveStatus === "failed" ? <p className="gameOverSaveStatus isFailed" role="alert">This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}</p> : null}
+      <div className="gameOverActions">
+        <p className="gameOverNextGoal" data-goal={nextRoundGoal?.kind}>Next round · {nextRoundGoal?.text || `Push for ${formatNumber(Math.max(score, bestScore) + 1)} points`}</p>
+        <button ref={primaryActionRef} className="primaryButton primaryButton-lg" type="button" onClick={onPrimaryAction}>{primaryActionLabel}</button>
+        <div className="resultFooter">
+          <details className="resultDetails">
+            <summary>Round details <span aria-hidden="true">+</span></summary>
+            <div className="resultBreakdown">
+              <p>{formatCount(hits, "hit", "hits")} · {formatCount(misses, "miss", "misses")} · {formatCount(bullseyes, "bullseye", "bullseyes")} · {formatNumber(goldHits)} gold</p>
+              {loadoutSnapshot?.loadoutName ? <p>{loadoutSnapshot.loadoutName}{resolvedLoadoutPresentation?.titleLine ? ` · ${resolvedLoadoutPresentation.titleLine}` : ""}</p> : null}
+              <OutcomeInstruments stats={stats} />
+            </div>
+          </details>
+          {secondaryActionLabel && onSecondaryAction ? <button className="resultSecondary" type="button" onClick={onSecondaryAction}>{secondaryActionLabel}</button> : null}
+        </div>
+      </div>
     </MotionSection>
   )
 }

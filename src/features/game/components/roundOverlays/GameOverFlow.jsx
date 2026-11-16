@@ -98,7 +98,7 @@ export function GameOverFlow({
   const advanceTo = (phase) => () => setActivePhase(phase)
 
   const summaryProps = {
-    rankProgress: projectedRankProgress,
+    rankEventLabel: isPromotion ? `Rank up: ${projectedRankLabel}` : null,
     score,
     hits,
     bullseyes,
@@ -140,10 +140,10 @@ export function GameOverFlow({
     playerXpToNextLevel,
     playerCoins: allowsCoinRewards ? playerCoins : null,
     ownedItemIds,
-    secondaryActionLabel: showPromotion ? "Rematch" : onChooseMode ? "Change Mode" : null,
-    onSecondaryAction: showPromotion ? (onRematch ?? onPlayAgain) : onChooseMode ?? null,
-    primaryActionLabel: showPromotion ? "Reveal Rank" : "Play Again",
-    onPrimaryAction: showPromotion ? advanceTo("promotion") : (onRematch ?? onPlayAgain),
+    secondaryActionLabel: showPromotion ? "Reveal Rank" : onChooseMode ? "Change Mode" : null,
+    onSecondaryAction: showPromotion ? advanceTo("promotion") : onChooseMode ?? null,
+    primaryActionLabel: "Play Again",
+    onPrimaryAction: onRematch ?? onPlayAgain,
   }
 
   return (

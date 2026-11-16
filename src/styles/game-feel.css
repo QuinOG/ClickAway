@@ -303,83 +303,13 @@
 }
 
 /* ---- Round 2: Results is a ceremony ------------------------------------ */
-.gameOverCard {
-    border-style: solid !important;
-    border-width: 14px !important;
-    border-color: transparent !important;
-    border-image: var(--gf-frame) 16 / 14px stretch !important;
-    background-clip: padding-box !important;
-    background:
-        radial-gradient(ellipse 55% 45% at 30% 38%, rgb(255 190 70 / 16%), transparent 70%),
-        linear-gradient(180deg, #15253c, #0b1524) padding-box !important;
-    border-radius: 6px !important;
-    box-shadow: 0 30px 70px rgb(0 0 0 / 60%) !important;
-}
-.gameOverHeader { position: relative; display: grid; justify-items: center; }
-.gameOverTitle {
-    position: relative;
-    margin: 4px auto 0 !important;
-    padding: 8px 64px 10px !important;
-    font-family: var(--ca-font-display) !important;
-    font-weight: 400 !important;
-    font-size: 38px !important;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #2a1500 !important;
-    text-shadow: 0 2px 0 rgb(255 255 255 / 45%) !important;
-    background: linear-gradient(180deg, #fff1b0 0%, #ffd04a 50%, #e8941c 100%);
-    clip-path: polygon(0 0, 100% 0, calc(100% - 26px) 50%, 100% 100%, 0 100%, 26px 50%);
-    filter: drop-shadow(0 4px 0 #040912);
-    animation: gfBannerStrike 520ms cubic-bezier(.2, 1.6, .4, 1) both;
-}
-.gameOverEyebrow { color: #ffd25c !important; text-shadow: 0 2px 0 #040912; }
-.gameOverScorePanel {
-    position: relative;
-    isolation: isolate;
-    border: 2px solid #040912 !important;
-    background: radial-gradient(circle at 50% 42%, #24406a 0%, #0c182b 62%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 12%), inset 0 0 0 6px rgb(255 201 74 / 18%), 0 0 0 3px #c98a24, 0 0 0 5px #040912 !important;
-}
-.gameOverScorePanel::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: repeating-conic-gradient(from var(--gf-ray, 0deg) at 50% 42%, rgb(255 210 92 / 13%) 0deg 9deg, transparent 9deg 22deg);
-    animation: gfRays 24s linear infinite;
-}
-.gameOverScoreValue {
-    font-family: var(--ca-font-display) !important;
-    font-weight: 400 !important;
-    background: linear-gradient(180deg, #ffffff 0%, #fff0b8 40%, #ffc94a 62%, #e2861c 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent !important;
-    text-shadow: none !important;
-    filter: drop-shadow(0 5px 0 #040912) drop-shadow(0 0 26px rgb(255 180 60 / 40%));
-}
-.gameOverScoreLabel { font-family: var(--ca-font-display); letter-spacing: 0.2em; color: #ffd25c !important; }
-.outcomeRatingGrade {
-    border: 3px solid #040912 !important;
-    background: radial-gradient(circle at 50% 35%, #1d6a45, #0a2a1c 75%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #3ee59a, 0 0 0 6px #040912, 0 0 24px rgb(62 229 154 / 35%) !important;
-    transform: rotate(-6deg);
-    animation: gfStamp 420ms 900ms cubic-bezier(.3, 1.8, .5, 1) both;
-}
-.gameOverReward {
-    border: 2px solid #040912 !important;
-    background: linear-gradient(180deg, #1d2f4a, #0f1a2c) !important;
-    box-shadow: inset 0 1px 0 rgb(160 200 245 / 16%), inset 0 -3px 0 rgb(0 0 0 / 30%) !important;
-}
-.gameOverReward strong { font-family: var(--ca-font-display); font-weight: 400; }
-.gameOverReward.isCoins strong { color: #ffd25c; }
-.gameOverReward.isXp strong { color: #8fe3ff; }
+
 @keyframes gfBannerStrike { from { transform: scale(1.8); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes gfStamp { from { transform: rotate(-30deg) scale(2.4); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
 @property --gf-ray { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 @keyframes gfRays { to { --gf-ray: 360deg; } }
 @media (prefers-reduced-motion: reduce) {
-    .gameOverTitle, .outcomeRatingGrade, .gameOverScorePanel::before { animation: none; }
+
 }
 
 /* ---- Round 2: History climb track replaces the axis chart -------------- */
@@ -3449,15 +3379,8 @@
 
 
 /* Illustrated round rewards */
-.roundIllustratedRewards { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px auto 0; max-width: 340px; }
-.roundRewardMedal { width: 120px; height: 130px; flex: 0 0 120px; filter: drop-shadow(0 4px 0 #040912); }
-.roundRewardChain { min-width: 0; max-width: 190px; text-align: center; color: #fff1b0; }
-.roundRewardChain strong { display: block; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; }
-.roundRewardChain small { display: block; color: #c6d5e5; margin-top: 5px; }
-.roundRewardLinks { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 0; margin-top: 7px; }
-.roundRewardLinks span { width: 12px; height: 9px; border: 2px solid #040912; border-radius: 6px; background: #ffc94a; box-shadow: inset 0 2px #fff1b0; margin-left: -2px; }
-.roundRewardLinks span.isMiss { background: #d64b48; box-shadow: inset 0 2px #ffaaa0; border-style: dashed; }
-@media (max-width: 480px) { .roundRewardMedal { width: 100px; height: 108px; flex-basis: 100px; } }
+
+@media (max-width: 480px) {  }
 
 /* Live power keys: the state remains inside each physical slot. */
 .powerupTray .powerupItem {
@@ -4463,17 +4386,7 @@
 }
 
 /* Round 24: Results - one CLEAN RUN medal citation (duplicate clean badges removed) */
-.gameOverScorePanel:has(.gameOverMedal.isClean) .gameOverMedal.isClean,
-.gameOverScorePanel:has(.gameOverMedal.isClean) .gameOverScoreBadge { display: none !important; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundIllustratedRewards { max-width: 360px; gap: 6px; margin-top: 18px; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardMedal { width: 132px; height: 143px; flex-basis: 132px; filter: drop-shadow(0 5px 0 #040912) drop-shadow(0 0 18px rgba(255, 201, 74, .45)); }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardChain { position: relative; max-width: 206px; padding: 18px 14px 12px; border: 3px solid #040912; border-radius: 6px; background: linear-gradient(180deg, #fff3cf, #f0d9a0); box-shadow: 0 4px 0 #040912, inset 0 0 0 2px rgba(122, 78, 18, .35); color: #3b2508; transform: rotate(-1.5deg); }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardChain::before { content: "Citation"; position: absolute; left: 50%; top: -11px; transform: translateX(-50%); padding: 2px 10px; border: 2px solid #040912; border-radius: 3px; background: #e75448; color: #fff1d6; font: 800 10px/1.2 var(--ca-font-display); letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardChain strong { font-family: var(--ca-font-display); font-size: 26px; line-height: 1; letter-spacing: .04em; color: #b8740c; text-shadow: 0 2px 0 #fff8e2; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardLinks span { background: #ffc94a; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardChain small { margin-top: 8px; color: #5c3c12; font: 800 12px/1.2 var(--ca-font-display); letter-spacing: .1em; text-transform: uppercase; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardLinks { flex-wrap: nowrap; }
-.gameOverScorePanel:has(.gameOverMedal.isClean) .roundRewardLinks span { flex: 0 1 11px; min-width: 6px; }
+
 /* Round 24: Help field-guide spreads */
 .helpDoc .helpTopicGroup :is(.helpRoundStrip, .helpRuleCards, .helpPowerupCards) {
   counter-reset: guide-step;
@@ -4822,14 +4735,10 @@
 .shopInspectStage .shopCommandLoadoutButton { bottom: 30px !important; }
 
 /* Round 37: Results without the repeated hit/miss bar; unlock copy gets the width */
-.gameOverSpotlight .gameOverNextUnlock { grid-template-columns: 124px minmax(0, 1fr); column-gap: 20px; padding-bottom: 22px; }
-.gameOverSpotlight .gameOverNextUnlockIcon { width: 124px; height: 124px; }
-.gameOverSpotlight .gameOverNextUnlockCopy strong { white-space: nowrap; }
-.gameOverRewards .gameOverReward { justify-content: start; align-content: center; }
-.gameOverRewards .gameOverReward small { white-space: nowrap; }
+
 @media (min-width: 1000px) {
-    .gameOverCardWithDifficulty > .gameOverSpotlight { align-self: stretch !important; }
-    .gameOverCardWithDifficulty > .gameOverSpotlight .gameOverNextUnlock { height: 100%; }
+
+
 }
 
 /* Round 37: Rank-up says the promotion once; actions spaced apart */
@@ -4942,16 +4851,6 @@
 .historyRoundDeck .historyRoundCard { padding-left: 96px !important; }
 
 /* Round 41: Results on the 8px rhythm */
-.gameOverCardWithDifficulty { padding: 24px !important; row-gap: 16px !important; column-gap: 24px !important; }
-.gameOverCardWithDifficulty > .gameOverScorePanel { justify-self: stretch !important; width: auto !important; margin-inline: 0 !important; padding: 24px !important; }
-.gameOverCardWithDifficulty > .gameOverRewards { gap: 8px !important; }
-.gameOverRewards .gameOverReward { padding: 8px 12px !important; }
-.gameOverRewards .gameOverXpTally { padding: 8px 16px !important; }
-.gameOverCardWithDifficulty > .gameOverBody { gap: 16px !important; }
-.gameOverBody .outcomeContinuityBoard { gap: 8px !important; }
-.gameOverAchievementHint { padding: 8px 16px !important; }
-.gameOverCardWithDifficulty > .gameOverActions { padding-top: 8px !important; gap: 16px !important; }
-.gameOverCardWithDifficulty > .gameOverBody > * { margin-top: 0 !important; margin-bottom: 0 !important; }
 
 /* Round 43: Profile - achievement progress centred under its medal; card actions on one row */
 .profileAchievementsSection .achievementsRow .achievementProgressMeta { justify-content: center; }
@@ -5048,10 +4947,6 @@
 }
 
 /* Round 50: Results - the unlocked part sits in the socket of an illustrated workshop rig (generated image) */
-.gameOverSpotlight .gameOverNextUnlockIcon { overflow: visible; }
-.gameOverSpotlight .gameOverNextUnlockIcon .gameOverUnlockRig { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); z-index: 0; filter: drop-shadow(0 3px 2px rgb(5 9 18 / 70%)); }
-.gameOverSpotlight .gameOverNextUnlockIcon > :is(svg, img):not(.gameOverUnlockRig) { position: relative; z-index: 1; width: 52px; height: 52px; object-fit: contain; transform: translateY(-9px); }
-.gameOverSpotlight .gameOverNextUnlockIcon .gameOverNextUnlockBadge { z-index: 2; }
 
 /* Round 50: Help - power keys shown as larger illustrated pictures (generated art) */
 .helpDoc .helpPowerupCards .helpPowerupCard > .helpPowerupEmblem:has(.helpPowerupArt) { width: 66px !important; height: 66px !important; flex: none; border: 0 !important; background: none !important; box-shadow: none !important; }
@@ -5094,7 +4989,7 @@
 .armoryMachine .armoryMachineRigMount.mount-powerRig > .gameArt { width: 56px !important; height: 56px !important; transform: translateY(-8px); }
 
 /* r53 (Sol i52 #5): the unlocked part fills the rig's socket */
-.gameOverSpotlight .gameOverNextUnlockIcon > img.gameArt:not(.gameOverUnlockRig) { width: 70px !important; height: 70px !important; transform: translateY(-9px); }
+
 
 /* ---- r54 (Sol i53 #2): Compare mounts show their parts at readable size -- */
 .armoryCompareBench.armoryCompareWorkshop .armoryCompareRigModule > .gameArt { width: 46px !important; height: 46px !important; object-fit: contain; transform: none !important; }
@@ -5182,7 +5077,7 @@
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc::after { content: none; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc .gameIcon { width: 72px !important; height: 72px !important; }
 /* Results: one plain tally instead of medal + citation plaque */
-.gameOverScorePanel .gameOverScoreTally { margin: 6px 0 0; color: #c9d6e6; font: 400 15px/1.2 var(--ca-font-display); letter-spacing: .06em; text-transform: uppercase; }
+
 /* Profile recent form: no stamps; ranked rounds show RR as plain text */
 .profileFormTokens .profileStampOutcome { border: 0 !important; padding: 0 !important; transform: none !important; font: 400 13px/1 var(--ca-font-display) !important; color: #2f7d4f !important; }
 .profileFormTokens .profileFormToken.isLoss .profileStampOutcome { color: #b23a2c !important; }
@@ -5208,9 +5103,6 @@
 .shopGrid { row-gap: 30px !important; }
 .shopGrid .shopItemCard { padding-top: 20px !important; }
 /* Results: whether the round reached the server */
-.gameOverHeader .gameOverSaveStatus { margin: 6px auto 0; max-width: 520px; padding: 6px 12px; border-radius: 6px; font: 700 13px/1.35 var(--ca-font-body, inherit); text-align: center; }
-.gameOverHeader .gameOverSaveStatus.isSaving { color: #b9c6d6; }
-.gameOverHeader .gameOverSaveStatus.isFailed { color: #ffd2cc; background: rgb(178 54 40 / 28%); box-shadow: inset 0 0 0 1px rgb(255 122 102 / 45%); }
 
 /* ---- Device pass (2026-11-14): fixes found by tests/e2e/zz-device-audit.spec.js ---- */
 @media (max-width: 600px) {

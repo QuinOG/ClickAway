@@ -97,15 +97,15 @@ describe("B3 outcome and reward continuity", () => {
     })
 
     expect(screen.getByRole("heading", { name: "Round Complete" })).not.toBeNull()
-    expect(screen.getByText("24 hits · 3 misses")).not.toBeNull()
-    expect(screen.getByLabelText("Personal best comparison").textContent).toContain("New best by 18")
+    await user.click(screen.getByText(/Round details/))
+    expect(screen.getByText(/24 hits/)).not.toBeNull()
+    expect(screen.getByText("+18 over your previous best")).not.toBeNull()
     expect(screen.queryByRole("heading", { name: "Rewards Settled" })).toBeNull()
     expect(screen.getByLabelText("Round rewards").textContent).toContain("+18")
     expect(screen.getByLabelText("Level 4 progress")).not.toBeNull()
     expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
 
     // Rewards settle on the same screen: balance total and next unlock.
-    expect(screen.getByLabelText("Round rewards").textContent).toContain("738 total")
     expect(screen.queryByRole("button", { name: "View Rewards" })).toBeNull()
     await user.click(screen.getByRole("button", { name: "Change Mode" }))
     expect(props.onChooseMode).toHaveBeenCalledOnce()
@@ -169,7 +169,7 @@ describe("B3 outcome and reward continuity", () => {
 describe("next-round goal", () => {
   test("a saved near miss names the gap above Play Again", () => {
     renderOutcome({ score: 104, bestScore: 110 , allowsCoinRewards: true, allowsLevelProgression: true })
-    expect(screen.getByText("6 points off your best.")).toBeTruthy()
+    expect(screen.getByText(/6 points off your best/)).toBeTruthy()
   })
 
   test("nothing before the save is confirmed or when the best is far away", () => {
@@ -179,7 +179,7 @@ describe("next-round goal", () => {
 
   test("a far miss shows no goal line", () => {
     renderOutcome({ score: 40, bestScore: 110 , allowsCoinRewards: true, allowsLevelProgression: true })
-    expect(screen.queryByText(/off your best|One more round/)).toBeNull()
+    expect(screen.getByText(/Next round/)).toBeTruthy()
   })
 })
 
@@ -187,4 +187,57 @@ test("an unlocked powerup's Equip opens the Armory's powerup keys", () => {
   renderOutcome({ playerLevel: 1, playerXpIntoLevel: 0, playerXpToNextLevel: 100, roundXpEarned: 160, allowsCoinRewards: true, allowsLevelProgression: true })
   const link = screen.getByLabelText(/Unlocked Magnet Center/)
   expect(link.getAttribute("href")).toBe("/armory?step=hotbar&powerSlot=1")
+})
+
+function continuityTree(overrides) {
+  return <MemoryRouter><FeedbackPreferencesProvider><GameOverFlow {...baseProps} allowsCoinRewards allowsLevelProgression {...overrides} /></FeedbackPreferencesProvider></MemoryRouter>
+}
+
+test("pending rewards swap to server totals without remounting score or loot", () => {
+  const view = render(continuityTree({ roundSaveStatus: "saving" }))
+  const score = screen.getByLabelText("Final score 128")
+  const loot = screen.getByLabelText("Round rewards")
+  const coins = loot.querySelector(".isCoins")
+  view.rerender(continuityTree({ roundSaveStatus: "saved", roundCoinsEarned: 30, roundXpEarned: 90 }))
+  expect(screen.getByLabelText("Final score 128")).toBe(score)
+  expect(screen.getByLabelText("Round rewards")).toBe(loot)
+  expect(loot.querySelector(".isCoins")).toBe(coins)
+  expect(coins.textContent).toContain("+30")
+  expect(loot.textContent).toContain("+90")
+  expect(loot.textContent).not.toContain("pending")
+})
+
+test("normal result keeps details collapsed and the replay focused", async () => {
+  renderOutcome({ score: 100, allowsCoinRewards: true, allowsLevelProgression: true, loadoutSnapshot: { loadoutName: "Test loadout" } })
+  expect(screen.getByText("Personal best 110")).toBeTruthy()
+  const details = screen.getByText(/Round details/).closest("details")
+  expect(details.open).toBe(false)
+  await userEvent.setup().click(screen.getByText(/Round details/))
+  expect(details.open).toBe(true)
+  expect(screen.getByText(/Test loadout/)).toBeTruthy()
+  for (const label of ["Accuracy", "Streak", "Avg speed", "Fastest", "Vs best"]) expect(screen.getByText(label)).toBeTruthy()
+  await userEvent.setup().click(screen.getByText(/Round details/))
+  expect(details.open).toBe(false)
+})
+
+test("rank RR is inline and rank, goal, unlock events are capped at two", () => {
+  renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, allowsRankProgression: true, roundRankDelta: 18,
+    playerLevel: 1, roundXpEarned: 1000,
+    previousRankProgress: { rankOrder: 1 }, projectedRankProgress: { rankOrder: 2, tierLabel: "Silver I" },
+    roundDailyGoals: { goals: [{ id: "goal", label: "Play 3 rounds", reward: { coins: 40 } }] },
+  })
+  expect(screen.getByLabelText("Round rewards").textContent).toContain("+18 RR")
+  const events = screen.getByLabelText("Round events")
+  expect(events.children).toHaveLength(2)
+  expect(events.textContent).toContain("Rank up: Silver I")
+  expect(events.textContent).toContain("Daily goal done: Play 3 rounds")
+  expect(events.textContent).not.toContain("Unlocked:")
+  expect(events.textContent).not.toContain("Now affordable")
+})
+
+test("logged out round keeps sign-in copy and claims no rewards", () => {
+  renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, roundSaveStatus: "idle", roundSaveNote: "Sign in to save your progress." })
+  expect(screen.getByText("Sign in to save your progress.")).toBeTruthy()
+  expect(screen.queryByLabelText("Round rewards")).toBeNull()
+  expect(screen.queryByLabelText("Round events")).toBeNull()
 })

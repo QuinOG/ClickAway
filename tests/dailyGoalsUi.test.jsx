@@ -105,9 +105,7 @@ describe("Daily goals on Results", () => {
 
   test("shows each goal the round finished, once the round is saved", () => {
     wrap(<GameOverFlow {...results} roundSaveStatus="saved" roundDailyGoals={finished} />)
-    const list = screen.getByRole("list", { name: "Daily goals completed" })
-    expect(within(list).getByText("Hit a 20 streak")).toBeTruthy()
-    expect(within(list).getByText("+60 coins · +120 XP")).toBeTruthy()
+    expect(screen.getByLabelText("Round events").textContent).toContain("Daily goal done: Hit a 20 streak \u00b7 +60 coins")
   })
 
   test("points Play Again at a daily goal one more round would finish", () => {
@@ -119,7 +117,7 @@ describe("Daily goals on Results", () => {
     const [showUp] = getDailyGoals("2026-11-15")
     const { container } = wrap(<GameOverFlow {...results} bestScore={0} roundSaveStatus="saved" dailyGoals={nearGoals} />)
     expect(container.querySelector(".gameOverNextGoal").textContent)
-      .toBe(`One more round like that finishes today's goal: ${showUp.label} (+${showUp.reward.coins} coins).`)
+      .toBe(`Next round \u00b7 One more round like that finishes today's goal: ${showUp.label} (+${showUp.reward.coins} coins).`)
   })
 
   test("doesn't point Play Again at the goal this round just finished", () => {
