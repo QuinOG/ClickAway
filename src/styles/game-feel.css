@@ -5348,3 +5348,6 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
     .topbar .shellIdentityButton { width: min(184px, 58vw); gap: 4px; }
     .topbar .shellIdentityButton .shellIdentityRank { font-size: 10px; letter-spacing: 0; }
 }
+
+/* Podium columns are narrow: cut long names with an ellipsis rather than breaking them mid-word. */
+.leaderboardPodium .podiumFigure > strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; }
