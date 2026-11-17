@@ -2243,19 +2243,18 @@
     }
 }
 
-/* One image covers the complete assembly; replace background-image for new art. */
+/* One quiet backplate covers the assembly; fixed corners keep its bolts round. */
 .armoryMachine .armoryMachineAssembly { position: relative; }
 .armoryMachine .armoryMachineBench {
     position: absolute;
     left: 50%;
-    top: 0;
+    top: 58px;
     bottom: 0;
     z-index: 0;
     width: 100%;
-    background-image: url("/art/armory/bench.png");
-    background-position: center;
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
+    border: 0 solid transparent;
+    border-image: url("/art/armory/backplate.png") 100 fill / 50px / 0 stretch;
+    filter: brightness(0.6) saturate(0.65);
     transform: translateX(-50%);
     pointer-events: none;
 }
@@ -2311,7 +2310,7 @@
     position: relative;
     padding: 12px;
     border: 0 solid transparent;
-    border-image: url("/art/armory/rack-plate.png") 104 fill / 32px / 0 stretch;
+    border-image: url("/art/armory/keyplate.png") 96 fill / 36px / 0 stretch;
 }
 .armoryMachine .armoryMachineRack .armoryMachineRackSlot:not(.isEditing) { box-shadow: inset 0 0 0 2px #071019, 0 3px 0 #070d18, inset 0 -3px 0 rgb(0 0 0 / 30%); }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
@@ -2713,7 +2712,7 @@
 }
 .armoryMachine .armoryMachineRigTicks { inset: 30px; }
 .armoryMachine .armoryMachineRigBed { inset: 26px; }
-.armoryMachine .armoryMachineBench { width: 520px; }
+.armoryMachine .armoryMachineBench { width: 100%; }
 
 /* Positions for the larger components. */
 .armoryMachine .armoryMachineRigMount.mount-tempoCore { left: -74px; }
@@ -3101,9 +3100,9 @@
 /* Armory layout pass: keep the illustrated console frame visible around its keys. */
 .armoryMachine .armoryMachineRack {
     box-sizing: border-box;
-    padding: 28px 24px 24px;
+    padding: 40px;
     gap: 12px;
-    border-image-width: 32px;
+    border-image-width: 36px;
 }
 .armoryMachine .armoryMachineRackSlot { padding: 10px 6px 9px; }
 .armoryMachine .armoryMachineRackGlyph { width: 42px; height: 42px; }
@@ -3169,7 +3168,7 @@
         width: 100%; max-width: none; text-align: center;
     }
     .armoryMachine .armoryMachineHousingRow .armoryMachineHousing .armoryMachineHousingBody { justify-items: center; }
-    .armoryMachine .armoryMachineRack { padding: 26px 24px 24px; gap: 12px; }
+    .armoryMachine .armoryMachineRack { padding: 40px; gap: 12px; }
     .armoryMachine .armoryMachineRackSlot { grid-template-columns: 42px minmax(0, 1fr); align-items: center; padding: 8px 12px 8px 32px; }
     .armoryMachine .armoryMachineRackKey { top: 20px; }
     .armoryMachine .armoryMachineRackBody { justify-items: start; }
@@ -3249,3 +3248,7 @@
     scale: none;
 }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartBody { visibility: hidden; }
+
+@media (max-width: 700px) {
+    .armoryMachine .armoryMachineBench { top: 50px; bottom: 104px; border-image-width: 32px; }
+}

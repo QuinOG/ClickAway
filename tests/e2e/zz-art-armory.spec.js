@@ -4,7 +4,7 @@ import path from "node:path"
 import { execFileSync } from "node:child_process"
 import { prepareDeterministicPage, gotoRoute } from "./fixtures.js"
 
-const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/armory3"
+const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/armory3/final"
 test.setTimeout(120_000)
 async function crop(page, selector, filename) {
   await page.evaluate(() => {
