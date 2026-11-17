@@ -212,7 +212,7 @@ export default function ShopPage({
 
         <div className="shopInventoryDeck">
           {visibleCategories.map((category) => (
-            <section key={category.id} className="shopSection" data-shop-family={category.id}>
+            <section key={category.id} className={`shopSection${category.id === "arena_themes" || category.id === "profile_images" ? " shopSectionClipboard" : ""}`} data-shop-family={category.id}>
               <div className="shopSectionHeader">
                 <div className="shopSectionTitleRow">
                   <h2>{category.title}</h2>
