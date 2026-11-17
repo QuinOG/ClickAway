@@ -1039,7 +1039,7 @@
 .armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled > .armoryStateEmblem { top: 3px; right: 3px; }
 /* 8. Mode manifest: the identity glyph rendered as a solid black disc because
    its SVG had no stroke styling here. */
-.armoryModeManifestColumnGlyph { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: rgba(var(--mode, 120, 184, 255), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--mode, 120, 184, 255), 0.45); }
+.armoryModeManifestColumnGlyph { display: grid; place-items: center; width: 30px; height: 30px; }
 .armoryModeManifestColumnGlyph svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 8; stroke-linejoin: round; }
 /* 9. Test range: its z-index 50 was trapped inside the isolated main content,
    so the app topbar painted over the range header (title + Exit Range).
@@ -3379,3 +3379,6 @@
 }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { width: max-content; }
+.armoryModeManifestColumnGlyph { width: 46px !important; height: 46px !important; flex: none; }
+.armoryModeManifestColumnGlyph img { width: 100%; height: 100%; object-fit: contain; }
+.armoryModeManifestBestFor, .armoryModeManifestIdentity, .armoryCompareEmpty, .armoryCompareTitle, .armoryCompareEyebrow { color: #f6fbff; font-weight: 600; }
