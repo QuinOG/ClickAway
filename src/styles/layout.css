@@ -126,18 +126,6 @@
     width: min(980px, 100%);
 }
 
-.cardTitle {
-    margin: 0 0 14px;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: clamp(30px, 3.8vw, 44px);
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    background: linear-gradient(135deg, #f7fbff 0%, #c2d9f0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
 .cardH2 {
     margin: 22px 0 8px;
     color: #e7efff;
@@ -361,49 +349,10 @@
     font-variant-numeric: tabular-nums;
 }
 
-.leaderboardTableIntro {
-    margin-top: 18px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 14px;
-}
-
-.leaderboardTableIntroText {
-    display: grid;
-    gap: 5px;
-}
-
-.leaderboardTableIntroLead {
-    margin: 0;
-    color: rgba(213, 228, 246, 0.84);
-}
-
-.leaderboardSortContextBadge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(176, 209, 245, 0.34);
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16px;
-    color: rgba(233, 243, 255, 0.94);
-    background: rgba(107, 156, 212, 0.14);
-    white-space: nowrap;
-}
-
 .leaderboardSortContextBadge.isDefault {
     border-color: rgba(241, 211, 132, 0.28);
     color: rgba(255, 236, 188, 0.94);
     background: rgba(241, 211, 132, 0.1);
-}
-
-.leaderboardSortContextNote {
-    margin: 10px 0 0;
-    color: rgba(204, 221, 241, 0.74);
-    font-size: 12px;
 }
 
 .leaderboardStatusCard {
@@ -473,37 +422,8 @@
     font-variant-numeric: tabular-nums;
 }
 
-.leaderboardSortButton {
-    width: 100%;
-    border: 0;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    font: inherit;
-    color: inherit;
-    background: transparent;
-    cursor: pointer;
-}
-
 .leaderboardSortButton.isActive {
     color: #f6fbff;
-}
-
-.leaderboardSortButton:focus-visible {
-    outline: 2px solid rgba(148, 211, 255, 0.8);
-    outline-offset: 2px;
-    border-radius: 6px;
-}
-
-.leaderboardSortIndicator {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 1px;
-    line-height: 0.7;
-    font-size: 11px;
-    color: rgba(183, 203, 230, 0.58);
 }
 
 .leaderboardSortIndicator .isActive {
@@ -1189,10 +1109,6 @@
         align-items: stretch;
     }
 
-    .leaderboardTableIntro {
-        display: grid;
-    }
-
     .leaderboardStandingHeading {
         flex-direction: column;
         align-items: flex-start;
@@ -1214,11 +1130,6 @@
 
     .leaderboardStandingStats {
         grid-template-columns: 1fr;
-    }
-
-    .leaderboardSortContextBadge {
-        white-space: normal;
-        text-align: center;
     }
 }
 
@@ -1322,11 +1233,6 @@
     letter-spacing: 0.04em;
 }
 
-.challengePendingBadge {
-    background: rgba(255, 214, 120, 0.14);
-    color: #ffe7a8;
-}
-
 .challengeStatusBadge.is-pending {
     background: rgba(255, 214, 120, 0.14);
     color: #ffe7a8;
@@ -1352,28 +1258,6 @@
 .challengeCard,
 .challengeList {
     margin-top: 18px;
-}
-
-.challengeSendGrid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.challengeField {
-    display: grid;
-    gap: 6px;
-    margin-top: 12px;
-    font-size: 13px;
-}
-
-.challengeField input,
-.challengeField select {
-    border: 1px solid rgba(165, 205, 246, 0.18);
-    border-radius: 10px;
-    background: rgba(8, 14, 28, 0.72);
-    color: #eef6ff;
-    padding: 10px 12px;
 }
 
 .challengeList {
@@ -1403,9 +1287,6 @@
 }
 
 @media (max-width: 720px) {
-    .challengeSendGrid {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* Phase 1 application shell ------------------------------------------------ */
@@ -1523,21 +1404,7 @@
     gap: 8px;
 }
 
-.navGroup {
-    min-width: 0;
-    display: flex;
-    align-items: center;
-}
-
 /* Group captions stay available to assistive tech but no longer add tiny visual noise. */
-.navGroupLabel {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-}
 
 .navGroupLinks,
 .navUtility {
@@ -1619,21 +1486,6 @@
     display: inline-grid;
     place-items: center;
     flex: 0 0 auto;
-}
-
-.navPlay {
-    min-width: 84px;
-    height: 40px;
-    padding-inline: 16px;
-    border-color: rgba(85, 217, 255, 0.42);
-    border-radius: 10px;
-    color: var(--ca-color-accent-soft, #a5ecff);
-    background: transparent;
-}
-
-.navPlay:hover {
-    border-color: rgba(85, 217, 255, 0.7);
-    background: rgba(85, 217, 255, 0.1);
 }
 
 .navPlay.active {
@@ -2256,71 +2108,6 @@
     .mobileMoreSheet .uiDialogBody {
         min-height: 0;
         overflow: hidden;
-    }
-
-    .mobileMoreHeader {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-    }
-
-    .mobileMoreEyebrow {
-        display: block;
-        margin-bottom: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(112, 213, 255, 0.74);
-    }
-
-    .mobileMoreTitle {
-        margin: 0;
-        font-family: var(--font-display, "Space Grotesk", sans-serif);
-        font-size: 20px;
-        line-height: 1;
-        color: #f5fbff;
-    }
-
-    .mobileMoreClose {
-        width: 44px;
-        height: 44px;
-        border: 1px solid rgba(155, 204, 239, 0.2);
-        border-radius: 3px;
-        display: grid;
-        place-items: center;
-        color: rgba(226, 239, 251, 0.8);
-        background: rgba(255, 255, 255, 0.035);
-        cursor: pointer;
-    }
-
-    .mobileMoreGroups {
-        min-height: 0;
-        padding-right: 2px;
-        display: grid;
-        gap: 12px;
-        overflow: auto;
-        overscroll-behavior: contain;
-    }
-
-    .mobileMoreGroup {
-        display: grid;
-        gap: 5px;
-    }
-
-    .mobileMoreGroupLabel {
-        margin: 0;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: rgba(169, 198, 226, 0.6);
-    }
-
-    .mobileMoreLinks {
-        display: grid;
-        gap: 4px;
     }
 
     .mobileMoreLink {

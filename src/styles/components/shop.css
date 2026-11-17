@@ -29,41 +29,9 @@
     z-index: 1;
 }
 
-.shopScreenTitle {
-    margin-bottom: 0;
-}
-
-.shopScreenSignal {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #dcebff;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.36px;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.shopScreenSignalDot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: #80f2be;
-    box-shadow: 0 0 0 4px rgba(128, 242, 190, 0.14);
-    flex-shrink: 0;
-}
-
 .shopArmoryHeader {
     display: grid;
     gap: 12px;
-}
-
-.shopArmoryTop {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
 }
 
 .shopCommandSurface {
@@ -85,74 +53,6 @@
     z-index: 1;
 }
 
-.shopCommandGrid {
-    display: grid;
-    grid-template-columns: minmax(240px, 0.94fr) minmax(340px, 1.2fr);
-    gap: 28px;
-    align-items: stretch;
-}
-
-.shopCommandColumn {
-    min-width: 0;
-    display: grid;
-    gap: 16px;
-}
-
-.shopCommandSection {
-    min-width: 0;
-    position: relative;
-}
-
-.shopCommandColumn-economy {
-    position: relative;
-    padding-right: 24px;
-}
-
-.shopCommandColumn-economy::after {
-    content: "";
-    position: absolute;
-    top: 6px;
-    right: 0;
-    bottom: 6px;
-    width: 1px;
-    background: linear-gradient(180deg, rgba(126, 178, 255, 0), rgba(126, 178, 255, 0.14) 20%, rgba(126, 178, 255, 0.14) 80%, rgba(126, 178, 255, 0));
-    pointer-events: none;
-}
-
-.shopCommandSection-balance {
-    position: relative;
-    padding-top: 10px;
-}
-
-.shopCommandSection-balance::before {
-    content: "";
-    position: absolute;
-    left: -4px;
-    top: -8px;
-    width: 104px;
-    height: 104px;
-    background: radial-gradient(circle, rgba(255, 209, 103, 0.07), rgba(255, 209, 103, 0) 72%);
-    filter: blur(4px);
-    opacity: 0.58;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.shopCommandValue-balance {
-    position: relative;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-top: 0;
-    padding: 0;
-    font-weight: 600;
-    z-index: 1;
-}
-
-.shopCommandValue-balance::before {
-    content: none;
-}
-
 .shopCommandValueMain {
     display: inline-block;
     color: #f5e6bd;
@@ -161,73 +61,12 @@
     text-shadow: none;
 }
 
-.shopCommandSection-balance .shopCommandLabel {
-    margin-bottom: 10px;
-}
-
-.shopCommandLabel {
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    color: #8ea8ca;
-}
-
 .shopCommandValue {
     margin-top: 10px;
     font-family: "Space Grotesk", "Verdana", sans-serif;
     font-size: clamp(34px, 4vw, 50px);
     line-height: 0.92;
     color: #f5f9ff;
-}
-
-.shopCommandProgressHeader,
-.shopCommandProgressMeta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.shopCommandProgressValue {
-    flex-shrink: 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 28px;
-    line-height: 1;
-    color: #f0f7ff;
-}
-
-.shopCommandProgressBar {
-    margin-top: 14px;
-    height: 9px;
-    border-radius: 999px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.18);
-}
-
-.shopCommandProgressFill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #72ceff 0%, #80e4d0 100%);
-    box-shadow: 0 0 14px rgba(126, 218, 255, 0.16);
-}
-
-.shopCommandProgressMeta {
-    margin-top: 12px;
-    font-size: 12px;
-    color: #9eb3d0;
-}
-
-.shopCommandSection-loadout {
-    min-width: 0;
-    display: grid;
-    align-content: start;
-    justify-items: start;
-    gap: 14px;
 }
 
 .shopCommandLoadoutHeader {
@@ -242,22 +81,6 @@
     min-width: 0;
     display: grid;
     gap: 4px;
-}
-
-.shopCommandPreviewEyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: #91b9e8;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.shopCommandPreviewEyebrow svg {
-    width: 14px;
-    height: 14px;
 }
 
 .shopCommandPreviewTitle {
@@ -345,20 +168,6 @@
         repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 36px),
         radial-gradient(circle at 86% 10%, rgba(113, 149, 255, 0.2) 0%, rgba(113, 149, 255, 0) 42%),
         linear-gradient(160deg, rgba(18, 24, 56, 0.9), rgba(60, 29, 103, 0.84));
-}
-
-.shopCommandLoadoutPedestal {
-    position: absolute;
-    left: 50%;
-    bottom: 22px;
-    width: min(220px, 72%);
-    height: 46px;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background:
-        radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, rgba(125, 198, 255, 0.1) 28%, rgba(125, 198, 255, 0) 72%);
-    filter: blur(2px);
-    opacity: 0.74;
 }
 
 .shopCommandLoadoutAvatarFrame {
@@ -458,33 +267,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #dce8f7;
-}
-
-.shopCommandPreviewAction {
-    width: 100%;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 16px;
-}
-
-.shopCommandPreviewCopy {
-    min-width: 0;
-    display: grid;
-    gap: 4px;
-}
-
-.shopCommandPreviewCopy strong {
-    color: #eaf3ff;
-    font-size: 13px;
-}
-
-.shopCommandPreviewCopy span {
-    color: #93a9c8;
-    font-size: 11px;
-    line-height: 1.4;
 }
 
 .shopCommandPreviewButtons {
@@ -633,32 +415,6 @@
     color: #96adcf;
 }
 
-.shopTabCount {
-    min-width: 32px;
-    height: 28px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.08);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: #f2f8ff;
-}
-
-.shopFeedback {
-    margin-top: 14px;
-    border: 1px solid transparent;
-    border-radius: 16px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: shopFeedbackIn 0.2s ease-out;
-}
-
 .shopFeedback.success {
     border-color: rgba(129, 236, 183, 0.5);
     background: linear-gradient(150deg, rgba(38, 97, 69, 0.38), rgba(24, 54, 42, 0.44));
@@ -671,13 +427,6 @@
     color: #ffe6eb;
 }
 
-.shopFeedbackDot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    flex-shrink: 0;
-}
-
 .shopFeedback.success .shopFeedbackDot {
     background: #7ff3bd;
     box-shadow: 0 0 0 4px rgba(127, 243, 189, 0.2);
@@ -686,26 +435,6 @@
 .shopFeedback.error .shopFeedbackDot {
     background: #ff9aa6;
     box-shadow: 0 0 0 4px rgba(255, 154, 166, 0.2);
-}
-
-.shopFeedbackDismiss {
-    margin-left: auto;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 10px;
-    min-height: 32px;
-    padding: 0 10px;
-    background: rgba(255, 255, 255, 0.08);
-    color: inherit;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.16s ease, border-color 0.16s ease;
-}
-
-.shopFeedbackDismiss:hover {
-    border-color: rgba(255, 255, 255, 0.36);
-    background: rgba(255, 255, 255, 0.14);
 }
 
 .shopInventoryDeck {
@@ -961,12 +690,6 @@
     border-color: rgba(255, 191, 133, 0.24);
     background: rgba(255, 191, 133, 0.08);
     color: #ffe0c0;
-}
-
-.shopItemPriceTag {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(8, 14, 26, 0.44);
-    color: #f3f8ff;
 }
 
 .shopItemPriceTag.isCore {
@@ -1246,17 +969,6 @@
 }
 
 @media (max-width: 980px) {
-    .shopCommandGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .shopCommandColumn-economy::after {
-        display: none;
-    }
-
-    .shopCommandColumn-economy {
-        padding-right: 0;
-    }
 
     .shopCommandLoadoutStage {
         min-height: 212px;
@@ -1265,31 +977,13 @@
 }
 
 @media (max-width: 700px) {
-    .shopArmoryTop {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 
     .shopCommandSurface {
         padding: 18px 0 22px;
     }
 
-    .shopCommandColumn {
-        gap: 14px;
-    }
-
-    .shopCommandValue-balance {
-        gap: 8px;
-        padding: 0;
-    }
-
     .shopCommandValue {
         font-size: clamp(34px, 10vw, 46px);
-    }
-
-    .shopCommandProgressMeta {
-        flex-direction: column;
-        align-items: flex-start;
     }
 
     .shopCommandLoadoutStage {
@@ -1311,11 +1005,6 @@
         grid-template-columns: 1fr;
     }
 
-    .shopCommandPreviewAction {
-        grid-template-columns: 1fr;
-        align-items: stretch;
-    }
-
     .shopCommandPreviewButtons {
         justify-content: stretch;
     }
@@ -1332,15 +1021,6 @@
     .shopSectionTitleRow {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .shopFeedback {
-        align-items: flex-start;
-        flex-wrap: wrap;
-    }
-
-    .shopFeedbackDismiss {
-        margin-left: 0;
     }
 
     .shopGrid {
@@ -1570,12 +1250,6 @@
     align-items: flex-start;
 }
 
-.shopCommandPreviewDescription {
-    color: var(--ca-color-ink-muted);
-    font-size: 14px;
-    line-height: 1.45;
-}
-
 .shopCommandSurface .shopCommandLoadoutMeta {
     padding: 12px 0;
     border-block: 1px solid rgba(255, 255, 255, 0.07);
@@ -1587,22 +1261,6 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
     gap: 20px;
-}
-
-.shopCommandProgress {
-    min-width: 0;
-    max-width: 420px;
-}
-
-.shopCommandProgressHeader .shopCommandProgressMeta {
-    margin-top: 0;
-    color: var(--ca-color-ink-muted);
-    font-size: 13px;
-}
-
-.shopCommandProgressHeader .shopCommandProgressMeta strong {
-    color: var(--ca-color-ink-strong);
-    font-weight: 700;
 }
 
 .shopCommandSurface .shopCommandProgressBar {
@@ -1620,10 +1278,6 @@
     .shopCommandFooter {
         grid-template-columns: 1fr;
     }
-
-    .shopCommandProgressHeader .shopCommandProgressMeta {
-        flex-direction: row;
-    }
 }
 
 /* Round 3: segmented category control, quieter counts, tighter hero so items lead. */
@@ -1636,7 +1290,6 @@
 .shopCommandSurface .shopCommandLoadoutStage { min-height: 150px; }
 .shopCommandDetails { gap: 12px; }
 .shopCommandSurface .shopCommandLoadoutMeta { padding: 10px 0; }
-.shopCommandProgress { max-width: none; }
 
 /* Arena theme cards preview a miniature arena: theme sky, receding floor grid,
    corner brackets and a target, so each theme reads as a place. */

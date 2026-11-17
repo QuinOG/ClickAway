@@ -35,7 +35,6 @@
 .armoryMachineHousingSlot { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.04em; }
 
 /* Conduits read as energy lines into the core. */
-.armoryMachineConduits path { stroke-width: 4; stroke-dasharray: 2 8; stroke-linecap: round; }
 
 /* Power rack: illustrated keys. */
 .armoryMachineRackGlyph { display: grid; }
@@ -134,7 +133,6 @@
     box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
 }
 .armoryBay.isActive { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px var(--skin-cyan), 0 0 20px rgb(79 216 255 / 25%), 0 3px 0 #0a1220; }
-.armoryBayName { font-family: var(--ca-font-display); font-weight: 400; }
 .armoryRailHeading span { display: none; }
 
 /* ---- Phase 3 r1: overlays respect the shell ---- */
@@ -209,22 +207,7 @@
 .armoryRangeResultDelta.is-same { color: rgb(232 242 255 / 45%); }
 
 /* ---- Phase 3 r2: compare bench = aligned exact numbers with deltas ---- */
-.armoryCompareNumbers { display: grid; gap: 4px; }
-.armoryCompareNumbersRow {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr 1fr 1fr;
-    align-items: center;
-    gap: 12px;
-    padding: 9px 14px;
-    border-radius: 10px;
-    background: var(--skin-face-low);
-    box-shadow: 0 0 0 2px var(--skin-ink);
-    font: 400 15px/1.1 var(--ca-font-display);
-    font-variant-numeric: tabular-nums;
-    color: #fff;
-}
 .armoryCompareNumbersRow.isHead { background: none; box-shadow: none; padding-block: 0 2px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(232 242 255 / 55%); }
-.armoryCompareNumbersLabel { color: rgb(232 242 255 / 72%); font-size: 13px; letter-spacing: 0.04em; }
 .armoryCompareNumbersDelta.is-gain { color: #7ce4b0; }
 .armoryCompareNumbersDelta.is-cost { color: #ff9b8f; }
 .armoryCompareNumbersDelta.is-same { color: rgb(232 242 255 / 45%); }
@@ -585,13 +568,6 @@
 .armorySpecStat.isHigh { --stat: 98, 230, 186; }
 .armorySpecStat.isLow { --stat: 255, 120, 120; }
 .armorySpecStatLabel { color: rgba(222, 234, 248, 0.82); font-size: 12px; font-weight: 700; }
-.armorySpecStatBar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
-.armorySpecStatBar i {
-    height: 10px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.07);
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
-}
 .armorySpecStatBar i.isOn {
     background: linear-gradient(180deg, rgba(var(--stat), 1), rgba(var(--stat), 0.7));
     box-shadow: 0 0 8px rgba(var(--stat), 0.45);
@@ -667,16 +643,6 @@
 .armoryBay:not(.isActive) .armoryBaySelect { grid-template-columns: 1fr; align-content: start; }
 .armoryBay:not(.isActive) .armoryBayMini { display: flex; grid-column: auto; grid-row: auto; min-height: 0; }
 .armoryBay .armoryBaySelect { position: relative; align-content: start; }
-.armoryBayNumber {
-    position: absolute;
-    right: 8px;
-    top: 2px;
-    color: rgba(var(--armory-bay-glow), 0.16);
-    font-family: var(--ca-font-display);
-    font-size: 46px;
-    line-height: 1;
-    pointer-events: none;
-}
 .armoryBay.isActive .armoryBayNumber { color: rgba(var(--armory-bay-glow), 0.3); }
 .armoryBay .armoryBayMini {
     display: flex;
@@ -707,7 +673,6 @@
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 .armoryBay:not(.isActive) .armoryBayMini { opacity: 0.85; }
-.armoryBayIdentity { color: rgb(var(--armory-bay-glow)); }
 .armoryBay:not(.isActive):hover { box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 3px rgba(var(--armory-bay-glow), 0.6), 0 3px 0 #0a1220; }
 .armoryBayWall .armoryBay:not(.isActive) .armoryBaySelect { grid-template-columns: minmax(0, 1fr); }
 .armoryBayWall .armoryBay:not(.isActive) .armoryBayHeader,
@@ -1051,31 +1016,6 @@
  * The featured part's gain / give-up chips become rated 10-segment bars per
  * changed stat: kept segments blue, gained segments green, lost ones struck.
  * ------------------------------------------------------------------------ */
-.armorySwapImpact {
-    grid-area: trade;
-    display: grid;
-    gap: 6px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgb(0 0 0 / 24%);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
-}
-.armorySwapImpactTitle {
-    color: rgb(185 208 236 / 62%);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-}
-.armorySwapImpactRow {
-    display: grid;
-    grid-template-columns: 120px minmax(0, 1fr) 130px;
-    align-items: center;
-    gap: 12px;
-}
-.armorySwapImpactLabel { color: #dbe9fb; font-size: 12px; font-weight: 800; white-space: nowrap; }
-.armorySwapImpactBar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
-.armorySwapImpactBar i { height: 11px; border-radius: 2px; background: rgb(255 255 255 / 7%); }
 .armorySwapImpactBar i.isOn { background: linear-gradient(180deg, #8fd8ff, #3f9fe6); }
 .armorySwapImpactBar i.isGained {
     background: linear-gradient(180deg, #8bffcf, #2fc48a);
@@ -1086,9 +1026,6 @@
     background: repeating-linear-gradient(135deg, rgb(255 110 90 / 55%) 0 3px, rgb(255 110 90 / 12%) 3px 6px);
     box-shadow: inset 0 0 0 1px rgb(255 120 100 / 60%);
 }
-.armorySwapImpactValue { color: rgb(185 208 236 / 60%); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.armorySwapImpactValue s { opacity: 0.7; }
-.armorySwapImpactValue b { font-weight: 800; }
 .armorySwapImpactRow.isGain .armorySwapImpactValue b { color: #7ff5c4; }
 .armorySwapImpactRow.isLoss .armorySwapImpactValue b { color: #ff9a8a; }
 .armorySwapImpactRow.isEven .armorySwapImpactValue b { color: #e6f1ff; }
@@ -1241,57 +1178,16 @@
     white-space: normal;
     overflow: visible;
 }
-.armoryBayServiceRing {
-    position: relative;
-    display: grid;
-    place-items: center;
-    align-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle, #0b1322 58%, transparent 60%),
-        conic-gradient(#4fe3a6 var(--acc), rgb(255 255 255 / 9%) 0);
-}
-.armoryBayServiceRing b { color: #eafff6; font-size: 12px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-.armoryBayServiceRing small,
-.armoryBayServiceTile small {
-    color: rgb(185 208 236 / 58%);
-    font-size: 8px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    line-height: 1.1;
-    text-transform: uppercase;
-}
-.armoryBayServiceTile {
-    display: grid;
-    justify-items: center;
-    padding: 4px 2px;
-    border-radius: 8px;
-    background: rgb(255 255 255 / 4%);
-}
-.armoryBayServiceTile b { color: #f3f8ff; font-family: var(--ca-font-display); font-size: 17px; font-weight: 400; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .armoryBayServiceTile.isStreak b { color: #ffc46b; }
-.armoryBayServiceRing { width: 36px; height: 36px; } .armoryBayServiceTile { padding: 3px 2px; } .armoryBayServiceTile b { font-size: 16px; }
 
 /* ---- r35: diverging swap-impact bars -------------------------------------
  * Council fix: the red hatch read as a missing texture. Each changed stat is
  * now a centre-anchored diverging bar — solid red cells grow left for a loss,
  * solid green cells grow right for a gain — with a signed step count.
  * ------------------------------------------------------------------------ */
-.armorySwapImpactDiverge {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 2px minmax(0, 1fr) 30px;
-    align-items: center;
-    gap: 4px;
-}
-.armorySwapImpactSide { display: flex; gap: 3px; }
 .armorySwapImpactSide.isLossSide { flex-direction: row-reverse; }
-.armorySwapImpactSide i { flex: 1; height: 11px; border-radius: 2px; background: rgb(255 255 255 / 6%); }
 .armorySwapImpactSide i.isGained { background: linear-gradient(180deg, #8bffcf, #2fc48a); box-shadow: 0 0 8px rgb(80 230 160 / 50%); }
 .armorySwapImpactSide i.isLost { background: linear-gradient(180deg, #ff9a86, #e0523c); box-shadow: 0 0 8px rgb(255 100 80 / 40%); }
-.armorySwapImpactAxis { height: 19px; border-radius: 1px; background: rgb(255 255 255 / 45%); }
-.armorySwapImpactDelta { font-size: 12px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; color: rgb(220 232 248 / 55%); }
 .armorySwapImpactRow.isGain .armorySwapImpactDelta { color: #7ff5c4; }
 .armorySwapImpactRow.isLoss .armorySwapImpactDelta { color: #ff9a8a; }
 

@@ -69,23 +69,6 @@
 .profileCockpit.rank-deadeye { --rank-accent: #ff9675; --rank-accent-rgb: 255, 150, 117; --rank-deep: #a34227; }
 .profileCockpit.rank-placement { --rank-accent: #7fc7ff; --rank-accent-rgb: 127, 199, 255; --rank-deep: #315d9f; }
 
-.profileCommandHeader {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto minmax(240px, 1fr) auto;
-    align-items: center;
-    gap: 18px;
-    padding-bottom: 17px;
-    border-bottom: 1px solid rgba(170, 210, 248, 0.13);
-}
-
-.profileIdentityRow {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-}
-
 .profileAvatar {
     width: 58px;
     height: 58px;
@@ -105,7 +88,6 @@
 
 .profileAvatar.hasImage { padding: 3px; }
 .profileAvatarImage { width: 100%; height: 100%; object-fit: cover; display: block; }
-.profileIdentityText { display: grid; gap: 1px; min-width: 0; }
 
 .profileIdentityKicker,
 .profileSectionKicker {
@@ -136,13 +118,6 @@
     color: rgba(219, 235, 252, 0.65);
 }
 
-.profileLead {
-    margin: 0;
-    color: rgba(214, 230, 248, 0.76);
-    font-size: 12px;
-    line-height: 1.45;
-}
-
 .profileHeaderResources {
     display: flex;
     align-items: center;
@@ -168,67 +143,9 @@
     white-space: nowrap;
 }
 
-.profileCoinReadout i {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #f8cb65;
-    box-shadow: 0 0 9px rgba(248, 203, 101, 0.6);
-}
-
 button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 600; line-height: inherit; cursor: pointer; }
 .profileTextAction:hover { border-color: rgba(var(--rank-accent-rgb), 0.5); color: #fff; }
 .profileTextAction:focus-visible { outline: 2px solid var(--rank-accent); outline-offset: 2px; }
-
-.profileCockpitPrimary {
-    display: grid;
-    grid-template-columns: minmax(300px, 0.9fr) minmax(480px, 1.55fr);
-    min-width: 0;
-    border-bottom: 1px solid rgba(170, 210, 248, 0.13);
-}
-
-.profileRankCore {
-    position: relative;
-    min-width: 0;
-    min-height: 272px;
-    padding: 19px 22px 16px 0;
-    display: grid;
-    grid-template-columns: 150px minmax(0, 1fr);
-    align-items: center;
-    gap: 13px;
-    border-right: 1px solid rgba(170, 210, 248, 0.13);
-}
-
-.profileLevelOrbit {
-    --level-progress: 0deg;
-    position: relative;
-    width: 144px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: conic-gradient(var(--rank-accent) var(--level-progress), rgba(171, 210, 245, 0.11) 0);
-    box-shadow: 0 0 34px rgba(var(--rank-accent-rgb), 0.12);
-}
-
-.profileLevelOrbit::before {
-    content: "";
-    position: absolute;
-    inset: 5px;
-    border-radius: inherit;
-    background: #0a1425;
-    border: 1px solid rgba(var(--rank-accent-rgb), 0.28);
-}
-
-.profileLevelOrbit::after {
-    content: "";
-    position: absolute;
-    inset: -9px;
-    border-radius: inherit;
-    border: 1px dashed rgba(var(--rank-accent-rgb), 0.18);
-    animation: profileOrbitSpin 32s linear infinite;
-    will-change: transform;
-}
 
 @keyframes profileOrbitSpin { to { transform: rotate(360deg); } }
 
@@ -268,22 +185,7 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
     letter-spacing: 0.8px;
     text-align: center;
 }
-
-.profileRankReadout { min-width: 0; }
-.profileRankLabel { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(var(--rank-accent-rgb), 0.7); }
 .profileRankTitle { margin: 4px 0 5px; color: #f7fbff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: clamp(27px, 3vw, 38px); line-height: 0.96; }
-.profileRankMeta { margin: 0; color: rgba(219, 235, 251, 0.7); font-size: 11px; line-height: 1.35; }
-
-.profileRankGoal {
-    margin-top: 13px;
-    padding-left: 9px;
-    border-left: 2px solid var(--rank-accent);
-    display: grid;
-    gap: 2px;
-}
-
-.profileRankGoal span { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(196, 216, 239, 0.5); }
-.profileRankGoal strong { color: rgba(239, 247, 255, 0.92); font-size: 11px; line-height: 1.3; }
 
 .profileXpReadout {
     grid-column: 1 / -1;
@@ -300,15 +202,6 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 }
 
 .profileXpReadout strong { color: var(--rank-accent); }
-
-.profilePerformancePanel {
-    min-width: 0;
-    min-height: 272px;
-    padding: 19px 0 16px 22px;
-    display: grid;
-    align-content: center;
-    gap: 13px;
-}
 
 .profilePanelHeading,
 .profileMiniHeading {
@@ -328,20 +221,6 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 
 .profilePanelHeading h2 { font-size: 20px; }
 .profileMiniHeading h2 { font-size: 15px; }
-
-.profileStrengthCallout {
-    padding: 5px 8px;
-    border: 1px solid rgba(100, 229, 189, 0.3);
-    color: #9ceccd;
-    background: rgba(67, 185, 142, 0.08);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.7px;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.profileInstrumentGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 
 .profileInstrument {
     position: relative;
@@ -372,39 +251,6 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 .profileInstrument.isStrongest { border-color: rgba(108, 230, 188, 0.42); background: linear-gradient(145deg, rgba(76, 202, 158, 0.1), rgba(255, 255, 255, 0.015)); }
 .profileInstrument.isStrongest::after { --instrument-accent: #6fe0b7; width: 68%; }
 
-.profileInstrumentReticle {
-    position: absolute;
-    top: 11px;
-    right: 11px;
-    width: 24px;
-    height: 24px;
-    border: 1px solid rgba(185, 219, 251, 0.17);
-    border-radius: 50%;
-}
-
-.profileInstrumentReticle::before,
-.profileInstrumentReticle::after { content: ""; position: absolute; top: 50%; left: 50%; background: rgba(194, 225, 252, 0.22); transform: translate(-50%, -50%); }
-.profileInstrumentReticle::before { width: 30px; height: 1px; }
-.profileInstrumentReticle::after { width: 1px; height: 30px; }
-.profileInstrumentLabel { margin: 0; color: rgba(190, 213, 238, 0.59); font-size: 11px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; }
-.profileInstrumentValue { overflow: hidden; text-overflow: ellipsis; color: #f5faff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: clamp(20px, 2.3vw, 29px); line-height: 1; font-variant-numeric: tabular-nums; }
-.profileInstrumentDetail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(197, 218, 239, 0.48); font-size: 11px; }
-
-.profilePeakStrip {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
-    align-items: baseline;
-    gap: 9px;
-    color: rgba(187, 211, 236, 0.55);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.7px;
-    text-transform: uppercase;
-}
-
-.profilePeakStrip strong { color: #e9f4ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 12px; }
-.profilePeakStrip strong:first-of-type { font-size: 18px; color: var(--profile-accent); }
-
 .profileSignalBand {
     display: grid;
     grid-template-columns: 1.08fr 0.9fr 1.12fr;
@@ -426,38 +272,11 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 .profileMiniHeading > strong.isPositive { color: #78e2b9; }
 .profileMiniHeading > strong.isNegative { color: #ff958d; }
 
-.profileFormChart {
-    height: 66px;
-    margin-top: 10px;
-    padding: 0 3px;
-    border-bottom: 1px solid rgba(166, 205, 243, 0.17);
-    display: flex;
-    align-items: flex-end;
-    gap: 5px;
-}
-
-.profileFormBar {
-    position: relative;
-    flex: 1;
-    max-width: 30px;
-    height: var(--form-height);
-    min-height: 7px;
-    background: linear-gradient(180deg, #77d8ff, rgba(70, 145, 211, 0.28));
-    border-top: 1px solid #b8ecff;
-    box-shadow: 0 -4px 10px rgba(93, 202, 255, 0.13);
-    transform-origin: bottom;
-    animation: profileSignalRise 0.45s ease-out both;
-}
-
 .profileFormBar.isRanked::after { content: ""; position: absolute; top: -4px; left: 50%; width: 4px; height: 4px; transform: translateX(-50%) rotate(45deg); background: #f7ca69; }
 .profileFormBar.isRanked.isLoss::after { background: #ff837c; }
 @keyframes profileSignalRise { from { transform: scaleY(0); opacity: 0.3; } }
 
-.profileFormAverage { margin: 8px 0 0; display: flex; justify-content: space-between; color: #dfeeff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 13px; }
-.profileFormAverage span { color: rgba(186, 211, 238, 0.5); font-family: inherit; font-size: 11px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase; }
-
 .profileBuildSignature { background: linear-gradient(150deg, rgba(245, 185, 104, 0.035), transparent); }
-.profileBuildGlyph { width: 25px; height: 25px; border: 1px solid rgba(245, 185, 104, 0.35); color: #f5b968; display: grid; place-items: center; font-size: 17px; }
 .profileBuildMetrics { margin-top: 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
 .profileBuildMetrics span { min-width: 0; padding-top: 8px; border-top: 1px solid rgba(245, 185, 104, 0.2); color: rgba(195, 216, 238, 0.55); font-size: 11px; text-transform: uppercase; }
 .profileBuildMetrics strong { display: block; overflow: hidden; text-overflow: ellipsis; color: #f1f7ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 17px; }
@@ -465,20 +284,6 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 .profileNearestGoal { overflow: hidden; background: radial-gradient(circle at 95% 0%, rgba(181, 151, 255, 0.09), transparent 45%); }
 .profileNearestGoal .profileMiniHeading { position: relative; z-index: 1; }
 .profileNearestGoal > p { position: relative; z-index: 1; margin: 10px 0 12px; max-width: 88%; color: rgba(202, 222, 243, 0.67); font-size: 11px; line-height: 1.4; }
-.profileGoalTrack { position: relative; z-index: 1; height: 6px; overflow: hidden; border: 1px solid rgba(190, 164, 255, 0.25); background: rgba(255, 255, 255, 0.05); }
-.profileGoalTrack span { display: block; height: 100%; background: linear-gradient(90deg, #9376df, #cbb7ff); box-shadow: 0 0 12px rgba(186, 156, 255, 0.5); }
-.profileGoalProgress { position: relative; z-index: 1; display: block; margin-top: 6px; color: rgba(215, 202, 249, 0.7); font-size: 11px; font-weight: 700; }
-
-.profileGoalConstellation { position: absolute; top: 0; right: 10px; width: 130px; height: 110px; opacity: 0.35; }
-.profileGoalConstellation::before { content: ""; position: absolute; inset: 22px 18px; border: 1px dashed rgba(184, 159, 242, 0.28); border-radius: 50%; transform: rotate(-18deg); }
-.profileGoalConstellation i { position: absolute; width: 5px; height: 5px; border: 1px solid rgba(204, 185, 251, 0.7); border-radius: 50%; background: #16152a; box-shadow: 0 0 7px rgba(181, 151, 255, 0.4); }
-.profileGoalConstellation i:nth-child(1) { top: 17px; left: 65px; }
-.profileGoalConstellation i:nth-child(2) { top: 31px; left: 103px; }
-.profileGoalConstellation i:nth-child(3) { top: 63px; left: 110px; }
-.profileGoalConstellation i:nth-child(4) { top: 84px; left: 76px; }
-.profileGoalConstellation i:nth-child(5) { top: 75px; left: 33px; }
-.profileGoalConstellation i:nth-child(6) { top: 43px; left: 17px; }
-.profileGoalConstellation i:nth-child(7) { top: 24px; left: 36px; }
 .profileGoalConstellation i.isUnlocked { background: #c1a8ff; }
 .profileEmptySignal { margin: 17px 0 0; color: rgba(190, 212, 235, 0.48); font-size: 11px; line-height: 1.4; }
 
@@ -487,13 +292,7 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 .profileStatsSectionTitle { margin: 3px 0 0; color: #f3f9ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 20px; line-height: 1.1; }
 
 @media (max-width: 980px) {
-    .profileCommandHeader { grid-template-columns: auto 1fr; }
-    .profileLead { display: none; }
-    .profileCockpitPrimary { grid-template-columns: minmax(280px, 0.85fr) minmax(390px, 1.3fr); }
-    .profileRankCore { grid-template-columns: 122px 1fr; padding-right: 15px; }
-    .profileLevelOrbit { width: 116px; }
     .profileRankCrest { width: 88px; height: 88px; }
-    .profilePerformancePanel { padding-left: 15px; }
     .profileSignalBand { grid-template-columns: 1fr 1fr; }
     .profileSignalBand > section:nth-child(2) { border-right: 0; padding-right: 0; }
     .profileSignalBand > section:nth-child(3) { grid-column: 1 / -1; min-height: 145px; padding-left: 0; border-top: 1px solid rgba(170, 210, 248, 0.13); }
@@ -501,21 +300,14 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
 
 @media (max-width: 760px) {
     .profileCockpit { padding: 16px; clip-path: polygon(0 14px, 14px 0, calc(100% - 35px) 0, calc(100% - 24px) 11px, 100% 11px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
-    .profileCommandHeader { gap: 10px; padding-bottom: 12px; }
     .profileAvatar { width: 48px; height: 48px; font-size: 18px; }
-    .profileIdentityKicker { display: none; }
     .profilePlayerName { font-size: 21px; }
     .profilePlayerTitle { font-size: 11px; }
     .profileHeaderResources { gap: 5px; }
     .profileCoinReadout, .profileTextAction { min-height: 26px; padding: 4px 7px; font-size: 11px; }
     .profileTextAction:first-of-type { display: none; }
-    .profileCockpitPrimary { grid-template-columns: 1fr; }
-    .profileRankCore { min-height: 166px; grid-template-columns: 124px 1fr; padding: 14px 0; border-right: 0; border-bottom: 1px solid rgba(170, 210, 248, 0.13); }
-    .profilePerformancePanel { min-height: 190px; padding: 14px 0; }
     .profilePanelHeading h2 { font-size: 17px; }
     .profileInstrument { min-height: 91px; padding: 10px; }
-    .profileInstrumentValue { font-size: clamp(19px, 7vw, 27px); }
-    .profilePeakStrip { padding-top: 0; }
     .profileSignalBand { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; overflow: visible; }
     .profileSignalBand > section,
     .profileSignalBand > section:nth-child(3) { grid-column: auto; min-height: 140px; padding: 10px 8px; border-top: 0; border-right: 1px solid rgba(170, 210, 248, 0.13); }
@@ -525,50 +317,28 @@ button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 6
     .profileSignalBand .profileSectionKicker { font-size: 11px; letter-spacing: 0.8px; }
     .profileSignalBand .profileMiniHeading h2 { margin-top: 2px; font-size: 11px; line-height: 1.1; }
     .profileSignalBand .profileMiniHeading > strong { font-size: 11px; }
-    .profileFormChart { height: 48px; margin-top: 7px; gap: 2px; }
-    .profileFormAverage { margin-top: 6px; font-size: 11px; }
-    .profileFormAverage span { font-size: 11px; }
-    .profileBuildGlyph { position: absolute; top: 8px; right: 6px; width: 18px; height: 18px; font-size: 12px; }
     .profileBuildMetrics { margin-top: 10px; grid-template-columns: 1fr; gap: 3px; }
     .profileBuildMetrics span { padding-top: 3px; display: flex; align-items: baseline; justify-content: space-between; gap: 3px; font-size: 11px; }
     .profileBuildMetrics strong { font-size: 11px; }
     .profileNearestGoal > p,
     .profileGoalConstellation { display: none; }
     .profileNearestGoal .profileGoalTrack { margin-top: 14px; }
-    .profileGoalProgress { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
     .profileAchievementsSection { padding-top: 18px; }
 }
 
 @media (max-width: 480px) {
     .profileCockpit { padding: 13px; }
-    .profileCommandHeader { grid-template-columns: 1fr auto; }
     .profileHeaderResources .profileCoinReadout { position: absolute; right: 0; bottom: -11px; z-index: 2; background: #0b1729; }
     .profileHeaderResources .profileTextAction { padding-inline: 6px; }
-    .profileRankCore { grid-template-columns: 110px 1fr; }
-    .profileLevelOrbit { width: 103px; }
     .profileRankCrest { width: 77px; height: 77px; }
     .profileRankTitle { font-size: 26px; }
-    .profileRankMeta { font-size: 11px; }
-    .profileRankGoal { margin-top: 8px; }
     .profileXpReadout { font-size: 11px; }
-    .profileStrengthCallout { max-width: 130px; white-space: normal; text-align: right; }
-    .profileInstrumentGrid { gap: 5px; }
     .profileInstrument { min-height: 84px; padding: 8px 7px; }
-    .profileInstrumentReticle { width: 18px; height: 18px; }
-    .profileInstrumentReticle::before { width: 22px; }
-    .profileInstrumentReticle::after { height: 22px; }
-    .profileInstrumentLabel { font-size: 11px; }
-    .profileInstrumentValue { font-size: clamp(17px, 6vw, 23px); }
-    .profileInstrumentDetail { display: none; }
-    .profilePeakStrip { grid-template-columns: auto 1fr auto auto; gap: 5px; font-size: 11px; }
-    .profilePeakStrip strong:first-of-type { font-size: 15px; }
     .profileSignalBand > section,
     .profileSignalBand > section:nth-child(3) { padding-inline: 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .profileLevelOrbit::after,
-    .profileFormBar { animation: none; }
     .profileTextAction { scroll-behavior: auto; }
 }
 
