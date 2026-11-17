@@ -3252,3 +3252,35 @@
 @media (max-width: 700px) {
     .armoryMachine .armoryMachineBench { top: 50px; bottom: 104px; border-image-width: 32px; }
 }
+
+/* Round 4: plates are pre-darkened PNGs; full three-colour ring; bay colours by number. */
+.armoryMachine .armoryMachineBench { filter: none; }
+.armoryMachine .armoryMachineRigArc.arc-streakLens { --from: -60deg; }
+.armoryMachine .armoryMachineRigArc.arc-powerRig { --from: 60deg; }
+.armoryMachine .armoryMachineRigArc.arc-tempoCore { --from: 180deg; }
+.armoryMachine .armoryMachineRigArc.isStock,
+.armoryMachine .armoryMachineRigArc.isFitted {
+    background: conic-gradient(from var(--from), rgba(var(--arc), 0.95) 0 120deg, transparent 0);
+    filter: drop-shadow(0 0 8px rgba(var(--arc), 0.55));
+}
+.armoryBayWall .armoryBay.armoryCart[data-bay="1"] { --cart: 79, 200, 255; }
+.armoryBayWall .armoryBay.armoryCart[data-bay="2"] { --cart: 83, 215, 140; }
+.armoryBayWall .armoryBay.armoryCart[data-bay="3"] { --cart: 255, 146, 82; }
+
+/* Desktop: a bigger backplate holds all three parts and the lens tag in its flat centre. */
+@media (min-width: 701px) {
+    .armoryMachine .armoryMachineBench {
+        top: 0;
+        bottom: 0;
+        width: calc(100% + 24px);
+        border-image: url("/art/armory/backplate.png") 120 fill / 48px / 0 stretch;
+    }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens { top: 40px; }
+    .armoryMachine .armoryMachineRigMount.mount-streakLens { top: -50px; }
+    .armoryMachine .armoryMachineRigConduit.conduit-streakLens { top: -26px; height: 40px; }
+    .armoryMachine .armoryMachineRigMount:is(.mount-tempoCore, .mount-powerRig) { width: 92px; }
+    .armoryMachine .armoryMachineRigMount.mount-tempoCore { left: -56px; }
+    .armoryMachine .armoryMachineRigMount.mount-powerRig { left: calc(100% + 56px); }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore { left: calc(50% - 191px); }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { left: calc(50% + 191px); }
+}
