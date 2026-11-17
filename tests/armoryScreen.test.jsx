@@ -6,7 +6,6 @@ import { describe, expect, test, vi } from "vitest"
 
 import { DEFAULT_SAVED_LOADOUTS } from "../src/constants/buildcraft.js"
 import { buildLoadoutPresentation } from "../src/constants/buildcraftPresentation.js"
-import { BAY_TARGET_SCALE } from "../src/features/armory/components/ArmoryBayWall.jsx"
 import { MACHINE_TARGET_SCALE } from "../src/features/armory/components/ArmoryMachine.jsx"
 import { BUILD_WALKTHROUGH_STATUS } from "../src/constants/buildWalkthrough.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
@@ -284,7 +283,7 @@ describe("Armory machine", () => {
 
     // Housings carry the installed module of each lane.
     expect(within(machine).getByText("Tempo Core")).not.toBeNull()
-    expect(within(machine).getByText("Balanced Tempo")).not.toBeNull()
+    expect(within(machine).getByText("Tempo")).not.toBeNull()
     expect(within(machine).getByText("Balanced Streak")).not.toBeNull()
     expect(within(machine).getByText("Balanced Rig")).not.toBeNull()
 
@@ -303,6 +302,8 @@ describe("Armory machine", () => {
     const target = document.querySelector(".armoryMachineTarget")
     const allRounder = DEFAULT_SAVED_LOADOUTS.find((loadout) => loadout.id === "loadout_1")
     expect(target.style.width).toBe(expectedTargetSize(allRounder))
+    expect(target.getAttribute("aria-label")).toBe("Target starts at 100 pixels and shrinks with each hit")
+    expect(target.textContent).toContain("TARGET SIZE100pxShrinks as you hit")
 
     // Installing Anchor (bigger targets) visibly grows the machine's target.
     await openStep(user, "Mods")
@@ -314,6 +315,7 @@ describe("Armory machine", () => {
     }
     const anchorSize = expectedTargetSize(anchorLoadout)
     expect(target.style.width).toBe(anchorSize)
+    expect(target.getAttribute("aria-label")).toBe("Target starts at 112 pixels and shrinks with each hit")
     expect(parseInt(anchorSize, 10)).toBeGreaterThan(
       parseInt(expectedTargetSize(allRounder), 10)
     )
@@ -340,7 +342,7 @@ describe("Armory machine", () => {
 
     expect(tempoHousing.className).toContain("isSelected")
     expect(tempoHousing.dataset.moduleState).toBe("installed")
-    expect(within(tempoHousing).getByText("Balanced Tempo")).not.toBeNull()
+    expect(within(tempoHousing).getByText("Tempo")).not.toBeNull()
 
     fireEvent.click(getPartCard(/^Anchor/))
 
@@ -396,7 +398,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     const props = renderArmory({ playerLevel: 5 })
 
     await openStep(user, "Mods")
-    const balancedCard = getPartCard(/^Balanced Tempo/)
+    const balancedCard = getPartCard(/^Tempo/)
     const anchorCard = getPartCard(/^Anchor/)
     const lockedCard = getPartCard(/Flashpoint/)
 
@@ -619,7 +621,7 @@ describe("Armory collection flow (Phase D2b)", () => {
       Number(progress.getAttribute("aria-valuemax"))
     )
 
-    const installedPart = within(wall).getByText("Balanced Tempo").closest(".armoryUnlockWallItem")
+    const installedPart = within(wall).getByText("Tempo").closest(".armoryUnlockWallItem")
     const collectedPart = within(wall).getByText("Anchor").closest(".armoryUnlockWallItem")
     const lockedPart = within(wall).getByText("Flashpoint").closest(".armoryUnlockWallItem")
     expect(installedPart.dataset.armoryState).toBe("installed")
@@ -693,20 +695,17 @@ describe("Armory collection flow (Phase D2b)", () => {
 describe("Armory bay wall", () => {
   const normalMode = DIFFICULTIES.find((mode) => mode.id === "normal")
 
-  function expectedMiniTargetSize(loadout) {
-    const { roundRules } = buildLoadoutPresentation(normalMode, loadout)
-    return `${Math.round(roundRules.initialButtonSize * BAY_TARGET_SCALE)}px`
-  }
-
-  test("bay mini targets scale with each saved build", () => {
+  test("each bay lists its equipped parts by name", () => {
     renderArmory()
 
-    const bayWall = getBayWall()
-    const miniTargets = bayWall.querySelectorAll(".armoryBayMiniTarget")
-    expect(miniTargets).toHaveLength(3)
+    const bays = getBayWall().querySelectorAll(".armoryCartKit")
+    expect(bays).toHaveLength(3)
 
     DEFAULT_SAVED_LOADOUTS.forEach((loadout, index) => {
-      expect(miniTargets[index].style.width).toBe(expectedMiniTargetSize(loadout))
+      const { moduleStack } = buildLoadoutPresentation(normalMode, loadout)
+      moduleStack.forEach((module) => {
+        expect(within(bays[index]).getByText(module.label)).not.toBeNull()
+      })
     })
   })
 

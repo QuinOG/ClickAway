@@ -1039,7 +1039,7 @@
 .armoryUnlockWallGrid .armoryUnlockWallItem.isInstalled > .armoryStateEmblem { top: 3px; right: 3px; }
 /* 8. Mode manifest: the identity glyph rendered as a solid black disc because
    its SVG had no stroke styling here. */
-.armoryModeManifestColumnGlyph { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: rgba(var(--mode, 120, 184, 255), 0.16); box-shadow: inset 0 0 0 1px rgba(var(--mode, 120, 184, 255), 0.45); }
+.armoryModeManifestColumnGlyph { display: grid; place-items: center; width: 30px; height: 30px; }
 .armoryModeManifestColumnGlyph svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 8; stroke-linejoin: round; }
 /* 9. Test range: its z-index 50 was trapped inside the isolated main content,
    so the app topbar painted over the range header (title + Exit Range).
@@ -3006,10 +3006,6 @@
     height: 104px;
     border-radius: 14px;
     background:
-        linear-gradient(currentColor, currentColor) 26% calc(100% - 12px) / 22% 26px no-repeat,
-        linear-gradient(currentColor, currentColor) 74% calc(100% - 12px) / 22% 18px no-repeat,
-        linear-gradient(#070d18, #070d18) 26% calc(100% - 10px) / 30% 32px no-repeat,
-        linear-gradient(#070d18, #070d18) 74% calc(100% - 10px) / 30% 32px no-repeat,
         linear-gradient(90deg, transparent 49%, rgb(0 0 0 / 55%) 49% 51%, transparent 51%),
         radial-gradient(circle at 50% 34%, color-mix(in srgb, currentColor 32%, #1a2840), #0d1626 70%),
         linear-gradient(180deg, #2f4262, #16223a);
@@ -3024,7 +3020,7 @@
         linear-gradient(180deg, #8ea3c4, #3a4d70) 100% 0 / 22px 10px no-repeat;
     box-shadow: none;
 }
-.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0 0 34px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0; }
 
 /* Name plates hang from their components on a short bracket. */
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
@@ -3079,15 +3075,11 @@
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing .armoryMachineHousingLabel { font-size: 13px; }
 .armoryMachine .armoryMachineRigMount.mount-powerRig {
     background:
-        linear-gradient(color-mix(in srgb, currentColor 75%, #000), color-mix(in srgb, currentColor 75%, #000)) 26% calc(100% - 13px) / 18% 14px no-repeat,
-        linear-gradient(color-mix(in srgb, currentColor 75%, #000), color-mix(in srgb, currentColor 75%, #000)) 74% calc(100% - 13px) / 18% 9px no-repeat,
-        linear-gradient(#070d18, #070d18) 26% calc(100% - 10px) / 28% 22px no-repeat,
-        linear-gradient(#070d18, #070d18) 74% calc(100% - 10px) / 28% 22px no-repeat,
         linear-gradient(90deg, transparent 49%, rgb(0 0 0 / 55%) 49% 51%, transparent 51%),
         radial-gradient(circle at 50% 34%, color-mix(in srgb, currentColor 32%, #1a2840), #0d1626 70%),
         linear-gradient(180deg, #2f4262, #16223a);
 }
-.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0 0 24px; }
+.armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0; }
 .armoryMachine .armoryMachineBench em { left: 7%; transform: none; }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { top: calc(50% + 70px); }
@@ -3265,3 +3257,128 @@
         letter-spacing: 0;
     }
 }
+
+/* Readable target instructions sit straight on the target art: no box, a
+   hard ink outline so the words read over any skin colour. */
+.armoryMachineAimReadout { gap: 2px; text-shadow: 0 2px 0 #050a14, 0 0 10px rgb(0 0 0 / 85%); }
+.armoryMachineAimReadout :is(small, b, em) { -webkit-text-stroke: 3px #050a14; paint-order: stroke fill; }
+.armoryMachineAimReadout small { color: #fff; font-size: 12px; letter-spacing: 0.08em; }
+.armoryMachineAimReadout b { font-size: 40px; }
+.armoryMachineAimReadout b span { font-size: 16px; }
+.armoryMachineAimReadout em { color: #fff; font-size: 12px; white-space: nowrap; }
+
+/* Shared card layout leaves room for long names and comparison values. */
+.armoryWorkspace .armoryPartFeature { min-width: 0; }
+.armoryWorkspace .armoryPartFeature.tone-powerRig {
+    --tone: 255, 211, 106;
+    background: radial-gradient(ellipse at top left, rgba(var(--tone), 0.16), transparent 75%);
+    border-top: 2px solid rgba(var(--tone), 0.65);
+    padding-top: 12px;
+}
+.armoryWorkspace .armoryPartFeatureName { overflow-wrap: anywhere; }
+.armoryWorkspace .armoryPartFeatureInstall { min-width: 0; }
+.armoryWorkspace .armorySwapReportHead > span,
+.armoryWorkspace .armorySwapReportRow > * { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.armoryWorkspace .armorySwapReportHead > span:nth-child(3) { flex-wrap: wrap; }
+.armoryWorkspace .armorySwapReportGauge { max-width: 100%; }
+/* Phones only: the three columns need to share a narrow card. */
+@media (max-width: 600px) {
+    .armoryWorkspace .armoryPartFeature,
+    .armoryWorkspace .armoryPartFeature:has(.armoryChargeRhythm) {
+        grid-template-columns: 96px minmax(0, 1fr);
+        grid-template-areas: "glyph head" "install install" "trade trade";
+        gap: 10px 14px;
+    }
+    .armoryWorkspace .armoryPartFeatureName { font-size: 26px; line-height: 1.15; }
+    .armoryWorkspace .armoryPartFeatureInstall { justify-self: stretch; white-space: normal; }
+    .armoryWorkspace .armoryPartFeatureInstalled { grid-area: install; }
+    .armoryWorkspace .armorySwapReport { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1fr); }
+    .armoryWorkspace .armorySwapReportLabel { flex-wrap: wrap; gap: 4px; padding: 6px; }
+    .armoryWorkspace .armorySwapReportRow > .armorySwapReportTo { font-size: 15px; padding: 6px; text-align: right; }
+}
+
+/* Class-select kit (fix list 2026-11-16): each bay lists its three parts by
+   name, like a shooter's class card, instead of a miniature machine. */
+.armoryCart .armoryCartKit {
+    grid-column: 2;
+    display: grid;
+    align-content: center;
+    gap: 7px;
+    margin: 8px 10px 6px;
+}
+.armoryCart .armoryCartKitRow {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.armoryCart .armoryCartKitIcon {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: rgb(4 10 20 / 55%);
+}
+.armoryCart .armoryCartKitRow.part-tempoCore .armoryCartKitIcon { color: rgb(var(--armory-tone-tempo)); }
+.armoryCart .armoryCartKitRow.part-streakLens .armoryCartKitIcon { color: rgb(var(--armory-tone-streak)); }
+.armoryCart .armoryCartKitRow.part-powerRig .armoryCartKitIcon { color: rgb(var(--armory-tone-power)); }
+.armoryCart .armoryCartKitIcon :is(svg, .gameIcon, img) { width: 18px; height: 18px; }
+.armoryCart .armoryCartKitText { display: grid; min-width: 0; line-height: 1.15; }
+.armoryCart .armoryCartKitText small {
+    color: rgb(190 208 232 / 72%);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.armoryCart .armoryCartKitText b {
+    color: #eef5ff;
+    font-size: 12.5px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.armoryCart:not(.isActive) .armoryCartKit { opacity: 0.82; }
+/* The active card's border already marks it; the leftover lamp read as a stray dot. */
+.armoryBayWall .armoryCart .armoryCartLamp { display: none; }
+/* Narrow desktop rail: icons carry the slot colour, so drop the slot label
+   and keep each part name on one or two short lines. */
+.armoryBayWall .armoryCart { container-type: inline-size; }
+@container (max-width: 190px) {
+    .armoryCart .armoryCartKitText small { display: none; }
+    .armoryCart .armoryCartKit { gap: 6px; }
+}
+
+/* Part cards: content centred; locked parts sit under a grey cover with the unlock level on top. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard { justify-content: center !important; padding-bottom: 6px !important; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlass {
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    background: rgb(46 53 66 / 94%) !important;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryStateEmblem {
+    position: absolute !important;
+    z-index: 3;
+    inset: 50% auto auto 50% !important;
+    width: 90%;
+    flex-direction: column;
+    gap: 3px;
+    justify-content: center;
+    transform: translate(-50%, -50%) !important;
+    white-space: normal;
+    text-align: center;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: #d5deea !important;
+    font-size: 13px !important;
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { width: max-content; }
+.armoryModeManifestColumnGlyph { width: 46px !important; height: 46px !important; flex: none; }
+.armoryModeManifestColumnGlyph img { width: 100%; height: 100%; object-fit: contain; }
+.armoryModeManifestBestFor, .armoryModeManifestIdentity, .armoryCompareEmpty, .armoryCompareTitle, .armoryCompareEyebrow { color: #f6fbff; font-weight: 600; }

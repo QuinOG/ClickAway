@@ -1,9 +1,4 @@
-import { BuildIdentityGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { PartEmblem } from "../../../components/art/GameIcons.jsx"
-
-// Bay miniatures echo the center-stage machine at wall scale, so build size
-// differences stay readable even from across the room.
-export const BAY_TARGET_SCALE = 0.32
 
 // Field record strip: so a bay never has to be activated just to see how
 // it has actually performed. Keyed on loadout.id (stable), never on the
@@ -33,10 +28,6 @@ function ArmoryBayServicePlate({ stats }) {
 // their r69 silhouettes around the target at wall scale) and its field record.
 function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNumber }) {
   const identity = (presentation?.identity.label || "Balanced").toLowerCase()
-  const miniTargetSize = Math.round(
-    presentation.roundRules.initialButtonSize * BAY_TARGET_SCALE
-  )
-
   return (
     <div className={`armoryBay armoryCart ${isActive ? "isActive" : ""}`} data-identity={identity}>
       <button
@@ -48,27 +39,23 @@ function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNum
         <span className="armoryCartSpine" aria-hidden="true"><b>{String(bayNumber).padStart(2, "0")}</b></span>
         <span className="armoryCartStrip">
           <strong className="armoryCartName">{loadout.name}</strong>
-          <span className="armoryCartIdentity">
-            <span className="armoryCartIdentityGlyph" aria-hidden="true">
-              <BuildIdentityGlyph identity={presentation.identity.label} />
-            </span>
-            {presentation.identity.label}
-          </span>
           <span className="armoryCartLamp">{isActive ? "Active" : "Docked"}</span>
         </span>
 
-        <span className="armoryCartWindow" aria-hidden="true">
-          <span className="armoryCartMachine">
-            <span
-              className="armoryBayMiniTarget armoryCartTarget"
-              style={{ width: `${miniTargetSize}px`, height: `${miniTargetSize}px` }}
-            />
-            {presentation.moduleStack.map((module) => (
-              <span key={module.slotId} className={`armoryCartPart part-${module.slotId}`}>
-                <PartEmblem partId={module.moduleId} slotId={module.slotId} size={14} />
+        {/* Class-select kit: each equipped part by name, like a shooter's
+            class card, instead of a miniature of the machine. */}
+        <span className="armoryCartKit">
+          {presentation.moduleStack.map((module) => (
+            <span key={module.slotId} className={`armoryCartKitRow part-${module.slotId}`}>
+              <span className="armoryCartKitIcon" aria-hidden="true">
+                <PartEmblem partId={module.moduleId} slotId={module.slotId} size={18} />
               </span>
-            ))}
-          </span>
+              <span className="armoryCartKitText">
+                <small>{module.slotLabel}</small>
+                <b>{module.label}</b>
+              </span>
+            </span>
+          ))}
         </span>
 
         <ArmoryBayServicePlate stats={bayApi.loadoutStatsById?.[loadout.id]} />

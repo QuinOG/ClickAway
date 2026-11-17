@@ -62,107 +62,14 @@
 .arenaFloor { opacity: 1; height: 80%; }
 
 /* ---- Game over: results card in the same framed material ---------------- */
-.gameOverCard,
-.gameOverCardWithDifficulty {
-    border: 0;
-    border-radius: 18px;
-    background:
-        linear-gradient(180deg, rgb(255 255 255 / 4%), transparent 180px),
-        linear-gradient(180deg, var(--skin-face) 0%, var(--skin-face-low) 100%);
-    box-shadow: var(--skin-frame), 0 0 80px rgb(79 216 255 / 10%);
-}
-
-.gameOverTitle { font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.01em; }
-
-.gameOverScorePanel {
-    position: relative;
-    border: 0;
-    box-shadow: var(--skin-frame-soft);
-    background: radial-gradient(ellipse at 50% 0%, rgb(79 216 255 / 16%), transparent 70%), #0d192b;
-}
-
-.gameOverScoreValue {
-    font-family: var(--ca-font-display);
-    font-weight: 400;
-    -webkit-text-stroke: 3px var(--skin-ink);
-    paint-order: stroke fill;
-    text-shadow: 0 4px 0 var(--skin-ink), 0 0 30px rgb(79 216 255 / 35%);
-}
-
-.gameOverMedal {
-    position: absolute;
-    top: -14px;
-    right: -14px;
-    display: grid;
-    place-items: center;
-    transform: rotate(10deg);
-    filter: drop-shadow(0 4px 0 rgb(0 0 0 / 40%));
-    animation: medalStamp 520ms var(--ca-motion-ease-impact) 0.6s both;
-}
-
-.gameOverMedal b {
-    position: absolute;
-    bottom: -6px;
-    padding: 1px 8px;
-    border-radius: 6px;
-    background: #ffffff;
-    color: var(--skin-ink);
-    font: 400 11px/16px var(--ca-font-display);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    box-shadow: 0 0 0 2px var(--skin-ink);
-}
-
-@keyframes medalStamp {
-    from { opacity: 0; transform: rotate(-20deg) scale(2.2); }
-    to { opacity: 1; transform: rotate(10deg) scale(1); }
-}
-
-.gameOverRewards {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 4px 0 2px;
-}
-
-.gameOverReward {
-    min-width: 128px;
-    padding: 8px 14px 8px 10px;
-    display: inline-grid;
-    grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
-    align-items: center;
-    column-gap: 8px;
-    border-radius: 12px;
-    background: linear-gradient(180deg, #1f3049, #131f33);
-    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
-}
-
-.gameOverReward svg { grid-row: 1 / 3; }
-.gameOverReward strong { font: 400 22px/1 var(--ca-font-display); color: #ffffff; text-shadow: 0 2px 0 var(--skin-ink); }
-.gameOverReward small { font-size: 12px; font-weight: 700; color: var(--ca-color-ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.gameOverReward.isCoins strong { color: #ffe08a; }
-.gameOverReward.isXp strong { color: #8ee9ff; }
-.gameOverReward.isRank strong { color: #9ff0c9; }
-.gameOverReward.isRank.isLoss strong { color: #ff8a8a; }
 
 /* Hit split as one continuous bar, not countable-looking cells. */
-.outcomeSignatureTrack { gap: 0; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 2px var(--skin-ink); }
-.outcomeSignatureCell { border-radius: 0; }
 
-.gameOverActions { display: flex; justify-content: center; gap: 12px; }
-.gameOverActions .primaryButton { min-width: 220px; }
 .gameOverRematch { min-width: 140px; min-height: 48px; font-family: var(--ca-font-display); font-weight: 400; letter-spacing: 0.03em; }
 
 /* Round 2 game-over polish: medal fully visible, compact PB, single result composition. */
-.gameOverScorePanel { overflow: visible; }
-.gameOverScoreLockRail { border-radius: 14px 14px 0 0; overflow: hidden; }
-.gameOverMedal { top: -18px; right: -22px; }
-.outcomeBestComparison:not(.isNewBest) .outcomeBestTracks { display: none; }
-.outcomeBestComparison:not(.isNewBest) { padding-block: 8px; }
-.outcomeContinuityBoard > section,
-.outcomeInstrument,
-.gameOverAchievementHint {
+
+.outcomeInstrument{
     border: 0;
     background: rgb(0 0 0 / 18%);
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
@@ -265,7 +172,7 @@
 .powerupIconWrap .gameIcon { width: 30px; height: 30px; }
 /* Overlays (lobby, results) sit above the docked HUD and powerup tray. */
 .gameOverlay.gameOverlayStage { z-index: 10; }
-.gameOverTitle { font-family: "Russo One", var(--ca-font-display); font-size: clamp(30px, 3vw, 40px); text-shadow: 0 3px 0 var(--skin-ink); }
+
 
 /* ---- Round 3: arena environment + streak heat ------------------------- */
 .arenaHorizon {
@@ -362,37 +269,6 @@
 }
 
 /* ---- Phase 3 r1: results tally + promotion centerpiece ------------------ */
-.gameOverRewards { flex-wrap: wrap; }
-
-.gameOverXpTally {
-    flex: 1 0 100%;
-    order: 9;
-    display: grid;
-    gap: 6px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgb(0 0 0 / 22%);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
-}
-
-.gameOverXpTallyHeader { display: flex; justify-content: space-between; align-items: baseline; }
-.gameOverXpTallyHeader b { font: 400 16px/1 var(--ca-font-display); color: #8ee9ff; }
-.gameOverXpTallyHeader small { font-size: 12px; font-weight: 600; color: var(--ca-color-ink-muted); }
-.gameOverXpTally.isLevelUp .gameOverXpTallyHeader small { color: #ffe27a; }
-
-.gameOverXpTallyTrack {
-    position: relative;
-    height: 12px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: rgb(255 255 255 / 7%);
-    box-shadow: 0 0 0 2px var(--skin-ink);
-}
-
-.gameOverXpTallyBase,
-.gameOverXpTallyGain { position: absolute; top: 0; bottom: 0; display: block; }
-.gameOverXpTallyBase { left: 0; background: #2a7bb0; }
-.gameOverXpTallyGain { background: linear-gradient(90deg, #8ee9ff, #ffffff); box-shadow: 0 0 12px #8ee9ff; }
 
 .gameOverPromotionCard {
     border: 0;
@@ -546,37 +422,6 @@
 .hudComboNext { grid-area: next; align-self: end; }
 
 /* ---- Phase 3 r2: results always point at the next Armory reward ---- */
-.gameOverNextUnlock {
-    flex: 1 1 100%;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: linear-gradient(180deg, var(--skin-face-high), var(--skin-face-low));
-    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
-    color: #fff;
-    text-decoration: none;
-    transition: transform 140ms ease, box-shadow 140ms ease;
-}
-.gameOverNextUnlock:hover,
-.gameOverNextUnlock:focus-visible { transform: translateY(-2px); box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px var(--skin-cyan), 0 3px 0 #0a1220; }
-.gameOverNextUnlockBadge {
-    display: grid;
-    place-items: center;
-    min-width: 52px;
-    height: 40px;
-    border-radius: 10px;
-    background: #1b2f4d;
-    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 40%);
-    font: 400 13px/1 var(--ca-font-display);
-    color: var(--skin-cyan);
-}
-.gameOverNextUnlock.isUnlocked .gameOverNextUnlockBadge { background: var(--skin-gold); color: var(--skin-ink); box-shadow: 0 0 0 2px var(--skin-ink), 0 0 18px rgb(255 201 74 / 60%); }
-.gameOverNextUnlockCopy { display: grid; gap: 2px; flex: 1; text-align: left; }
-.gameOverNextUnlockCopy small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(232 242 255 / 60%); }
-.gameOverNextUnlockCopy strong { font: 400 17px/1.1 var(--ca-font-display); }
-.gameOverNextUnlockCta { font: 400 13px/1 var(--ca-font-display); color: var(--skin-cyan); letter-spacing: 0.06em; }
 
 /* ---- Phase 3 r3: readable miss, distinct heat vs failure, bigger combo meter ---- */
 .clickFeedback.streakBreak .clickFeedbackValue::after { content: none; }
@@ -618,69 +463,12 @@
 .hudComboNextLabel { font-size: 16px; color: #ffe08a; letter-spacing: 0.04em; }
 
 /* Next unlock: icon tile + benefit line + action */
-.gameOverNextUnlockIcon {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 60px;
-    height: 60px;
-    flex: none;
-    border-radius: 14px;
-    background: radial-gradient(circle, rgb(255 255 255 / 12%), rgb(0 0 0 / 30%) 75%), #16243a;
-    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 35%);
-}
-.gameOverNextUnlockIcon .gameOverNextUnlockBadge {
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 0;
-    height: auto;
-    padding: 3px 7px;
-    font-style: normal;
-    font-size: 11px;
-    white-space: nowrap;
-}
-.gameOverNextUnlock.isUnlocked .gameOverNextUnlockIcon { box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px var(--skin-gold), 0 0 20px rgb(255 201 74 / 45%); }
-.gameOverNextUnlockBenefit { font-size: 13px; line-height: 1.3; color: rgb(232 242 255 / 80%); }
-.gameOverNextUnlockCta {
-    padding: 9px 14px;
-    border-radius: 10px;
-    background: var(--skin-cyan);
-    color: var(--skin-ink);
-    box-shadow: 0 0 0 2px var(--skin-ink), 0 3px 0 #0a1220;
-}
-.gameOverNextUnlock.isUnlocked .gameOverNextUnlockCta { background: var(--skin-gold); }
 
 /* ---- Phase 3 round 4: results in two columns so nothing hides behind the footer ---- */
 @media (min-width: 1000px) {
-    .gameOverCardWithDifficulty {
-        display: grid;
-        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-        grid-template-rows: auto auto 1fr auto;
-        grid-template-areas:
-            "header header"
-            "score body"
-            "rewards body"
-            "actions actions";
-        column-gap: 18px;
-        row-gap: 12px;
-        min-width: min(960px, 94vw);
-        max-width: min(980px, 94vw);
-        text-align: left;
-    }
-    .gameOverCardWithDifficulty > .gameOverHeader { grid-area: header; text-align: center; }
-    .gameOverCardWithDifficulty > .gameOverScorePanel { grid-area: score; text-align: center; }
-    .gameOverCardWithDifficulty > .gameOverRewards { grid-area: rewards; align-content: start; margin: 0; }
-    .gameOverCardWithDifficulty > .gameOverBody { grid-area: body; overflow: visible; min-height: 0; }
-    .gameOverCardWithDifficulty > .gameOverActions { grid-area: actions; }
-    .gameOverCardWithDifficulty > .gameOverRewards > * { flex: 1 1 calc(50% - 10px); }
-    .gameOverCardWithDifficulty > .gameOverRewards > .gameOverNextUnlock,
-    .gameOverCardWithDifficulty > .gameOverRewards > .gameOverXpTally { flex-basis: 100%; }
+
 }
 /* The score badge only earns space for a real event (PB / clean run). */
-.gameOverScorePanel:not(:has(.gameOverMedal)) .gameOverScoreBadge { display: none; }
-.gameOverLoadoutBadge { font-size: 12px; opacity: 0.78; margin-top: 2px; }
 
 /* ---- Phase 3 round 4: a physical target and localized hit bursts ---- */
 /* Material: specular cap + shaded lower lip over any skin, so the target reads as a pressable object. */
@@ -824,90 +612,13 @@
 .gameOverPromotionActions .gameOverRematch { margin-left: 0; min-height: 0; padding: 6px 14px; background: none; box-shadow: none; color: rgb(232 242 255 / 72%); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---- Polish r8: the unlocked / next part is the hero of the results screen ---- */
-.gameOverSpotlight { display: grid; }
-.gameOverSpotlight:empty { display: none; }
-.gameOverSpotlight .gameOverNextUnlock {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: 156px minmax(0, 1fr);
-    grid-template-rows: 1fr auto;
-    column-gap: 22px;
-    row-gap: 12px;
-    align-items: center;
-    padding: 20px 24px 20px 20px;
-    border-radius: 18px;
-    background:
-        radial-gradient(circle at 78px 50%, rgb(79 216 255 / 22%), transparent 150px),
-        linear-gradient(160deg, #1a2c4a, #0f1a2e 70%);
-    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(79 216 255 / 35%), 0 5px 0 #0a1220;
-}
-.gameOverSpotlight .gameOverNextUnlock.isUnlocked {
-    background:
-        repeating-conic-gradient(from 0deg at 78px 50%, rgb(255 201 74 / 12%) 0 8deg, transparent 8deg 22deg),
-        radial-gradient(circle at 78px 50%, rgb(255 201 74 / 30%), transparent 150px),
-        linear-gradient(160deg, #2d2615, #121a2c 72%);
-    box-shadow: 0 0 0 2px var(--skin-ink), inset 0 0 0 2px rgb(255 201 74 / 55%), 0 5px 0 #0a1220, 0 0 36px rgb(255 201 74 / 22%);
-}
-.gameOverSpotlight .gameOverNextUnlockIcon {
-    grid-row: 1 / 3;
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 156px;
-    height: 156px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 38%, #2a4266, #0d1626 72%);
-    box-shadow: 0 0 0 3px var(--skin-ink), inset 0 0 0 3px rgb(79 216 255 / 45%), 0 0 28px rgb(79 216 255 / 30%);
-}
-.gameOverSpotlight .gameOverNextUnlock.isUnlocked .gameOverNextUnlockIcon {
-    background: radial-gradient(circle at 50% 38%, #4a3a16, #151826 72%);
-    box-shadow: 0 0 0 3px var(--skin-ink), inset 0 0 0 3px var(--skin-gold), 0 0 34px rgb(255 201 74 / 50%);
-}
-.gameOverSpotlight .gameOverNextUnlockBadge {
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 64px;
-    height: 30px;
-    font-size: 15px;
-}
-.gameOverSpotlight .gameOverNextUnlockCopy { align-self: end; gap: 6px; }
-.gameOverSpotlight .gameOverNextUnlockCopy small { font-size: 12px; letter-spacing: 0.14em; color: var(--skin-cyan); }
-.gameOverSpotlight .gameOverNextUnlock.isUnlocked .gameOverNextUnlockCopy small { color: var(--skin-gold); }
-.gameOverSpotlight .gameOverNextUnlockCopy strong { font-size: 34px; line-height: 1; text-shadow: 0 3px 0 #0a1220; }
-.gameOverSpotlight .gameOverNextUnlockBenefit { font-size: 15px; }
-.gameOverSpotlight .gameOverNextUnlockCta {
-    justify-self: start;
-    align-self: start;
-    padding: 12px 22px;
-    font-size: 16px;
+
+@media (min-width: 1000px) {
+
+
 }
 @media (min-width: 1000px) {
-    .gameOverCardWithDifficulty {
-        grid-template-rows: auto auto auto 1fr auto;
-        grid-template-areas:
-            "header header"
-            "score body"
-            "rewards body"
-            "rewards spot"
-            "actions actions";
-    }
-    .gameOverCardWithDifficulty > .gameOverSpotlight { grid-area: spot; align-self: end; }
-}
-@media (min-width: 1000px) {
-    .gameOverCardWithDifficulty {
-        grid-template-rows: auto auto 1fr auto auto;
-        grid-template-areas:
-            "header header"
-            "score body"
-            "score spot"
-            "rewards spot"
-            "actions actions";
-    }
-    .gameOverCardWithDifficulty > .gameOverScorePanel { display: grid; align-content: center; }
-    .gameOverCardWithDifficulty .gameOverScoreValue { font-size: 112px; line-height: 1; }
+
 }
 
 /* ---- Polish r9: streak milestones relight the whole arena ---- */
@@ -1346,47 +1057,7 @@
  * Accuracy / streak / speed / vs-best become rated 10-segment bars beside a
  * letter grade, replacing the four truncated instrument chips.
  * ------------------------------------------------------------------------ */
-.outcomeInstruments.outcomeRating {
-    grid-template-columns: 88px minmax(0, 1fr);
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    background: rgb(0 0 0 / 18%);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
-}
-.outcomeRatingGrade {
-    --grade: #7fc8ff;
-    display: grid;
-    place-items: center;
-    align-content: center;
-    gap: 0;
-    border-radius: 12px;
-    background:
-        radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--grade) 28%, transparent), transparent 70%),
-        rgb(255 255 255 / 3%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--grade) 45%, transparent);
-}
-.grade-S .outcomeRatingGrade { --grade: #ffd166; }
-.grade-A .outcomeRatingGrade { --grade: #5ef2b8; }
-.grade-B .outcomeRatingGrade { --grade: #7fc8ff; }
-.grade-C .outcomeRatingGrade { --grade: #c9a7ff; }
-.grade-D .outcomeRatingGrade { --grade: #ff8a8a; }
-.outcomeRatingGrade span,
-.outcomeRatingGrade small {
-    color: rgb(185 208 236 / 60%);
-    font-size: 9.5px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-.outcomeRatingGrade small { letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
-.outcomeRatingGrade strong {
-    color: var(--grade);
-    font-family: var(--ca-font-display);
-    font-size: 50px;
-    line-height: 1;
-    text-shadow: 0 0 22px color-mix(in srgb, var(--grade) 55%, transparent);
-}
+
 .outcomeRatingBars { display: grid; gap: 4px; min-width: 0; }
 .outcomeRating .outcomeInstrument.outcomeRatingRow {
     grid-template-columns: 16px 76px minmax(0, 1fr) 58px;
@@ -1741,67 +1412,155 @@
 }
 
 /* The one goal the next round can reach, right above Play Again. */
-.gameOverActions:has(.gameOverNextGoal) { flex-wrap: wrap; row-gap: var(--ca-space-2, 8px) !important; }
-.gameOverNextGoal {
-    flex-basis: 100%;
-    margin: 0;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 800;
-    color: #ffd76a;
-}
 
 /* Phones: the unlock card stacks so the part's name and label fit instead of running off the card. */
 @media (max-width: 600px) {
-    .gameOverSpotlight a.gameOverNextUnlock { grid-template-columns: minmax(0, 1fr); justify-items: center; row-gap: var(--ca-space-2, 8px); text-align: center; }
-    .gameOverSpotlight a.gameOverNextUnlock .gameOverNextUnlockCopy { align-self: center; justify-items: center; text-align: center; }
-    .gameOverSpotlight a.gameOverNextUnlock .gameOverNextUnlockCopy strong { white-space: normal; font-size: 28px; }
+
 }
 
 /* ---- Daily goals finished by this round: one plain row each, full width ---- */
-.gameOverDailyGoals {
-    flex: 1 1 100% !important;
-    display: grid;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.gameOverDailyGoals li {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 8px;
-    row-gap: 2px;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: rgb(63 217 154 / 12%);
-    box-shadow: inset 0 0 0 1px rgb(63 217 154 / 35%);
-    text-align: left;
-}
-.gameOverDailyGoalTag { color: #6ff0bd; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
-.gameOverDailyGoalLabel { flex: 1 1 auto; min-width: 0; color: #e8f1ff; font-size: 14px; font-weight: 700; }
-.gameOverDailyGoalReward { color: #ffd76a; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
 /* ---- A cosmetic this round's coins made affordable: the daily-goal row, in the coin colour ---- */
-.gameOverNowAffordable {
-    flex: 1 1 100% !important;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 8px;
-    row-gap: 2px;
-    margin: 0;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: rgb(255 215 106 / 12%);
-    box-shadow: inset 0 0 0 1px rgb(255 215 106 / 35%);
-    text-align: left;
-}
-.gameOverNowAffordableTag { color: #ffd76a; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
-.gameOverNowAffordableName { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: #e8f1ff; font-size: 14px; font-weight: 700; }
-.gameOverNowAffordablePrice { color: #ffd76a; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
 /* Underlined so it reads as a link without relying on colour. */
-.gameOverNowAffordableLink { color: #ffe9a8; font-size: 13px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
-.gameOverNowAffordableLink:hover { color: #ffffff; }
-.gameOverNowAffordableLink:focus-visible { outline: 2px solid #ffd76a; outline-offset: 3px; border-radius: 4px; }
+
+/* Server details grow below the immediate rewards without empty reserved slots. */
+
+@media (max-width: 600px) {
+
+}
+
+@media (min-width: 1000px) {
+
+}
+
+/* Image art supplies its own bevel; keep the arena shadow on the hit circle. */
+.arena .bigCircleButton.hasImage {
+    background-color: transparent;
+    box-shadow: 0 0 18px rgb(0 0 0 / 40%), 0 0 30px rgb(79 216 255 / 34%);
+}
+.arena .bigCircleButton.hasImage::before { display: none; }
+
+/* Round ceremony: the original arcade materials, with one clear reading path. */
+.resultCeremony {
+    --result-edge: #637d9b;
+    position: relative; width: min(560px, 100%); max-height: calc(100dvh - 130px);
+    overflow: auto; padding: 20px 30px; display: flex; flex-direction: column;
+    gap: 14px; text-align: center; border: 2px solid #080f1c;
+    border-radius: 12px; background: linear-gradient(160deg, #192a40, #0c1727 75%);
+    box-shadow: inset 0 2px 0 #ffffff12, 0 0 0 2px var(--result-edge), 0 8px 0 #040912, 0 24px 80px #040912b3;
+    color: var(--ca-color-ink); flex-shrink: 0;
+}
+.gameOverlay:has(> .resultCeremony) { align-items: flex-start; }
+.resultCeremony p { margin: 0; }
+.gameOverEyebrow { color: var(--ca-color-ink-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; }
+/* Reuse the original gold ribbon treatment. */
+.gameOverTitle {
+    margin: 7px auto 0; padding: 9px 26px 11px;
+    font: 400 clamp(20px, 2.3vw, 28px)/1.1 var(--ca-font-display); text-transform: uppercase; letter-spacing: .04em;
+    color: #2a1500; text-shadow: 0 2px 0 #ffffff73;
+    background: linear-gradient(180deg, #fff1b0 0%, #ffd04a 50%, #e8941c 100%);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 50%, 100% 100%, 0 100%, 20px 50%);
+}
+/* Original score plate and rays; the number is the sole large focal point. */
+.gameOverScorePanel {
+    position: relative; isolation: isolate; padding: 12px 10px 16px; border-radius: 16px;
+    border: 2px solid #040912; background: radial-gradient(circle at 50% 42%, #24406a, #0c182b 72%);
+    box-shadow: inset 0 2px 0 #ffffff1f, inset 0 0 0 4px #ffc94a20, 0 0 0 2px #c98a24;
+}
+.gameOverScorePanel::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    background: repeating-conic-gradient(from 0deg at 50% 42%, #ffd25c12 0deg 9deg, transparent 9deg 22deg);
+}
+.gameOverScoreLabel { font: 400 11px/1.5 var(--ca-font-display); letter-spacing: .18em; text-transform: uppercase; color: #ffda7a; }
+.gameOverScoreValue {
+    font: 400 96px/1.05 var(--ca-font-display); font-variant-numeric: tabular-nums;
+    color: #ffda72; -webkit-text-stroke: 2px #040912; paint-order: stroke fill;
+    text-shadow: 0 5px 0 #040912, 0 0 24px #ffb43c33;
+}
+.resultStanding { display: flex; align-items: center; justify-content: center; gap: 18px; min-height: 64px; text-align: left; }
+.resultGrade {
+    display: grid; justify-items: center; width: 58px; padding: 4px; flex-shrink: 0;
+    border: 2px solid #040912; border-radius: 10px; background: radial-gradient(circle at 50% 35%, #1d6a45, #0a2a1c 75%);
+    box-shadow: inset 0 2px 0 #ffffff33, 0 0 0 2px #3ee59a, 0 3px 0 4px #040912;
+    transform: rotate(-6deg); font-family: var(--ca-font-display);
+}
+.resultGrade span { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: #b7e9d3; }
+.resultGrade strong { color: #96f4c7; font-size: 34px; line-height: 1; font-weight: 400; }
+.resultStandingLabel { font: 400 14px/1.4 var(--ca-font-display); }
+.isPersonalBest .resultStandingLabel { color: var(--skin-gold); }
+.resultCeremony .resultBest { margin-top: 3px; font-size: 12px; color: var(--ca-color-ink-muted); }
+.gameOverRewards { position: relative; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 12px 0 20px; border-block: 1px solid #ffffff18; min-height: 76px; }
+.gameOverReward { display: grid; grid-template-columns: 28px auto; column-gap: 6px; text-align: left; min-width: 80px; }
+.gameOverReward > :first-child { grid-row: span 2; }
+.gameOverReward strong { font: 400 21px/1 var(--ca-font-display); font-variant-numeric: tabular-nums; }
+.gameOverReward small { font-size: 10px; line-height: 1.5; color: var(--ca-color-ink-muted); white-space: nowrap; }
+.gameOverReward.isCoins strong { color: var(--skin-gold); }
+.gameOverReward.isXp strong { color: var(--skin-cyan); }
+.gameOverXpTally { flex: 1; min-width: 100px; max-width: 180px; }
+.gameOverXpTallyHeader { display: block; font-size: 11px; white-space: nowrap; text-align: left; }
+.gameOverXpTallyHeader small { font-size: inherit; color: var(--ca-color-ink-muted); }
+.gameOverXpTallyTrack { display: block; position: relative; height: 6px; margin-top: 8px; background: #ffffff1f; overflow: hidden; border-radius: 4px; }
+.gameOverXpTallyGain { position: absolute; inset: 0 auto 0 0; background: var(--skin-cyan); }
+.resultRank { color: var(--skin-cyan); font-size: 12px; min-width: 48px; }
+.resultSave { position: absolute; bottom: 3px; left: 0; right: 0; height: 14px; font-size: 10px; color: var(--ca-color-ink-muted); }
+.resultPendingTag { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.gameOverReward.isPending { opacity: .6; }
+.resultEvents { display: grid; gap: 6px; font-size: 12px; text-align: center; }
+.resultEvents a { color: var(--skin-cyan); text-underline-offset: 3px; }
+.resultUnlock { display: flex; align-items: center; gap: 12px; padding: 8px 12px; text-align: left; background: linear-gradient(110deg, #ffd25c15, #111f32); border: 1px solid #c98a2470; border-radius: 12px; }
+.resultUnlock > .gameIcon { flex-shrink: 0; object-fit: contain; filter: drop-shadow(0 3px 3px #040912); }
+.resultUnlock > div { flex: 1; min-width: 0; }
+.resultUnlockLabel { font-size: 10px; color: #ffda7a; text-transform: uppercase; letter-spacing: .08em; }
+.resultUnlock strong { font: 400 17px/1.4 var(--ca-font-display); }
+.resultEquip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 7px 12px; border: 2px solid #040912; border-radius: 9px; background: linear-gradient(#ffe89c, #ffca49); color: #201600; box-shadow: inset 0 1px 0 #fff8, 0 3px 0 #040912; text-decoration: none; font: 400 13px/1.2 var(--ca-font-display); }
+.gameOverActions { display: grid; gap: 12px; }
+.gameOverNextGoal { font-size: 11px; color: var(--ca-color-ink-muted); }
+.gameOverActions > .primaryButton {
+    width: 100%; min-height: 52px; border: 2px solid #040912; border-radius: 11px;
+    background: linear-gradient(#ffe89c, #ffca49 60%, #eea526); color: #201600;
+    box-shadow: inset 0 2px 0 #fff9, 0 5px 0 #040912, 0 7px 0 #86602d;
+    font: 400 18px/1.2 var(--ca-font-display); text-shadow: 0 1px 0 #fff6;
+}
+.resultFooter { display: flex; justify-content: center; align-items: start; gap: 10px; position: relative; }
+.resultDetails { font-size: 12px; }
+.resultDetails summary, .resultSecondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px;
+    padding: 7px 14px; cursor: pointer; list-style: none; border: 2px solid #040912; border-radius: 8px;
+    background: linear-gradient(#30445f, #1b2c43); color: #dbe8f5;
+    box-shadow: inset 0 1px 0 #ffffff26, 0 3px 0 #040912; text-decoration: none;
+    font: 400 11px/1.3 var(--ca-font-display);
+}
+.resultDetails summary::-webkit-details-marker { display: none; }
+.resultDetails[open] { width: 100%; text-align: left; }
+.resultDetails[open] + .resultSecondary { position: absolute; top: 0; right: 0; }
+.resultDetails[open] summary span { display: inline-block; transform: rotate(45deg); }
+.resultBreakdown { margin-top: 16px; text-align: left; display: grid; gap: 10px; font-size: 12px; color: var(--ca-color-ink-muted); }
+.resultStatList { display: grid; gap: 7px; margin: 0; }
+.resultStatList > div { display: flex; justify-content: space-between; gap: 12px; }
+.resultStatList dd { margin: 0; color: var(--ca-color-ink); font-variant-numeric: tabular-nums; }
+.resultEquip:hover, .resultSecondary:hover, .resultDetails summary:hover { filter: brightness(1.15); }
+.resultCeremony :is(button, a, summary):focus-visible { outline: 3px solid #8fe3ff; outline-offset: 3px; }
+.gameOverSaveStatus.isFailed { color: #ffd2cc; font-size: 13px; }
+@media (max-width: 600px) {
+    .resultCeremony { padding: 16px 18px; gap: 12px; max-height: calc(100dvh - 170px); }
+    .gameOverTitle { font-size: 20px; padding-inline: 20px; }
+    .gameOverScoreValue { font-size: 80px; }
+    .gameOverRewards { gap: 8px; }
+    .gameOverXpTally { min-width: 92px; max-width: 115px; }
+    .gameOverXpTallyHeader { font-size: 9px; }
+    .resultUnlock { gap: 8px; padding: 7px 8px; }
+    .resultUnlock > .gameIcon { width: 54px; height: 54px; }
+    .resultUnlock strong { font-size: 14px; }
+    .resultUnlockLabel { font-size: 8px; }
+    .resultEquip { padding-inline: 9px; font-size: 12px; }
+    .resultGrade { width: 52px; }
+}
+@media (max-height: 760px) and (min-width: 601px) {
+    .resultCeremony { gap: 10px; padding-block: 14px; }
+    .gameOverScorePanel { padding-block: 8px; }
+    .gameOverScoreValue { font-size: 76px; }
+    .gameOverTitle { font-size: 24px; padding-block: 7px; }
+    .resultStanding { min-height: 58px; }
+    .resultUnlock > .gameIcon { width: 54px; height: 54px; }
+}

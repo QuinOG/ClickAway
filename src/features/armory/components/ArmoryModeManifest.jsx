@@ -1,4 +1,4 @@
-import { BuildIdentityGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
+const MODE_ICONS = { easy: "practice", normal: "casual", hard: "ranked" }
 import { getExactMetric } from "../armoryExactMetrics.js"
 
 /**
@@ -47,7 +47,7 @@ export default function ArmoryModeManifest({ loadoutName, modePresentations = []
           >
             <header className="armoryModeManifestColumnHeader">
               <span className="armoryModeManifestColumnGlyph" aria-hidden="true">
-                <BuildIdentityGlyph identity={presentation.identity.label} />
+                <img src={`/art/icons/${MODE_ICONS[mode.id]}.png`} alt="" />
               </span>
               <div>
                 <strong className="armoryModeManifestMode">{mode.label}</strong>

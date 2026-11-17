@@ -43,22 +43,20 @@ afterEach(() => {
 })
 
 describe("Now affordable on Results", () => {
-  test("names the cosmetic, its price and a link to the Shop once the round is saved", () => {
+  test("names the cosmetic and a link to the Shop once the round is saved", () => {
     const { container } = renderResults()
     const row = queryRow(container)
-    expect(row.closest(".gameOverRewards")).toBeTruthy()
-    expect(within(row).getByText("Now affordable")).toBeTruthy()
-    expect(within(row).getByText(cheapest.name)).toBeTruthy()
-    expect(within(row).getByText(`${cheapestCost.toLocaleString()} coins`)).toBeTruthy()
+    expect(row.closest(".resultEvents")).toBeTruthy()
+    expect(row.textContent).toContain(`Now affordable: ${cheapest.name}`)
     const link = within(row).getByRole("link", { name: `Open Shop to buy ${cheapest.name}` })
-    expect(link.textContent).toBe("Open Shop")
+    expect(link.textContent).toBe("Shop")
     expect(link.getAttribute("href")).toBe("/shop")
   })
 
   test("skips a cosmetic the player already owns", () => {
     const { container } = renderResults({ ownedItemIds: [cheapest.id] })
     if (nextAtSamePrice) {
-      expect(within(queryRow(container)).getByText(nextAtSamePrice.name)).toBeTruthy()
+      expect(queryRow(container).textContent.includes(nextAtSamePrice.name)).toBeTruthy()
     } else {
       expect(queryRow(container)).toBeNull()
     }

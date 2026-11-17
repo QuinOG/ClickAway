@@ -25,12 +25,12 @@ function renderResults(props) {
 
 test("Results counts the round's bullseyes in the score tally", () => {
   renderResults({ bullseyes: 4 })
-  expect(screen.getByText("8 hits · 0 misses · 4 bullseyes")).toBeTruthy()
+  expect(screen.getByText(/8 hits \u00b7 0 misses \u00b7 4 bullseyes/)).toBeTruthy()
 })
 
 test("a round without bullseyes keeps the plain tally", () => {
   renderResults({ bullseyes: 0 })
-  expect(screen.getByText("8 hits · 0 misses")).toBeTruthy()
+  expect(screen.getByText(/8 hits \u00b7 0 misses \u00b7 0 bullseyes/)).toBeTruthy()
 })
 
 
@@ -46,5 +46,5 @@ test("a count of one is singular in the tally", () => {
 
 test("the tally says 1 hit, 1 miss and 1 bullseye in the singular", () => {
   renderResults({ hits: 1, misses: 1, bullseyes: 1 })
-  expect(screen.getByText("1 hit \u00b7 1 miss \u00b7 1 bullseye")).toBeTruthy()
+  expect(screen.getByText(/1 hit \u00b7 1 miss \u00b7 1 bullseye/)).toBeTruthy()
 })

@@ -15,6 +15,17 @@ description: Run a ClickAway bug pass. Sol agents each take one narrow feature (
 
 **ChatGPT is plentiful right now** (the user has 2 Codex resets), so lean on Sol freely for anything below the senior-programmer bar. Claude does not read full reports when Gemini can summarise them.
 
+## Model routing by task weight (user, 2026-11-15; applies to all ClickAway work)
+Weigh every task by risk and value before picking a model, and decide without asking. Claude inference is the scarcest budget: save it.
+
+| Weight | Examples | Model |
+|---|---|---|
+| Very low / low: read-only | reading, searching, locating code, summarising reports, logs or diffs | OpenCode Go (`gemini-4-argon`, GLM, or `opencode-go/claude-haiku-5-5`, which bills to Go, not Claude) or Codex `gpt-6-luna` low. If one fails, try the next; never Sol high for reading, never Claude Haiku/Sonnet via `claudeAgent`. |
+| Medium-low | mechanical edits, test or snapshot updates, renames, CSS tweaks with a clear spec | Codex `gpt-6-luna` medium or `gpt-6.1-sol` low |
+| Medium to medium-high | routine features, risk 1–6 fixes, merges, running checks, PR drafts | Codex `gpt-6.1-sol` medium/high: the main workhorse |
+| High value | design calls, risk 7+ plans, scoring/auth/coins/data, approvals, final checks | Claude Opus 5.5 (Claude itself) |
+| Stuck after Claude tried | | Fable, per the table above |
+
 Before launching, restate in 3–4 lines:
 - the features in this run;
 - the reasoning level;

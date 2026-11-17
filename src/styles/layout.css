@@ -1482,22 +1482,12 @@
     flex: 0 0 auto;
 }
 
-.brandLogo::after {
-    content: "";
-    position: absolute;
-    inset: 3px;
-    border: 1px solid rgba(119, 217, 255, 0.32);
-    transform: rotate(45deg);
-    pointer-events: none;
-}
-
 .brandLogoImage {
     position: relative;
     z-index: 1;
     width: 36px;
     height: 36px;
     object-fit: contain;
-    filter: drop-shadow(0 0 11px rgba(61, 198, 255, 0.3));
 }
 
 .brandText {
