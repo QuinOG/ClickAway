@@ -5352,3 +5352,9 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
     .shopCommandSurface .shopCommandLoadoutAvatar { width: 46px; height: 46px; }
     .shopInspectStage .shopStageWorld .arenaWorldPlate { transform: translateY(12%) scale(1.25); transform-origin: 50% 0; }
 }
+
+/* Give phone rank labels room while preserving the resource column. */
+@media (max-width: 640px) {
+    .topbar .shellIdentityButton { width: min(184px, 58vw); gap: 4px; }
+    .topbar .shellIdentityButton .shellIdentityRank { font-size: 10px; letter-spacing: 0; }
+}
