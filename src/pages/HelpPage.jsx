@@ -9,7 +9,6 @@ import {
   GameController,
   Question,
   ShieldChevron,
-  Target,
 } from "@phosphor-icons/react"
 
 import { CommandHeader } from "../components/RouteScene.jsx"
@@ -76,14 +75,7 @@ function Rulebook({ label, children }) {
 
 function HelpMissionMap() {
   return (
-    <section className="helpMissionMap" aria-labelledby="help-mission-map-title">
-      <div className="helpMissionMapHeader">
-        <div>
-          <p className="commandHeaderEyebrow">Choose a system</p>
-          <h2 id="help-mission-map-title">Field guide</h2>
-        </div>
-        <span><i /> Updated for this season</span>
-      </div>
+    <section className="helpMissionMap" aria-label="Field guide index">
       <nav className="helpMissionGrid" aria-label="Field guide sections">
         {GUIDE_DESTINATIONS.map((item, index) => (
           <a key={item.id} className="helpMissionCard" href={`#${item.id}`}>
@@ -106,9 +98,8 @@ export default function HelpPage() {
         <CommandHeader
           routeId="help"
           eyebrow="Arena field manual"
-          title="Learn by sight"
+          title="Field Guide"
           subtitle="Pick a system, see its shape, then open the exact rules only when you need them."
-          status={<span className="helpGuideStatus"><Target weight="bold" /> 6 systems</span>}
         />
 
         <HelpMissionMap />
