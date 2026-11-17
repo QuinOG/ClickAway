@@ -1,11 +1,4 @@
-import { CoinIcon, GemIcon } from "../../../../components/art/GameIcons.jsx"
-import {
-  Crosshair,
-  Fire,
-  Gauge,
-  Timer,
-  TrendUp,
-} from "@phosphor-icons/react"
+import { CoinIcon, GemIcon, PartEmblem, PowerEmblem } from "../../../../components/art/GameIcons.jsx"
 import { motion } from "motion/react"
 import { useEffect, useMemo, useRef } from "react"
 import { Link } from "react-router-dom"
@@ -81,39 +74,27 @@ function getRoundGrade(average) {
   return "D"
 }
 
-// Round performance as a rated stat card: each readout becomes a 10-segment
-// bar and the average becomes a letter grade.
+// Use the same performance ratings for the grade; details show plain values.
 function getPerformanceStats({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore }) {
   const accuracyValue = Number.parseFloat(String(accuracy).replace("%", "")) || 0
   const avgMs = Number(avgReactionMs)
   const bestMs = Number(bestReactionMs)
   const normalizedBest = Math.max(0, Number(bestScore) || 0)
   const stats = [
-    { label: "Accuracy", value: accuracy, rating: clampRating(accuracyValue / 10), icon: <Gauge weight="bold" aria-hidden="true" /> },
-    { label: "Streak", value: bestStreak, rating: clampRating(bestStreak / 2), icon: <Fire weight="bold" aria-hidden="true" /> },
-    { label: "Avg speed", value: formatReactionTime(avgReactionMs), rating: avgMs > 0 ? clampRating((650 - avgMs) / 45) : 0, icon: <Timer weight="bold" aria-hidden="true" /> },
-    { label: "Fastest", value: formatReactionTime(bestReactionMs), rating: bestMs > 0 ? clampRating((520 - bestMs) / 35) : 0, icon: <Crosshair weight="bold" aria-hidden="true" /> },
-    { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 10, icon: <TrendUp weight="bold" aria-hidden="true" /> },
+    { label: "Accuracy", value: accuracy, rating: clampRating(accuracyValue / 10) },
+    { label: "Streak", value: bestStreak, rating: clampRating(bestStreak / 2) },
+    { label: "Avg speed", value: formatReactionTime(avgReactionMs), rating: avgMs > 0 ? clampRating((650 - avgMs) / 45) : 0 },
+    { label: "Fastest", value: formatReactionTime(bestReactionMs), rating: bestMs > 0 ? clampRating((520 - bestMs) / 35) : 0 },
+    { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 10 },
   ]
   return stats
 }
 
 function OutcomeInstruments({ stats }) {
   return (
-    <div className="outcomeRating" aria-label="Round performance details">
-      <div className="outcomeRatingBars">
-        {stats.map(({ label, value, rating, icon }) => (
-          <div className={`outcomeInstrument outcomeRatingRow ${rating >= 8 ? "isHigh" : rating <= 3 ? "isLow" : ""}`} key={label}>
-            {icon}
-            <span>{label}</span>
-            <i className="outcomeRatingSegments" aria-hidden="true">
-              {Array.from({ length: 10 }, (_, index) => <b key={index} className={index < rating ? "isOn" : ""} />)}
-            </i>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </div>
-    </div>
+    <dl className="resultStatList" aria-label="Round performance details">
+      {stats.map(({ label, value }) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+    </dl>
   )
 }
 
@@ -253,7 +234,6 @@ export function GameOverOverlay({
     for (const goal of roundDailyGoals?.goals ?? []) {
       events.push(<span key={`goal-${goal.id}`}>Daily goal done: {goal.label} · +{formatNumber(goal.reward?.coins || 0)} coins</span>)
     }
-    if (unlockedPart) events.push(<span key="unlock">Unlocked: {unlockedPart.label} · <Link to={unlockedPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(unlockedPart.slotId)}`} aria-label={`Unlocked ${unlockedPart.label}. Open Armory`}>Equip</Link></span>)
     if (!events.length && nowAffordableItem) events.push(<span key="shop" className="gameOverNowAffordable">Now affordable: {nowAffordableItem.name} · <Link to="/shop" aria-label={`Open Shop to buy ${nowAffordableItem.name}`}>Shop</Link></span>)
   }
 
@@ -261,13 +241,16 @@ export function GameOverOverlay({
     <MotionSection className={`gameOverCard resultCeremony difficultyMood-${selectedModeId} gameOverTone-${tone} ${isNewBestScore ? "isPersonalBest" : ""}`}
       aria-labelledby="game-over-title" variants={cardVariants} initial="hidden" animate="visible" exit="exit">
       <header className="gameOverHeader">
-        <p className="gameOverEyebrow">{modeLabel}{isNewBestScore ? <span> · New personal best</span> : null}</p>
+        <p className="gameOverEyebrow">{modeLabel}</p>
         <h2 id="game-over-title" className="gameOverTitle">Round Complete</h2>
       </header>
       <div className="gameOverScorePanel" aria-label={`Final score ${score}`}>
-        <p className="gameOverScoreValue" aria-hidden="true">{isNewBestScore ? <i>✦</i> : null}{formatNumber(animatedScore)}{isNewBestScore ? <i>✦</i> : null}</p>
-        <p className="resultGrade" aria-label={`Round grade ${grade}`}>Grade <strong>{grade}</strong></p>
-        <p className="resultBest">{isNewBestScore ? `+${formatNumber(score - bestScore)} over your previous best` : `Personal best ${formatNumber(bestScore)}`}</p>
+        <p className="gameOverScoreLabel">Final score</p>
+        <p className="gameOverScoreValue" aria-hidden="true">{formatNumber(animatedScore)}</p>
+      </div>
+      <div className="resultStanding">
+        <p className="resultGrade" aria-label={`Round grade ${grade}`}><span>Grade</span><strong>{grade}</strong></p>
+        <div><p className="resultStandingLabel">{isNewBestScore ? "New personal best" : "Keep climbing"}</p><p className="resultBest">{isNewBestScore ? `+${formatNumber(score - bestScore)} over your previous best` : `Personal best ${formatNumber(bestScore)}`}</p></div>
       </div>
       {showRoundRewards && !isPracticeMode ? (
         <div className="gameOverRewards" aria-label="Round rewards">
@@ -279,6 +262,13 @@ export function GameOverOverlay({
         </div>
       ) : null}
       {events.length ? <div className="resultEvents" aria-label="Round events">{events.slice(0, 2).map((event) => <p key={event.key}>{event}</p>)}</div> : null}
+      {isRoundSaved && unlockedPart ? (
+        <div className="resultUnlock">
+          {unlockedPart.kind === "power" ? <PowerEmblem powerupId={unlockedPart.id} size={68} /> : <PartEmblem partId={unlockedPart.id} slotId={unlockedPart.slotId} size={68} />}
+          <div><p className="resultUnlockLabel">New Armory part</p><strong>{unlockedPart.label}</strong></div>
+          <Link className="resultEquip" to={unlockedPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(unlockedPart.slotId)}`} aria-label={`Unlocked ${unlockedPart.label}. Open Armory`}>Equip <span aria-hidden="true">›</span></Link>
+        </div>
+      ) : null}
       {isPracticeMode ? <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No economy or rank was changed.</p> : null}
       {roundSaveStatus === "idle" && roundSaveNote ? <p className="gameOverPracticeNote">{roundSaveNote}</p> : null}
       {roundSaveStatus === "failed" ? <p className="gameOverSaveStatus isFailed" role="alert">This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}</p> : null}

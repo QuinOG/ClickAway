@@ -4971,7 +4971,6 @@
 /* Art pass: Shop button skins rest on item-specific illustrated supports */
 .shopGrid .shopItemCard .shopItemPreviewFrame.is-button { position: relative; }
 .shopItemPreviewFrame .shopItemCradle { position: absolute; left: 50%; bottom: 6%; width: 74%; height: auto; transform: translateX(-50%); z-index: 0; pointer-events: none; filter: drop-shadow(0 5px 4px rgb(4 9 18 / 55%)); }
-.shopItemPreviewFrame .shopItemCradle.is-claw { bottom: 4%; }
 .shopItemPreviewFrame:has(.shopItemCradle) .shopPreviewButtonStage { position: relative; z-index: 1; transform: translateY(-14%) scale(.86); }
 /* Art pass: Duels unknown rival is a masked challenger portrait */
 .duelFightCard .duelFighterPortrait .duelFighterMasked { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
@@ -5303,3 +5302,53 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
 }
 .shellIdentityPopover.shellIdentityPass .shellPassIdentity { min-width: 0; padding-right: 0; }
 .shellIdentityPopover.shellIdentityPass .shellPassHero { height: auto; }
+
+/* Loadout showcase: the stadium, skin and portrait carry the scene. */
+.shopInspectStage.shopCommandLoadoutStage {
+    padding-top: 0;
+    box-shadow: inset 0 0 0 1px #8c754b, 0 4px 0 #040912 !important;
+}
+.shopInspectStage .shopStageWorld {
+    height: 100% !important;
+    opacity: 1 !important;
+}
+.shopInspectStage .shopStageWorld .arenaWorldPlate { object-fit: cover; }
+.shopInspectStage .shopCommandLoadoutButton { bottom: 35px !important; }
+.shopInspectStage .shopCommandLoadoutAvatarFrame { top: 16px !important; right: 16px; }
+.shopCommandSurface .shopCommandLoadoutAvatar { width: 64px; height: 64px; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatarFrame {
+    top: auto !important;
+    bottom: 28px;
+}
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutAvatar { width: 160px; height: 160px; }
+.shopInspectStage.stageFocus-profile_image .shopCommandLoadoutButton { top: 16px !important; bottom: auto !important; }
+
+/* Common items sit on the plain wooden plinth, a size smaller than the rarer stands. */
+.shopItemCard:is(.rarity-core, .rarity-common) .shopItemCradle { width: 64%; }
+
+/* Live Loadout: the market stall is a window onto the arena. */
+.shopInspectStage .shopSceneryFrame {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-style: solid;
+    border-width: 80px 52px 21px 52px;
+    border-image: url('/art/shop/booth-window.png') 430 282 114 280 stretch;
+    pointer-events: none;
+}
+.shopInspectStage .shopStageWorld {
+    inset: 44px 28px 16px !important;
+    overflow: hidden;
+    width: auto !important;
+    height: auto !important;
+}
+.shopInspectStage .shopCommandLoadoutButton { width: 118px !important; height: 118px !important; bottom: 20px !important; }
+.shopInspectStage .shopCommandLoadoutAvatarFrame { top: 84px !important; right: 50px; }
+.shopInspectStage .shopStageWorld .arenaWorldPlate { object-position: 50% 20%; }
+.shopCommandSurface .shopCommandLoadoutAvatar { width: 56px; height: 56px; }
+@media (max-width: 760px) {
+    .shopInspectStage .shopCommandLoadoutButton { width: 96px !important; height: 96px !important; bottom: 24px !important; }
+    .shopInspectStage .shopCommandLoadoutAvatarFrame { top: 82px !important; right: 46px; }
+    .shopCommandSurface .shopCommandLoadoutAvatar { width: 46px; height: 46px; }
+    .shopInspectStage .shopStageWorld .arenaWorldPlate { transform: translateY(12%) scale(1.25); transform-origin: 50% 0; }
+}
