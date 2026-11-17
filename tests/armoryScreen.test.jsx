@@ -58,6 +58,7 @@ function getPartCard(name) {
 
 async function equipPart(user, card) {
   await user.click(card)
+  await user.click(document.querySelector(".armoryPartFeatureInstall"))
 }
 
 describe("Armory screen baseline", () => {
@@ -336,7 +337,7 @@ describe("Armory machine", () => {
     expect(document.querySelectorAll(".armoryMachineHousing.isNeutral")).toHaveLength(2)
   })
 
-  test("clicking a mod equips it on the selected rig node", () => {
+  test("clicking a mod previews it; Install equips it on the selected rig node", () => {
     const props = renderArmory()
     const tempoHousing = document.querySelector(".armoryMachineHousing.housing-tempoCore")
 
@@ -345,6 +346,9 @@ describe("Armory machine", () => {
     expect(within(tempoHousing).getByText("Tempo")).not.toBeNull()
 
     fireEvent.click(getPartCard(/^Anchor/))
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+    expect(screen.getByRole("button", { name: "Install Anchor" })).not.toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "Install Anchor" }))
 
     expect(tempoHousing.dataset.moduleState).toBe("installed")
     expect(tempoHousing.className).not.toContain("isPreviewing")
@@ -407,11 +411,11 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(anchorCard.dataset.armoryState).toBe("available")
     expect(lockedCard.dataset.armoryState).toBe("locked")
 
-    await user.click(anchorCard)
+    await equipPart(user, anchorCard)
     expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
   })
 
-  test("keyboard: arrows rove and Enter equips immediately", async () => {
+  test("keyboard: arrows rove, Enter previews, and Install commits", async () => {
     const user = userEvent.setup()
     const props = renderArmory({ seenUnlockPartIds: getUnseenUnlockedParts(5).map((part) => part.id) })
 
@@ -428,8 +432,10 @@ describe("Armory parts gallery (Phase 5)", () => {
     await user.keyboard("{ArrowLeft}")
     expect(document.activeElement).toBe(anchorCard)
 
-    // Enter equips the focused mod immediately.
+    // Enter previews the focused mod; installation needs its own action.
     await user.keyboard("{Enter}")
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+    await user.click(screen.getByRole("button", { name: "Install Anchor" }))
     expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
 
     const { savedLoadouts } = lastLoadoutState(props)
@@ -437,7 +443,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     expect(updatedLoadout.moduleIds.tempoCoreId).toBe("tempo_anchor")
   })
 
-  test("a bare tap or click equips immediately", async () => {
+  test("a bare tap previews without installing", async () => {
     const props = renderArmory()
 
     await openStep(userEvent.setup(), "Mods")
@@ -446,6 +452,9 @@ describe("Armory parts gallery (Phase 5)", () => {
     const anchorCard = getPartCard(/^Anchor/)
     fireEvent.click(anchorCard)
 
+    expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+    expect(screen.getByRole("button", { name: "Install Anchor" })).not.toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "Install Anchor" }))
     expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
     expect(screen.queryByRole("region", { name: "Preview actions" })).toBeNull()
     const { savedLoadouts } = lastLoadoutState(props)
@@ -490,18 +499,32 @@ describe("Armory tool rack (Phase 6)", () => {
     expect(freezeRow.querySelectorAll(".armoryCadenceTick.isCharge")).toHaveLength(1)
   })
 
-  test("hovering a power does not change the build or cadence", async () => {
+  test.each(["Mods", "Powerups"])("%s previews require a click and survive pointer movement", async (step) => {
     const user = userEvent.setup()
     const props = renderArmory({ playerLevel: 5 })
-
-    await openHotbar(user)
-    props.onLoadoutStateChange.mockClear()
-
-    await user.hover(getPartCard(/Magnet Center/))
-
-    const timeline = screen.getByLabelText("Charge cadence timeline")
-    expect(timeline.querySelectorAll(".armoryCadenceRow.isPreview")).toHaveLength(0)
+    await openStep(user, step)
+    const selected = getPartCard(step === "Mods" ? /^Overdrive/ : /Magnet Center/)
+    const other = getPartCard(step === "Mods" ? /^Anchor/ : /Grow \+10/)
+    const feature = () => document.querySelector(".armoryPartFeature").textContent
+    const initial = feature()
+    await user.hover(selected)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(feature()).toBe(initial)
+    await user.click(selected)
+    const clicked = feature()
+    expect(clicked).not.toBe(initial)
     expect(props.onLoadoutStateChange).not.toHaveBeenCalled()
+    await user.hover(other)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await user.unhover(other)
+    expect(feature()).toBe(clicked)
+    await user.click(document.querySelector(".armoryPartFeatureInstall"))
+    expect(props.onLoadoutStateChange).toHaveBeenCalledOnce()
+    const installed = feature()
+    expect(document.querySelector(".armoryPartFeature.isConfirmed")).not.toBeNull()
+    await user.hover(other)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(feature()).toBe(installed)
   })
 
   test("unrelated drops do not rearrange either power rack", async () => {

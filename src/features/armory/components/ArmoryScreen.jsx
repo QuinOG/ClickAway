@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { PartEmblem } from "../../../components/art/GameIcons.jsx"
+import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 import {
   LOADOUT_POWERUPS,
@@ -15,7 +15,6 @@ import {
 } from "../../../constants/buildcraftPresentation.js"
 import {
   ModuleSlotGlyph,
-  PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import {
   getModuleExactChips,
@@ -228,9 +227,8 @@ export default function ArmoryScreen({
                 parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
                 playerLevel={playerLevel}
                 installedPartId={installedModuleId}
-                renderPartGlyph={(part) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} size={30} />}
+                renderPartGlyph={(part, className) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} className={className} size={30} />}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
-                onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 currentRules={activePresentation.roundRules}
                 onPreviewPart={handlePreviewModule}
                 getCandidateRules={(moduleId) => buildRoundRules(selectedMode, {
@@ -302,10 +300,9 @@ export default function ArmoryScreen({
                 parts={powerParts}
                 playerLevel={playerLevel}
                 installedPartId={hotbarApi.selectedPowerupId}
-                renderPartGlyph={(part) => <PowerupGlyph powerupId={part.id} />}
+                renderPartGlyph={(part, className) => <PowerEmblem powerupId={part.id} className={className} size={30} />}
                 onInstallPart={hotbarApi.installPower}
                 chargeMultiplier={activePresentation.roundRules?.powerupAwardMultiplier ?? 1}
-                onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <>
                     <ArmoryCadenceTimeline

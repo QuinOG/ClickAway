@@ -370,7 +370,7 @@
 .armoryMachineRigMount.mount-streakLens { left: 50%; top: 8px; color: rgb(var(--armory-tone-streak)); }
 .armoryMachineRigMount.mount-tempoCore { left: 8px; top: 50%; color: rgb(var(--armory-tone-tempo)); }
 .armoryMachineRigMount.mount-powerRig { left: calc(100% - 8px); top: 50%; color: rgb(var(--armory-tone-power)); }
-.armoryMachineRigMount.isFitted { box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px currentColor, 0 0 18px currentColor; }
+.armoryMachineRigMount.isSelected { box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px currentColor, 0 0 18px currentColor; }
 .armoryMachineRigMount.isStock { opacity: 0.55; filter: saturate(0.3); }
 .armoryMachineTarget { z-index: 3; }
 @media (prefers-reduced-motion: no-preference) {
@@ -440,17 +440,6 @@
 .armoryPartFeature.tone-tempoCore { --tone: var(--armory-tone-tempo, 79, 184, 255); }
 .armoryPartFeature.tone-streakLens { --tone: var(--armory-tone-streak, 84, 177, 149); }
 .armoryPartFeature.tone-powerRig { --tone: var(--armory-tone-power, 255, 176, 72); }
-.armoryPartFeatureGlyph {
-    grid-area: glyph;
-    display: grid;
-    place-items: center;
-    width: 112px;
-    height: 112px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 38%, rgba(var(--tone), 0.35), #0b1322 72%);
-    box-shadow: 0 0 0 3px #050a14, inset 0 0 0 3px rgba(var(--tone), 0.7), 0 0 26px rgba(var(--tone), 0.35);
-}
-.armoryPartFeatureGlyph svg { width: 68px; height: 68px; }
 .armoryPartFeatureHead { grid-area: head; display: grid; gap: 4px; min-width: 0; }
 .armoryPartFeatureEyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--tone)); }
 .armoryPartFeatureName { font: 400 30px/1 "Russo One", var(--ca-font-display, sans-serif); color: #fff; text-shadow: 0 3px 0 #050a14; }
@@ -494,10 +483,7 @@
 .armoryPartsGallery .armoryPartsShelf .armoryPartDeltas { display: none; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartBody { display: block; min-width: 0; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartLabel { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isFeatured {
-    box-shadow: 0 0 0 2px #050a14, 0 0 0 4px rgb(255 255 255 / 85%), 0 0 18px rgb(255 255 255 / 25%);
-    transform: translateY(-2px);
-}
+
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled {
     grid-column: 1 / -1;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -964,7 +950,6 @@
 .armoryStepCard-passives .armoryPartsGallery > .armoryGalleryFooter { display: none; }
 .armoryStepStack .armoryPartsGallery > .armoryGalleryFooter { display: none; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) { gap: 4px; padding: 9px 6px 8px; }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) .armoryPartGlyph { width: 36px; height: 36px; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem { font-size: 9.5px; white-space: nowrap; letter-spacing: 0.02em; }
 .armoryPartsGallery .armoryPartsShelf { gap: 6px; }
 
@@ -1155,7 +1140,6 @@
     gap: 8px 16px;
     padding-block: 12px;
 }
-.armoryPartFeature:has(.armoryChargeRhythm) .armoryPartFeatureGlyph { width: 84px; height: 84px; align-self: center; }
 .armoryPartFeature:has(.armoryChargeRhythm) .armoryPartFeatureFeel { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .armoryChargeRhythm { gap: 4px; padding: 7px 10px; }
 .armoryChargeRhythmRow { grid-template-columns: 92px minmax(0, 1fr) 76px; }
@@ -1344,7 +1328,7 @@
     border-radius: 16px;
 }
 .armoryMachineRigMount.isStock { opacity: 1; filter: none; }
-.armoryMachineRigMount.isFitted { box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px currentColor, 0 0 26px currentColor; }
+.armoryMachineRigMount.isSelected { box-shadow: 0 0 0 3px var(--skin-ink, #0a1322), 0 0 0 5px currentColor, 0 0 26px currentColor; }
 .armoryMachineRigMount.mount-streakLens { top: -30px; }
 .armoryMachineRigMount.mount-tempoCore { left: -40px; }
 .armoryMachineRigMount.mount-powerRig { left: calc(100% + 40px); }
@@ -1619,7 +1603,6 @@
     padding: 9px 6px 8px;
     text-align: center;
 }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartGlyph { width: 36px; height: 36px; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem {
     position: static;
     padding: 1px 8px;
@@ -1848,10 +1831,6 @@
 }
 /* Name sits beside the emblem; the description spans the tile beneath. */
 .armoryPartsGallery .armoryPartsShelf .armoryPartBody { display: contents; }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph,
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) .armoryPartGlyph,
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartGlyph { grid-column: 1; grid-row: 1; width: 30px; height: 30px; }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph svg { width: 22px; height: 22px; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartLabel { grid-column: 2; grid-row: 1; padding-right: 20px; font-size: 14.5px; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartFeel { grid-column: 1 / -1; grid-row: 2; margin-top: 0; -webkit-line-clamp: 4; font-size: 11.5px; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled > .armoryStateEmblem,
@@ -2059,23 +2038,6 @@
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.tone-powerRig,
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.tone-power { --tray-tone: var(--armory-tone-power); }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked { order: 1; }
-
-/* The socket: a recessed, tone-rimmed bay holding a large emblem. */
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph,
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard:not(.isInstalled) .armoryPartGlyph,
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isInstalled .armoryPartGlyph {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: radial-gradient(circle at 50% 40%, rgba(var(--tray-tone), 0.30), rgb(6 12 24 / 92%) 70%);
-    box-shadow:
-        inset 0 0 0 2px rgba(var(--tray-tone), 0.55),
-        inset 0 6px 14px rgb(0 0 0 / 55%),
-        0 0 18px rgba(var(--tray-tone), 0.18);
-}
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard .armoryPartGlyph svg { width: 28px; height: 28px; filter: drop-shadow(0 0 6px rgba(var(--tray-tone), 0.55)); }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph { box-shadow: inset 0 0 0 2px rgb(255 255 255 / 12%), inset 0 6px 14px rgb(0 0 0 / 55%); }
-.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlyph svg { filter: grayscale(1); }
 
 .armoryPartsGallery .armoryPartsShelf .armoryPartBody { display: block; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartLabel { padding: 0; font-size: 14.5px; line-height: 1.15; }
@@ -3043,12 +3005,6 @@
 
 /* Shared card layout leaves room for long names and comparison values. */
 .armoryWorkspace .armoryPartFeature { min-width: 0; }
-.armoryWorkspace .armoryPartFeature.tone-powerRig {
-    --tone: 255, 211, 106;
-    background: radial-gradient(ellipse at top left, rgba(var(--tone), 0.16), transparent 75%);
-    border-top: 2px solid rgba(var(--tone), 0.65);
-    padding-top: 12px;
-}
 .armoryWorkspace .armoryPartFeatureName { overflow-wrap: anywhere; }
 .armoryWorkspace .armoryPartFeatureInstall { min-width: 0; }
 .armoryWorkspace .armorySwapReportHead > span,
@@ -3156,3 +3112,102 @@
 .armoryModeManifestColumnGlyph { width: 46px !important; height: 46px !important; flex: none; }
 .armoryModeManifestColumnGlyph img { width: 100%; height: 100%; object-fit: contain; }
 .armoryModeManifestBestFor, .armoryModeManifestIdentity, .armoryCompareEmpty, .armoryCompareTitle, .armoryCompareEyebrow { color: #f6fbff; font-weight: 600; }
+
+/* Armory layout pass: keep the illustrated console frame visible around its keys. */
+.armoryMachine .armoryMachineRack {
+    box-sizing: border-box;
+    padding: 28px 24px 24px;
+    gap: 12px;
+    border-image-width: 24px;
+}
+.armoryMachine .armoryMachineRackSlot { padding: 10px 6px 9px; }
+.armoryMachine .armoryMachineRackGlyph { width: 42px; height: 42px; }
+.armoryMachine .armoryMachineRackKey { left: 7px; font-size: 19px; }
+.armoryMachine .armoryMachineRackLabel { font-size: 13px; }
+.armoryMachine .armoryMachineRackSlot::before { height: 10px; }
+
+/* All nameplates share the same selected treatment. */
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing:is(.housing-tempoCore, .housing-powerRig, .housing-streakLens) {
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), inset 0 3px 0 rgba(var(--tone), 0.95), 0 4px 0 rgb(0 0 0 / 35%);
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.isSelected:is(.housing-tempoCore, .housing-powerRig, .housing-streakLens) {
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322), inset 0 3px 0 rgba(var(--tone), 0.95), 0 0 22px rgba(var(--tone), 0.4);
+}
+@media (min-width: 701px) {
+    .armoryMachine .armoryMachineAssembly { padding-top: 62px; }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens {
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        text-align: center;
+    }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens .armoryMachineHousingBody { justify-items: center; }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens:hover { transform: translateX(-50%) translateY(-1px); }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens::before {
+        left: 50%; top: 100%; width: 18px; height: 10px;
+        transform: translateX(-50%) rotate(180deg);
+        clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+    }
+}
+@media (min-width: 1260px) {
+    .armoryScene .armoryStage { align-content: start; padding: 24px 18px; }
+    .armoryStage .armoryMachine { gap: 12px; }
+    .armoryStage .armoryMachineCore { min-height: 0; }
+}
+@media (max-width: 700px) {
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing { width: 100%; }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing::before { display: none; }
+}
+
+@media (min-width: 701px) {
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing:is(.housing-tempoCore, .housing-powerRig) { top: calc(50% + 101px); }
+}
+@media (max-width: 700px) {
+    .armoryMachine .armoryMachineRig { width: 180px; height: 180px; }
+    .armoryMachine .armoryMachineCoreStage { height: 280px; }
+    .armoryMachine .armoryMachineRigMount.mount-tempoCore { left: -42px; width: 70px; height: 76px; }
+    .armoryMachine .armoryMachineRigMount.mount-powerRig { left: calc(100% + 42px); width: 70px; height: 76px; }
+    .armoryMachine .armoryMachineRigMount.mount-streakLens { top: 0; width: 64px; height: 64px; }
+    .armoryMachine .armoryMachineRigMount.isSelected::after { inset: -4px; }
+    .armoryMachine .armoryMachineRigConduit.conduit-tempoCore { left: -20px; width: 28px; }
+    .armoryMachine .armoryMachineRigConduit.conduit-powerRig { right: -20px; width: 28px; }
+    .armoryMachine .armoryMachineTarget { max-width: 136px; max-height: 136px; }
+    .armoryMachine .armoryMachineAimReadout b { font-size: 32px; }
+    .armoryMachine .armoryMachineAimReadout small,
+    .armoryMachine .armoryMachineAimReadout em { font-size: 10px; }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing:is(.housing-tempoCore, .housing-powerRig, .housing-streakLens) {
+        width: 100%; max-width: none; text-align: center;
+    }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing .armoryMachineHousingBody { justify-items: center; }
+    .armoryMachine .armoryMachineRack { padding: 26px 24px 24px; gap: 12px; }
+    .armoryMachine .armoryMachineRackSlot { grid-template-columns: 42px minmax(0, 1fr); align-items: center; padding: 8px 12px 8px 32px; }
+    .armoryMachine .armoryMachineRackKey { top: 20px; }
+    .armoryMachine .armoryMachineRackBody { justify-items: start; }
+}
+
+/* One open work surface, with bare artwork and a shared header rhythm. */
+.armoryWorkspace .armoryStepCard,
+.armoryWorkspace .armoryLanePanel,
+.armoryWorkspace .armoryPartFeature,
+.armoryWorkspace .armoryPartFeature.isConfirmed {
+    border: 0; border-radius: 0; background: none; box-shadow: none;
+}
+.armoryWorkspace .armoryPartFeature { padding: 4px 0 18px; margin-bottom: 12px; }
+.armoryWorkspace .armoryPreviewArt { grid-area: glyph; width: 96px; height: 96px; object-fit: contain; justify-self: center; }
+.armoryWorkspace .armoryChoiceArt { width: 46px; height: 46px; object-fit: contain; }
+.armoryWorkspace .armoryPartsShelf { padding: 12px 0 0; border: 0; border-radius: 0; background: none; box-shadow: none; border-top: 1px solid rgb(180 210 240 / 18%); }
+.armoryWorkspace .armoryPartCard { border: 0; background: rgb(255 255 255 / 3%); box-shadow: none; }
+.armoryWorkspace .armoryPartCard:hover { background: rgb(255 255 255 / 8%); }
+.armoryWorkspace .armoryPartsShelf .armoryPartCard.isInstalled { box-shadow: inset 0 -3px 0 #6dff9c; }
+.armoryWorkspace .armoryPartsShelf .armoryPartCard.isFeatured { outline: 2px solid rgb(185 215 245 / 65%); outline-offset: -2px; }
+.armoryWorkspace .armorySwapReport { border: 0; border-radius: 0; background: none; box-shadow: none; padding: 8px 0; }
+.armoryWorkspace .armorySwapReportRow > * { background: none !important; border: 0; box-shadow: none; }
+.armoryWorkspace .armorySwapReportRow > .armorySwapReportTo { text-shadow: none; }
+.armoryWorkspace .armorySwapReportHead > span { color: #b4cbe4; }
+
+@media (max-width: 700px) {
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing:is(.housing-tempoCore, .housing-powerRig, .housing-streakLens):hover { transform: none; }
+}
+
+.armoryWorkspace > .armoryInstruments { background: none; box-shadow: none; border: 0; border-bottom: 1px solid rgb(180 210 240 / 18%); border-radius: 0; }
+.armoryMachine .armoryMachineRackGlyph { border-radius: 0; background: none; box-shadow: none; }
