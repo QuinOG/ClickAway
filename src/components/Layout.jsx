@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react"
 import { Toaster } from "react-hot-toast"
 import { useLocation, useOutlet } from "react-router-dom"
-import { AnimatePresence, motion } from "motion/react"
+import { motion } from "motion/react"
 
 import { AUTHENTICATED_ROUTES, getRouteMetadata, shouldCollapseShell } from "../app/routeMetadata.js"
 import { scheduleIdleRoutePrefetch } from "../app/routeModules.js"
@@ -204,20 +204,17 @@ export default function Layout({
             </div>
           )}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <MotionDiv
-              key={pathname}
-              className="routeOutlet"
-              data-transition-tone={currentRoute?.transitionTone ?? "utility"}
-              variants={routeMotion.variants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={routeMotion.transition}
-            >
-              {outlet}
-            </MotionDiv>
-          </AnimatePresence>
+          <MotionDiv
+            key={pathname}
+            className="routeOutlet"
+            data-transition-tone={currentRoute?.transitionTone ?? "utility"}
+            variants={routeMotion.variants}
+            initial="initial"
+            animate="animate"
+            transition={routeMotion.transition}
+          >
+            {outlet}
+          </MotionDiv>
         </Suspense>
       </main>
 
