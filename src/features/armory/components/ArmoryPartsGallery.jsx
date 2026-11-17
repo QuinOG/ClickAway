@@ -165,6 +165,7 @@ export default function ArmoryPartsGallery({
   getCandidateRules = null,
   chargeMultiplier = null,
   onPreviewPart = null,
+  onSelectPart = null,
 }) {
   const cardRefs = useRef({})
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
@@ -200,7 +201,10 @@ export default function ArmoryPartsGallery({
   }, [onPreviewPart, previewPartId])
   useEffect(() => () => onPreviewPart?.(null), [onPreviewPart])
 
+  useEffect(() => () => onSelectPart?.(null), [onSelectPart])
+
   const installPart = (partId) => {
+    onSelectPart?.(null)
     const rows = getCandidateRules ? getSwapImpact(currentRules, getCandidateRules(partId)) : []
     setConfirmed({ partId, rows })
     setSelectedPartId(null)
@@ -246,7 +250,6 @@ export default function ArmoryPartsGallery({
         <div className={`armoryPartFeature tone-${tone} isConfirmed`} aria-label={`Installed: ${confirmedPart.label}`}>
           {renderPartGlyph?.(confirmedPart, "armoryPreviewArt")}
           <div className="armoryPartFeatureHead">
-            <span className="armoryPartFeatureEyebrow">Installed in this build</span>
             <strong className="armoryPartFeatureName">{confirmedPart.label}</strong>
             <span className="armoryPartFeatureFeel">{confirmedPart.description}</span>
           </div>
@@ -257,9 +260,6 @@ export default function ArmoryPartsGallery({
         <div className={`armoryPartFeature tone-${tone}`} aria-label={`Featured: ${featuredPart.label}`}>
           {renderPartGlyph?.(featuredPart, "armoryPreviewArt")}
           <div className="armoryPartFeatureHead">
-            <span className="armoryPartFeatureEyebrow">
-              {installedPart ? `Swap in for ${installedPart.label}` : "Candidate"}
-            </span>
             <strong className="armoryPartFeatureName">{featuredPart.label}</strong>
             <span className="armoryPartFeatureFeel">{featuredPart.description}</span>
           </div>
@@ -307,11 +307,13 @@ export default function ArmoryPartsGallery({
               data-part-id={part.id}
               data-armory-state={visualState}
               className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isLocked ? "isLocked" : ""} ${!confirmedPart && part.id === featuredPart?.id ? "isFeatured" : ""}`}
+              aria-label={isLocked ? `${part.label}: ${stateLabel}` : undefined}
               disabled={isLocked}
               tabIndex={isLocked ? undefined : (part.id === tabStopPartId ? 0 : -1)}
               aria-pressed={isInstalled}
               onFocus={() => setRovingPartId(part.id)}
               onClick={() => {
+                onSelectPart?.(isInstalled ? null : part.id)
                 setSelectedPartId(part.id)
                 setConfirmed(isInstalled ? { partId: part.id, rows: [] } : null)
               }}

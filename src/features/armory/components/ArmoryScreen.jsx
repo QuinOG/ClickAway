@@ -86,6 +86,21 @@ export default function ArmoryScreen({
       })
     : null
 
+  const [targetPreview, setTargetPreview] = useState(null)
+  const handleSelectModule = useCallback((moduleId) => setTargetPreview(moduleId ? {
+    moduleId,
+    slotKey: passiveApi.selectedModuleSlot.key,
+    loadoutId: activeLoadout.id,
+  } : null), [passiveApi.selectedModuleSlot.key, activeLoadout.id])
+  const targetPreviewRules = targetPreview && activeStepId === "passives"
+    && targetPreview.slotKey === passiveApi.selectedModuleSlot.key
+    && targetPreview.loadoutId === activeLoadout.id
+    ? buildRoundRules(selectedMode, {
+        ...activeLoadout,
+        moduleIds: { ...activeLoadout.moduleIds, [targetPreview.slotKey]: targetPreview.moduleId },
+      })
+    : null
+
   const installedModuleId = activeLoadout.moduleIds?.[passiveApi.selectedModuleSlot.key] ?? ""
   const inspectedModule = getPassiveModuleById(installedModuleId)
   const inspectedModuleCopy = getModuleOptionPresentation(inspectedModule?.id)
@@ -168,6 +183,7 @@ export default function ArmoryScreen({
       <ArmoryMachine
         loadout={activeLoadout}
         presentation={activePresentation}
+        previewRules={targetPreviewRules}
         nameplateRef={nameplateRef}
         machineRef={machineRef}
         machineApi={machineApi}
@@ -231,6 +247,7 @@ export default function ArmoryScreen({
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
                 currentRules={activePresentation.roundRules}
                 onPreviewPart={handlePreviewModule}
+                onSelectPart={handleSelectModule}
                 getCandidateRules={(moduleId) => buildRoundRules(selectedMode, {
                   ...activeLoadout,
                   moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: moduleId },

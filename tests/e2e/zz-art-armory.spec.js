@@ -4,7 +4,7 @@ import path from "node:path"
 import { execFileSync } from "node:child_process"
 import { prepareDeterministicPage, gotoRoute } from "./fixtures.js"
 
-const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/armory2/round-1"
+const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/armory3"
 test.setTimeout(120_000)
 async function crop(page, selector, filename) {
   await page.evaluate(() => {
@@ -43,9 +43,30 @@ for (const [name, viewport] of [["desktop", { width: 1440, height: 900 }], ["pho
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     }
     await page.locator(".armoryMachineHousing.housing-tempoCore").click()
-    if (name === "desktop") await page.screenshot({ path: path.join(out, "desktop-full.png"), fullPage: true, animations: "disabled" })
+    const target = page.locator(".armoryMachineTarget")
+    const installedSize = await target.evaluate(el => el.getBoundingClientRect().width)
     await page.locator('[data-part-id="tempo_anchor"]').click()
     await expect(page.locator(".armoryPartFeatureName")).toHaveText("Anchor")
+    await expect(page.locator(".armoryMachineAimReadout b")).toHaveText("112px")
+    await expect.poll(() => target.evaluate(el => el.getBoundingClientRect().width)).toBeGreaterThan(installedSize)
+    await page.screenshot({
+      path: path.join(out, `${name}-full.png`), fullPage: true, animations: "disabled",
+      style: `
+        .mainContent.armoryMain { overflow: visible !important; height: auto !important; max-height: none !important; }
+        .armoryWorkspace, .armoryStepStack { overflow: visible !important; max-height: none !important; }
+        .mobileDock { visibility: hidden !important; }
+        .appShell:has(.armoryMain) { height: auto !important; overflow: visible !important; }
+      `,
+    })
+    await crop(page, ".armoryPartsShelf", `${name}-locked-cards.png`)
+    await expect(page.locator(".armoryPartCard.isLocked .armoryPartBody").first()).toBeHidden()
+    for (const lamp of await page.locator(".armoryMachineRackSlot").all()) {
+      const shape = await lamp.evaluate(el => {
+        const css = getComputedStyle(el, "::after")
+        return [css.width, css.height]
+      })
+      expect(shape[0]).toBe(shape[1])
+    }
     await expect(page.locator(".housing-tempoCore .armoryMachineHousingLabel")).toHaveText("Tempo")
     await crop(page, ".armoryWorkspace", `${name}-clicked-preview.png`)
     await page.getByRole("button", { name: "Install Anchor", exact: true }).click()

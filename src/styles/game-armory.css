@@ -441,7 +441,6 @@
 .armoryPartFeature.tone-streakLens { --tone: var(--armory-tone-streak, 84, 177, 149); }
 .armoryPartFeature.tone-powerRig { --tone: var(--armory-tone-power, 255, 176, 72); }
 .armoryPartFeatureHead { grid-area: head; display: grid; gap: 4px; min-width: 0; }
-.armoryPartFeatureEyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--tone)); }
 .armoryPartFeatureName { font: 400 30px/1 "Russo One", var(--ca-font-display, sans-serif); color: #fff; text-shadow: 0 3px 0 #050a14; }
 .armoryPartFeatureFeel { font-size: 14px; line-height: 1.35; color: rgb(232 242 255 / 78%); }
 .armoryPartFeatureInstall { grid-area: install; align-self: start; min-width: 120px; }
@@ -1481,7 +1480,6 @@
     animation: installedPop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .armoryPartFeature.isConfirmed { box-shadow: inset 0 0 0 2px rgb(80 230 160 / 55%), 0 0 24px rgb(80 230 160 / 18%); }
-.armoryPartFeature.isConfirmed .armoryPartFeatureEyebrow { color: #7ff5c4; }
 .armoryPartFeatureInstall { white-space: nowrap; }
 @keyframes installedPop { from { transform: scale(0.8); opacity: 0; } }
 
@@ -2245,32 +2243,21 @@
     }
 }
 
-/* The cradle: a bevelled, riveted plate under the lower half of the ring. */
+/* One image covers the complete assembly; replace background-image for new art. */
 .armoryMachine .armoryMachineAssembly { position: relative; }
 .armoryMachine .armoryMachineBench {
     position: absolute;
     left: 50%;
-    bottom: 6px;
+    top: 0;
+    bottom: 0;
     z-index: 0;
-    width: 380px;
-    height: 160px;
-    background: url("/art/armory/bench.png") center bottom / contain no-repeat;
+    width: 100%;
+    background-image: url("/art/armory/bench.png");
+    background-position: center;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     transform: translateX(-50%);
     pointer-events: none;
-}
-.armoryMachine .armoryMachineBench em {
-    position: absolute;
-    left: 50%;
-    bottom: 12px;
-    transform: translateX(-50%);
-    color: rgb(170 195 225 / 42%);
-    font-size: 9.5px;
-    font-style: normal;
-    font-weight: 800;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    text-shadow: 0 -1px 0 rgb(0 0 0 / 70%);
 }
 .armoryMachine .armoryMachineCoreStage { position: relative; z-index: 1; }
 .armoryMachine .armoryMachineHousingRow { z-index: 2; }
@@ -2324,7 +2311,7 @@
     position: relative;
     padding: 12px;
     border: 0 solid transparent;
-    border-image: url("/art/armory/rack-plate.png") 64 fill / 20px / 0 stretch;
+    border-image: url("/art/armory/rack-plate.png") 104 fill / 32px / 0 stretch;
 }
 .armoryMachine .armoryMachineRack .armoryMachineRackSlot:not(.isEditing) { box-shadow: inset 0 0 0 2px #071019, 0 3px 0 #070d18, inset 0 -3px 0 rgb(0 0 0 / 30%); }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
@@ -2816,10 +2803,8 @@
 .armoryMachine .armoryMachineRigMount.mount-powerRig {
 }
 .armoryMachine .armoryMachineRigMount.mount-powerRig > * { margin: 0; }
-.armoryMachine .armoryMachineBench em { left: 7%; transform: none; }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { top: calc(50% + 70px); }
-.armoryMachine .armoryMachineBench em { left: 10%; }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { padding-top: 8px; }
 .armoryMachine .armoryMachineHousingRow .armoryMachineHousing::before { z-index: -1; }
@@ -3118,7 +3103,7 @@
     box-sizing: border-box;
     padding: 28px 24px 24px;
     gap: 12px;
-    border-image-width: 24px;
+    border-image-width: 32px;
 }
 .armoryMachine .armoryMachineRackSlot { padding: 10px 6px 9px; }
 .armoryMachine .armoryMachineRackGlyph { width: 42px; height: 42px; }
@@ -3171,7 +3156,12 @@
     .armoryMachine .armoryMachineRigMount.isSelected::after { inset: -4px; }
     .armoryMachine .armoryMachineRigConduit.conduit-tempoCore { left: -20px; width: 28px; }
     .armoryMachine .armoryMachineRigConduit.conduit-powerRig { right: -20px; width: 28px; }
-    .armoryMachine .armoryMachineTarget { max-width: 136px; max-height: 136px; }
+    .armoryMachine .armoryMachineTarget {
+        width: calc(var(--target-size) * 0.74) !important;
+        height: calc(var(--target-size) * 0.74) !important;
+        max-width: none;
+        max-height: none;
+    }
     .armoryMachine .armoryMachineAimReadout b { font-size: 32px; }
     .armoryMachine .armoryMachineAimReadout small,
     .armoryMachine .armoryMachineAimReadout em { font-size: 10px; }
@@ -3211,3 +3201,51 @@
 
 .armoryWorkspace > .armoryInstruments { background: none; box-shadow: none; border: 0; border-bottom: 1px solid rgb(180 210 240 / 18%); border-radius: 0; }
 .armoryMachine .armoryMachineRackGlyph { border-radius: 0; background: none; box-shadow: none; }
+
+/* Matching metal stubs and clear space on all three axes of the core. */
+.armoryMachine .armoryMachineRigMount.mount-streakLens { top: -66px; }
+.armoryMachine .armoryMachineRigConduit.conduit-streakLens {
+    display: block;
+    left: calc(50% - 10px);
+    top: -20px;
+    width: 20px;
+    height: 34px;
+    border-radius: 4px;
+    background:
+        linear-gradient(90deg, transparent 0 42%, rgba(var(--flow), 0.9) 42% 58%, transparent 58%),
+        linear-gradient(90deg, #5a6e90, #2a3a56 55%, #1a2538);
+    background-size: auto;
+    box-shadow: 0 0 0 2px var(--skin-ink, #0a1322);
+    opacity: 1;
+    animation: none;
+}
+@media (min-width: 701px) {
+    .armoryMachine .armoryMachineAssembly { padding-top: 120px; }
+}
+@media (max-width: 700px) {
+    .armoryMachine .armoryMachineAssembly { padding-top: 86px; }
+    .armoryMachine .armoryMachineHousingRow { position: static; }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: max-content;
+        max-width: 100%;
+        z-index: 2;
+        transform: translateX(-50%);
+    }
+    .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens:hover { transform: translateX(-50%); }
+    .armoryMachine .armoryMachineRigMount.mount-streakLens { top: -42px; }
+    .armoryMachine .armoryMachineRigConduit.conduit-streakLens { height: 28px; }
+}
+/* Explicit square lamps resist inherited button pseudo-element styling. */
+.armoryMachine .armoryMachineRackSlot::after {
+    box-sizing: border-box;
+    width: 8px;
+    height: 8px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: none;
+    scale: none;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartBody { visibility: hidden; }

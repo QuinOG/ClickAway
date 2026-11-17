@@ -15,6 +15,7 @@ const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
 
 function getTargetSkinStyle({ targetSize, imageSrc, imageScale }) {
   return {
+    "--target-size": `${targetSize}px`,
     width: `${targetSize}px`,
     height: `${targetSize}px`,
     backgroundImage: imageSrc ? `url(${imageSrc})` : undefined,
@@ -127,14 +128,16 @@ function MachineWorkshopActions({ machineApi }) {
 export default function ArmoryMachine({
   loadout,
   presentation,
+  previewRules = null,
   nameplateRef,
   machineRef,
   machineApi,
 }) {
   const { buttonSkinClass = "", buttonSkinImageSrc = "", buttonSkinImageScale = 100 } = machineApi
   const hasSkinImage = Boolean(buttonSkinImageSrc)
+  const targetRules = previewRules ?? presentation.roundRules
   const targetSize = Math.round(
-    presentation.roundRules.initialButtonSize * MACHINE_TARGET_SCALE
+    targetRules.initialButtonSize * MACHINE_TARGET_SCALE
   )
   return (
     <section className="armoryStage" aria-label="Active build machine">
@@ -154,10 +157,8 @@ export default function ArmoryMachine({
 
         <div className="armoryMachineCore">
           <div className="armoryMachineAssembly">
-            {/* The workbench cradle the instrument is bolted to. */}
-            <span className="armoryMachineBench" aria-hidden="true">
-              <em>CA-01</em>
-            </span>
+            {/* One swappable backplate behind the lens, core and both side parts. */}
+            <span className="armoryMachineBench" aria-hidden="true" />
             <div className="armoryMachineCoreStage">
               <span className="armoryMachineRig" aria-hidden="true">
                 <span className="armoryMachineRigRing">
@@ -194,12 +195,12 @@ export default function ArmoryMachine({
                   imageScale: buttonSkinImageScale,
                 })}
                 role="img"
-                aria-label={`Target starts at ${presentation.roundRules.initialButtonSize} pixels and shrinks with each hit`}
+                aria-label={`Target starts at ${targetRules.initialButtonSize} pixels and shrinks with each hit`}
               >
                 {/* Keep the first explanation short; exact rules live in the spec sheet. */}
                 <span className="armoryMachineAimReadout">
                   <small>TARGET SIZE</small>
-                  <b>{presentation.roundRules.initialButtonSize}<span>px</span></b>
+                  <b>{targetRules.initialButtonSize}<span>px</span></b>
                   <em>Shrinks as you hit</em>
                 </span>
               </span>
