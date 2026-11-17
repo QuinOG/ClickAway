@@ -6,14 +6,15 @@ import { prepareDeterministicPage, gotoRoute } from "./fixtures.js"
 test.setTimeout(60000)
 const out = process.env.COUNCIL_OUT || "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/councilT1/armory"
 const phase = process.env.COUNCIL_PHASE || "before"
-for (const shot of ["default-desktop", "default-phone", "powerrig-desktop", "powerups-desktop"]) {
+for (const shot of ["default-desktop", "default-phone", "powerrig-desktop", "powerups-desktop", "parts-phone"]) {
   test(`Armory council ${shot}`, async ({ page }) => {
-    await page.setViewportSize(shot === "default-phone" ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+    await page.setViewportSize((shot === "default-phone" || shot === "parts-phone") ? { width: 390, height: 844 } : { width: 1440, height: 900 })
     await prepareDeterministicPage(page, { progressOverrides: { levelXp: 0, totalRoundCount: 0, roundHistory: [], loadoutStats: [], equippedButtonSkinId: "skin_button" } })
     await gotoRoute(page, { path: "/armory", heading: "Armory" })
     if (shot === "powerrig-desktop") await page.locator(".armoryMachineHousing.housing-powerRig").click()
     if (shot === "powerups-desktop") await page.getByLabel("Armory steps").getByRole("button", { name: /Powerups/ }).click()
     if (shot === "default-phone") await page.locator(".armoryMachineCoreStage").scrollIntoViewIfNeeded()
+    if (shot === "parts-phone") await page.locator(".armoryPartsShelf").scrollIntoViewIfNeeded()
     await page.evaluate(async () => { await Promise.all([...document.images].map(img => img.decode().catch(() => {}))) })
     await fs.mkdir(out, { recursive: true })
     await page.screenshot({ path: path.join(out, `${phase}-${shot}.png`), animations: "disabled" })

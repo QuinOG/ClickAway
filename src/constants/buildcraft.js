@@ -29,7 +29,7 @@ const PASSIVE_MODULES = [
   {
     id: "tempo_balanced",
     slotId: "tempoCore",
-    label: "Balanced Tempo",
+    label: "Tempo",
     unlockLevel: 1,
     description: "Neutral target pacing with no stat changes.",
     effects: {},

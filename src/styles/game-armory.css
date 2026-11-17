@@ -3349,3 +3349,33 @@
     .armoryCart .armoryCartKitText small { display: none; }
     .armoryCart .armoryCartKit { gap: 6px; }
 }
+
+/* Part cards: content centred; locked parts sit under a grey cover with the unlock level on top. */
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard { justify-content: center !important; padding-bottom: 6px !important; }
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryPartGlass {
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    background: rgb(46 53 66 / 94%) !important;
+}
+.armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked .armoryStateEmblem {
+    position: absolute !important;
+    z-index: 3;
+    inset: 50% auto auto 50% !important;
+    width: 90%;
+    flex-direction: column;
+    gap: 3px;
+    justify-content: center;
+    transform: translate(-50%, -50%) !important;
+    white-space: normal;
+    text-align: center;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: #d5deea !important;
+    font-size: 13px !important;
+}
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-tempoCore,
+.armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { width: max-content; }

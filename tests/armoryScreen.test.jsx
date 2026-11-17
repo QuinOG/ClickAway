@@ -283,7 +283,7 @@ describe("Armory machine", () => {
 
     // Housings carry the installed module of each lane.
     expect(within(machine).getByText("Tempo Core")).not.toBeNull()
-    expect(within(machine).getByText("Balanced Tempo")).not.toBeNull()
+    expect(within(machine).getByText("Tempo")).not.toBeNull()
     expect(within(machine).getByText("Balanced Streak")).not.toBeNull()
     expect(within(machine).getByText("Balanced Rig")).not.toBeNull()
 
@@ -342,7 +342,7 @@ describe("Armory machine", () => {
 
     expect(tempoHousing.className).toContain("isSelected")
     expect(tempoHousing.dataset.moduleState).toBe("installed")
-    expect(within(tempoHousing).getByText("Balanced Tempo")).not.toBeNull()
+    expect(within(tempoHousing).getByText("Tempo")).not.toBeNull()
 
     fireEvent.click(getPartCard(/^Anchor/))
 
@@ -398,7 +398,7 @@ describe("Armory parts gallery (Phase 5)", () => {
     const props = renderArmory({ playerLevel: 5 })
 
     await openStep(user, "Mods")
-    const balancedCard = getPartCard(/^Balanced Tempo/)
+    const balancedCard = getPartCard(/^Tempo/)
     const anchorCard = getPartCard(/^Anchor/)
     const lockedCard = getPartCard(/Flashpoint/)
 
@@ -621,7 +621,7 @@ describe("Armory collection flow (Phase D2b)", () => {
       Number(progress.getAttribute("aria-valuemax"))
     )
 
-    const installedPart = within(wall).getByText("Balanced Tempo").closest(".armoryUnlockWallItem")
+    const installedPart = within(wall).getByText("Tempo").closest(".armoryUnlockWallItem")
     const collectedPart = within(wall).getByText("Anchor").closest(".armoryUnlockWallItem")
     const lockedPart = within(wall).getByText("Flashpoint").closest(".armoryUnlockWallItem")
     expect(installedPart.dataset.armoryState).toBe("installed")
