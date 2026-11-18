@@ -834,14 +834,6 @@
 
 }
 
-@media (max-height: 740px) {
-
-
-}
-
-@media (max-width: 780px) {
-}
-
 .difficultyMood-easy {
     --ready-btn-start: #79f3bf;
     --ready-btn-end: #43bc88;
@@ -1154,139 +1146,12 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     gap: 10px;
 }
 
-.lobbyModeChoice {
-    --mode-accent: 65, 180, 239;
-    --mode-strong: #79d9ff;
-    min-width: 0;
-    min-height: 118px;
-    padding: 14px 15px;
-    border: 1px solid rgba(184, 207, 233, 0.13);
-    border-radius: 16px;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at 82% 28%, rgba(var(--mode-accent), 0.07), transparent 36%),
-        rgba(255, 255, 255, 0.025);
-    color: #eaf3ff;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    display: grid;
-    grid-template-rows: auto auto auto;
-    align-content: start;
-    gap: 7px;
-    transition: transform 0.16s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.lobbyModeChoice-practice {
-    --mode-accent: 73, 215, 173;
-    --mode-strong: #80efc3;
-}
-
-.lobbyModeChoice-casual {
-    --mode-accent: 65, 180, 239;
-    --mode-strong: #79d9ff;
-}
-
-.lobbyModeChoice-ranked {
-    --mode-accent: 239, 171, 67;
-    --mode-strong: #ffd276;
-}
-
-.lobbyModeChoice:hover:not(:disabled) {
-    transform: translateY(-2px);
-    border-color: rgba(var(--mode-accent), 0.46);
-    background:
-        radial-gradient(circle at 82% 28%, rgba(var(--mode-accent), 0.13), transparent 38%),
-        rgba(255, 255, 255, 0.04);
-}
-
-.lobbyModeChoice.isSelected {
-    transform: none;
-    border-color: rgba(var(--mode-accent), 0.78);
-    background:
-        linear-gradient(145deg, rgba(var(--mode-accent), 0.17), rgba(var(--mode-accent), 0.025)),
-        rgba(255, 255, 255, 0.025);
-    box-shadow:
-        inset 0 0 0 1px rgba(var(--mode-accent), 0.14),
-        0 13px 34px rgba(0, 0, 0, 0.24),
-        0 0 26px rgba(var(--mode-accent), 0.09);
-}
-
-.lobbyModeSummary,
-.lobbyModeReward {
-    display: block;
-    overflow-wrap: anywhere;
-}
-
-.lobbyModeSummary {
-    color: rgba(220, 233, 248, 0.8);
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-.lobbyModeReward {
-    color: var(--mode-strong);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-}
-
-.lobbyModeChoice:focus-visible,
 .practiceDrawerTrigger:focus-visible,
 .practiceDrillChoice:focus-visible,
 .arenaLobbyStart:focus-visible,
 .lobbyTextLink:focus-visible {
     outline: 2px solid var(--lobby-accent-strong);
     outline-offset: 3px;
-}
-
-.lobbyModeChoice:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-.lobbyModeChoiceTopline {
-    display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) 18px;
-    align-items: center;
-    gap: 9px;
-}
-
-.lobbyModeGlyph {
-    width: 30px;
-    height: 30px;
-    border: 1px solid rgba(197, 219, 243, 0.2);
-    border-radius: 9px;
-    display: grid;
-    place-items: center;
-    background: rgba(255, 255, 255, 0.055);
-    color: var(--mode-strong);
-    font-size: 12px;
-    font-weight: 900;
-}
-
-.lobbyModeName {
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 18px;
-    font-weight: 750;
-}
-
-.lobbyModeSelectedMark {
-    width: 18px;
-    height: 18px;
-    border: 1px solid rgba(var(--mode-accent), 0.28);
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    color: transparent;
-    font-size: 11px;
-    transition: color 0.16s ease, background-color 0.16s ease;
-}
-
-.lobbyModeChoice.isSelected .lobbyModeSelectedMark {
-    border-color: rgba(var(--mode-accent), 0.78);
-    background: var(--mode-strong);
-    color: #07131c;
 }
 
 .lobbyDurationRing.isUntimed {
@@ -1518,68 +1383,8 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .lobbyModeChoice {
-        min-height: 0;
-        padding: 12px 14px;
-        border-radius: 14px;
-        gap: 4px;
-    }
-
-    .lobbyModeChoice .lobbyModeSummary,
-    .lobbyModeChoice .lobbyModeReward {
-        padding-left: 0;
-    }
-
-    .lobbyDurationRing > small,
-    .lobbyModeChoice .lobbyStakesCue > small,
-    .lobbyModeChoice .lobbyRewardCue > small,
-    .lobbyModeChoice .lobbyPressureCue > small {
+    .lobbyDurationRing > small {
         display: none;
-    }
-
-    .lobbyModeChoice .lobbyPressureTargets {
-        height: 26px;
-        gap: 2px;
-    }
-
-    .lobbyModeChoice .lobbyPressureTargets i {
-        width: 18px;
-        height: 18px;
-    }
-
-    .lobbyModeChoice .pressure-2 .lobbyPressureTargets i:nth-of-type(2) {
-        width: 13px;
-        height: 13px;
-    }
-
-    .lobbyModeChoice .pressure-2 .lobbyPressureTargets i:nth-of-type(3),
-    .lobbyModeChoice .pressure-3 .lobbyPressureTargets i:nth-of-type(2) {
-        width: 9px;
-        height: 9px;
-    }
-
-    .lobbyModeChoice .pressure-3 .lobbyPressureTargets i:nth-of-type(3) {
-        width: 5px;
-        height: 5px;
-    }
-
-    .lobbyModeChoice .lobbyStakesCue,
-    .lobbyModeChoice .lobbyRewardCue {
-        grid-template-columns: 1fr;
-    }
-
-    .lobbyModeChoice .lobbyStakesShield {
-        width: 21px;
-        height: 22px;
-    }
-
-    .lobbyModeChoice .lobbyRewardPips {
-        gap: 3px;
-    }
-
-    .lobbyModeChoice .lobbyRewardPips i {
-        width: clamp(7px, 2.5vw, 11px);
-        height: 7px;
     }
 
     .lobbyDurationRing.isLarge {
@@ -1663,8 +1468,7 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .arenaLobbyBackdrop,
-    .lobbyModeChoice {
+    .arenaLobbyBackdrop {
         transition: none;
     }
 }
@@ -1883,10 +1687,6 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
         min-width: 0;
         flex: 1;
     }
-}
-
-@media (prefers-reduced-motion: reduce) {
-
 }
 
 /* Ranked lobby preflight */
@@ -2585,7 +2385,6 @@ html[data-flashes="reduced"] .clickFeedbackLocus {
     transform: translateY(0);
 }
 
-
 .gameOverPracticeNote {
     margin: 6px 0 0;
     text-align: center;
@@ -3209,7 +3008,6 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
 
 @media (max-width: 560px) {
 
-
     .rewardsCard {
         gap: 15px;
         padding: 22px 16px 18px;
@@ -3245,6 +3043,4 @@ html[data-flashes="reduced"] .bigCircleButton:not(:disabled) {
         padding: 0;
         background: none;
     }
-
-    .lobbyModeChoice { padding: 14px 16px; }
 }

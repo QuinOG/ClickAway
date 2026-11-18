@@ -242,12 +242,8 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
         disabled={disabled}
         onClick={() => onSelect(mode.id)}
       >
-        <span className="lobbyModeEmblem" aria-hidden="true"><ModeEmblem tone={mode.tone} size={56} /></span>
-        <span className="lobbyModeChoiceTopline">
-          <span className="lobbyModeGlyph" aria-hidden="true">{mode.glyph}</span>
-          <span className="lobbyModeName">{mode.label}</span>
-          <span className="lobbyModeSelectedMark" aria-hidden="true">✓</span>
-        </span>
+        <ModeEmblem className="lobbyModeEmblem" tone={mode.tone} size={56} />
+        <span className="lobbyModeName">{mode.label}</span>
         <span className="lobbyModeSummary">{mode.roundLabel} · {mode.goalLabel}</span>
         <span className="lobbyModeReward">{mode.rewardLabel}</span>
         {isSelected ? (
@@ -256,9 +252,9 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
             <span className="lobbyModeBriefStat"><small>Miss</small><b>{mode.missPenalty > 0 ? `-${mode.missPenalty}` : "Free"}</b></span>
             <span className="lobbyModeBriefStat">
               <small>Pressure</small>
-              <span className="lobbyModeBriefPips">
+              <b className="lobbyModeBriefPips">
                 {[1, 2, 3].map((level) => <i key={level} className={level <= mode.pressureLevel ? "isOn" : ""} />)}
-              </span>
+              </b>
             </span>
           </span>
         ) : null}

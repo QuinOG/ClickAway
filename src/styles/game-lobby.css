@@ -166,50 +166,6 @@
 /* Mode portals: illustrated, stacked, tactile. */
 .lobbyModeRail { grid-template-columns: 1fr; gap: 10px; }
 
-.lobbyModeChoice {
-    min-height: 0;
-    padding: 12px 16px 12px 88px;
-    position: relative;
-    border: 0;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #1c2c45 0%, #131f33 100%);
-    box-shadow: var(--skin-frame-soft), 0 4px 0 #0a1220;
-    gap: 3px;
-}
-
-.lobbyModeChoice:hover:not(:disabled) {
-    transform: translateY(-2px);
-    background: linear-gradient(180deg, #23365a 0%, #172640 100%);
-}
-
-.lobbyModeChoice.isSelected {
-    background:
-        linear-gradient(90deg, rgba(var(--mode-accent), 0.28), rgba(var(--mode-accent), 0.06) 70%),
-        linear-gradient(180deg, #1c2c45 0%, #131f33 100%);
-    box-shadow: 0 0 0 2px var(--skin-ink), 0 0 0 4px rgba(var(--mode-accent), 0.85), inset 0 1px 0 rgb(255 255 255 / 14%), 0 0 26px rgba(var(--mode-accent), 0.3), 0 4px 0 #0a1220;
-}
-
-.lobbyModeEmblem {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    width: 60px;
-    height: 60px;
-    display: grid;
-    place-items: center;
-    transform: translateY(-50%);
-    border-radius: 14px;
-    background: radial-gradient(circle, rgba(var(--mode-accent), 0.3), rgba(var(--mode-accent), 0.05) 70%);
-    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 35%));
-    transition: transform 160ms var(--ca-motion-ease-impact);
-}
-
-.lobbyModeChoice.isSelected .lobbyModeEmblem { transform: translateY(-50%) scale(1.08) rotate(-4deg); }
-.lobbyModeChoice .lobbyModeGlyph { display: none; }
-.lobbyModeChoiceTopline { grid-template-columns: minmax(0, 1fr) 22px; }
-.lobbyModeName { font-family: var(--ca-font-display); font-weight: 400; font-size: 20px; letter-spacing: 0.01em; }
-.lobbyModeSelectedMark { width: 22px; height: 22px; box-shadow: 0 0 0 2px var(--skin-ink); }
-
 /* Launch: the dominant control. */
 .arenaLobbyFooter { grid-template-columns: 1fr; gap: 12px; }
 .lobbyBuildReadiness { display: none; }
@@ -248,9 +204,6 @@
     .lobbyStageOrbit.isInner { width: 130px; height: 130px; top: 40%; }
     .lobbyStagePedestal { width: 150px; height: 40px; top: 56%; }
     .lobbyStageLoadout { padding: 8px 10px; }
-    .lobbyModeChoice { padding-left: 76px; }
-    .lobbyModeEmblem { width: 50px; height: 50px; }
-    .lobbyModeEmblem svg { width: 44px; height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -390,7 +343,8 @@
 }
 
 @media (max-width: 900px) {
-    .readyCard.arenaLobby { padding: 12px 12px 10px; row-gap: 10px; }
+    /* Every phone item sits in one track; the empty tracks must not keep the wide column gap. */
+    .readyCard.arenaLobby { padding: 12px 12px 10px; row-gap: 10px; column-gap: 0; }
     .arenaLobbyHeader p { display: none; }
     .arenaLobbyHeader h2 { font-size: 28px; }
     .readyCard.arenaLobby .lobbyStage { min-height: 168px; }
@@ -401,31 +355,12 @@
     .readyCard.arenaLobby .lobbyStageLoadout { padding: 6px 8px; }
     .lobbyStagePower { width: 32px; height: 32px; }
     .lobbyModeRail { gap: 8px; }
-    .lobbyModeChoice { padding: 8px 12px 8px 68px; }
-    .lobbyModeEmblem { left: 10px; width: 46px; height: 46px; }
-    .lobbyModeEmblem svg { width: 40px; height: 40px; }
-    .lobbyModeName { font-size: 17px; }
     .arenaLobbyFooter { position: static; padding: 0; background: none; }
     .arenaLobby .arenaLobbyStart { min-height: 58px; }
     .arenaLobbyStart span { font-size: 20px; }
 }
 
 /* Mode tiles are selected by their glow, not a radio circle. */
-.lobbyModeSelectedMark { display: none; }
-.lobbyModeChoiceTopline { grid-template-columns: minmax(0, 1fr); }
-.lobbyModeChoice.isSelected::after {
-    content: "SELECTED";
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: rgb(var(--mode-accent));
-    color: var(--skin-ink);
-    font: 400 11px/16px var(--ca-font-display);
-    letter-spacing: 0.06em;
-    box-shadow: 0 0 0 2px var(--skin-ink);
-}
 
 /* ---- Phase 3 r1: lobby extras get their own row; nothing overlaps Start ---- */
 .readyCard.arenaLobby {
@@ -478,41 +413,6 @@
 }
 
 /* ---- Polish r13: the chosen mode opens into a briefing card ---- */
-@media (min-width: 900px) {
-    .lobbyModeChoice.isSelected { padding: 18px 18px 16px 136px; gap: 4px; }
-    .lobbyModeChoice.isSelected .lobbyModeEmblem {
-        left: 18px;
-        top: 18px;
-        width: 100px;
-        height: 100px;
-        transform: rotate(-4deg);
-        border-radius: 22px;
-        background: radial-gradient(circle, rgba(var(--mode-accent), 0.45), rgba(var(--mode-accent), 0.06) 72%);
-        box-shadow: inset 0 0 0 2px rgba(var(--mode-accent), 0.6);
-    }
-    .lobbyModeChoice.isSelected .lobbyModeEmblem svg { width: 84px; height: 84px; }
-    .lobbyModeChoice.isSelected .lobbyModeName { font-size: 30px; line-height: 1.05; }
-}
-.lobbyModeBrief {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 10px;
-}
-.lobbyModeBriefStat {
-    display: grid;
-    gap: 4px;
-    justify-items: start;
-    padding: 8px 10px;
-    border-radius: 10px;
-    background: rgb(5 10 20 / 45%);
-    box-shadow: inset 0 0 0 2px rgba(var(--mode-accent), 0.35);
-}
-.lobbyModeBriefStat small { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--mode-accent), 1); }
-.lobbyModeBriefStat b { font: 400 22px/1 var(--ca-font-display); color: #fff; }
-.lobbyModeBriefPips { display: flex; gap: 4px; height: 22px; align-items: center; }
-.lobbyModeBriefPips i { width: 14px; height: 14px; border-radius: 4px; background: rgb(255 255 255 / 14%); transform: skewX(-12deg); }
-.lobbyModeBriefPips i.isOn { background: rgb(var(--mode-accent)); box-shadow: 0 0 8px rgba(var(--mode-accent), 0.7); }
 
 /* ---- r26: mode record scoreboard ----------------------------------------
  * The selected mode's best / average / rounds as tiles over a ten-round bar
@@ -654,9 +554,7 @@
 /* Phones: the stat tiles were squeezed beside the emblem, clipping "Pressure". */
 @media (max-width: 600px) {
     /* The emblem only occupies the card's top, so the stat row can use the full width. */
-    .lobbyModeRail .lobbyModeBrief { margin-left: -56px; }
-    .lobbyModeRail .lobbyModeBriefStat { padding: 8px 6px; }
-    .lobbyModeBriefStat small { letter-spacing: 0.04em; }
+    
 }
 
 /* The once-a-day double XP, right above Start. */
@@ -762,7 +660,56 @@
 }
 
 /* Narrow mode cards need a full row for the Pressure label and its pips. */
-@media (max-width: 380px) {
-    .lobbyModeRail .lobbyModeBrief { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .lobbyModeRail .lobbyModeBriefStat:last-child { grid-column: 1 / -1; }
+
+/* Mode cards: one illustrated steel plate each. The plate's left strip takes the mode colour;
+   the chosen plate is lit in that colour and the others sit slightly dimmed. */
+.lobbyModeChoice {
+    --mode: 79 184 255;
+    position: relative;
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    grid-template-areas: "icon name" "icon summary" "icon reward" "brief brief";
+    align-content: center;
+    column-gap: 14px;
+    width: 100%;
+    min-height: 100px;
+    padding: 16px 22px 16px 50px;
+    border: 0 solid transparent;
+    border-image: url('/art/lobby/mode-plate.png') 52 52 52 80 fill / 26px 26px 26px 40px / 0 stretch;
+    background: none;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    filter: brightness(.84) saturate(.85);
+    transition: filter .15s ease, transform .15s ease;
+}
+.lobbyModeChoice-practice { --mode: 62 229 154; }
+.lobbyModeChoice-ranked { --mode: 255 201 74; }
+.lobbyModeChoice::before { content: ""; position: absolute; top: var(--strip-y, 13px); bottom: var(--strip-y, 13px); left: var(--strip-x, 15px); width: var(--strip-w, 24px); background: linear-gradient(rgb(var(--mode) / .55), rgb(var(--mode) / .3)); mix-blend-mode: screen; pointer-events: none; }
+.lobbyModeChoice:hover:not(:disabled) { filter: brightness(.92); }
+.lobbyModeChoice.isSelected { filter: drop-shadow(0 0 10px rgb(var(--mode) / .55)); }
+.lobbyModeChoice.isSelected::before { background: linear-gradient(rgb(var(--mode)), rgb(var(--mode) / .7)); }
+.lobbyModeChoice:focus-visible { outline: 3px solid rgb(var(--mode)); outline-offset: 2px; }
+.lobbyModeChoice:disabled { cursor: not-allowed; opacity: .55; }
+.lobbyModeEmblem { grid-area: icon; width: 52px; height: 52px; object-fit: contain; }
+.lobbyModeName { grid-area: name; font: 400 22px/1.1 var(--ca-font-display); text-shadow: 0 2px 0 #040912; }
+.lobbyModeSummary { grid-area: summary; color: #c9d6e8; font-size: 13px; line-height: 1.3; }
+.lobbyModeReward { grid-area: reward; margin-top: 2px; color: rgb(var(--mode)); font-size: 12px; font-weight: 800; }
+.lobbyModeBrief { grid-area: brief; display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 12px; padding-left: 66px; }
+.lobbyModeBriefStat { display: inline-flex; align-items: baseline; gap: 7px; }
+.lobbyModeBriefStat small { color: #9fb2cc; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.lobbyModeBriefStat b { font: 400 18px/1 var(--ca-font-display); }
+.lobbyModeBriefPips { display: inline-flex; gap: 4px; }
+.lobbyModeBriefPips i { width: 14px; height: 7px; border-radius: 4px; background: rgb(255 255 255 / .18); }
+.lobbyModeBriefPips i.isOn { background: rgb(var(--mode)); }
+
+@media (max-width: 520px) {
+    /* A smaller plate scale keeps the frame light and gives the text room. */
+    .lobbyModeChoice { --strip-x: 12px; --strip-y: 10px; --strip-w: 19px; grid-template-columns: 38px minmax(0, 1fr); column-gap: 10px; min-height: 84px; padding: 12px 22px 12px 40px; border-image-width: 20px 20px 20px 31px; }
+    .lobbyModeEmblem { width: 38px; height: 38px; }
+    .lobbyModeName { font-size: 19px; }
+    .lobbyModeSummary { font-size: 12px; }
+    .lobbyModeReward { font-size: 11px; }
+    .lobbyModeBrief { gap: 6px 16px; margin-top: 8px; padding-left: 0; }
+    .lobbyModeBriefStat b { font-size: 16px; }
 }

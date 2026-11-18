@@ -1817,34 +1817,6 @@
     background: linear-gradient(180deg, #ffe9a0, #e9a93a 60%, #a8792a);
     clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%, 10px 50%);
 }
-.lobbyModeRail .lobbyModeChoice {
-    --mode: 79 184 255;
-    position: relative;
-    border: 2px solid #040912 !important;
-    border-radius: 10px !important;
-    background:
-        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
-        linear-gradient(180deg, #2c3c58 0%, #1a263c 55%, #131d30 100%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 16%), inset 0 -4px 0 rgb(0 0 0 / 35%), 0 4px 0 #040912 !important;
-}
-.lobbyModeRail .lobbyModeChoice-practice { --mode: 62 229 154; }
-.lobbyModeRail .lobbyModeChoice-casual { --mode: 79 184 255; }
-.lobbyModeRail .lobbyModeChoice-ranked { --mode: 255 201 74; }
-.lobbyModeRail .lobbyModeChoice.isSelected {
-    transform: translateY(-2px);
-    background:
-        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
-        radial-gradient(ellipse 80% 120% at 0% 50%, rgb(var(--mode) / 26%), transparent 70%),
-        linear-gradient(180deg, #34486a 0%, #1e2e4a 55%, #16233a 100%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 22%), inset 0 -4px 0 rgb(0 0 0 / 35%), 0 6px 0 #040912, 0 0 0 2px rgb(var(--mode)), 0 0 22px rgb(var(--mode) / 40%) !important;
-}
-.lobbyModeRail .lobbyModeName { font-family: var(--ca-font-display); text-shadow: 0 2px 0 #040912; }
-.lobbyModeRail .lobbyModeSelectedMark { color: #040912 !important; background: rgb(var(--mode)) !important; }
-.lobbyModeRail .lobbyModeBriefStat {
-    border: 2px solid #040912 !important;
-    background: #060c17 !important;
-    box-shadow: inset 0 2px 4px rgb(0 0 0 / 65%) !important;
-}
 .arenaLobby .lobbyModeRecord {
     border: 2px solid #040912 !important;
     background: linear-gradient(180deg, #050a14, #0a1426) !important;
@@ -3047,34 +3019,9 @@
 }
 
 /* ---- E. Play: mode cards are plaques; the record is a scoreboard ------- */
-.lobbyModeRail .lobbyModeChoice {
-    background:
-        radial-gradient(circle at 18px 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at calc(100% - 9px) 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at 18px calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
-        linear-gradient(115deg, transparent 0 72%, rgb(var(--mode) / 22%) 72% 76%, transparent 76% 80%, rgb(var(--mode) / 22%) 80% 84%, transparent 84%),
-        linear-gradient(180deg, #2c3c58 0%, #1a263c 55%, #131d30 100%) !important;
-}
-.lobbyModeRail .lobbyModeChoice.isSelected {
-    background:
-        radial-gradient(circle at 18px 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at calc(100% - 9px) 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at 18px calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        linear-gradient(90deg, rgb(var(--mode)) 0 8px, #040912 8px 10px, transparent 10px),
-        linear-gradient(115deg, transparent 0 72%, rgb(var(--mode) / 30%) 72% 76%, transparent 76% 80%, rgb(var(--mode) / 30%) 80% 84%, transparent 84%),
-        radial-gradient(ellipse 80% 120% at 0% 50%, rgb(var(--mode) / 26%), transparent 70%),
-        linear-gradient(180deg, #34486a 0%, #1e2e4a 55%, #16233a 100%) !important;
-}
+
 /* the mode emblem is a medallion set into the plaque */
-.lobbyModeRail .lobbyModeEmblem {
-    border: 0 !important;
-    border-radius: 50% !important;
-    background: radial-gradient(circle at 40% 30%, #34486a, #0a1222 75%) !important;
-    box-shadow: 0 0 0 3px #040912, 0 0 0 6px rgb(var(--mode)), 0 0 0 8px #040912, 0 4px 0 6px #040912, inset 0 3px 6px rgb(0 0 0 / 60%) !important;
-}
+
 .arenaLobby .lobbyModeRecord {
     border: 3px solid #040912 !important;
     border-radius: 8px !important;
@@ -4666,12 +4613,7 @@
 
 /* ==== Run 7 cleanup: spacing, redundancy, less ornament ================== */
 /* Play lobby: one emblem size for all three modes; no SELECTED tag */
-.lobbyModeRail .lobbyModeChoice, .lobbyModeRail .lobbyModeChoice.isSelected { padding-left: 94px !important; }
-.lobbyModeRail .lobbyModeChoice .lobbyModeEmblem, .lobbyModeRail .lobbyModeChoice.isSelected .lobbyModeEmblem { left: 16px !important; top: 50% !important; width: 64px !important; height: 64px !important; transform: translateY(-50%) !important; }
-.lobbyModeRail .lobbyModeChoice.isSelected .lobbyModeEmblem { top: 18px !important; transform: none !important; }
-.lobbyModeRail .lobbyModeEmblem > .gameArt { width: 46px !important; height: 46px !important; object-fit: contain; }
-.lobbyModeRail .lobbyModeChoice.isSelected .lobbyModeName { font-size: 24px !important; }
-.lobbyModeChoice.isSelected::after { content: none !important; }
+
 /* Profile: attribute icons centred in their ring; medal symbols fill the metal ring */
 .profileSheetMain .profileAttribute .profileAttributeEmblem > .gameArt { width: 20px !important; height: 20px !important; display: block; }
 .profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc { width: 74px !important; height: 74px !important; border-width: 0 !important; }
@@ -4835,10 +4777,6 @@
     .readyCard.arenaLobby .arenaLobbyKicker { display: none !important; }
     .readyCard.arenaLobby .arenaLobbyHeader h2 { font-size: 30px !important; line-height: 1.05 !important; }
     .readyCard.arenaLobby .lobbyModeRail { gap: 8px !important; }
-    .readyCard.arenaLobby .lobbyModeChoice:not(.isSelected) { min-height: 0 !important; padding-top: 8px !important; padding-bottom: 8px !important; }
-    .readyCard.arenaLobby .lobbyModeChoice:not(.isSelected) .lobbyModeSummary { display: none !important; }
-    .readyCard.arenaLobby .lobbyModeRail .lobbyModeChoice:not(.isSelected) .lobbyModeEmblem { width: 46px !important; height: 46px !important; left: 22px !important; }
-    .readyCard.arenaLobby .lobbyModeRail .lobbyModeChoice:not(.isSelected) .lobbyModeEmblem > .gameArt { width: 34px !important; height: 34px !important; }
     .readyCard.arenaLobby .arenaLobbyStart { min-height: 56px !important; }
 }
 
