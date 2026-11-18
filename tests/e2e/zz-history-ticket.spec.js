@@ -12,7 +12,11 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]
     await ticket.scrollIntoViewIfNeeded()
     await page.waitForTimeout(2000)
     const phase = process.env.ART_PHASE || "after"
-    // Element and full-page captures come out blank here (inner scroll container), so take the viewport.
+    // Let every finite entrance animation finish, or the desktop shot can catch a blank backdrop.
+    await page.evaluate(() => Promise.all(document.getAnimations()
+      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+      .map((animation) => animation.finished.catch(() => null))))
+    await page.waitForTimeout(300)
     await page.screenshot({ path: `${out}/${phase}-${name}-page.png` })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   })

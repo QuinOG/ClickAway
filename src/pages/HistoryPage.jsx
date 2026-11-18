@@ -75,10 +75,6 @@ function getRankResultToneClassName(round = {}) {
 function getRoundMarkers(round = {}, historySnapshot = {}) {
   const markers = []
 
-  if (historySnapshot.latestRound?.id === round.id) {
-    markers.push("Latest")
-  }
-
   if (historySnapshot.bestScoreRound?.id === round.id && Number(round.score) > 0) {
     markers.push("Peak score")
   }
@@ -97,7 +93,8 @@ function getRoundMarkers(round = {}, historySnapshot = {}) {
     markers.push("Best climb")
   }
 
-  return markers.slice(0, 2)
+  // One stamp per ticket: the strongest achievement. The newest ticket is already first in the log.
+  return markers.slice(0, 1)
 }
 
 function HighlightCard({ eyebrow, title, value, meta, stats = [], tone = "neutral" }) {
@@ -234,12 +231,15 @@ function HistoryRoundCard({ round, markers = [] }) {
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
       <div className="historyRoundCardMain">
-        <div className="historyRoundCardTopline">
-          <ModeEmblem className="historyRoundCardSignal" tone={getModeTone(round)} size={32} />
-          <span className="uiVisuallyHidden">{getModeLabelFromHistoryEntry(round)}</span>
+        <p className="historyRoundCardTopline">
+          <span className="historyRoundCardMode">{getModeLabelFromHistoryEntry(round)}</span>
           <time>{getPlayedAtLabel(round)}</time>
-          {markers.length > 0 ? <span className="historyRoundCardMarkers">{markers.map((marker) => <small key={marker}>{marker}</small>)}</span> : null}
-        </div>
+        </p>
+        <p className="historyRoundCardHeadline">
+          <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
+          <span className="historyRoundCardScoreLabel">score</span>
+          {markers.map((marker) => <small key={marker} className="historyRoundCardStamp">{marker}</small>)}
+        </p>
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
@@ -252,8 +252,7 @@ function HistoryRoundCard({ round, markers = [] }) {
         </div>
       </div>
       <div className="historyRoundCardOutcome">
-        <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
-        <span className="historyRoundCardScoreLabel">score</span>
+        <ModeEmblem className="historyRoundCardSignal" tone={getModeTone(round)} size={48} />
         {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
       </div>
     </article>
