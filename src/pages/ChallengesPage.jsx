@@ -1,15 +1,4 @@
-import "../styles/social-scenery.css"
-import {
-  ArrowRight,
-  ChatTeardropText,
-  Check,
-  Crosshair,
-  Ghost,
-  PaperPlaneTilt,
-  Play,
-  UserFocus,
-  X,
-} from "@phosphor-icons/react"
+import { ArrowRight, Check, PaperPlaneTilt, Play } from "@phosphor-icons/react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -24,6 +13,12 @@ import {
   respondToChallenge,
   sendChallenge,
 } from "../services/clickAwayHttpApiClient.js"
+
+const FILTERS = [
+  { id: "all", label: "All" },
+  { id: "incoming", label: "Incoming" },
+  { id: "outgoing", label: "Sent" },
+]
 
 function formatTimestamp(value) {
   if (!value) return "Unknown"
@@ -40,91 +35,62 @@ function formatTimestamp(value) {
   return parsed.toLocaleDateString()
 }
 
-function ChallengeStatusBadge({ status = "pending" }) {
-  const icon = status === "accepted"
-    ? <Check weight="bold" />
-    : status === "completed"
-      ? <Crosshair weight="bold" />
-      : status === "declined" || status === "expired"
-        ? <X weight="bold" />
-        : <Ghost weight="bold" />
-
-  return (
-    <span className={`challengeStatusBadge is-${status}`}>
-      <span aria-hidden="true">{icon}</span>
-      {status}
-    </span>
-  )
+// How one duel reads from the viewer's side: the rival, which plate it sits on
+// and the score line.
+function describeDuel(challenge, currentUserId) {
+  const isIncoming = challenge.opponentUserId === currentUserId
+  const rival = (isIncoming ? challenge.challengerUsername : challenge.opponentUsername) || "Rival"
+  const base = {
+    isIncoming,
+    rival,
+    mode: getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId }),
+    score: Number(challenge.replayScore || 0).toLocaleString(),
+    scoreLabel: isIncoming ? "to beat" : "your run",
+    tone: "idle",
+  }
+  if (challenge.status === "completed") {
+    const won = isIncoming ? !challenge.challengerWon : Boolean(challenge.challengerWon)
+    const mine = isIncoming ? challenge.opponentReplayScore : challenge.replayScore
+    const theirs = isIncoming ? challenge.replayScore : challenge.opponentReplayScore
+    return {
+      ...base,
+      tone: won ? "won" : "lost",
+      score: `${Number(mine || 0).toLocaleString()} - ${Number(theirs || 0).toLocaleString()}`,
+      scoreLabel: won ? "You won" : "You lost",
+    }
+  }
+  if (isIncoming && challenge.status === "pending") return { ...base, tone: "incoming" }
+  if (challenge.status === "accepted") return { ...base, tone: "accepted" }
+  return base
 }
 
-function ChallengeCard({
-  challenge,
-  currentUserId,
-  currentUsername,
-  onRespond,
-  onRaceGhost,
-  isResponding = false,
-}) {
-  const isIncoming = challenge.opponentUserId === currentUserId
-  const opponentLabel = isIncoming
-    ? challenge.challengerUsername
-    : challenge.opponentUsername
+function ChallengeCard({ challenge, currentUserId, currentUsername, onRespond, onRaceGhost, isResponding = false }) {
+  const duel = describeDuel(challenge, currentUserId)
+  const { isIncoming, rival } = duel
+  const status = !isIncoming && challenge.status === "pending"
+    ? `Waiting for ${rival}`
+    : ["accepted", "declined", "expired"].includes(challenge.status) ? challenge.status : ""
 
   return (
-    <article className="challengeCard" data-status={challenge.status}>
-      <div className="challengeVersus" aria-hidden="true">
-        <span className="challengeVersusSide isYou"><PlayerPortrait name={currentUsername} size={52} /></span>
-        <span className="challengeVersusBadge">VS</span>
-        <span className="challengeVersusSide isRival"><PlayerPortrait name={opponentLabel || "Rival"} size={52} /></span>
+    <article className={`duelRow is-${duel.tone}`} data-status={challenge.status}>
+      <div className="duelFace" aria-hidden="true">
+        <PlayerPortrait name={currentUsername} size={72} />
+        <b>VS</b>
+        <PlayerPortrait name={rival} size={72} />
       </div>
-      <span className="challengeTicketPrint" aria-hidden="true">
-        <b>Ghost duel · admit two</b>
-        <i>No. {String(challenge.id ?? "0").replace(/\D/g, "").padStart(6, "0").slice(-6)}</i>
-        <em>{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })} rules</em>
-      </span>
-      <div className="challengeCardHeader">
-        <div className="challengeRivalIdentity">
-          <span className="challengeRivalCrest" aria-hidden="true">
-            <PlayerPortrait name={opponentLabel || "Rival"} size={44} />
-          </span>
-          <div>
-            <p className="leaderboardSectionEyebrow">
-              {isIncoming ? "Incoming Challenge" : "Sent Challenge"}
-            </p>
-            <h2 className="cardH2 challengeCardTitle">vs {opponentLabel}</h2>
-          </div>
-        </div>
-        <ChallengeStatusBadge status={challenge.status} />
+      <div className="duelInfo">
+        <p className="duelKind">{isIncoming ? "Incoming" : "Sent"} · {duel.mode} · {formatTimestamp(challenge.createdAt)}</p>
+        <h3>{rival}</h3>
+        {challenge.message ? <p className="duelNote">“{challenge.message}”</p> : null}
       </div>
-
-      <div
-        className="challengeTargetLine"
-        aria-label={`${challenge.modeId} target score ${Number(challenge.replayScore || 0).toLocaleString()}`}
+      <p
+        className="duelScore"
+        aria-label={`${challenge.modeId} ${challenge.status === "completed" ? "result" : "target score"} ${duel.score}`}
       >
-        <span className="challengeTargetMode">{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })}</span>
-        <span className="challengeTargetBeam" aria-hidden="true"><i /></span>
-        <span className="challengeTargetScore">
-          <small>Beat</small>
-          <strong>{Number(challenge.replayScore || 0).toLocaleString()}</strong>
-        </span>
-      </div>
-
-      {challenge.message ? <p className="challengeCardMessage">“{challenge.message}”</p> : null}
-      <p className="muted challengeCardTimestamp">Sent {formatTimestamp(challenge.createdAt)}</p>
-
-      {challenge.status === "completed" ? (
-        <p className="challengeCardResult">
-          {challenge.challengerWon
-            ? `${challenge.challengerUsername} won the ghost duel`
-            : `${challenge.opponentUsername} won the ghost duel`}
-          {" · "}
-          {Number(challenge.replayScore || 0).toLocaleString()}
-          {" vs "}
-          {Number(challenge.opponentReplayScore || 0).toLocaleString()}
-        </p>
-      ) : null}
-
-      <div className="challengeCardActions">
+        <strong>{duel.score}</strong>
+        <span>{duel.scoreLabel}</span>
+      </p>
+      <div className="duelAction">
         {isIncoming && challenge.status === "pending" ? (
           <>
             <button
@@ -141,16 +107,15 @@ function ChallengeCard({
               disabled={isResponding}
               onClick={(event) => onRespond(challenge.id, "decline", event.currentTarget)}
             >
-              <X weight="bold" aria-hidden="true" /> Decline
+              Decline
             </button>
           </>
         ) : null}
-
         {isIncoming && challenge.status === "accepted" ? (
           <button type="button" className="primaryButton" onClick={() => onRaceGhost(challenge)}>
             <Play weight="fill" aria-hidden="true" /> Race Ghost
           </button>
-        ) : null}
+        ) : <span className="duelStatus">{status}</span>}
       </div>
     </article>
   )
@@ -313,228 +278,208 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   }
 
   const rivalName = sendForm.opponentUsername.trim()
+  const emptyCopy = filter === "incoming"
+    ? "No incoming duels. Nobody has challenged you yet."
+    : filter === "outgoing"
+      ? "No sent duels. Pick a rival below to start one."
+      : "No duels yet. Pick a rival below to start one."
+
   return (
     <div className="duelPage pageCenter">
-      <section className="duelCommandSurface">
-        <CommandHeader
-          routeId="duels"
-          eyebrow="Ghost network"
-          title="Duel command"
-          subtitle="Lock a rival. Choose your run. Put a score on the line."
-          status={pendingIncomingCount > 0 || isLoading || loadError ? null : (
-            <span className="duelNetworkStatus"><i /> Network clear</span>
-          )}
-        />
+      <CommandHeader
+        routeId="duels"
+        eyebrow="Ghost network"
+        title="Duel command"
+        subtitle="Lock a rival. Choose your run. Put a score on the line."
+      />
 
+      <section className="duelInbox" aria-labelledby="duel-inbox-title">
+        <h2 className="uiVisuallyHidden" id="duel-inbox-title">Duel signals</h2>
+        <div className="leaderboardBoardTabs" role="tablist" aria-label="Challenge filters">
+          {FILTERS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="tab"
+              aria-selected={filter === option.id}
+              className={`leaderboardBoardTab${filter === option.id ? " isActive" : ""}`}
+              onClick={(event) => {
+                setFilter(option.id)
+                signalAction(event.currentTarget, {
+                  eventName: FEEDBACK_EVENTS.FILTER,
+                  eventId: `duel-filter-${option.id}`,
+                })
+              }}
+            >
+              {option.id === "incoming" && pendingIncomingCount > 0 ? `Incoming · ${pendingIncomingCount}` : option.label}
+            </button>
+          ))}
+        </div>
 
-        <section className="duelInbox" aria-labelledby="duel-inbox-title">
-          <div className="duelInboxHeader">
-            <div>
-              <p className="commandHeaderEyebrow">Rival radar</p>
-              <h2 id="duel-inbox-title">Duel signals</h2>
-            </div>
-            <div className="challengeFilterRow" role="tablist" aria-label="Challenge filters">
-              {[
-                { id: "all", label: "All", icon: <Crosshair /> },
-                { id: "incoming", label: pendingIncomingCount > 0 ? `Incoming · ${pendingIncomingCount}` : "Incoming", icon: <Ghost /> },
-                { id: "outgoing", label: "Sent", icon: <PaperPlaneTilt /> },
-              ].map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={filter === option.id}
-                  className={`leaderboardBoardTab${filter === option.id ? " isActive" : ""}`}
-                  onClick={(event) => {
-                    setFilter(option.id)
-                    signalAction(event.currentTarget, {
-                      eventName: FEEDBACK_EVENTS.FILTER,
-                      eventId: `duel-filter-${option.id}`,
-                    })
-                  }}
-                >
-                  <span aria-hidden="true">{option.icon}</span>
-                  {option.label}
-                </button>
-              ))}
-            </div>
+        {isLoading ? (
+          <div className="duelRow duelNotice" role="status" aria-live="polite">
+            <strong>Scanning rival channels</strong>
           </div>
+        ) : null}
 
-          {isLoading ? (
-            <div className="duelRadarState isLoading" aria-live="polite">
-              <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
-              <strong>Scanning rival channels</strong>
-            </div>
-          ) : null}
-
-          {!isLoading && loadError ? (
-            <div className="duelRadarState isError" role="alert">
-              <span className="duelRadar" aria-hidden="true"><X weight="bold" /></span>
+        {!isLoading && loadError ? (
+          <div className="duelRow duelNotice" role="alert">
+            <img src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />
+            <div>
               <strong>Rival network unavailable</strong>
               <p>{loadError}</p>
-              <button
-                type="button"
-                className="leaderboardRetryButton"
-                onClick={async (event) => {
-                  const source = event.currentTarget
-                  signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
-                  const succeeded = await loadChallenges()
-                  signalAction(source, {
-                    state: succeeded ? "confirmed" : "denied",
-                    eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
-                  })
-                }}
-              >Retry scan</button>
             </div>
-          ) : null}
-
-          {!isLoading && !loadError && visibleChallenges.length === 0 ? (
-            <div className="duelRadarState" role="status">
-              <span className="duelRadar" aria-hidden="true"><i /><i /><i /></span>
-              <strong>No rival signals</strong>
-              <p>Your radar is clear. Launch a replay above to start a rivalry.</p>
-            </div>
-          ) : null}
-
-          <div className="challengeList">
-            {visibleChallenges.map((challenge) => (
-              <ChallengeCard
-                key={challenge.id}
-                challenge={challenge}
-                currentUserId={currentUserId}
-                currentUsername={currentUsername}
-                onRespond={handleRespond}
-                onRaceGhost={handleRaceGhost}
-                isResponding={respondingChallengeId === challenge.id}
-              />
-            ))}
+            <button
+              type="button"
+              className="secondaryButton"
+              onClick={async (event) => {
+                const source = event.currentTarget
+                signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
+                const succeeded = await loadChallenges()
+                signalAction(source, {
+                  state: succeeded ? "confirmed" : "denied",
+                  eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
+                })
+              }}
+            >Retry scan</button>
           </div>
-        </section>
+        ) : null}
 
-        <section className="duelComposer duelFightComposer" aria-labelledby="duel-composer-title">
-          <form className="duelLaunchForm" onSubmit={handleSendChallenge}>
-            <h2 className="uiVisuallyHidden" id="duel-composer-title">Create a ghost duel</h2>
-
-            <div className="duelFightCard">
-              <div className="duelFighter is-player">
-                <span className="duelFighterPortrait" aria-hidden="true"><PlayerPortrait name={currentUsername} size={112} /></span>
-                <span className="duelFighterPlate"><small>Challenger</small><strong>{currentUsername || "You"}</strong></span>
-              </div>
-
-              <div className="duelFightCenter">
-                <b className="duelVsMark" aria-hidden="true">VS</b>
-                <div className={`duelReplayLock ${selectedReplay ? "isLocked" : ""}`}>
-                  <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Score to beat"}</small>
-                  <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "?"}</strong>
-                  {selectedReplay ? <span>on the line</span> : null}
-                </div>
-              </div>
-
-              <label className={`duelFighter is-rival ${rivalName ? "isLocked" : ""}`}>
-                <span className="duelFighterPortrait" aria-hidden="true">
-                  {rivalName ? <PlayerPortrait name={rivalName} size={112} /> : <img className="duelFighterMasked" src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />}
-                </span>
-                <span className="duelFighterPlate duelRivalInput">
-                  <small>Rival</small>
-                  <input
-                    type="text"
-                    value={sendForm.opponentUsername}
-                    onChange={(event) => {
-                      setSendSuccess("")
-                      setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
-                    }}
-                    placeholder="Enter username"
-                    aria-label="Opponent username"
-                    required
-                  />
-                </span>
-              </label>
+        {!isLoading && !loadError && visibleChallenges.length === 0 ? (
+          <div className="duelRow duelNotice" role="status">
+            <img src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />
+            <div>
+              <strong>{emptyCopy.split(". ")[0]}.</strong>
+              <p>{emptyCopy.split(". ")[1]}</p>
             </div>
-            {ladderRival && sendForm.opponentUsername.trim() === ladderRival ? (
-              <p className="duelLadderRivalNote" ref={ladderRivalNoteRef} tabIndex={-1}>
-                Rival set to {ladderRival}. Pick a run to stake, or type another name.
-              </p>
-            ) : null}
+          </div>
+        ) : null}
 
-            <fieldset className="duelRunTokens">
-              <legend>Stake a run</legend>
-              {replayLoadError ? (
-                <div role="alert">
-                  <p>{replayLoadError}</p>
-                  <button type="button" className="secondaryButton" onClick={loadChallenges}>Retry runs</button>
-                </div>
-              ) : isLoading ? (
-                <p role="status">Loading your runs?</p>
-              ) : replays.length > 0 ? (
-                <div className="duelReplayRail" role="radiogroup" aria-label="Choose a replay">
-                  {replays.map((replay) => {
-                    const isSelected = String(replay.id) === String(sendForm.replayId)
-                    return (
-                      <button
-                        key={replay.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        className={`duelReplayCard ${isSelected ? "isSelected" : ""}`}
-                        data-mode={String(replay.modeId || "").toLowerCase()}
-                        onClick={(event) => {
-                          setSendSuccess("")
-                          setSendForm((current) => ({ ...current, replayId: String(replay.id) }))
-                          signalAction(event.currentTarget, {
-                            eventName: FEEDBACK_EVENTS.SELECTION,
-                            eventId: `duel-replay-${replay.id}`,
-                          })
-                        }}
-                      >
-                        <span className="duelReplayMode">{getModeLabel({ modeId: replay.modeId, fallback: replay.modeId })}</span>
-                        <strong>{Number(replay.score || 0).toLocaleString()}</strong>
-                        <span className="uiVisuallyHidden"> Score</span>
-                        {isSelected ? <Check className="duelReplayCheck" weight="bold" /> : null}
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <button type="button" className="duelNoReplay" onClick={() => navigate("/game")}>
-                  <Play weight="fill" aria-hidden="true" />
-                  <span><strong>Record a run</strong><small>Finish a round to create a challenge replay.</small></span>
-                  <ArrowRight weight="bold" aria-hidden="true" />
-                </button>
-              )}
-            </fieldset>
+        <div className="duelRows">
+          {visibleChallenges.map((challenge) => (
+            <ChallengeCard
+              key={challenge.id}
+              challenge={challenge}
+              currentUserId={currentUserId}
+              currentUsername={currentUsername}
+              onRespond={handleRespond}
+              onRaceGhost={handleRaceGhost}
+              isResponding={respondingChallengeId === challenge.id}
+            />
+          ))}
+        </div>
+      </section>
 
-            <div className="duelLaunchStep">
-              <label className="duelMessageField duelTaunt gfField hasCap">
-                <span className="gfFieldCap" aria-hidden="true"><ChatTeardropText weight="fill" /></span>
-                <span className="uiVisuallyHidden">Message (optional)</span>
-                <input
-                  type="text"
-                  maxLength={280}
-                  value={sendForm.message}
-                  onChange={(event) => setSendForm((current) => ({ ...current, message: event.target.value }))}
-                  placeholder="Add a taunt (optional)"
-                />
-              </label>
-              <button type="submit" className="duelLaunchButton" disabled={isSending || !launchReady}>
-                <PaperPlaneTilt weight="fill" aria-hidden="true" />
-                <span>{isSending ? "Transmitting" : "Send duel"}</span>
+      <section className="duelComposer" aria-labelledby="duel-composer-title">
+        <form className="duelForm" onSubmit={handleSendChallenge}>
+          <h2 className="uiVisuallyHidden" id="duel-composer-title">Create a ghost duel</h2>
+
+          <div className="duelFaceoff">
+            <PlayerPortrait className="duelYouArt" name={currentUsername} size={124} />
+            <strong className="duelYouName">{currentUsername || "You"}</strong>
+            <b className="duelVs" aria-hidden="true">VS</b>
+            <p className={`duelStake${selectedReplay ? " isLocked" : ""}`}>
+              <small>{selectedReplay ? getModeLabel({ modeId: selectedReplay.modeId, fallback: selectedReplay.modeId }) : "Score to beat"}</small>
+              <strong>{selectedReplay ? Number(selectedReplay.score || 0).toLocaleString() : "?"}</strong>
+            </p>
+            {rivalName
+              ? <PlayerPortrait className="duelRivalArt" name={rivalName} size={124} />
+              : <img className="duelRivalArt" src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />}
+            <input
+              className="duelField duelRivalInput"
+              type="text"
+              value={sendForm.opponentUsername}
+              onChange={(event) => {
+                setSendSuccess("")
+                setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
+              }}
+              placeholder="Enter username"
+              aria-label="Opponent username"
+              required
+            />
+          </div>
+          {ladderRival && rivalName === ladderRival ? (
+            <p className="duelLadderRivalNote" ref={ladderRivalNoteRef} tabIndex={-1}>
+              Rival set to {ladderRival}. Pick a run to stake, or type another name.
+            </p>
+          ) : null}
+
+          <fieldset className="duelStakes">
+            <legend>Stake a run</legend>
+            {replayLoadError ? (
+              <div role="alert" className="duelStakeNote">
+                <p>{replayLoadError}</p>
+                <button type="button" className="secondaryButton" onClick={loadChallenges}>Retry runs</button>
+              </div>
+            ) : isLoading ? (
+              <p role="status" className="duelStakeNote">Loading your runs…</p>
+            ) : replays.length > 0 ? (
+              <div className="duelTokens" role="radiogroup" aria-label="Choose a replay">
+                {replays.map((replay) => {
+                  const isSelected = String(replay.id) === String(sendForm.replayId)
+                  return (
+                    <button
+                      key={replay.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      className={`duelToken ${isSelected ? "isSelected" : ""}`}
+                      data-mode={String(replay.modeId || "").toLowerCase()}
+                      onClick={(event) => {
+                        setSendSuccess("")
+                        setSendForm((current) => ({ ...current, replayId: String(replay.id) }))
+                        signalAction(event.currentTarget, {
+                          eventName: FEEDBACK_EVENTS.SELECTION,
+                          eventId: `duel-replay-${replay.id}`,
+                        })
+                      }}
+                    >
+                      <span>{getModeLabel({ modeId: replay.modeId, fallback: replay.modeId })}</span>
+                      <strong>{Number(replay.score || 0).toLocaleString()}</strong>
+                      <span className="uiVisuallyHidden"> Score</span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <button type="button" className="duelNoReplay" onClick={() => navigate("/game")}>
+                <Play weight="fill" aria-hidden="true" />
+                <span><strong>Record a run</strong><small>Finish a round to create a challenge replay.</small></span>
                 <ArrowRight weight="bold" aria-hidden="true" />
               </button>
-            </div>
+            )}
+          </fieldset>
 
-            {!launchReady && !sendSuccess ? (
-              <p className="duelLaunchHint">
-                {sendForm.opponentUsername.trim() ? "Choose a run to send the duel." : "Pick a rival and a run to send the duel."}
-              </p>
-            ) : null}
-            {sendError ? <p className="formError duelFormSignal" role="alert">{sendError}</p> : null}
-            {sendSuccess ? (
-              <p className="duelFormSignal isSuccess" role="status">
-                <Check weight="bold" aria-hidden="true" /> Duel transmitted to {sendSuccess}
-              </p>
-            ) : null}
-          </form>
-        </section>
+          <div className="duelSend">
+            <label>
+              <span className="uiVisuallyHidden">Message (optional)</span>
+              <input
+                className="duelField"
+                type="text"
+                maxLength={280}
+                value={sendForm.message}
+                onChange={(event) => setSendForm((current) => ({ ...current, message: event.target.value }))}
+                placeholder="Add a taunt (optional)"
+              />
+            </label>
+            <button type="submit" className="primaryButton" disabled={isSending || !launchReady}>
+              <PaperPlaneTilt weight="fill" aria-hidden="true" />
+              {isSending ? "Transmitting" : "Send duel"}
+            </button>
+          </div>
+
+          {!launchReady && !sendSuccess ? (
+            <p className="duelHint">
+              {rivalName ? "Choose a run to send the duel." : "Pick a rival and a run to send the duel."}
+            </p>
+          ) : null}
+          {sendError ? <p className="formError duelHint is-error" role="alert">{sendError}</p> : null}
+          {sendSuccess ? (
+            <p className="duelHint is-success" role="status">
+              <Check weight="bold" aria-hidden="true" /> Duel transmitted to {sendSuccess}
+            </p>
+          ) : null}
+        </form>
       </section>
     </div>
   )

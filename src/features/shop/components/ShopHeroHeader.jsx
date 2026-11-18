@@ -1,4 +1,3 @@
-import "../../../styles/social-scenery.css"
 import { Check, Coins, LockKey, Package } from "@phosphor-icons/react"
 
 import { getProfileAvatarStyle } from "../../../utils/profileAvatarStyling.js"

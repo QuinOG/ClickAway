@@ -10,8 +10,7 @@
 .leaderboardPageScene .leaderboardPageCard,
 .historyPageScene .historyPageCard,
 .helpPageScene .helpDoc,
-.shopCard,
-.duelPage {
+.shopCard {
     width: min(var(--ca-page-max), 100%);
 }
 
@@ -109,8 +108,7 @@
  * are deliberate icon shapes keep their silhouettes.
  * ------------------------------------------------------------------------- */
 .authArrival,
-.duelCommandSurface,
-.routeFallback  {
+.routeFallback {
     clip-path: none;
     border-radius: 16px;
 }
@@ -118,14 +116,12 @@
 .helpMissionMap,
 .historyTrajectory,
 .leaderboardPodium,
-.duelComposer,
 .mobileMoreSheet {
     clip-path: none;
     border-radius: 12px;
     overflow: hidden;
 }
-.challengeRivalCrest,
-.commandHeaderGlyph  {
+.commandHeaderGlyph {
     clip-path: none;
     border-radius: 12px;
 }
@@ -142,33 +138,16 @@
 .leaderboardPlayerName { display: inline-flex; align-items: center; gap: 9px; }
 .profileHoverAvatar .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
 .shopCommandLoadoutAvatar .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
-.challengeVersusSide .playerPortrait { border-radius: 50%; }
-.challengeRivalCrest .playerPortrait,
-.duelCombatantCrest .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
 
 .helpGuideStatus,
 .historyArchiveCount,
 .leaderboardFieldCount,
-.duelNetworkStatus,
-.duelCommandSurface .challengePendingBadge,
 .guestNavLink,
 .shellIdentityButton,
-.profileHoverProfileLink,
-.duelLaunchButton {
+.profileHoverProfileLink {
     clip-path: none;
     border-radius: 10px;
 }
-
-.duelStep,
-.duelReplayCard,
-.duelInputWrap,
-.duelMessageField input,
-.duelReplayLock,
-.challengeTargetMode  {
-    border-radius: 10px;
-}
-
-.duelVersusStage { border-radius: 0; }
 
 /* Round 3: get real data rows into the first viewport. */
 .historyTrajectory { padding: 16px 20px; }
@@ -208,7 +187,3 @@
 /* Round 3 finishing: one eyebrow per section, rounded guide cards, sentence-case stat labels. */
 .helpMissionCard { border-radius: 10px; }
 .helpTopicGroup .helpSectionEyebrow { display: none; }
-
-.duelComposer { grid-template-columns: minmax(240px, 0.56fr) minmax(0, 1.44fr); }
-.duelReplayMeta,
-.duelReplayMode { letter-spacing: 0.04em; }
