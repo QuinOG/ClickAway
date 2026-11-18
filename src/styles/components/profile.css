@@ -1,710 +1,97 @@
-/* Player identity cockpit: a single profile composition built around live signals. */
-.profilePageCenter {
-    width: min(1140px, 100%);
+/* Steel competitor plate and open instrument bank. Keep Profile rules here. */
+.profilePageCenter { width: min(1140px, 100%); --profile-muted: #c2d0dd; }
+.profileCockpit { --rank-accent: #ffdb83; --rank-accent-rgb: 255, 219, 131; width: 100%; min-width: 0; }
+.profileCockpitGrid { display: none; }
+.profileSheet { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: stretch; }
+.profileCompetitorCard { display: grid; justify-items: center; align-content: start; gap: 12px; min-width: 0; padding: 26px; border: 0 solid transparent; border-image: url('/art/lobby/mode-plate-ranked.png') 64 fill / 32px / 0 stretch; text-align: center; }
+.profileIdentityDetails { display: contents; }
+.profileCardBanner { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; color: #ffdf8a; text-transform: uppercase; font: 14px var(--ca-font-display); letter-spacing: .05em; }
+.profileOrbitLevel { color: #f6f8ff; font: 17px var(--ca-font-display); white-space: nowrap; }
+.profilePortraitSlab { align-self: center; position: relative; margin: 8px 18px 0; }
+.profileAvatar { width: 186px; height: 186px; display: grid; place-items: center; overflow: hidden; border-radius: 18px; }
+.profileAvatar > * { width: 100%; height: 100%; }
+.profileAvatarImage { display: block; object-fit: cover; }
+.profileRankCrest { position: absolute; width: 76px; height: 76px; right: -26px; bottom: -12px; display: grid; place-items: center; filter: drop-shadow(0 4px 3px #030810); }
+.profileRankCrestImage { width: 100%; height: 100%; object-fit: contain; }
+.profileRankCrestFallback { color: #e8f4ff; font: 44px var(--ca-font-display); }
+.profilePlayerName { max-width: 100%; margin: 6px 0 0; color: #fff; font: 40px/1.1 var(--ca-font-display); text-transform: uppercase; overflow-wrap: anywhere; text-shadow: 0 3px #030a12; }
+.profilePlayerTitle { margin: 0; color: #dfc994; font-size: 13px; }
+.profileDivisionPlate { display: grid; gap: 7px; margin: 4px 0; }
+.profileRankTitle { color: #ffdd87; font: 30px/1.1 var(--ca-font-display); }
+.profileDivisionPlate span { color: var(--profile-muted); font-size: 13px; line-height: 1.5; }
+.profileXpReadout { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; width: 100%; color: var(--profile-muted); font-size: 13px; }
+.profileXpReadout strong { color: #fff0be; }
+.profileXpReadout > .gameProgress { flex-basis: 100%; margin-top: 4px; }
+.profileHeaderResources { display: flex; justify-content: center; width: 100%; }
+.profileTextAction { min-height: 36px; padding: 6px 12px; border: 0; background: none; color: #cfdfed; font: 13px var(--ca-font-ui); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.profileTextAction:hover { color: #ffe19a; }
+.profileSheetMain { display: grid; align-content: start; gap: 22px; min-width: 0; padding-top: 12px; }
+.profilePanelHeading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.profileSectionKicker { color: #e7ca83; font-size: 13px; line-height: 1.5; }
+.profilePanelHeading h2 { margin: 5px 0 0; color: #fff; font: 28px/1.2 var(--ca-font-display); text-shadow: 0 2px #030a12; }
+.profileAttributeList { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0; padding: 24px 10px 20px; list-style: none; border: 0 solid transparent; border-image: url('/art/ladder/row-steel.png') 64 fill / 32px / 0 stretch; }
+.profileAttribute { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 4px 8px; text-align: center; }
+.profileAttributeLabel { order: 3; display: grid; gap: 4px; max-width: 100%; }
+.profileAttributeLabel strong { color: #edf6ff; font: 16px/1.3 var(--ca-font-display); }
+.profileAttributeLabel small { color: var(--profile-muted); font-size: 13px; line-height: 1.4; }
+.profileAttributeDial { order: 1; width: 110px; max-width: 100%; overflow: visible; margin-bottom: 8px; }
+.profileDialTrack { fill: none; stroke: #07131f; stroke-width: 10; }
+.profileDialFill { fill: none; stroke: #6dd6f2; stroke-width: 8; filter: drop-shadow(0 0 3px #4ab5de66); }
+.profileDialTick { stroke: #a8c9dc; stroke-width: 1.5; }
+.profileDialNeedle { stroke: #ff987a; stroke-width: 3; stroke-linecap: round; }
+.profileDialHub { fill: #dce7ee; stroke: #050c16; stroke-width: 2; }
+.profileAttributeValue { order: 2; margin-bottom: 8px; color: #fff; font: clamp(23px, 2.3vw, 32px)/1.2 var(--ca-font-display); white-space: nowrap; }
+.profileInstrumentTag { order: 4; margin-top: 7px; color: #ffdf8a; font-size: 13px; }
+.profileAttribute.isStrongest .profileDialFill { stroke: #ffce6f; }
+.profileSignalBand { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-width: 0; }
+.profileSignalBand > section { min-width: 0; }
+.profileFormPanel { grid-column: 1 / -1; }
+.profileMiniHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.profileMiniHeading > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; min-width: 0; }
+.profileMiniHeading h2 { margin: 0; color: #f2f8ff; font: 18px var(--ca-font-display); }
+.profileMiniHeading > strong { font-size: 15px; white-space: nowrap; }
+.profileMiniHeading .isPositive { color: #9de4bd; }
+.profileMiniHeading .isNegative { color: #ffaba0; }
+.profileFormTokens { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 7px; margin: 12px 0 0; padding: 0; list-style: none; }
+.profileFormToken { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-width: 0; min-height: 104px; padding: 12px 4px; border: 0 solid transparent; border-image: url('/art/history/ticket.png') 52 fill / 15px / 0 stretch; color: #eff4ff; text-align: center; }
+.profileFormToken.isRanked { border-image-source: url('/art/history/ticket-ranked.png'); }
+.profileFormToken.isPractice { border-image-source: url('/art/history/ticket-practice.png'); }
+.profileReceiptMode { color: #d5e7f7; font-size: 13px; line-height: 1.2; }
+.profileStampScore { color: #fff; font: 20px var(--ca-font-display); }
+.profileStampOutcome { color: #a3edc3; font-size: 13px; line-height: 1.3; overflow-wrap: anywhere; }
+.profileFormToken.isLoss .profileStampOutcome { color: #ffb6a5; }
+.profileBuildSignature, .profileNearestGoal { display: flex; align-items: start; gap: 12px; padding-top: 4px; }
+.profilePanelEmblem { flex: none; display: block; width: 38px; margin-top: 6px; }
+.profilePanelEmblem .gameIcon { width: 38px; height: 38px; }
+.profileBuildSignature > div, .profileNearestGoal > div { flex: 1; min-width: 0; }
+.profileSignalBand h2 { margin: 3px 0 0; color: #fff; font: 18px/1.3 var(--ca-font-display); overflow-wrap: anywhere; }
+.profileBuildMetrics, .profileEmptySignal { margin: 8px 0 0; color: var(--profile-muted); font-size: 13px; line-height: 1.6; }
+.profileEmptySignal { grid-column: 1/-1; }
+.profileAchievementsSection { min-width: 0; margin-top: 28px; padding: 26px; border: 0 solid transparent; border-image: url('/art/ladder/row-steel.png') 64 fill / 32px / 0 stretch; scroll-margin-top: 20px; }
+.profileStatsSectionTitle { margin: 0; color: #fff0c1; font: 23px/1.3 var(--ca-font-display); }
+.profilePageCenter :is(button, a):focus-visible { outline: 2px solid #8fe8ff; outline-offset: 4px; }
+.profilePageCenter .gameProgressValue, .profilePageCenter .gameProgressText { font-size: 13px; }
+@media (min-width: 701px) and (max-width: 1100px) {
+    .profileSheet { grid-template-columns: minmax(0,1fr); }
+    .profileCompetitorCard { grid-template-columns: 220px minmax(0,1fr); gap: 18px; text-align: left; }
+    .profileCardBanner { grid-column: 1/-1; }
+    .profileIdentityDetails { display: grid; gap: 10px; min-width: 0; width: 100%; }
+    .profileHeaderResources { justify-content: start; }
+    .profileDivisionPlate { gap: 6px; }
 }
-
-.profileCockpit {
-    --profile-accent: #74d7ff;
-    --profile-accent-rgb: 116, 215, 255;
-    --rank-accent: #89cfff;
-    --rank-accent-rgb: 137, 207, 255;
-    --rank-deep: #315c91;
-    position: relative;
-    isolation: isolate;
-    width: 100%;
-    min-width: 0;
-    overflow: hidden;
-    padding: clamp(18px, 2.5vw, 30px);
-    border: 1px solid rgba(var(--rank-accent-rgb), 0.34);
-    clip-path: polygon(0 18px, 18px 0, calc(100% - 56px) 0, calc(100% - 42px) 14px, 100% 14px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
-    background:
-        radial-gradient(circle at 13% 10%, rgba(var(--rank-accent-rgb), 0.15), transparent 26%),
-        radial-gradient(circle at 94% 35%, rgba(112, 81, 255, 0.09), transparent 32%),
-        linear-gradient(155deg, rgba(13, 24, 43, 0.98), rgba(7, 14, 28, 0.99) 72%);
-    box-shadow: 0 26px 70px rgba(2, 8, 18, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+@media (max-width: 700px) {
+    .profileSheet { grid-template-columns: minmax(0,1fr); gap: 18px; }
+    .profileCompetitorCard { padding: 26px; }
+    .profileAvatar { width: 186px; height: 186px; }
+    .profileSheetMain { padding: 0; }
+    .profileSignalBand { grid-template-columns: minmax(0,1fr); }
+    .profileAttributeList { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .profileAttributeLabel small, .profileSectionKicker, .profileReceiptMode, .profileStampOutcome { font-size: 12px; }
+    .profileFormTokens { grid-template-columns: repeat(4,minmax(0,1fr)); }
+    .profileFormToken { min-height: 98px; }
+    .profileAchievementsSection { padding: 24px 18px; }
+    .profileStatsSectionTitle { font-size: 21px; }
 }
-
-.profileCockpit::before,
-.profileCockpit::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    pointer-events: none;
-}
-
-.profileCockpit::before {
-    top: 0;
-    left: 18px;
-    width: 190px;
-    height: 2px;
-    background: linear-gradient(90deg, var(--rank-accent), transparent);
-    box-shadow: 0 0 18px rgba(var(--rank-accent-rgb), 0.6);
-}
-
-.profileCockpit::after {
-    top: 15px;
-    right: 0;
-    width: 96px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(var(--rank-accent-rgb), 0.75));
-}
-
-.profileCockpitGrid {
-    position: absolute;
-    z-index: -2;
-    inset: 0;
-    opacity: 0.18;
-    background-image:
-        linear-gradient(rgba(116, 215, 255, 0.11) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(116, 215, 255, 0.11) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: linear-gradient(130deg, #000, transparent 58%);
-}
-
-.profileCockpit.rank-bronze { --rank-accent: #dc955f; --rank-accent-rgb: 220, 149, 95; --rank-deep: #75452a; }
-.profileCockpit.rank-silver { --rank-accent: #c6d1e3; --rank-accent-rgb: 198, 209, 227; --rank-deep: #637086; }
-.profileCockpit.rank-gold { --rank-accent: #f4ca65; --rank-accent-rgb: 244, 202, 101; --rank-deep: #8e6519; }
-.profileCockpit.rank-platinum { --rank-accent: #72ded5; --rank-accent-rgb: 114, 222, 213; --rank-deep: #276f78; }
-.profileCockpit.rank-diamond { --rank-accent: #91b8ff; --rank-accent-rgb: 145, 184, 255; --rank-deep: #405da7; }
-.profileCockpit.rank-deadeye { --rank-accent: #ff9675; --rank-accent-rgb: 255, 150, 117; --rank-deep: #a34227; }
-.profileCockpit.rank-placement { --rank-accent: #7fc7ff; --rank-accent-rgb: 127, 199, 255; --rank-deep: #315d9f; }
-
-.profileAvatar {
-    width: 58px;
-    height: 58px;
-    flex: 0 0 auto;
-    clip-path: polygon(0 11px, 11px 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%);
-    border: 1px solid rgba(var(--rank-accent-rgb), 0.55);
-    background: linear-gradient(145deg, rgba(var(--rank-accent-rgb), 0.28), rgba(20, 42, 70, 0.9));
-    box-shadow: 0 0 22px rgba(var(--rank-accent-rgb), 0.16), inset 0 0 18px rgba(var(--rank-accent-rgb), 0.12);
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: #f7fbff;
-}
-
-.profileAvatar.hasImage { padding: 3px; }
-.profileAvatarImage { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.profileIdentityKicker,
-.profileSectionKicker {
-    font-size: 11px;
-    font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: 1.35px;
-    text-transform: uppercase;
-    color: rgba(var(--rank-accent-rgb), 0.78);
-}
-
-.profilePlayerName {
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: clamp(22px, 2.3vw, 30px);
-    line-height: 1;
-    color: #f7fbff;
-}
-
-.profilePlayerTitle {
-    margin: 2px 0 0;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: rgba(219, 235, 252, 0.65);
-}
-
-.profileHeaderResources {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.profileCoinReadout,
-.profileTextAction {
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    border: 1px solid rgba(172, 209, 245, 0.18);
-    border-radius: 8px;
-    padding: 0 12px;
-    background: rgba(255, 255, 255, 0.035);
-    color: rgba(222, 238, 253, 0.88);
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-button.profileTextAction { font-family: inherit; font-size: 13px; font-weight: 600; line-height: inherit; cursor: pointer; }
-.profileTextAction:hover { border-color: rgba(var(--rank-accent-rgb), 0.5); color: #fff; }
-.profileTextAction:focus-visible { outline: 2px solid var(--rank-accent); outline-offset: 2px; }
-
-@keyframes profileOrbitSpin { to { transform: rotate(360deg); } }
-
-.profileRankCrest {
-    position: relative;
-    z-index: 1;
-    width: 108px;
-    height: 108px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    border: 1px solid rgba(var(--rank-accent-rgb), 0.46);
-    background:
-        radial-gradient(circle at 38% 26%, rgba(255, 255, 255, 0.24), transparent 46%),
-        linear-gradient(150deg, rgba(var(--rank-accent-rgb), 0.27), rgba(10, 22, 40, 0.7));
-    box-shadow: inset 0 0 24px rgba(var(--rank-accent-rgb), 0.13);
-}
-
-.profileRankCrest.isUnranked { border-style: dashed; }
-.profileRankCrestImage { width: 78%; height: 78%; object-fit: contain; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.35)); }
-.profileRankCrestFallback { font-size: 34px; font-weight: 800; color: #eff8ff; }
-
-.profileOrbitLevel {
-    position: absolute;
-    z-index: 3;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 50px;
-    padding: 5px 9px;
-    border: 1px solid rgba(var(--rank-accent-rgb), 0.65);
-    background: #0a1628;
-    color: var(--rank-accent);
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    text-align: center;
-}
-.profileRankTitle { margin: 4px 0 5px; color: #f7fbff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: clamp(27px, 3vw, 38px); line-height: 0.96; }
-
-.profileXpReadout {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding-top: 9px;
-    border-top: 1px solid rgba(var(--rank-accent-rgb), 0.13);
-    color: rgba(198, 219, 241, 0.6);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.profileXpReadout strong { color: var(--rank-accent); }
-
-.profilePanelHeading,
-.profileMiniHeading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.profilePanelHeading h2,
-.profileMiniHeading h2 {
-    margin: 3px 0 0;
-    font-family: "Space Grotesk", "Verdana", sans-serif;
-    color: #f1f7ff;
-    line-height: 1.05;
-}
-
-.profilePanelHeading h2 { font-size: 20px; }
-.profileMiniHeading h2 { font-size: 15px; }
-
-.profileInstrument {
-    position: relative;
-    min-width: 0;
-    min-height: 112px;
-    overflow: hidden;
-    padding: 13px 12px 11px;
-    border: 1px solid rgba(169, 207, 244, 0.14);
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
-    display: grid;
-    align-content: end;
-    gap: 3px;
-}
-
-.profileInstrument::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 38%;
-    height: 2px;
-    background: var(--instrument-accent, var(--profile-accent));
-    box-shadow: 0 0 12px var(--instrument-accent, var(--profile-accent));
-}
-
-.profileInstrument.tone-chain { --instrument-accent: #f5b968; }
-.profileInstrument.tone-tempo { --instrument-accent: #b89cff; }
-.profileInstrument.isStrongest { border-color: rgba(108, 230, 188, 0.42); background: linear-gradient(145deg, rgba(76, 202, 158, 0.1), rgba(255, 255, 255, 0.015)); }
-.profileInstrument.isStrongest::after { --instrument-accent: #6fe0b7; width: 68%; }
-
-.profileSignalBand {
-    display: grid;
-    grid-template-columns: 1.08fr 0.9fr 1.12fr;
-    min-width: 0;
-    border-bottom: 1px solid rgba(170, 210, 248, 0.13);
-}
-
-.profileSignalBand > section {
-    position: relative;
-    min-width: 0;
-    min-height: 174px;
-    padding: 16px 18px;
-    border-right: 1px solid rgba(170, 210, 248, 0.13);
-}
-
-.profileSignalBand > section:first-child { padding-left: 0; }
-.profileSignalBand > section:last-child { padding-right: 18px; border-right: 0; }
-.profileMiniHeading > strong { color: rgba(233, 244, 255, 0.83); font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 13px; }
-.profileMiniHeading > strong.isPositive { color: #78e2b9; }
-.profileMiniHeading > strong.isNegative { color: #ff958d; }
-
-.profileFormBar.isRanked::after { content: ""; position: absolute; top: -4px; left: 50%; width: 4px; height: 4px; transform: translateX(-50%) rotate(45deg); background: #f7ca69; }
-.profileFormBar.isRanked.isLoss::after { background: #ff837c; }
-@keyframes profileSignalRise { from { transform: scaleY(0); opacity: 0.3; } }
-
-.profileBuildSignature { background: linear-gradient(150deg, rgba(245, 185, 104, 0.035), transparent); }
-.profileBuildMetrics { margin-top: 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
-.profileBuildMetrics span { min-width: 0; padding-top: 8px; border-top: 1px solid rgba(245, 185, 104, 0.2); color: rgba(195, 216, 238, 0.55); font-size: 11px; text-transform: uppercase; }
-.profileBuildMetrics strong { display: block; overflow: hidden; text-overflow: ellipsis; color: #f1f7ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 17px; }
-
-.profileNearestGoal { overflow: hidden; background: radial-gradient(circle at 95% 0%, rgba(181, 151, 255, 0.09), transparent 45%); }
-.profileNearestGoal .profileMiniHeading { position: relative; z-index: 1; }
-.profileNearestGoal > p { position: relative; z-index: 1; margin: 10px 0 12px; max-width: 88%; color: rgba(202, 222, 243, 0.67); font-size: 11px; line-height: 1.4; }
-.profileGoalConstellation i.isUnlocked { background: #c1a8ff; }
-.profileEmptySignal { margin: 17px 0 0; color: rgba(190, 212, 235, 0.48); font-size: 11px; line-height: 1.4; }
-
-.profileStatsSection { min-width: 0; }
-.profileAchievementsSection { padding-top: 22px; scroll-margin-top: 16px; }
-.profileStatsSectionTitle { margin: 3px 0 0; color: #f3f9ff; font-family: "Space Grotesk", "Verdana", sans-serif; font-size: 20px; line-height: 1.1; }
-
-@media (max-width: 980px) {
-    .profileRankCrest { width: 88px; height: 88px; }
-    .profileSignalBand { grid-template-columns: 1fr 1fr; }
-    .profileSignalBand > section:nth-child(2) { border-right: 0; padding-right: 0; }
-    .profileSignalBand > section:nth-child(3) { grid-column: 1 / -1; min-height: 145px; padding-left: 0; border-top: 1px solid rgba(170, 210, 248, 0.13); }
-}
-
-@media (max-width: 760px) {
-    .profileCockpit { padding: 16px; clip-path: polygon(0 14px, 14px 0, calc(100% - 35px) 0, calc(100% - 24px) 11px, 100% 11px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
-    .profileAvatar { width: 48px; height: 48px; font-size: 18px; }
-    .profilePlayerName { font-size: 21px; }
-    .profilePlayerTitle { font-size: 11px; }
-    .profileHeaderResources { gap: 5px; }
-    .profileCoinReadout, .profileTextAction { min-height: 26px; padding: 4px 7px; font-size: 11px; }
-    .profileTextAction:first-of-type { display: none; }
-    .profilePanelHeading h2 { font-size: 17px; }
-    .profileInstrument { min-height: 91px; padding: 10px; }
-    .profileSignalBand { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; overflow: visible; }
-    .profileSignalBand > section,
-    .profileSignalBand > section:nth-child(3) { grid-column: auto; min-height: 140px; padding: 10px 8px; border-top: 0; border-right: 1px solid rgba(170, 210, 248, 0.13); }
-    .profileSignalBand > section:first-child { padding-left: 0; }
-    .profileSignalBand > section:last-child { padding-right: 8px; border-right: 0; }
-    .profileSignalBand .profileMiniHeading { display: grid; gap: 2px; }
-    .profileSignalBand .profileSectionKicker { font-size: 11px; letter-spacing: 0.8px; }
-    .profileSignalBand .profileMiniHeading h2 { margin-top: 2px; font-size: 11px; line-height: 1.1; }
-    .profileSignalBand .profileMiniHeading > strong { font-size: 11px; }
-    .profileBuildMetrics { margin-top: 10px; grid-template-columns: 1fr; gap: 3px; }
-    .profileBuildMetrics span { padding-top: 3px; display: flex; align-items: baseline; justify-content: space-between; gap: 3px; font-size: 11px; }
-    .profileBuildMetrics strong { font-size: 11px; }
-    .profileNearestGoal > p,
-    .profileGoalConstellation { display: none; }
-    .profileNearestGoal .profileGoalTrack { margin-top: 14px; }
-    .profileAchievementsSection { padding-top: 18px; }
-}
-
-@media (max-width: 480px) {
-    .profileCockpit { padding: 13px; }
-    .profileHeaderResources .profileCoinReadout { position: absolute; right: 0; bottom: -11px; z-index: 2; background: #0b1729; }
-    .profileHeaderResources .profileTextAction { padding-inline: 6px; }
-    .profileRankCrest { width: 77px; height: 77px; }
-    .profileRankTitle { font-size: 26px; }
-    .profileXpReadout { font-size: 11px; }
-    .profileInstrument { min-height: 84px; padding: 8px 7px; }
-    .profileSignalBand > section,
-    .profileSignalBand > section:nth-child(3) { padding-inline: 6px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .profileTextAction { scroll-behavior: auto; }
-}
-
-/* p02: readable type floor for Profile. Kickers and labels sit at 12px and
-   detail copy at 13px, all at >= ~80% ink. Scoped to .profilePageCenter so it
-   outranks the later shared sheets without editing them. */
-.profilePageCenter .profileIdentityKicker,
-.profilePageCenter .profileSectionKicker,
-.profilePageCenter .profileRankLabel {
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    color: rgb(244 202 101 / 95%);
-}
-
-.profilePageCenter .profilePlayerTitle,
-.profilePageCenter .profileRankMeta {
-    font-size: 12.5px;
-    color: rgb(219 235 252 / 85%);
-}
-
-.profilePageCenter .profileRankGoal span,
-.profilePageCenter .profileRankGoal strong,
-.profilePageCenter .profileXpReadout span {
-    font-size: 13px;
-    color: rgb(214 229 246 / 88%);
-}
-
-.profilePageCenter .profileRankGoal strong { color: #f3f8ff; }
-
-.profilePageCenter .profileInstrumentLabel {
-    font-size: 13px;
-    color: rgb(206 224 244 / 86%);
-}
-
-.profilePageCenter .profileInstrumentDetail {
-    font-size: 12.5px;
-    color: rgb(206 224 244 / 76%);
-}
-
-.profilePageCenter .profileInstrumentTag { font-size: 11px; }
-
-.profilePageCenter .profilePeakStrip span,
-.profilePageCenter .profileFormAverage span,
-.profilePageCenter .profileBuildMetrics span {
-    font-size: 13px;
-    color: rgb(196 214 236 / 82%);
-}
-
-.profilePageCenter .profilePeakStrip strong,
-.profilePageCenter .profileFormAverage { font-size: 14px; }
-
-.profilePageCenter .profileNearestGoal > p { font-size: 14px; color: rgb(214 229 246 / 88%); }
-.profilePageCenter .profileGoalProgress { font-size: 13px; color: rgb(222 212 252 / 90%); }
-
-.profilePageCenter .achievementCategoryTab { font-size: 12.5px; }
-
-.profilePageCenter .achievementDescription {
-    font-size: 13px;
-    line-height: 1.4;
-    color: rgb(214 229 246 / 90%);
-}
-
-.profilePageCenter .achievementProgressText,
-.profilePageCenter .achievementPercentText { font-size: 12.5px; }
-
-.profilePageCenter .achievementState { font-size: 11.5px; }
-
-.profilePageCenter .profileCoinReadout,
-.profilePageCenter .profileTextAction { font-size: 14px; color: #eef6ff; }
-
-/* p03: one panel material across Profile. The stat cards and the three
-   lower panels share the instrument surface (tinted glass, soft frame,
-   accent cap), and each carries an illustrated emblem from the game icon
-   set in place of the faint crosshair. */
-.profilePageCenter .profileInstrumentEmblem {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    filter: drop-shadow(0 3px 0 rgb(0 0 0 / 30%));
-}
-
-.profilePageCenter .profileInstrumentEmblem .gameIcon { width: 44px; height: 44px; }
-
-.profilePageCenter .profileSignalBand {
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 0;
-}
-
-.profilePageCenter .profileSignalBand > section,
-.profilePageCenter .profileSignalBand > section:first-child,
-.profilePageCenter .profileSignalBand > section:last-child {
-    --panel-accent: #7ccfff;
-    min-height: 0;
-    padding: 14px 16px;
-    border: 0;
-    border-radius: 0;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
-    box-shadow: var(--skin-frame-soft), 0 3px 0 #0a1220;
-    overflow: hidden;
-}
-
-.profilePageCenter .profileSignalBand > section.profileBuildSignature { --panel-accent: #f5b968; }
-.profilePageCenter .profileSignalBand > section.profileNearestGoal {
-    --panel-accent: #b89cff;
-    background:
-        radial-gradient(circle at 95% 0%, rgba(181, 151, 255, 0.1), transparent 45%),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
-}
-
-@media (min-width: 981px) {
-    .profilePageCenter .profileSignalBand { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
-/* Accent cap matching the stat instruments. */
-.profilePageCenter .profileSignalBand > section::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 38%;
-    height: 2px;
-    background: var(--panel-accent);
-    box-shadow: 0 0 12px var(--panel-accent);
-}
-
-.profilePageCenter .profileMiniHeading { align-items: center; }
-.profilePageCenter .profileMiniHeading > div { flex: 1 1 auto; min-width: 0; }
-.profilePageCenter .profileSignalBand .profileSectionKicker { white-space: nowrap; letter-spacing: 0.05em; }
-
-.profilePageCenter .profilePanelEmblem {
-    flex-shrink: 0;
-    width: 42px;
-    height: 42px;
-    display: grid;
-    place-items: center;
-    border-radius: 12px;
-    background: rgb(4 9 19 / 55%);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
-}
-
-.profilePageCenter .profilePanelEmblem .gameIcon { width: 36px; height: 36px; }
-
-@media (max-width: 760px) {
-    .profilePageCenter .profileSignalBand { gap: 8px; }
-    .profilePageCenter .profileSignalBand > section { padding: 10px; }
-    .profilePageCenter .profilePanelEmblem { display: none; }
-}
-
-/* p06: tactile panel material. Stat instruments and the three lower panels
-   get a bevelled edge (lit top, shaded base), a faint brushed texture, and a
-   surface wash in their own accent colour so each card reads as its own
-   piece of hardware rather than the same glass tile. */
-.profilePageCenter .profileInstrument { --panel-accent: var(--instrument-accent, #7ccfff); }
-.profilePageCenter .profileInstrument.isStrongest { --panel-accent: #6fe0b7; }
-
-.profilePageCenter .profileInstrument,
-.profilePageCenter .profileSignalBand > section,
-.profilePageCenter .profileSignalBand > section:first-child,
-.profilePageCenter .profileSignalBand > section:last-child,
-.profilePageCenter .profileSignalBand > section.profileNearestGoal {
-    background:
-        radial-gradient(130% 100% at 0% 0%, color-mix(in srgb, var(--panel-accent) 24%, transparent), transparent 65%),
-        repeating-linear-gradient(135deg, rgb(255 255 255 / 1.1%) 0 1px, transparent 1px 6px),
-        linear-gradient(180deg, #16223a, #0d1526);
-    box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 11%),
-        inset 0 -2px 0 rgb(0 0 0 / 35%),
-        inset 0 0 0 1px color-mix(in srgb, var(--panel-accent) 34%, rgb(255 255 255 / 6%)),
-        0 4px 0 #070d19,
-        0 10px 22px rgb(0 0 0 / 30%);
-}
-
-.profilePageCenter .profilePanelEmblem {
-    background: color-mix(in srgb, var(--panel-accent) 14%, rgb(4 9 19 / 70%));
-    box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 10%),
-        inset 0 0 0 1px color-mix(in srgb, var(--panel-accent) 30%, transparent);
-}
-
-/* p07: lower panels fill their frames. Each panel stacks heading, content
-   and footer, with the footer pinned to the base so all three end on the
-   same line. The build stats become large instrument readouts and the
-   achievement track thickens into a meter. The p06 brushed texture is
-   quieter so it no longer competes with small text. */
-@media (min-width: 981px) {
-    .profilePageCenter .profileSignalBand > section {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .profilePageCenter .profileFormChart { flex: 1 1 auto; height: auto; min-height: 64px; margin-top: 4px; }
-    .profilePageCenter .profileFormAverage { margin-top: 0; }
-
-    .profilePageCenter .profileBuildMetrics {
-        flex: 1 1 auto;
-        margin-top: 4px;
-        gap: 8px;
-        align-items: stretch;
-    }
-
-    .profilePageCenter .profileBuildMetrics span {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        gap: 2px;
-        padding: 10px 10px 8px;
-        border: 0;
-        border-radius: 8px;
-        background: rgb(4 9 19 / 45%);
-        box-shadow: inset 0 0 0 1px rgb(245 185 104 / 16%), inset 0 -2px 0 rgb(245 185 104 / 35%);
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: rgb(222 208 186 / 86%);
-    }
-
-    .profilePageCenter .profileBuildMetrics strong {
-        font-family: var(--ca-font-display);
-        font-weight: 400;
-        font-size: 26px;
-        line-height: 1;
-        letter-spacing: 0;
-        color: #fff4e3;
-    }
-
-    .profilePageCenter .profileNearestGoal > p { margin: 0; }
-    .profilePageCenter .profileNearestGoal .profileGoalTrack {
-        margin-top: auto;
-        height: 10px;
-        border-radius: 6px;
-        background: rgb(4 9 19 / 55%);
-    }
-    .profilePageCenter .profileNearestGoal .profileGoalTrack span { border-radius: 6px; }
-    .profilePageCenter .profileGoalProgress { font-size: 14px; font-weight: 700; }
-}
-
-.profilePageCenter .profileFormAverage { color: rgb(226 238 252 / 92%); }
-.profilePageCenter .profileFormAverage span { color: rgb(206 224 244 / 86%); }
-.profilePageCenter .profileInstrumentDetail { color: rgb(214 230 248 / 84%); }
-
-/* Phone content must size to the panel, rather than its desktop min-content
-   width. Keep these overrides scoped to Profile and below the desktop range. */
 @media (max-width: 600px) {
-    .profilePageCenter .profileCompetitorCard .profilePlayerName {
-        max-width: 100%;
-        overflow: visible;
-        overflow-wrap: anywhere;
-        line-height: 1.2;
-    }
-
-    .profilePageCenter .profileAttributeLabel,
-    .profilePageCenter .profileAttributeLabel > * {
-        max-width: 100%;
-        overflow-wrap: anywhere;
-    }
-    .profilePageCenter .profileAttributeDial { max-width: 100%; }
-    .profilePageCenter .profileSheetMain .profileSignalBand .profileSectionKicker {
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-
-    .profilePageCenter .profileAchievementsSection,
-    .profilePageCenter .achievementHeaderText,
-    .profilePageCenter .achievementsMainArea,
-    .profilePageCenter .achievementsCarousel,
-    .profilePageCenter .achievementsCarouselRowWrap { min-width: 0; }
-
-    .profilePageCenter .profileAchievementsSection .achievementHeaderRow {
-        align-items: stretch !important;
-    }
-    .profilePageCenter .profileStatsSectionTitle {
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-    .profilePageCenter .achievementCategoryTabs {
-        min-width: 0;
-        max-width: 100%;
-        flex-wrap: wrap;
-    }
-    .profilePageCenter .achievementCategoryTab {
-        max-width: 100%;
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-    .profilePageCenter .profileAchievementsSection .achievementTile.isFeaturedBanner {
-        grid-template-columns: minmax(0, 1fr) !important;
-    }
-    .profilePageCenter .profileAchievementsSection .achievementTile.isFeaturedBanner .achievementTileHeader {
-        flex-shrink: 1;
-        width: 100%;
-    }
-    .profilePageCenter .profileAchievementsSection .achievementTile.isFeaturedBanner .achievementTitle {
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-    .profilePageCenter .achievementTile.isFeaturedBanner .achievementTileHeaderMain {
-        flex-direction: column;
-        gap: 8px;
-        text-align: center;
-    }
-    .profilePageCenter .achievementDescription {
-        display: block;
-        overflow: visible;
-        -webkit-line-clamp: unset;
-        overflow-wrap: anywhere;
-    }
-    .profilePageCenter .achievementProgressText {
-        white-space: normal;
-        overflow: visible;
-        overflow-wrap: anywhere;
-    }
-}
-
-/* p08: a player identity hero. The header becomes a spotlit nameplate: a
-   larger portrait in a rank-metal frame with a halo, a bigger name, the
-   title as a rank-coloured plate, and a quieter stripe so the band reads as
-   lit metal rather than pattern. Desktop and tablet only; mobile keeps its
-   compact header. */
-@media (min-width: 761px) {
-    .profilePageCenter .profileCommandHeader {
-        padding-block: 26px;
-        background:
-            radial-gradient(ellipse 34% 150% at 8% 50%, rgba(var(--rank-accent-rgb), 0.42), transparent 72%),
-            radial-gradient(ellipse 60% 120% at 100% 0%, rgb(120 170 255 / 10%), transparent 70%),
-            repeating-linear-gradient(135deg, rgb(255 255 255 / 1.4%) 0 12px, transparent 12px 24px),
-            linear-gradient(90deg, #1d2f4c, #111c30);
-        box-shadow:
-            inset 0 1px 0 rgb(255 255 255 / 8%),
-            inset 0 -2px 0 var(--skin-ink),
-            inset 0 -4px 0 rgba(var(--rank-accent-rgb), 0.55);
-    }
-
-    .profilePageCenter .profileIdentityRow { gap: 22px; }
-
-    .profilePageCenter .profileAvatar {
-        width: 108px;
-        height: 108px;
-        border-radius: 24px;
-        box-shadow:
-            0 0 0 3px var(--skin-ink),
-            0 0 0 7px rgba(var(--rank-accent-rgb), 0.95),
-            0 0 0 9px var(--skin-ink),
-            0 0 34px 8px rgba(var(--rank-accent-rgb), 0.35),
-            0 8px 0 6px #0a1220;
-    }
-
-    .profilePageCenter .profileAvatar .playerPortrait { border-radius: 20px; }
-
-    .profilePageCenter .profilePlayerName {
-        font-size: clamp(38px, 3.6vw, 50px);
-        line-height: 1.02;
-    }
-
-    .profilePageCenter .profilePlayerTitle {
-        justify-self: start;
-        margin: 4px 0 2px;
-        padding: 3px 10px;
-        border-radius: 6px;
-        background: linear-gradient(180deg, rgba(var(--rank-accent-rgb), 0.3), rgba(var(--rank-accent-rgb), 0.14));
-        box-shadow: inset 0 0 0 1px rgba(var(--rank-accent-rgb), 0.55), 0 2px 0 var(--skin-ink);
-        color: #fff3d6;
-        font-size: 12.5px;
-        letter-spacing: 0.1em;
-    }
-
-    .profilePageCenter .profileLead { font-size: 14px; color: rgb(222 234 248 / 88%); }
+    .profilePageCenter .profileCompetitorCard .profilePlayerName { max-width: 100%; overflow: visible; overflow-wrap: anywhere; line-height: 1.2; }
 }

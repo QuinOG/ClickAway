@@ -259,7 +259,7 @@ export default function ProfilePage({
         <div className="profileSheet">
           <aside className="profileCompetitorCard" aria-label={`${rankLabel} rank, level ${levelValue}`}>
             <div className="profileCardBanner">
-              <span>Competitor card</span>
+              <span>Competitor</span>
               <span className="profileOrbitLevel">LV {levelValue}</span>
             </div>
             <div className="profilePortraitSlab">
@@ -274,22 +274,23 @@ export default function ProfilePage({
                   : <span className="profileRankCrestFallback">?</span>}
               </div>
             </div>
-            <h1 className="profilePlayerName" id="profile-player-name">
-              {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
-            </h1>
-            <p className="profilePlayerTitle">{playerTitle}</p>
-            <div className="profileDivisionPlate">
-              <small>Division</small>
-              <strong className="profileRankTitle">{rankLabel}</strong>
-              <span>{rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank ? rankGoal : `${getRankMetaText(rankProgress)} · next ${rankProgress.nextTierLabel ?? "rank"}`}</span>
-            </div>
-            <div className="profileXpReadout">
-              <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
-              <span>{formatNumber(xpToNextLevel)} XP</span>
-              <ProgressBar percent={levelProgressPercent} label={`XP to level ${nextLevelValue}`} />
-            </div>
-            <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
-              <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+            <div className="profileIdentityDetails">
+              <h1 className="profilePlayerName" id="profile-player-name">
+                {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
+              </h1>
+              <p className="profilePlayerTitle">{playerTitle}</p>
+              <div className="profileDivisionPlate">
+                <strong className="profileRankTitle">{rankLabel}</strong>
+                <span>{rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank ? rankGoal : `${getRankMetaText(rankProgress)} · next ${rankProgress.nextTierLabel ?? "rank"}`}</span>
+              </div>
+              <div className="profileXpReadout">
+                <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
+                <span>{formatNumber(xpToNextLevel)} XP</span>
+                <ProgressBar percent={levelProgressPercent} label={`XP to level ${nextLevelValue}`} />
+              </div>
+              <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
+                <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+              </div>
             </div>
           </aside>
 
@@ -307,21 +308,21 @@ export default function ProfilePage({
                   detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
                   value={`${profileStats.accuracyPercent}%`}
                   fill={profileStats.accuracyPercent / 100}
-                  isStrongest={strongestTrait.key === "precision"}
+                  isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "precision"}
                 />
                 <AttributeRow
                   label="Best streak"
                   detail="unbroken targets"
                   value={formatNumber(profileStats.bestStreak)}
                   fill={profileStats.bestStreak / 30}
-                  isStrongest={strongestTrait.key === "chain"}
+                  isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "chain"}
                 />
                 <AttributeRow
                   label="Reaction"
                   detail={reactionStats.bestReactionMs !== null ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
                   value={formatReactionTime(reactionStats.avgReactionMs)}
                   fill={reactionStats.avgReactionMs !== null ? (520 - reactionStats.avgReactionMs) / 360 : 0}
-                  isStrongest={strongestTrait.key === "tempo"}
+                  isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "tempo"}
                 />
                 <AttributeRow
                   label="Peak score"
@@ -347,7 +348,7 @@ export default function ProfilePage({
                   {recentForm.bars.length > 0 ? recentForm.bars.map((bar) => (
                     <li
                       key={bar.id}
-                      className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
+                      className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.mode === "Practice" ? "isPractice" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
                       title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} ${bar.rankResultLabel}` : ""}`}
                     >
                       <span className="profileReceiptMode">{bar.mode}</span>

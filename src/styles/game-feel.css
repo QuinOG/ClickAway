@@ -24,12 +24,11 @@
 /* ---- 2. Frames --------------------------------------------------------- */
 .card:not(.leaderboardPageCard), .cardWide,
 .shopCommandSurface, .shopItemCard,
-.profileCockpit, .profileCommandHeader, .achievementTile,
 .leaderboardPodium,
 .challengeCard, .duelComposer,
 .historyTrajectory, .historyHighlightCard,
 .helpMissionMap, .helpBlock,
-.uiDialogSurface {
+.uiDialogSurface  {
     border-style: solid !important;
     border-width: 12px !important;
     border-color: transparent !important;
@@ -74,7 +73,7 @@
     font-weight: 400;
     text-shadow: 0 2px 0 #040912;
 }
-.historySectionTitle, .profileStatsSectionTitle {
+.historySectionTitle {
     display: inline-flex;
     align-items: center;
     width: fit-content;
@@ -493,49 +492,6 @@
     min-width: 120px; font-size: 17px; text-transform: uppercase;
 }
 .feedbackSettingsActions button:disabled { filter: saturate(0.4) brightness(0.8); }
-
-/* ---- Profile: character sheet + trophy cabinet -------------------------- */
-.profileRankTitle { font-size: 44px !important; background: linear-gradient(180deg, #fff6d6, #ffd25c 50%, #e89a24); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none !important; filter: drop-shadow(0 3px 0 #040912); }
-.profilePlayerName { font-family: var(--ca-font-display) !important; font-weight: 400 !important; font-size: 56px !important; text-transform: uppercase; text-shadow: 0 4px 0 #040912, 0 0 30px rgb(80 180 255 / 30%); }
-.profilePlayerTitle {
-    color: #2a1500 !important; background: linear-gradient(180deg, #fff1b0, #ffc94a 55%, #e8941c) !important;
-    border: 2px solid #040912 !important; font-family: var(--ca-font-display); font-weight: 400 !important;
-    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
-    padding-inline: 16px !important;
-}
-.achievementCategoryTabs button {
-    border: 2px solid #040912 !important; border-radius: 8px !important;
-    font-family: var(--ca-font-display); font-weight: 400 !important; text-transform: uppercase; letter-spacing: 0.04em;
-    background: linear-gradient(180deg, #1a2a42, #0f1a2c) !important;
-    box-shadow: inset 0 1px 0 rgb(160 200 245 / 14%), 0 3px 0 #040912 !important;
-}
-.achievementCategoryTabs [aria-selected="true"], .achievementCategoryTabs [aria-pressed="true"], .achievementCategoryTabs .isActive {
-    color: #2a1500 !important; background: linear-gradient(180deg, #fff1b0, #ffc94a 55%, #e8941c) !important;
-}
-/* the achievement row is a lit trophy cabinet; tiles are medals on velvet, not cards */
-.achievementsViewport {
-    padding: 22px 16px 10px;
-    border: 3px solid #040912;
-    border-radius: 12px;
-    background:
-        linear-gradient(180deg, rgb(255 230 170 / 10%), transparent 30%),
-        repeating-linear-gradient(90deg, rgb(255 255 255 / 1.2%) 0 1px, transparent 1px 4px),
-        linear-gradient(180deg, #2a1420, #170a12);
-    box-shadow: inset 0 0 0 4px #5a3a1c, inset 0 0 0 6px #040912, inset 0 12px 30px rgb(0 0 0 / 55%), 0 6px 0 #040912;
-}
-.achievementTile {
-    border: 0 !important; border-image: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-.achievementsViewport .achievementTile::after {
-    content: ""; display: block; height: 8px; margin: 10px -6px -4px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #8a5a2c, #4a2c12);
-    box-shadow: 0 3px 0 #040912;
-}
-.achievementMedalDisc { filter: drop-shadow(0 6px 0 rgb(0 0 0 / 45%)) drop-shadow(0 0 16px rgb(255 200 90 / 25%)); transform: scale(1.18); }
-.achievementTitle { font-family: var(--ca-font-display) !important; font-weight: 400 !important; }
 
 /* ---- Shop: a storefront ------------------------------------------------- */
 .shopItemCard {
@@ -962,178 +918,6 @@
 .duelFightCenter .duelVsMark { font-size: 80px !important; }
 .duelFightComposer .duelReplayCard { width: 112px; height: 112px; }
 .duelFightComposer .duelLaunchForm { gap: 16px !important; padding-bottom: 18px !important; }
-
-/* ---- Profile: competitor card + attribute sheet ------------------------- */
-.profileSheet {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 330px minmax(0, 1fr);
-    gap: 26px;
-    margin-bottom: 26px;
-}
-.profileCompetitorCard {
-    position: relative;
-    display: grid;
-    justify-items: center;
-    align-content: start;
-    gap: 10px;
-    padding: 0 18px 18px;
-    border: 3px solid #040912;
-    border-radius: 16px;
-    background:
-        radial-gradient(ellipse 90% 40% at 50% 22%, rgba(var(--rank-accent-rgb), 0.35), transparent 70%),
-        repeating-linear-gradient(135deg, rgb(255 255 255 / 2.5%) 0 8px, transparent 8px 16px),
-        linear-gradient(180deg, #1f3354, #0c1526);
-    box-shadow: inset 0 0 0 3px #c98a24, inset 0 0 0 5px #040912, inset 0 3px 0 5px rgb(255 255 255 / 12%), 0 8px 0 #040912, 0 18px 30px rgb(0 0 0 / 40%);
-    text-align: center;
-}
-.profileCardBanner {
-    justify-self: stretch;
-    display: flex; justify-content: space-between; align-items: center;
-    margin: 0 -18px 4px;
-    padding: 10px 16px 9px;
-    border-radius: 13px 13px 0 0;
-    border-bottom: 3px solid #040912;
-    background: linear-gradient(180deg, #fff1b0, #ffd04a 50%, #e8941c);
-    color: #2a1500;
-    font: 400 15px var(--ca-font-display);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-.profileCardBanner .profileOrbitLevel {
-    position: static !important; transform: none !important;
-    min-width: 0 !important; padding: 2px 10px !important;
-    border: 2px solid #040912 !important; border-radius: 6px !important;
-    background: #040912 !important; color: #ffd25c !important;
-    font: 400 14px var(--ca-font-display) !important;
-}
-.profilePortraitSlab { position: relative; margin: 6px 0 14px; }
-.profileCompetitorCard .profileAvatar {
-    width: 200px !important; height: 200px !important;
-    clip-path: none !important;
-    border: 4px solid #040912 !important;
-    border-radius: 20px !important;
-    box-shadow: 0 0 0 4px rgba(var(--rank-accent-rgb), 0.9), 0 0 0 7px #040912, 0 0 40px rgba(var(--rank-accent-rgb), 0.35) !important;
-}
-.profileCompetitorCard .profileAvatar > * { width: 100% !important; height: 100% !important; }
-.profileCompetitorCard .profileRankCrest {
-    position: absolute !important;
-    right: -34px; bottom: -26px;
-    width: 96px !important; height: 96px !important;
-    border: 3px solid #040912 !important;
-    background: radial-gradient(circle at 50% 30%, #2f4a70, #0b1626 72%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 4px #c98a24, 0 0 0 6px #040912, 0 6px 14px rgb(0 0 0 / 50%) !important;
-}
-.profileCompetitorCard .profilePlayerName { margin: 6px 0 0 !important; font-size: 46px !important; line-height: 1; }
-.profileCompetitorCard .profilePlayerTitle { margin: 0 !important; }
-.profileDivisionPlate {
-    justify-self: stretch;
-    display: grid; justify-items: center; gap: 0;
-    margin-top: 4px;
-    padding: 8px 10px 10px;
-    border: 2px solid #040912; border-radius: 10px;
-    background: linear-gradient(180deg, #070e1a, #0f1a2c);
-    box-shadow: inset 0 3px 8px rgb(0 0 0 / 55%), 0 1px 0 rgb(255 255 255 / 12%);
-}
-.profileDivisionPlate small { font-weight: 800; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(255 255 255 / 55%); }
-.profileDivisionPlate .profileRankTitle { font-size: 38px !important; line-height: 1.05; }
-.profileDivisionPlate span { font-size: 12px; color: #9fb6d3; }
-.profileCompetitorCard .profileRankGoal { margin: 0; display: block !important; border: 0 !important; padding: 0 !important; font-size: 13px; color: #c9d8ea; }
-.profileCompetitorCard .profileRankGoal span { color: rgb(255 255 255 / 55%); text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; }
-.profileCompetitorCard .profileXpReadout { justify-self: stretch; text-align: left; margin: 0; padding: 0; border: 0 !important; }
-.profileCompetitorCard .profileHeaderResources { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 4px; }
-
-.profileSheetMain { display: grid; align-content: start; gap: 18px; min-width: 0; }
-.profileAttributes .profilePanelHeading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 12px; }
-.profileAttributes .profilePanelHeading h2 { margin: 2px 0 0; font: 400 30px var(--ca-font-display); color: #fff; text-shadow: 0 3px 0 #040912; }
-.profileAttributeList { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.profileAttribute {
-    position: relative;
-    display: grid;
-    grid-template-columns: 54px 170px minmax(0, 1fr) 120px;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 16px 10px 12px;
-    border: 3px solid #040912;
-    border-radius: 12px;
-    background:
-        radial-gradient(circle at 9px 50%, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        radial-gradient(circle at calc(100% - 9px) 50%, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        linear-gradient(180deg, #24395a, #111d31);
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 16%), inset 0 -4px 0 rgb(0 0 0 / 30%), 0 4px 0 #040912;
-}
-.profileAttribute.isStrongest {
-    background:
-        radial-gradient(circle at 9px 50%, #ffe8a0 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        radial-gradient(circle at calc(100% - 9px) 50%, #ffe8a0 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        linear-gradient(180deg, #5a3f12, #2a1d08);
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), inset 0 0 0 2px #c98a24, inset 0 -4px 0 rgb(0 0 0 / 30%), 0 4px 0 #040912;
-}
-.profileAttributeLabel { display: grid; gap: 1px; min-width: 0; }
-.profileAttributeLabel strong { font: 400 19px var(--ca-font-display); color: #fff; text-shadow: 0 2px 0 #040912; }
-.profileAttributeLabel small { font-size: 12px; color: #9fb6d3; }
-.profileAttributeGauge i.isLit { background: linear-gradient(180deg, #a6f3ff, #3cc4ef); box-shadow: 0 0 8px rgb(79 216 255 / 60%); }
-.profileAttribute.isStrongest .profileAttributeGauge i.isLit { background: linear-gradient(180deg, #fff1b0, #ffc94a); box-shadow: 0 0 8px rgb(255 201 74 / 60%); }
-.profileAttributeValue { justify-self: end; font: 400 34px/1 var(--ca-font-display); color: #fff; text-shadow: 0 3px 0 #040912; }
-.profileAttribute .profileInstrumentTag {
-    position: absolute; top: -11px; left: 74px;
-    padding: 1px 8px;
-    border: 2px solid #040912; border-radius: 5px;
-    background: #ffd25c; color: #2a1500;
-    font: 400 11px var(--ca-font-display); text-transform: uppercase;
-}
-
-.profileSheetMain .profileSignalBand { grid-template-columns: 1.3fr 1fr 1fr !important; gap: 12px; border: 0 !important; }
-.profileSheetMain .profileSignalBand > section {
-    min-height: 0 !important;
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px !important;
-    border: 3px solid #040912 !important;
-    border-radius: 12px;
-    background: linear-gradient(180deg, #1a2b45, #0e1828) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 12%), 0 4px 0 #040912 !important;
-}
-.profileSheetMain .profileFormPanel { display: grid !important; align-items: start; }
-.profileSheetMain .profileSignalBand h2 { margin: 0; font: 400 17px var(--ca-font-display); color: #fff; }
-.profileSheetMain .profileSignalBand > section > div { min-width: 0; }
-.profileSheetMain .profileMiniHeading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.profileFormTokens { list-style: none; margin: 4px 0 0; padding: 0; display: flex; gap: 6px; }
-.profileFormToken {
-    flex: 1; min-width: 0;
-    aspect-ratio: 1;
-    display: grid; place-items: center;
-    border-radius: 50%;
-    border: 2px solid #040912;
-    background: radial-gradient(circle at 50% 30%, #3a7fc4, #163c66 75%);
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%), 0 3px 0 #040912;
-    font: 400 11px var(--ca-font-display); color: #fff; text-shadow: 0 1px 0 #040912;
-}
-.profileFormToken.isRanked { background: radial-gradient(circle at 50% 30%, #ffd25c, #a86c10 75%); color: #2a1500; text-shadow: none; }
-.profileFormToken.isLoss { background: radial-gradient(circle at 50% 30%, #e8505a, #7a1420 75%); color: #fff; }
-.profileSheetMain .profilePanelEmblem {
-    flex: none; width: 50px; height: 50px;
-    display: grid; place-items: center;
-    border-radius: 50%; border: 2px solid #040912;
-    background: radial-gradient(circle at 50% 30%, #3a5a86, #0e1a2c 72%);
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 3px #c98a24, 0 0 0 5px #040912;
-    color: #ffd25c;
-}
-.profileSheetMain .profileBuildMetrics { margin: 2px 0 0; font-size: 12px; color: #9fb6d3; }
-.profileSheetMain .profileGoalTrack { margin: 6px 0 3px; }
-.profileSheetMain .profileGoalProgress { font-size: 12px; color: #9fb6d3; }
-@media (max-width: 1000px) {
-    .profileSheet { grid-template-columns: 1fr; }
-    .profileAttribute { grid-template-columns: 46px minmax(0, 1fr) 90px; }
-    .profileSheetMain .profileSignalBand { grid-template-columns: 1fr !important; }
-}
-
-.profileAttribute { grid-template-columns: 54px 160px minmax(0, 1fr) 150px; padding-right: 28px; }
-.profileAttributeValue { white-space: nowrap; }
-.profileSheetMain .profileBuildSignature, .profileSheetMain .profileNearestGoal { display: flex !important; flex-direction: row !important; align-items: center !important; }
-.profileSheetMain .profileSignalBand > section::before, .profileSheetMain .profileSignalBand > section::after { display: none !important; }
-.profileSheetMain .profileSignalBand > section > div { flex: 1; }
-.profileFormToken { font-size: 12px; }
 .lobbyStage .lobbyStageFloor { height: 100% !important; transform: perspective(600px) rotateX(30deg) !important; }
 
 /* ---- Shop: arena-theme previews are the same stadium, re-lit per theme -- */
@@ -1156,12 +940,6 @@
 .shopArenaScene.theme-forest .shopArenaWorld, .shopArenaScene.theme-forest .shopArenaSceneFloor { filter: hue-rotate(70deg) saturate(0.9); }
 .shopArenaScene.theme-arcade .shopArenaWorld, .shopArenaScene.theme-arcade .shopArenaSceneFloor { filter: hue-rotate(230deg) saturate(1.5); }
 .shopArenaScene .shopArenaSceneTarget { z-index: 2; top: 62% !important; }
-.profileSheetMain .profileSignalBand { grid-template-columns: 1fr 1fr !important; }
-.profileSheetMain .profileFormPanel { grid-column: 1 / -1; display: flex !important; align-items: center !important; gap: 18px; }
-.profileSheetMain .profileFormPanel .profileMiniHeading { flex: none; gap: 16px; }
-.profileSheetMain .profileFormTokens { flex: 1; margin: 0; justify-content: flex-end; }
-.profileSheetMain .profileFormToken { flex: none; width: 52px; font-size: 13px; }
-.profileSheetMain .profileSectionKicker { white-space: nowrap; }
 
 /* ======================= Round 7 (run 2, round 1) ======================= */
 /* ---- G. Framed game fields: a recessed slot with a steel icon cap ------- */
@@ -2048,49 +1826,6 @@
 .duelPage .duelCommandSurface .challengeTargetScore strong { color: #fff !important; font-size: 36px !important; line-height: 1; text-shadow: 0 0 10px rgb(255 90 70 / 60%); }
 .duelPage .duelCommandSurface .challengeCardMessage { font-family: var(--ca-font-display); font-size: 18px; color: #ffe6b0 !important; }
 
-/* ---- E. Profile: achievements are a lit trophy path -------------------- */
-.profileAchievementsSection .achievementsRow { position: relative; }
-/* a rail connects the trophies at medal height */
-.profileAchievementsSection .achievementsRow::before {
-    content: "";
-    position: absolute; z-index: 0;
-    left: 8%; right: 8%; top: 66px; height: 8px;
-    border: 2px solid #040912;
-    border-radius: 4px;
-    background: linear-gradient(180deg, #3a4a66, #1c2740);
-}
-.profileAchievementsSection .achievementsRow > .achievementTile { position: relative; z-index: 1; }
-/* lit trophies glow; locked ones are dim cast-iron */
-.profileAchievementsSection .achievementTile.isUnlocked .achievementMedal {
-    filter: drop-shadow(0 0 16px rgb(255 200 90 / 65%));
-}
-.profileAchievementsSection .achievementTile.isLocked .achievementMedal { filter: grayscale(0.85) brightness(0.55); }
-.profileAchievementsSection .achievementTile.isLocked :is(.achievementTitle, .achievementDescription) { opacity: 0.6; }
-/* the next trophy to earn stands out */
-.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementMedal {
-    filter: none;
-    transform: scale(1.22);
-}
-.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked :is(.achievementTitle, .achievementDescription) { opacity: 1; }
-.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementTitle { color: #ffd25c !important; }
-.profileAchievementsSection .achievementTile.isUnlocked + .achievementTile.isLocked .achievementTileHeader::before {
-    content: "NEXT";
-    position: absolute; top: -6px; left: 50%; translate: -50% 0; z-index: 3;
-    padding: 2px 10px;
-    border: 2px solid #040912;
-    border-radius: 4px;
-    color: #2a1600;
-    background: linear-gradient(180deg, #ffe9a0, #e9a93a);
-    font: 400 12px var(--ca-font-display);
-    letter-spacing: 0.14em;
-}
-.profileAchievementsSection .achievementTile .achievementTileHeader { position: relative; }
-/* no LOCKED/UNLOCKED chips and no percentages: the trophy state says it */
-.profileAchievementsSection .achievementsRow .achievementStatusRow { display: none !important; }
-.profileAchievementsSection .achievementsRow .achievementProgressMeta > :not(.achievementProgressText) { display: none !important; }
-.profileAchievementsSection .achievementsRow .achievementTile.isUnlocked .achievementProgress { visibility: hidden; }
-.profileAchievementsSection .achievementFeaturedBannerWrap .achievementStatusRow { display: none !important; }
-
 /* ======================= Round 10 (run 2, round 4) ====================== */
 /* ---- A. Settings: an arena control console ----------------------------- */
 .feedbackSettingsSheet .feedbackSettingsForm { align-items: stretch !important; }
@@ -2239,71 +1974,8 @@
 /* ---- Regressions -------------------------------------------------------- */
 /* Login: the S1 stamp sits fully inside the pass */
 .authPassSeal { right: 18px !important; top: 60px !important; }
-/* Profile: no progress bars under locked trophies; the count stays */
-.profileAchievementsSection .achievementsRow .achievementProgressTrack { display: none !important; }
-.profileAchievementsSection .achievementsRow .achievementProgressText { display: block; text-align: center; font-family: var(--ca-font-display); color: #c9d4e4; }
 /* Shop: one price per item (on the tag); the button just says what it does */
 .shopGrid .shopItemCard .shopActionPrice { display: none !important; }
-
-/* ---- B. Profile: four compact gauge plates + one scouting report ------- */
-.profileSheetMain .profileAttributeList { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 12px !important; }
-.profileSheetMain .profileAttribute {
-    grid-template-columns: 1fr !important;
-    justify-items: center;
-    gap: 2px !important;
-    padding: 14px 10px 14px !important;
-    text-align: center;
-}
-.profileSheetMain .profileAttribute .profileAttributeEmblem {
-    position: absolute; top: 8px; left: 8px;
-    width: 30px; height: 30px;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 20%), 0 0 0 2px #c98a24, 0 0 0 4px #040912;
-}
-.profileSheetMain .profileAttribute .profileAttributeEmblem svg { width: 18px; height: 18px; }
-.profileAttributeDial { width: 118px; height: auto; margin-top: 4px; overflow: visible; }
-.profileDialTrack, .profileDialFill { fill: none; stroke-width: 10; stroke-linecap: butt; }
-.profileDialTrack { stroke: #050a14; }
-.profileDialFill { stroke: #3cc4ef; filter: drop-shadow(0 0 4px rgb(79 216 255 / 60%)); }
-.profileAttribute.isStrongest .profileDialFill { stroke: #ffc94a; filter: drop-shadow(0 0 4px rgb(255 201 74 / 60%)); }
-.profileDialTick { stroke: rgb(200 220 245 / 55%); stroke-width: 1.6; }
-.profileDialNeedle { stroke: #ff5a4a; stroke-width: 3; stroke-linecap: round; }
-.profileDialHub { fill: #c9d4e4; stroke: #040912; stroke-width: 2; }
-.profileSheetMain .profileAttributeValue { justify-self: center !important; font-size: 30px !important; order: 2; }
-.profileSheetMain .profileAttributeLabel { order: 3; justify-items: center; }
-.profileSheetMain .profileAttributeLabel strong { font-size: 16px; }
-.profileSheetMain .profileAttributeLabel small { font-size: 11px; }
-.profileSheetMain .profileAttributeDial { order: 1; }
-.profileSheetMain .profileAttribute { padding-right: 10px !important; }
-.profileSheetMain .profileAttribute .profileInstrumentTag { left: 50%; translate: -50% 0; }
-
-/* the three lower panels share one scouting-report housing */
-.profileSheetMain .profileSignalBand {
-    position: relative;
-    margin-top: 18px;
-    padding: 26px 12px 12px !important;
-    border: 3px solid #040912 !important;
-    border-radius: 12px;
-    background: linear-gradient(180deg, #0b1424, #070e1a) !important;
-    box-shadow: inset 0 4px 10px rgb(0 0 0 / 55%), 0 4px 0 #040912;
-}
-.profileSheetMain .profileSignalBand::before {
-    content: "SCOUTING REPORT";
-    position: absolute; top: -13px; left: 18px;
-    padding: 3px 16px 4px;
-    border: 2px solid #040912;
-    color: #2a1600;
-    font: 400 13px var(--ca-font-display);
-    letter-spacing: 0.14em;
-    background: linear-gradient(180deg, #ffe9a0, #e9a93a);
-    clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%, 8px 50%);
-}
-.profileSheetMain .profileSignalBand > section {
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-.profileSheetMain .profileSignalBand > section + section { border-left: 2px dashed rgb(200 220 245 / 14%) !important; }
 
 /* ---- C. Shop: boxes with a printed body, a side face and real glare ---- */
 .shopGrid .shopItemCard {
@@ -2563,38 +2235,6 @@
     translate: -50% 0;
     z-index: 2;
 }
-
-/* ---- E. Profile: the scouting report fills the column; a real trophy shelf */
-.profileSheetMain { display: flex !important; flex-direction: column; }
-.profileSheetMain .profileSignalBand { flex: 1; align-content: center; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li,
-.profileSheetMain .profileSignalBand [class*="FormCoin"] { transform: scale(1.18); }
-
-.achievementsViewport .achievementTile::after { display: none !important; }
-.profileAchievementsSection .achievementsViewport {
-    padding-bottom: 34px !important;
-    background:
-        radial-gradient(ellipse 9% 55% at 10% 18%, rgb(255 220 150 / 22%), transparent 70%),
-        radial-gradient(ellipse 9% 55% at 30% 18%, rgb(255 220 150 / 22%), transparent 70%),
-        radial-gradient(ellipse 9% 55% at 50% 18%, rgb(255 220 150 / 30%), transparent 70%),
-        radial-gradient(ellipse 9% 55% at 70% 18%, rgb(255 220 150 / 14%), transparent 70%),
-        radial-gradient(ellipse 9% 55% at 90% 18%, rgb(255 220 150 / 14%), transparent 70%),
-        linear-gradient(180deg, #2a1420, #170a12) !important;
-}
-.profileAchievementsSection .achievementsRow { padding-bottom: 30px; }
-.profileAchievementsSection .achievementsRow::after {
-    content: "";
-    position: absolute; left: -10px; right: -10px; bottom: 0; height: 26px;
-    border: 3px solid #040912;
-    border-radius: 3px;
-    background:
-        var(--gf-wood-grain),
-        linear-gradient(180deg, #d7a066 0 5px, #9a6232 5px 16px, #5a3416 16px);
-    background-size: 600px 240px, auto;
-    box-shadow: 0 8px 12px rgb(0 0 0 / 55%);
-}
-.profileAchievementsSection .achievementMedalDisc { transform: none !important; }
-.profileAchievementsSection .achievementTile .achievementTileHeader { margin-bottom: 16px; }
 /* fit: the readout and cartridge tray stay above the fold */
 .armorySwapReport { padding: 12px 14px 6px !important; }
 .armorySwapReport .armorySwapReportRow { padding-block: 3px !important; min-height: 0 !important; }
@@ -2605,126 +2245,17 @@
 /* one wide texture tile so no seam shows across a counter or shelf */
 .duelFightComposer .duelRunTokens { background-size: auto, auto, 1500px 260px, auto !important; }
 .duelFightComposer .duelRunTokens::after,
-.duelFightComposer .duelLaunchStep,
-.profileAchievementsSection .achievementsRow::after { background-size: 1500px 260px, auto !important; }
+.duelFightComposer .duelLaunchStep { background-size: 1500px 260px, auto !important; }
 .historyHighlightCard{ background-size: 1500px 200px, auto !important; }
-.profileSheetMain .profileSignalBand { align-content: space-evenly !important; }
-.profileAchievementsSection .achievementsViewport { padding-bottom: 16px !important; }
 .historyTrajectory .historyClimbStep .historyClimbPillar { width: 16px !important; height: 16px !important; }
 .armoryPartsGallery { row-gap: 10px !important; gap: 10px !important; }
 .armoryPartsGallery > .armoryPartsShelf { margin-top: 0 !important; }
-.profileSheetMain .profileSignalBand { align-content: center !important; row-gap: 34px !important; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li { transform: scale(1.32) !important; margin-inline: 4px; }
 
 /* ======================= Round 12 (run 2, round 6) ====================== */
 :root {
     /* illustrated planks: two staggered rows, butt joints, a few grain strokes and a knot */
     --gf-planks: url('/art/textures/planks.svg');
 }
-
-/* ---- A. Profile: the scouting report is a compact instrument panel ----- */
-.profileSheetMain .profileSignalBand {
-    flex: none !important;
-    align-content: start !important;
-    row-gap: 14px !important;
-    column-gap: 14px !important;
-    padding: 28px 14px 14px !important;
-}
-.profileSheetMain .profileSignalBand > section + section { border-left: 0 !important; }
-.profileSheetMain .profileSignalBand > section.profileFormPanel {
-    display: grid !important;
-    grid-template-columns: 1fr;
-    gap: 10px !important;
-    padding: 0 !important;
-}
-.profileSheetMain .profileFormPanel .profileMiniHeading {
-    display: flex !important; align-items: baseline; justify-content: space-between;
-    padding: 0 6px;
-}
-.profileSheetMain .profileFormPanel .profileMiniHeading > div { display: flex; align-items: baseline; gap: 12px; }
-.profileSheetMain .profileFormPanel .profileMiniHeading strong {
-    padding: 3px 10px;
-    border: 2px solid #040912;
-    border-radius: 4px;
-    background: #020509;
-    font: 400 18px var(--ca-font-display);
-    text-shadow: 0 0 8px currentColor;
-}
-/* the form coins stand on score columns in a recessed tray */
-.profileSheetMain .profileSignalBand .profileFormTokens {
-    --tray: 128px;
-    position: relative;
-    display: flex !important;
-    align-items: flex-end !important;
-    justify-content: space-around !important;
-    height: calc(var(--tray) + 78px);
-    margin: 0 !important;
-    padding: 0 18px 16px !important;
-    border: 3px solid #040912;
-    border-radius: 10px;
-    background:
-        linear-gradient(180deg, transparent calc(100% - 18px), #3a5a86 calc(100% - 18px) calc(100% - 16px), #050a14 calc(100% - 16px)),
-        repeating-linear-gradient(180deg, transparent 0 31px, rgb(120 170 230 / 14%) 31px 32px),
-        linear-gradient(180deg, #03070d, #0a1424);
-    box-shadow: inset 0 4px 10px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 10%);
-}
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken {
-    --col: #4fb8ff;
-    position: relative;
-    flex: none;
-    width: 58px !important; height: 58px !important;
-    margin: 0 0 calc(var(--rise, 0.5) * var(--tray)) !important;
-    transform: none !important;
-    font-size: 15px !important;
-    z-index: 1;
-}
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken.isRanked { --col: #ffc94a; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken.isLoss { --col: #ff5a6a; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken::before {
-    content: "";
-    position: absolute; z-index: -1;
-    top: 100%; left: 50%; translate: -50% 0;
-    width: 18px;
-    height: calc(var(--rise, 0.5) * var(--tray) + 2px);
-    border: 2px solid #040912;
-    border-top: 0;
-    background: linear-gradient(90deg, color-mix(in srgb, var(--col) 55%, #040912), var(--col) 45%, color-mix(in srgb, var(--col) 70%, #040912));
-    box-shadow: 0 0 12px color-mix(in srgb, var(--col) 45%, transparent);
-}
-/* Top build and Nearest achievement are framed sub-plaques */
-.profileSheetMain .profileSignalBand > section:is(.profileBuildSignature, .profileNearestGoal) {
-    padding: 16px 16px 16px 14px !important;
-    border: 3px solid #040912 !important;
-    border-radius: 10px !important;
-    background:
-        radial-gradient(circle at 9px 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at calc(100% - 9px) 9px, #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at 9px calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #c9d4e4 1.5px, #040912 2.2px 3px, transparent 3.5px),
-        linear-gradient(180deg, #2c3c58, #18243a) !important;
-    box-shadow: inset 0 0 0 2px #a8792a, inset 0 3px 0 rgb(255 255 255 / 16%), 0 4px 0 #040912 !important;
-}
-
-/* ---- A. Profile: the trophies stand on the shelf ----------------------- */
-.profileAchievementsSection .achievementsRow::before { display: none !important; }
-.profileAchievementsSection .achievementsRow::after {
-    top: var(--shelf-y, 98px) !important; bottom: auto !important;
-    height: 22px !important;
-    border-width: 3px !important;
-    /* contact shadows where each trophy stands, then the plank */
-    background:
-        radial-gradient(ellipse 5% 7px at 10% 2px, rgb(0 0 0 / 70%), transparent),
-        radial-gradient(ellipse 5% 7px at 30% 2px, rgb(0 0 0 / 70%), transparent),
-        radial-gradient(ellipse 5% 7px at 50% 2px, rgb(0 0 0 / 70%), transparent),
-        radial-gradient(ellipse 5% 7px at 70% 2px, rgb(0 0 0 / 70%), transparent),
-        radial-gradient(ellipse 5% 7px at 90% 2px, rgb(0 0 0 / 70%), transparent),
-        linear-gradient(180deg, #e2ad70 0 4px, #a8692f 4px 13px, #6a3d16 13px 17px, #3a1f08 17px) !important;
-    background-size: auto !important;
-    box-shadow: 0 10px 14px rgb(0 0 0 / 60%) !important;
-    z-index: 0;
-}
-.profileAchievementsSection .achievementTile .achievementTitle { margin-top: 16px !important; }
-.profileAchievementsSection .achievementsRow { padding-bottom: 0 !important; }
 /* ---- B. Duels: an illustrated plank counter under a lamp --------------- */
 .duelFightComposer .duelRunTokens {
     background:
@@ -3701,29 +3232,6 @@
   border: 2px double rgb(255 155 122 / 80%); border-radius: 3px; color: #ff9b7a !important;
   font: 800 11px/16px var(--ca-font-display) !important; letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-1.5deg);
 }
-/* Round 22: Profile match stamps */
-.profileSheetMain .profileSignalBand .profileFormTokens {
-    height: auto !important; min-height: 150px; align-items: center !important;
-    justify-content: center !important; flex-wrap: wrap; gap: 9px;
-    padding: 18px !important; background: #172333 !important;
-    border: 3px solid #080d15; box-shadow: inset 0 4px 12px #0009;
-}
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken {
-    --ink: #345873; display: flex !important; flex-direction: column; justify-content: center;
-    gap: 8px; width: 88px !important; height: 104px !important; margin: 0 !important;
-    transform: rotate(-2deg) !important; border: 3px solid #34291b !important;
-    border-radius: 3px !important; color: #302419 !important; text-shadow: none !important;
-    background: repeating-linear-gradient(0deg, transparent 0 4px, #8b71431a 5px), #e4c990 !important;
-    box-shadow: 2px 3px 0 #0008, inset 0 0 0 3px #f4dea9 !important;
-}
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken:nth-child(even) { transform: rotate(2deg) !important; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken.isRanked { --ink: #387044; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken.isLoss { --ink: #a03c35; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken::before { display: none !important; }
-.profileStampScore { font-size: 17px; font-weight: 900; line-height: 1; }
-.profileStampOutcome { color: var(--ink); border: 2px double currentColor; padding: 4px 3px; font-size: 11px; font-weight: 900; line-height: 1; transform: rotate(-7deg); }
-.profileSheetMain .profileSignalBand .profileFormTokens { gap: 5px; padding: 18px 10px !important; }
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken { width: 78px !important; }
 
 /* Round 23: Ladder hover card - cut-out rival bust rising out of a rank socket */
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar {
@@ -4000,11 +3508,6 @@
   .rankCeremony .rankCeremonyPrevious span::before { content: 'Was '; color: #a88c5c; }
   .rankCeremony .rankCeremonyPrevious::before { bottom: -10px; width: 150px; height: 34px; background: linear-gradient(#d7a14b 0 10%, #66401f 11% 30%, #a8732c 31% 42%, #2a1d14 43% 80%, #171b24 81%); clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); }
 }
-
-/* Round 30: Profile printed match receipts */
-.profileSheetMain .profileSignalBand .profileFormTokens > li.profileFormToken { gap: 4px; }
-.profileReceiptMode { color: #513b27; font: 900 10px/1 var(--ca-font-display); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px dashed #8e7652; padding-bottom: 3px; }
-.profileReceiptMode { font-size: 9px; letter-spacing: 0; white-space: nowrap; }
 /* Round 31: Shop - each product family has its own display furniture (rarity colours kept) */
 /* Button skins: arched arcade cabinets with a marquee bulb strip */
 .shopSection[data-shop-family="button_skins"] .shopGrid .shopItemCard { border-top-left-radius: 38px !important; border-top-right-radius: 38px !important; }
@@ -4050,9 +3553,6 @@
 .shellIdentityPopover.shellIdentityPass .shellPassSeal circle:nth-of-type(2) { fill: #e0ad48; stroke: #7a5418; stroke-width: 2; }
 .shellIdentityPopover.shellIdentityPass .shellPassSeal text { fill: #4a3008; font-weight: 900; }
 .shellIdentityPopover.shellIdentityPass .shellPassSeal path:not([id]) { fill: #fff0b8; stroke: #7a5418; stroke-width: 1.4; }
-
-/* Round 34: Profile - locked trophies read as embossed silhouettes on the shelf (edge highlight + recessed shadow), still dimmer than unlocked */
-.profileAchievementsSection .achievementTile.isLocked:not(.isUnlocked + .isLocked) .achievementMedal { filter: grayscale(1) brightness(.78) contrast(1.25) drop-shadow(0 -1px 0 rgb(220 232 245 / 55%)) drop-shadow(0 2px 0 #02050b) drop-shadow(0 4px 4px rgb(0 0 0 / 55%)); }
 /* Round 35: Spec sheet - brighter assembly blueprint inside the same box: lit component plates, engraved bolted connectors, grid */
 .specSheetClipboard .specSheetAssembly { background-color: #0a2136 !important; background-image: linear-gradient(#77b9cc22 1px, transparent 1px), linear-gradient(90deg, #77b9cc22 1px, transparent 1px) !important; background-size: 12px 12px !important; }
 .specSheetClipboard .specSheetAssembly::before { left: 24px; top: 36px; width: 150px; border-top: 3px solid #8fe6ff; box-shadow: 0 0 6px #4ec8e3, 0 1px 0 #050912; }
@@ -4073,10 +3573,6 @@
 .rankCeremony .divisionMetalworkGem { fill: #c34127; stroke: #713412; stroke-width: 1; }
 .rankCeremony .divisionMetalwork { z-index: 3; }
 .leaderboardTopRow { align-items: stretch !important; }
-
-/* Round 36: Profile achievement banner clear of its tabs; build stats on one line */
-.profileAchievementsSection .achievementHeaderRow { align-items: center !important; gap: 24px !important; margin-bottom: 8px; }
-.profileSheetMain .profileBuildMetrics { display: block !important; margin-top: 4px !important; white-space: nowrap; }
 
 /* Round 36: Shop compact hero */
 .shopInspectStage.shopCommandLoadoutStage { min-height: 220px !important; }
@@ -4113,17 +3609,6 @@
 @media (max-width: 720px) {
   .authPanel.authPass { grid-template-rows: auto; }
 }
-
-/* Round 39: Profile card and Help on the 8px rhythm */
-.profileCompetitorCard { gap: 0 !important; padding: 0 24px 24px !important; }
-.profileCompetitorCard > * { margin-top: 0 !important; margin-bottom: 0 !important; }
-.profileCompetitorCard > .profilePortraitSlab { margin-top: 24px !important; }
-.profileCompetitorCard > .profilePlayerName { margin-top: 32px !important; }
-.profileCompetitorCard > .profilePlayerTitle { margin-top: 8px !important; align-self: center; }
-.profileCompetitorCard > .profileDivisionPlate { margin-top: 16px !important; }
-.profileCompetitorCard > .profileRankGoal { margin-top: 8px !important; }
-.profileCompetitorCard > .profileXpReadout { margin-top: 16px !important; }
-.profileCompetitorCard > .profileHeaderResources { margin-top: 16px !important; }
 .helpDoc.card { padding: 32px !important; }
 .helpDoc > .commandHeader { margin: 0 0 16px !important; }
 .helpDoc > .helpTopicGroup { margin-top: 32px !important; padding: 8px 32px 32px 64px !important; }
@@ -4133,8 +3618,6 @@
 .helpTopicGroup > .helpSubhead + * { margin-top: 0 !important; }
 .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
 .helpTopicGroup > .helpSubhead { margin: 24px 0 8px !important; }
-.profileCompetitorCard > .profilePlayerTitle { justify-self: center; }
-.profileCompetitorCard > .profileCardBanner { margin-left: -24px !important; margin-right: -24px !important; }
 .helpDoc .helpTopicGroup > .helpGroupHeader { margin: 24px 0 16px !important; }
 /* Round 39: Shop on the 8px rhythm */
 .shopCard { width: min(1140px, 100%); }
@@ -4175,13 +3658,6 @@
 .historyTrendStrip { padding: 16px; gap: 16px; }
 .historyTrajectory { padding: 16px !important; gap: 8px 24px; }
 .historyContent > .historyHighlightsSection .historyHighlightCard { padding-block: 16px !important; }
-
-/* Round 41: Results on the 8px rhythm */
-
-/* Round 43: Profile - achievement progress centred under its medal; card actions on one row */
-.profileAchievementsSection .achievementsRow .achievementProgressMeta { justify-content: center; }
-.profileAchievementsSection .achievementsRow .achievementProgress { margin-top: 6px; }
-.profileCompetitorCard > .profileHeaderResources { gap: 8px; flex-wrap: nowrap; }
 
 /* Round 43: Duels - mirrored challenger/rival halves */
 .duelFightCard > .duelFighter > .duelFighterPlate { min-height: 104px; box-sizing: border-box; align-content: center; }
@@ -4345,41 +3821,14 @@
     .feedbackSettingsSheet .uiDialogHeader::before { left: 14px; width: 52px; height: 52px; }
 }
 
-/* ---- r55 (Sol i54 #3): locked medals read as dark metal reliefs ----------
- * Locked tiers were double-darkened (tile filter + mount filter) until the rim
- * details vanished. They are now a lighter gunmetal grey, and the lock badge
- * sits on the rim's lower-right edge instead of over the medal face. */
-.profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isUnlocked + .isLocked) .achievementMedal { filter: grayscale(1) brightness(0.9) contrast(1.12) drop-shadow(0 -1px 0 rgb(220 232 245 / 45%)) drop-shadow(0 2px 0 #02050b) drop-shadow(0 4px 4px rgb(0 0 0 / 55%)); }
-.profilePageCenter .profileAchievementsSection .achievementTile.isLocked .achievementMedal:is(.isProgressing, .isUntouched)::before { filter: brightness(0.92); }
-.profilePageCenter .profileAchievementsSection .achievementTile.isLocked:not(.isFeaturedBanner) .achievementMedalLock { right: -14px; bottom: -8px; }
-
 /* ---- Round 57: Ladder hovercard portrait fills its panel ------------- */
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar { overflow: hidden !important; place-items: end center !important; }
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar::before { width: 150px !important; height: 150px !important; bottom: 14px !important; }
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width: 160px !important; height: 160px !important; margin-bottom: -6px !important; }
-
-/* ==== Run 7 cleanup: spacing, redundancy, less ornament ================== */
-/* Play lobby: one emblem size for all three modes; no SELECTED tag */
-
-/* Profile: attribute icons centred in their ring; medal symbols fill the metal ring */
-.profileSheetMain .profileAttribute .profileAttributeEmblem > .gameArt { width: 20px !important; height: 20px !important; display: block; }
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc { width: 74px !important; height: 74px !important; border-width: 0 !important; }
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc::after { content: none; }
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementMedalDisc .gameIcon { width: 72px !important; height: 72px !important; }
-/* Results: one plain tally instead of medal + citation plaque */
-
-/* Profile recent form: no stamps; ranked rounds show RR as plain text */
-.profileFormTokens .profileStampOutcome { border: 0 !important; padding: 0 !important; transform: none !important; font: 400 13px/1 var(--ca-font-display) !important; color: #2f7d4f !important; }
-.profileFormTokens .profileFormToken.isLoss .profileStampOutcome { color: #b23a2c !important; }
 /* History highlights: no medal beside numbers that already say it */
 .historyHighlightCard::before, .historyHighlightCard + .historyHighlightCard::before, .historyHighlightCard:nth-child(2)::before { content: none !important; }
 /* History highlights: medal column removed, so no reserved left padding */
 .historyContent > .historyHighlightsSection .historyHighlightCard { padding-left: 26px !important; }
-/* Profile achievements: progress follows the requirement text; tighter medal tiles */
-.profilePageCenter .achievementTile.isFeaturedBanner { grid-template-columns: auto minmax(220px, 1fr) !important; }
-.profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { flex: 0 1 auto !important; }
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) { gap: 6px !important; min-height: 0 !important; }
-.profilePageCenter .achievementTile:not(.isFeaturedBanner) .achievementDescription { min-height: 0 !important; }
 /* Duels challenge: mode is printed on the ticket, so no chip; Accept/Decline already say it is pending */
 .duelPage .duelCommandSurface .challengeTargetMode { display: none !important; }
 .duelPage .duelCommandSurface .challengeTargetLine { grid-template-columns: 1fr auto !important; }
@@ -4392,31 +3841,18 @@
 
 /* ---- Device pass (2026-11-14): fixes found by tests/e2e/zz-device-audit.spec.js ---- */
 @media (max-width: 600px) {
-    /* Profile: four attribute tiles don't fit one phone row; two rows of two. */
-    .profileSheetMain .profileAttributeList { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-    .profileSheetMain .profileSectionKicker { white-space: normal; }
     /* Armory: part names wrap at word boundaries, never mid-word, and the
        "Unlocks at level" pill wraps inside the card instead of running off it. */
     .armoryPartsGallery .armoryPartsShelf .armoryPartLabel { overflow-wrap: normal; word-break: normal; font-size: 12.5px; }
     .armoryPartsGallery .armoryPartsShelf .armoryPartCard.isLocked > .armoryStateEmblem { white-space: normal; letter-spacing: 0.02em; }
-    /* Profile: Top build / Nearest achievement / Form take the full width, one per row. */
-    .profileSheetMain .profileSignalBand { grid-template-columns: 1fr !important; }
-}
-@media (max-width: 1100px) {
-    /* Achievements: the requirement text keeps a readable width beside the progress bar. */
-    .profilePageCenter .achievementTile.isFeaturedBanner .achievementDescription { flex: 1 1 12em !important; min-width: 9em; }
-    /* Profile: the build's stats line wraps instead of running off the card. */
-    .profileSheetMain .profileBuildMetrics { white-space: normal; overflow-wrap: anywhere; }
 }
 /* Touch screens: small controls get a comfortable tap height. */
 @media (pointer: coarse) {
-    .achievementCategoryTab,
     .helpArmoryLink,
     .armoryCart .armoryCartCompare,
     .armoryMachineHeader .armoryMachineNameButton,
-    .armoryUnlockWallTab { min-height: 36px; }
-    .armoryFirstTouchTipDismiss,
-    .achievementsArrow { min-width: 36px; min-height: 36px; }
+    .armoryUnlockWallTab  { min-height: 36px; }
+    .armoryFirstTouchTipDismiss { min-width: 36px; min-height: 36px; }
     /* Login/Signup "Create account" / "Login instead" were 17px-tall text links. */
     .authFooterLink { display: inline-block; padding-block: 9px; }
 }
@@ -4574,11 +4010,10 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
 .historyHighlightCard .historyHighlightMeta { font-size: 13px; }
 .historyHighlightCard .historyHighlightStat { background: rgb(90 60 18 / 8%) !important; }
 /* Keep legacy player names readable within their identity surfaces. */
-.profilePageCenter .profileCompetitorCard .profilePlayerName,
 .shellIdentityPopover.shellIdentityPass .shellPassName,
 .profileHoverIdentityName,
 .authIdentityCopy > strong,
-.leaderboardPodium .podiumFigure > strong {
+.leaderboardPodium .podiumFigure > strong  {
   min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere;
   word-break: normal; height: auto; text-overflow: clip;
 }
