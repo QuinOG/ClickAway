@@ -621,9 +621,10 @@
 .practiceDrawerTrigger:hover > span:last-child, .rankedPreflightDetails > summary:hover { color: #fff; }
 .practiceDrawerTrigger:focus-visible, .practiceDrillChoice:focus-visible, .rankedPreflightDetails > summary:focus-visible, .readyWarmupButton:focus-visible { outline: 2px solid #ffe3a6; outline-offset: 3px; }
 @media (min-width: 901px) {
-    .rankedPreflightDetails[open] .rankedPreflightDetailsBody { position: absolute; right: calc(100% + 48px); bottom: 0; width: min(580px, calc(100vw - 600px)); padding: 22px; border: 0 solid transparent; border-image: url('/art/lobby/mode-plate.png') 80 fill / 20px / 0 stretch; filter: drop-shadow(0 4px 5px rgb(0 0 0 / .4)); }
-    .readyCard.arenaLobby .practiceDrawer.isOpen { grid-column: 1; grid-row: 1 / -1; align-self: center; justify-self: center; width: min(640px, calc(100% - 48px)); padding: 22px; z-index: 2; }
-    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) :is(.lobbyStageTarget, .lobbyStageOrbit, .lobbyStageBeam, .lobbyStagePedestal) { opacity: .18; }
+    /* Ranked details and the Practice lab open the same way: a steel sheet over the stage, beside their panel. */
+    .rankedPreflight, .practiceDrawer { position: relative; }
+    :is(.rankedPreflightDetails[open] .rankedPreflightDetailsBody, .practiceDrawer.isOpen .practiceDrawerContent) { position: absolute; z-index: 2; right: calc(100% + 48px); bottom: 0; width: min(580px, calc(100vw - 600px)); max-height: none; overflow: visible; padding: 22px; border: 0 solid transparent; border-image: url('/art/lobby/mode-plate.png') 80 fill / 20px / 0 stretch; filter: drop-shadow(0 4px 5px rgb(0 0 0 / .4)); }
+    .readyCard.arenaLobby:has(.practiceDrawer.isOpen) .lobbyDailyGoals { opacity: 0; pointer-events: none; }
 }
 @media (min-width: 901px) and (max-height: 860px) {
     .rankedPreflight { padding-block: 10px; gap: 0; }
