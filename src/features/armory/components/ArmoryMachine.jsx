@@ -35,7 +35,7 @@ function MachineHousing({ module, isSelected = false, onOpenLane }) {
       title={`Open ${module.slotLabel} parts`}
     >
       <span className={`armoryMachineHousingGlyph tone-${module.slotId}`} aria-hidden="true">
-        <PartEmblem partId={module.moduleId} slotId={module.slotId} size={40} />
+        <PartEmblem partId={module.moduleId} slotId={module.slotId} size={64} />
       </span>
       {/* Keyed by installed module so a fresh part visibly seats into place. */}
       <span
@@ -175,14 +175,6 @@ export default function ArmoryMachine({
                     key={`conduit-${module.slotId}`}
                     className={`armoryMachineRigConduit conduit-${module.slotId} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
                   />
-                ))}
-                {presentation.moduleStack.map((module) => (
-                  <span
-                    key={module.slotId}
-                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
-                  >
-                    <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
-                  </span>
                 ))}
                 <span className="armoryMachineRigBed" />
               </span>

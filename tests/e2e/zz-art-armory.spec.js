@@ -34,9 +34,9 @@ for (const [name, viewport] of [["desktop", { width: 1440, height: 900 }], ["pho
     for (const slot of ["tempoCore", "powerRig", "streakLens"]) {
       await page.locator(`.armoryMachineHousing.housing-${slot}`).click()
       await expect(page.locator(".armoryMachineHousing.isSelected")).toHaveCount(1)
-      await expect(page.locator(`.armoryMachineRigMount.mount-${slot}`)).toHaveClass(/isSelected/)
+      await expect(page.locator(`.armoryMachineHousing.housing-${slot}`)).toHaveClass(/isSelected/)
       for (const other of ["tempoCore", "powerRig", "streakLens"].filter(id => id !== slot)) {
-        await expect(page.locator(`.armoryMachineRigMount.mount-${other}`)).toHaveCSS("box-shadow", "none")
+        expect(await page.locator(`.armoryMachineHousing.housing-${other} .armoryMachineHousingGlyph`).evaluate(el => getComputedStyle(el).filter)).not.toContain("10px")
       }
       await crop(page, ".armoryMachine", `${name}-${slot}.png`)
       if (name === "desktop") await crop(page, ".armoryWorkspace", `panel-${slot}.png`)
