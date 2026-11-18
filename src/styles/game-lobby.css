@@ -686,7 +686,10 @@
 .lobbyModeChoice-practice { --mode: 112 245 183; --plate: url('/art/lobby/mode-plate-practice.png'); --selected-plate: url('/art/lobby/mode-plate-practice-selected.png'); }
 .lobbyModeChoice-ranked { --mode: 255 218 118; --plate: url('/art/lobby/mode-plate-ranked.png'); --selected-plate: url('/art/lobby/mode-plate-ranked-selected.png'); }
 .lobbyModeChoice:hover:not(:disabled) { filter: brightness(1.15); }
-.lobbyModeChoice.isSelected { border-image-source: var(--selected-plate); filter: brightness(1.3) drop-shadow(0 0 7px rgb(var(--mode) / .4)); }
+.lobbyModeChoice.isSelected { border-image-source: var(--selected-plate); filter: brightness(1.06) drop-shadow(0 0 7px rgb(var(--mode) / .4)); }
+/* The lit plate is bright; keep the small lines readable on it. */
+.lobbyModeChoice.isSelected :is(.lobbyModeSummary, .lobbyModeReward, .lobbyModeBriefStat) { text-shadow: 0 1px 2px rgb(2 6 14 / .9), 0 0 6px rgb(2 6 14 / .55); }
+.lobbyModeChoice.isSelected .lobbyModeReward { color: color-mix(in srgb, rgb(var(--mode)) 60%, #fff); }
 .lobbyModeChoice::after { content: "›"; grid-area: mark; align-self: center; color: rgb(var(--mode)); font: 26px/1 var(--ca-font-display); }
 .lobbyModeChoice.isSelected::after { content: "✓"; font-size: 20px; }
 .lobbyModeChoice:focus-visible { outline: 3px solid rgb(var(--mode)); outline-offset: 2px; }
