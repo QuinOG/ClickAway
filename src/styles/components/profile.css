@@ -3,7 +3,7 @@
 .profileCockpit { --rank-accent: #ffdb83; --rank-accent-rgb: 255, 219, 131; width: 100%; min-width: 0; }
 .profileCockpitGrid { display: none; }
 .profileSheet { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: stretch; }
-.profileCompetitorCard { display: grid; justify-items: center; align-content: start; gap: 12px; min-width: 0; padding: 26px; border: 0 solid transparent; border-image: url('/art/lobby/mode-plate-ranked.png') 64 fill / 32px / 0 stretch; text-align: center; }
+.profileCompetitorCard { display: grid; justify-items: center; align-content: start; gap: 12px; min-width: 0; align-content: space-evenly; padding: 44px 36px; border: 0 solid transparent; border-image: url('/art/profile/player-card.png') 100 fill / 50px / 0 stretch; text-align: center; }
 .profileIdentityDetails { display: contents; }
 .profileCardBanner { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; color: #ffdf8a; text-transform: uppercase; font: 14px var(--ca-font-display); letter-spacing: .05em; }
 .profileOrbitLevel { color: #f6f8ff; font: 17px var(--ca-font-display); white-space: nowrap; }
@@ -29,7 +29,7 @@
 .profilePanelHeading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
 .profileSectionKicker { color: #e7ca83; font-size: 13px; line-height: 1.5; }
 .profilePanelHeading h2 { margin: 5px 0 0; color: #fff; font: 28px/1.2 var(--ca-font-display); text-shadow: 0 2px #030a12; }
-.profileAttributeList { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0; padding: 24px 10px 20px; list-style: none; border: 0 solid transparent; border-image: url('/art/ladder/row-steel.png') 64 fill / 32px / 0 stretch; }
+.profileAttributeList { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0; padding: 8px 0; list-style: none; }
 .profileAttribute { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 4px 8px; text-align: center; }
 .profileAttributeLabel { order: 3; display: grid; gap: 4px; max-width: 100%; }
 .profileAttributeLabel strong { color: #edf6ff; font: 16px/1.3 var(--ca-font-display); }
@@ -67,7 +67,7 @@
 .profileSignalBand h2 { margin: 3px 0 0; color: #fff; font: 18px/1.3 var(--ca-font-display); overflow-wrap: anywhere; }
 .profileBuildMetrics, .profileEmptySignal { margin: 8px 0 0; color: var(--profile-muted); font-size: 13px; line-height: 1.6; }
 .profileEmptySignal { grid-column: 1/-1; }
-.profileAchievementsSection { min-width: 0; margin-top: 28px; padding: 26px; border: 0 solid transparent; border-image: url('/art/ladder/row-steel.png') 64 fill / 32px / 0 stretch; scroll-margin-top: 20px; }
+.profileAchievementsSection { min-width: 0; margin-top: 28px; padding: 40px 64px; border: 0 solid transparent; border-image: url('/art/profile/trophy-cabinet.png') 120 140 fill / 48px 56px / 0 stretch; scroll-margin-top: 20px; }
 .profileStatsSectionTitle { margin: 0; color: #fff0c1; font: 23px/1.3 var(--ca-font-display); }
 .profilePageCenter :is(button, a):focus-visible { outline: 2px solid #8fe8ff; outline-offset: 4px; }
 .profilePageCenter .gameProgressValue, .profilePageCenter .gameProgressText { font-size: 13px; }
@@ -81,7 +81,7 @@
 }
 @media (max-width: 700px) {
     .profileSheet { grid-template-columns: minmax(0,1fr); gap: 18px; }
-    .profileCompetitorCard { padding: 26px; }
+    .profileCompetitorCard { padding: 44px 36px; }
     .profileAvatar { width: 186px; height: 186px; }
     .profileSheetMain { padding: 0; }
     .profileSignalBand { grid-template-columns: minmax(0,1fr); }
@@ -89,7 +89,7 @@
     .profileAttributeLabel small, .profileSectionKicker, .profileReceiptMode, .profileStampOutcome { font-size: 12px; }
     .profileFormTokens { grid-template-columns: repeat(4,minmax(0,1fr)); }
     .profileFormToken { min-height: 98px; }
-    .profileAchievementsSection { padding: 24px 18px; }
+    .profileAchievementsSection { padding: 36px 40px; border-image-source: url('/art/profile/trophy-cabinet-phone.png'); }
     .profileStatsSectionTitle { font-size: 21px; }
 }
 @media (max-width: 600px) {

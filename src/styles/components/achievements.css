@@ -1,10 +1,10 @@
-/* Achievement collection: open emblems, clear state text, steel backing. */
+/* Achievement collection: open emblems, clear state text, trophy cabinet. */
 .achievementHeaderRow { display: grid; gap: 18px; margin-bottom: 22px; }
 .achievementHeaderText { min-width: 0; }
 .achievementCategoryTabs { display: flex; flex-wrap: wrap; gap: 6px; }
-.achievementCategoryTab { min-height: 40px; padding: 8px 14px; border: 0 solid transparent; border-image: url('/art/ladder/row-steel.png') 64 fill / 16px / 0 stretch; background: none; color: #d4e1ed; font: 13px var(--ca-font-display); cursor: pointer; }
-.achievementCategoryTab.isSelected { border-image-source: url('/art/lobby/mode-plate-ranked.png'); color: #ffdf8a; }
-.achievementCategoryTab:hover { filter: brightness(1.25); color: #fff; }
+.achievementCategoryTab { min-height: 40px; padding: 8px 32px 8px 16px; border: 0 solid transparent; border-image: url('/art/profile/cabinet-tag.png') 34 76 34 34 fill / 14px 30px 14px 14px / 0 stretch; background: none; color: #ffe9b0; font: 13px var(--ca-font-display); cursor: pointer; }
+.achievementCategoryTab.isSelected { border-image-source: url('/art/profile/cabinet-tag-selected.png'); color: #2a1604; }
+.achievementCategoryTab:not(.isSelected):hover { filter: brightness(1.25); color: #fff; }
 .achievementFeaturedBannerWrap { margin-bottom: 24px; }
 .achievementTile { display: flex; flex-direction: column; gap: 10px; min-width: 0; position: relative; }
 .achievementTile.isFeaturedBanner { display: grid; grid-template-columns: minmax(0,1fr) minmax(150px, 35%); gap: 20px; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #9cb5c333; }
