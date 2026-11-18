@@ -194,17 +194,19 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
         )}
       </span>
       <div className="lobbyStageLoadout" aria-label="Current active build">
-        <Tooltip content={loadoutDetail} placement="top">
-          <strong tabIndex="0">{loadoutName || "Loadout"}</strong>
-        </Tooltip>
-        <Link className="lobbyTextLink lobbyStageEdit" to="/armory">
-          View in Armory
-          {showArmoryBadge ? <b>New</b> : null}
-        </Link>
+        <div className="lobbyStageIdentity">
+          <Tooltip content={loadoutDetail} placement="top">
+            <strong tabIndex="0">{loadoutName || "Loadout"}</strong>
+          </Tooltip>
+          <Link className="lobbyTextLink lobbyStageEdit" to="/armory">
+            View in Armory
+            {showArmoryBadge ? <b>New</b> : null}
+          </Link>
+        </div>
         <span className="lobbyStagePowers" aria-hidden="true">
           {powerSlots.slice(0, 3).map((slot, index) => (
             <span key={`${slot.id ?? index}`} className="lobbyStagePower">
-              <PowerEmblem powerupId={slot.id} size={22} />
+              <PowerEmblem powerupId={slot.id} size={30} />
               <kbd>{index + 1}</kbd>
             </span>
           ))}

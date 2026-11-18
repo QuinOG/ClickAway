@@ -92,11 +92,6 @@
 .navItem.hudUtilityButton .gameIcon { width: 24px; height: 24px; }
 .hudResource .gameIcon { width: 20px; height: 20px; }
 
-@media (max-width: 900px) {
-    .lobbyStageLoadout small { display: none; }
-    .lobbyStageLoadout { grid-template-columns: minmax(0, 1fr) auto; }
-}
-
 /* Duels: challenges lead as versus panels; the composer follows. */
 .duelInbox { margin-top: 0; margin-bottom: 22px; }
 .duelCommandSurface .challengeList { grid-template-columns: 1fr; }

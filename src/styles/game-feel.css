@@ -4630,8 +4630,7 @@
     .armoryFirstTouchTipDismiss,
     .achievementsArrow { min-width: 36px; min-height: 36px; }
     /* Login/Signup "Create account" / "Login instead" were 17px-tall text links. */
-    .authFooterLink,
-    .lobbyTextLink.lobbyStageEdit { display: inline-block; padding-block: 9px; }
+    .authFooterLink { display: inline-block; padding-block: 9px; }
 }
 
 /* Phones held sideways: HUD, arena and powerup tray must all fit the short screen,
