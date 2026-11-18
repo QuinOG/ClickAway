@@ -89,7 +89,6 @@
     overflow: hidden;
 }
 
-
 .pageCenter {
     width: min(1120px, 100%);
     margin: 0 auto;
@@ -1072,16 +1071,14 @@
     gap: 12px;
 }
 
-.challengePageHeader,
-.challengeCardHeader {
+.challengePageHeader {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
 }
 
-.challengePendingBadge,
-.challengeStatusBadge {
+.challengePendingBadge {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -1092,29 +1089,7 @@
     letter-spacing: 0.04em;
 }
 
-.challengeStatusBadge.is-pending {
-    background: rgba(255, 214, 120, 0.14);
-    color: #ffe7a8;
-}
-
-.challengeStatusBadge.is-accepted {
-    background: rgba(118, 166, 224, 0.18);
-    color: #d7ebff;
-}
-
-.challengeStatusBadge.is-completed {
-    background: rgba(120, 214, 160, 0.16);
-    color: #d7ffe8;
-}
-
-.challengeStatusBadge.is-declined,
-.challengeStatusBadge.is-expired {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(220, 235, 250, 0.72);
-}
-
 .challengeSendForm,
-.challengeCard,
 .challengeList {
     margin-top: 18px;
 }
@@ -1124,29 +1099,6 @@
     gap: 14px;
 }
 
-.challengeCard {
-    padding: 16px;
-    border: 1px solid rgba(165, 205, 246, 0.16);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.challengeCardActions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-.challengeCardMeta,
-.challengeCardTimestamp,
-.challengeCardMessage,
-.challengeCardResult {
-    margin: 8px 0 0;
-}
-
-@media (max-width: 720px) {
-}
 
 /* Phase 1 application shell ------------------------------------------------ */
 .appShell {
@@ -2021,5 +1973,4 @@
         transition: none;
     }
 }
-
 

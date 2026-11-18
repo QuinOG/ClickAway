@@ -460,7 +460,7 @@
     min-height: 232px;
     padding: 24px 132px 24px 28px;
     border: 0 solid transparent;
-    border-image: url('/art/history/ticket.png') 160 240 160 72 fill / 80px 120px 80px 36px / 0 stretch;
+    border-image: url('/art/ui/ticket.png') 160 240 160 72 fill / 80px 120px 80px 36px / 0 stretch;
 }
 .historyRoundCardMain { min-width: 0; }
 .historyRoundCardTopline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

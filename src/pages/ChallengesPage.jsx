@@ -60,7 +60,6 @@ function ChallengeStatusBadge({ status = "pending" }) {
 function ChallengeCard({
   challenge,
   currentUserId,
-  currentUsername,
   onRespond,
   onRaceGhost,
   isResponding = false,
@@ -72,21 +71,9 @@ function ChallengeCard({
 
   return (
     <article className="challengeCard" data-status={challenge.status}>
-      <div className="challengeVersus" aria-hidden="true">
-        <span className="challengeVersusSide isYou"><PlayerPortrait name={currentUsername} size={52} /></span>
-        <span className="challengeVersusBadge">VS</span>
-        <span className="challengeVersusSide isRival"><PlayerPortrait name={opponentLabel || "Rival"} size={52} /></span>
-      </div>
-      <span className="challengeTicketPrint" aria-hidden="true">
-        <b>Ghost duel · admit two</b>
-        <i>No. {String(challenge.id ?? "0").replace(/\D/g, "").padStart(6, "0").slice(-6)}</i>
-        <em>{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })} rules</em>
-      </span>
       <div className="challengeCardHeader">
         <div className="challengeRivalIdentity">
-          <span className="challengeRivalCrest" aria-hidden="true">
-            <PlayerPortrait name={opponentLabel || "Rival"} size={44} />
-          </span>
+          <PlayerPortrait name={opponentLabel || "Rival"} size={44} />
           <div>
             <p className="leaderboardSectionEyebrow">
               {isIncoming ? "Incoming Challenge" : "Sent Challenge"}
@@ -94,7 +81,6 @@ function ChallengeCard({
             <h2 className="cardH2 challengeCardTitle">vs {opponentLabel}</h2>
           </div>
         </div>
-        <ChallengeStatusBadge status={challenge.status} />
       </div>
 
       <div
@@ -102,11 +88,11 @@ function ChallengeCard({
         aria-label={`${challenge.modeId} target score ${Number(challenge.replayScore || 0).toLocaleString()}`}
       >
         <span className="challengeTargetMode">{getModeLabel({ modeId: challenge.modeId, fallback: challenge.modeId })}</span>
-        <span className="challengeTargetBeam" aria-hidden="true"><i /></span>
         <span className="challengeTargetScore">
           <small>Beat</small>
           <strong>{Number(challenge.replayScore || 0).toLocaleString()}</strong>
         </span>
+        <ChallengeStatusBadge status={challenge.status} />
       </div>
 
       {challenge.message ? <p className="challengeCardMessage">“{challenge.message}”</p> : null}
@@ -402,7 +388,6 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                 key={challenge.id}
                 challenge={challenge}
                 currentUserId={currentUserId}
-                currentUsername={currentUsername}
                 onRespond={handleRespond}
                 onRaceGhost={handleRaceGhost}
                 isResponding={respondingChallengeId === challenge.id}
