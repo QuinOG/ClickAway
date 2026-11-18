@@ -1,11 +1,11 @@
 /* The rank remains live text above the illustrated podium face. */
-.leaderboardPodiumDeck .podiumStep {
+.leaderboardPageScene .leaderboardPodiumDeck .podiumStep {
   border: 0;
   background: transparent;
   box-shadow: none;
   isolation: isolate;
 }
-.leaderboardPodiumDeck .podiumStep::before {
+.leaderboardPageScene .leaderboardPodiumDeck .leaderboardPodiumPlayer .podiumStep::before {
   display: block;
   content: "";
   position: absolute;
@@ -17,14 +17,5 @@
   filter: none;
   z-index: -1;
 }
-.leaderboardPodiumDeck .isRank2 .podiumStep::before { background-image: url('/art/social-menus/podium-silver.png'); }
-.leaderboardPodiumDeck .isRank3 .podiumStep::before { background-image: url('/art/social-menus/podium-bronze.png'); }
-.leaderboardPodiumDeck .leaderboardPodiumPlayer .podiumStep::before {
-  display: block;
-  inset: 0;
-  width: auto;
-  transform: none;
-  filter: none;
-}
-.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank2 .podiumStep::before { background-image: url('/art/social-menus/podium-silver.png'); }
-.leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank3 .podiumStep::before { background-image: url('/art/social-menus/podium-bronze.png'); }
+.leaderboardPageScene .leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank2 .podiumStep::before { background-image: url('/art/social-menus/podium-silver.png'); }
+.leaderboardPageScene .leaderboardPodiumDeck .leaderboardPodiumPlayer.isRank3 .podiumStep::before { background-image: url('/art/social-menus/podium-bronze.png'); }

@@ -152,46 +152,16 @@ function LeaderboardTableSkeleton() {
       aria-live="polite"
       aria-label="Loading leaderboard standings"
     >
-      <div className="leaderboardSkeletonIntro">
-        <div className="skeletonBlock skeletonBlock--pill" aria-hidden="true" />
+      <p className="muted">Loading standings…</p>
+      <div className="ladderSkeletonRows" aria-hidden="true">
+        {Array.from({ length: LEADERBOARD_SKELETON_ROW_COUNT }, (_, index) => (
+          <div key={index} className="ladderSkeletonRow">
+            <span className="skeletonBlock skeletonBlock--rank" />
+            <span className="skeletonBlock skeletonBlock--md" />
+            <span className="skeletonBlock skeletonBlock--num" />
+          </div>
+        ))}
       </div>
-      <table className="table helpTable leaderboardTable leaderboardSkeletonTable">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Player</th>
-            <th scope="col">Tier</th>
-            {SORTABLE_COLUMNS.map((column) => (
-              <th key={column.key} scope="col" className="leaderboardNumeric">
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: LEADERBOARD_SKELETON_ROW_COUNT }, (_, rowIndex) => (
-            <tr
-              key={`leaderboard-skeleton-${rowIndex}`}
-              className="leaderboardTableRow leaderboardSkeletonRow"
-            >
-              <td>
-                <div className="skeletonBlock skeletonBlock--rank" aria-hidden="true" />
-              </td>
-              <td>
-                <div className="skeletonBlock skeletonBlock--md leaderboardSkeletonPlayer" aria-hidden="true" />
-              </td>
-              <td>
-                <div className="skeletonBlock skeletonBlock--tier" aria-hidden="true" />
-              </td>
-              {SORTABLE_COLUMNS.map((column) => (
-                <td key={column.key} className="leaderboardNumeric">
-                  <div className="skeletonBlock skeletonBlock--num" aria-hidden="true" />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   )
 }
@@ -295,7 +265,7 @@ function LeaderboardStandingPanel({
       <p className="leaderboardSectionEyebrow">Your Standing</p>
       <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
         <span className="leaderboardStandingSpotlightLabel">Spot</span>
-        <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
+        <strong className={`leaderboardStandingSpotlightValue${displaySpot.length > 5 ? " isWord" : ""}`}>{displaySpot}</strong>
       </div>
       <TierBadge
         tierLabel={currentRankProgress?.tierLabel || "Unranked"}
@@ -863,13 +833,13 @@ export default function LeaderboardPage({
                           aria-label={`Open ${player.username} profile`}
                         >
                           <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
-                          {player.username}
+                          <span className="ladderPlayerLabel">{player.username}</span>
                           <span className="leaderboardYouBadge">YOU</span>
                         </button>
                       ) : (
                         <span className="leaderboardPlayerName" tabIndex={0} aria-label={`${player.username} player details`}>
                           <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
-                          {player.username}
+                          <span className="ladderPlayerLabel">{player.username}</span>
                         </span>
                       )}
                       <TierBadge tierLabel={player.rankLabel} className="leaderboardTierBadge" />

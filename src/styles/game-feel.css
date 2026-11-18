@@ -22,7 +22,7 @@
 }
 
 /* ---- 2. Frames --------------------------------------------------------- */
-.card, .cardWide,
+.card:not(.leaderboardPageCard), .cardWide,
 .shopCommandSurface, .shopItemCard,
 .profileCockpit, .profileCommandHeader, .achievementTile,
 .leaderboardPodium,
@@ -922,107 +922,6 @@
     .duelFightComposer .duelLaunchStep { flex-direction: column; padding: 0 16px; }
 }
 
-/* ---- Ladder: physical rank plates replace the sortable table ----------- */
-.ladderSortFlip {
-    padding: 6px 12px;
-    border: 2px solid #040912; border-radius: 8px;
-    background: linear-gradient(180deg, #2a4466, #16263d);
-    color: #fff; font: 400 12px var(--ca-font-display); cursor: pointer;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%), 0 3px 0 #040912;
-}
-.ladderPlates { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 14px; }
-.ladderPlate {
-    --plate-top: #24395a; --plate-low: #111d31; --plate-trim: #4a6a94; --plate-ink: #fff;
-    position: relative;
-    display: grid;
-    grid-template-columns: 74px minmax(0, 1fr) auto 170px;
-    align-items: center;
-    gap: 18px;
-    min-height: 78px;
-    padding: 8px 10px 8px 12px;
-    border: 3px solid #040912;
-    border-radius: 12px;
-    background:
-        radial-gradient(circle at 10px 10px, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        radial-gradient(circle at calc(100% - 10px) 10px, #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        radial-gradient(circle at 10px calc(100% - 10px), #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #8ea7c6 0 2.5px, #040912 3px 4px, transparent 4.5px),
-        repeating-linear-gradient(90deg, rgb(255 255 255 / 1.8%) 0 2px, transparent 2px 5px),
-        linear-gradient(180deg, var(--plate-top), var(--plate-low));
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 18%), inset 0 0 0 2px color-mix(in srgb, var(--plate-trim) 45%, transparent), inset 0 -5px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912;
-}
-.ladderPlate.isRank1 { --plate-top: #8a5a12; --plate-low: #3e2706; --plate-trim: #ffd25c; min-height: 92px; }
-.ladderPlate.isRank2 { --plate-top: #5d6b7e; --plate-low: #262e3a; --plate-trim: #dfe8f2; min-height: 86px; }
-.ladderPlate.isRank3 { --plate-top: #7a4423; --plate-low: #34190a; --plate-trim: #f0a06a; min-height: 86px; }
-.ladderPlate.isCurrentUser {
-    --plate-top: #1f5f8f; --plate-low: #0d2440; --plate-trim: #4fd8ff;
-    margin: 6px -10px;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 25%), inset 0 0 0 2px #4fd8ff, inset 0 -5px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912, 0 0 0 3px #4fd8ff, 0 0 34px rgb(79 216 255 / 45%);
-}
-.ladderPlate.isCurrentUser::before {
-    content: "YOU ARE HERE";
-    position: absolute; left: 50%; top: -13px; translate: -50% 0;
-    padding: 2px 12px;
-    border: 2px solid #040912; border-radius: 6px;
-    background: #4fd8ff; color: #04202e;
-    font: 400 11px var(--ca-font-display); letter-spacing: 0.08em;
-}
-.ladderPlateRank {
-    width: 58px; height: 64px;
-    display: grid; place-items: center;
-    clip-path: polygon(50% 0, 100% 14%, 100% 62%, 50% 100%, 0 62%, 0 14%);
-    background: linear-gradient(180deg, #040912, #040912);
-    position: relative;
-}
-.ladderPlateRank::before {
-    content: ""; position: absolute; inset: 3px;
-    clip-path: inherit;
-    background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--plate-trim) 80%, #fff), var(--plate-trim) 45%, color-mix(in srgb, var(--plate-trim) 45%, #040912));
-}
-.ladderPlateRank > * {
-    position: relative;
-    width: auto !important; height: auto !important;
-    background: none !important; border: 0 !important; box-shadow: none !important;
-    font: 400 26px var(--ca-font-display) !important;
-    color: #fff !important;
-    text-shadow: 0 2px 0 #040912, 0 0 2px #040912;
-}
-.ladderPlateIdentity { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.ladderPlate .leaderboardPlayerName {
-    display: inline-flex; align-items: center; gap: 12px;
-    padding: 0; border: 0; background: none;
-    font: 400 22px var(--ca-font-display) !important;
-    color: var(--plate-ink) !important;
-    text-shadow: 0 2px 0 #040912;
-    cursor: default;
-}
-.ladderPlate button.leaderboardPlayerName { cursor: pointer; }
-.ladderPlate .leaderboardPlayerPortrait { border-radius: 50%; box-shadow: 0 0 0 3px #040912, 0 0 0 5px var(--plate-trim); }
-.ladderPlateStats { display: flex; gap: 6px; margin: 0; }
-.ladderPlateStat {
-    display: grid; justify-items: center; min-width: 74px;
-    padding: 4px 8px 5px;
-    border-radius: 8px;
-    background: rgb(4 9 18 / 45%);
-    box-shadow: inset 0 2px 4px rgb(0 0 0 / 45%);
-}
-.ladderPlateStat dt { font-weight: 800; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(255 255 255 / 60%); }
-.ladderPlateStat dd { margin: 0; font: 400 16px var(--ca-font-display); color: #fff; }
-.ladderPlateHero {
-    display: grid; justify-items: center;
-    padding: 6px 0 8px;
-    border: 2px solid #040912; border-radius: 10px;
-    background: linear-gradient(180deg, #070e1a, #0f1a2c);
-    box-shadow: inset 0 3px 8px rgb(0 0 0 / 60%), 0 1px 0 rgb(255 255 255 / 15%);
-}
-.ladderPlateHero strong { font: 400 30px/1 var(--ca-font-display); color: #ffd25c; text-shadow: 0 0 12px rgb(255 190 60 / 40%); }
-.ladderPlate.isCurrentUser .ladderPlateHero strong { color: #8fe8ff; text-shadow: 0 0 12px rgb(79 216 255 / 60%); }
-.ladderPlateHero small { font-weight: 800; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(255 255 255 / 55%); }
-@media (max-width: 900px) {
-    .ladderPlate { grid-template-columns: 58px minmax(0, 1fr) 110px; }
-    .ladderPlateStats { display: none; }
-}
-.ladderPlate .leaderboardTierBadge { white-space: nowrap; }
 .duelFighterPortrait { overflow: hidden; }
 .duelFighterPortrait > * { width: 100% !important; height: 100% !important; border-radius: 50%; clip-path: circle(50%); }
 .arena .arenaFloor { top: 20% !important; bottom: -2% !important; height: auto !important; transform: perspective(600px) rotateX(35deg) !important; }
@@ -1058,12 +957,6 @@
         radial-gradient(ellipse 70% 60% at 50% 100%, rgb(255 170 70 / 32%), transparent 72%),
         radial-gradient(ellipse 70% 60% at 50% 100%, rgba(var(--heat), 0.22), transparent 72%) !important;
 }
-
-/* ---- Regressions: Ladder and Duels back toward i4 height --------------- */
-.ladderPlates { gap: 10px; }
-.ladderPlate { min-height: 64px; padding-block: 5px; }
-.ladderPlate.isRank1 { min-height: 76px; }
-.ladderPlate.isRank2, .ladderPlate.isRank3 { min-height: 70px; }
 .duelFightCard { padding: 22px 36px 20px; }
 .duelFighterPortrait { width: 124px; height: 124px; }
 .duelFightCenter .duelVsMark { font-size: 80px !important; }
@@ -2546,55 +2439,6 @@
     .authPanel.authPass .authPassSeal { display: none; }
 }
 
-/* ---- B. Ladder: one recessed control rail; rows are engraved nameplates - */
-.leaderboardControls {
-    display: flex !important;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px !important;
-    padding: 10px 12px !important;
-    border: 3px solid #040912;
-    border-radius: 12px;
-    background:
-        repeating-linear-gradient(90deg, rgb(255 255 255 / 2.5%) 0 2px, transparent 2px 6px),
-        linear-gradient(180deg, #050a13, #0b1424);
-    box-shadow: inset 0 6px 12px rgb(0 0 0 / 70%), inset 0 -2px 0 rgb(255 255 255 / 6%), 0 0 0 3px #1d2a40, 0 0 0 5px #040912;
-    margin-bottom: 14px;
-}
-.leaderboardControls .leaderboardControlRow { display: contents !important; }
-.leaderboardControls .leaderboardBoardTabs { flex: none; border-bottom: 0 !important; gap: 4px !important; }
-.leaderboardControls .leaderboardBoardTab {
-    border-radius: 6px !important;
-    padding-inline: 12px !important;
-    min-height: 44px;
-}
-.leaderboardControls .leaderboardSearchField { flex: 1 1 200px; min-width: 180px; margin: 0 !important; }
-.leaderboardControls .leaderboardViewToggle { flex: none; margin: 0 !important; }
-.leaderboardControls .leaderboardPagination { flex-basis: 100%; }
-
-.ladderPlate .ladderPlateIdentity {
-    justify-self: start;
-    max-width: 100%;
-    padding: 5px 16px 5px 5px;
-    border: 2px solid #040912;
-    border-radius: 999px 10px 10px 999px;
-    background:
-        var(--gf-brushed),
-        linear-gradient(180deg, color-mix(in srgb, var(--plate-trim) 55%, #fff) 0%, var(--plate-trim) 45%, color-mix(in srgb, var(--plate-trim) 60%, #040912) 100%);
-    background-size: 600px 200px, auto;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 55%), inset 0 -3px 0 rgb(0 0 0 / 30%), 0 3px 0 #040912;
-}
-.ladderPlate .ladderPlateIdentity .leaderboardPlayerName {
-    color: #1a1208 !important;
-    -webkit-text-fill-color: #1a1208;
-    text-shadow: 0 1px 0 rgb(255 255 255 / 55%), 0 -1px 0 rgb(0 0 0 / 35%) !important;
-}
-.ladderPlate .ladderPlateIdentity .leaderboardPlayerPortrait {
-    box-shadow: 0 0 0 3px #040912, 0 0 0 7px #2b3447, 0 0 0 8px rgb(255 255 255 / 35%), 0 0 0 10px #040912 !important;
-}
-.ladderPlate .ladderPlateIdentity .leaderboardTierBadge { background: rgb(4 9 18 / 80%) !important; }
-.ladderPlate.isCurrentUser { --plate-trim: #7fe0ff; }
-
 /* ---- C. Duels: a real wooden counter under a lamp ---------------------- */
 .duelFightComposer .duelRunTokens {
     padding: 30px 18px 34px !important;
@@ -2757,14 +2601,13 @@
 .armoryPartsShelf { padding: 6px !important; }
 .armoryPartsGallery .armoryPartsShelf .armoryPartCard { padding-top: 6px !important; padding-bottom: 18px !important; min-height: 0 !important; gap: 4px !important; }
 .armoryPartsShelf .armoryPartCard::after { bottom: 3px; height: 9px; }
-.ladderPlate .ladderPlateIdentity { gap: 22px !important; }
 .authPanel.authPass .authPassSeal { left: calc(50% + 26px) !important; }
 /* one wide texture tile so no seam shows across a counter or shelf */
 .duelFightComposer .duelRunTokens { background-size: auto, auto, 1500px 260px, auto !important; }
 .duelFightComposer .duelRunTokens::after,
 .duelFightComposer .duelLaunchStep,
 .profileAchievementsSection .achievementsRow::after { background-size: 1500px 260px, auto !important; }
-.historyHighlightCard, .ladderPlate .ladderPlateIdentity { background-size: 1500px 200px, auto !important; }
+.historyHighlightCard{ background-size: 1500px 200px, auto !important; }
 .profileSheetMain .profileSignalBand { align-content: space-evenly !important; }
 .profileAchievementsSection .achievementsViewport { padding-bottom: 16px !important; }
 .historyTrajectory .historyClimbStep .historyClimbPillar { width: 16px !important; height: 16px !important; }
@@ -2905,43 +2748,6 @@
         var(--gf-planks),
         linear-gradient(180deg, #8a5226, #5a3416) !important;
     background-size: auto, 440px 96px, auto !important;
-}
-
-/* ---- C. Ladder: stats and rating are engraved into the plate ----------- */
-.ladderPlate .ladderPlateIdentity {
-    background: linear-gradient(180deg, color-mix(in srgb, var(--plate-trim) 45%, #fff) 0%, var(--plate-trim) 50%, color-mix(in srgb, var(--plate-trim) 70%, #040912) 100%) !important;
-    background-size: auto !important;
-}
-.ladderPlate:not(.isRank1, .isRank2, .isRank3, .isCurrentUser) .ladderPlateIdentity { --plate-trim: #b4c3d8; }
-.ladderPlate .ladderPlateStats {
-    gap: 0 !important;
-    padding: 4px 2px;
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--plate-low) 55%, #000) !important;
-    box-shadow:
-        inset 0 3px 6px rgb(0 0 0 / 70%),
-        inset 0 -2px 0 color-mix(in srgb, var(--plate-trim) 55%, transparent),
-        0 -1px 0 rgb(0 0 0 / 45%),
-        0 1px 0 rgb(255 255 255 / 25%) !important;
-}
-.ladderPlate .ladderPlateStat {
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    border: 0 !important;
-}
-.ladderPlate .ladderPlateStat + .ladderPlateStat { box-shadow: inset 2px 0 0 rgb(0 0 0 / 55%), inset 3px 0 0 rgb(255 255 255 / 10%) !important; }
-.ladderPlate .ladderPlateStat dt { color: color-mix(in srgb, var(--plate-trim) 70%, #fff) !important; opacity: 0.85; }
-.ladderPlate .ladderPlateStat dd { text-shadow: 0 -1px 0 rgb(0 0 0 / 80%), 0 1px 0 rgb(255 255 255 / 12%); }
-.ladderPlate .ladderPlateHero {
-    border: 0 !important;
-    background: color-mix(in srgb, var(--plate-low) 45%, #000) !important;
-    box-shadow:
-        inset 0 4px 8px rgb(0 0 0 / 75%),
-        inset 0 0 0 2px rgb(0 0 0 / 55%),
-        inset 0 -3px 0 color-mix(in srgb, var(--plate-trim) 60%, transparent),
-        0 -2px 0 rgb(0 0 0 / 45%),
-        0 2px 0 rgb(255 255 255 / 28%) !important;
 }
 
 /* ---- D. History: placard, filters and score axis live in the chart bezel */
@@ -4266,13 +4072,6 @@
 .rankCeremony .divisionMetalworkCrown { fill: #ffd76a; }
 .rankCeremony .divisionMetalworkGem { fill: #c34127; stroke: #713412; stroke-width: 1; }
 .rankCeremony .divisionMetalwork { z-index: 3; }
-
-/* Round 36: Ladder controls in two aligned rows; standing card fills the podium height */
-.leaderboardControls { flex-direction: column; align-items: stretch !important; gap: 12px !important; }
-.leaderboardControls .leaderboardBoardTabs { display: grid !important; grid-template-columns: repeat(5, 1fr); gap: 6px !important; }
-.leaderboardControls .leaderboardBoardTab { justify-content: center; text-align: center; }
-.leaderboardControls .leaderboardControlRow { display: flex !important; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 !important; }
-.leaderboardControls .ladderSortFlip { flex: none; min-height: 44px; }
 .leaderboardTopRow { align-items: stretch !important; }
 
 /* Round 36: Profile achievement banner clear of its tabs; build stats on one line */
@@ -4354,12 +4153,6 @@
 .leaderboardTopRow .leaderboardPodium { margin: 0; padding: 24px; }
 .leaderboardPodiumDeck { gap: 16px; }
 .leaderboardPodium .podiumFigure { justify-items: center; text-align: center; padding-inline: 8px; gap: 4px; }
-.leaderboardControls { padding: 16px !important; gap: 16px !important; margin: 0 0 24px; }
-.leaderboardControls .leaderboardBoardTabs { gap: 8px !important; }
-.leaderboardControls .leaderboardControlRow { gap: 16px; }
-.ladderPlates { margin: 0; gap: 16px; }
-.ladderPlate { gap: 16px; padding: 8px 16px; }
-.ladderPlate.isCurrentUser { margin: 0 -10px; }
 .leaderboardTopRow { gap: 16px; }
 
 /* Round 40: Duels on the 8px rhythm */
@@ -4397,9 +4190,6 @@
 .historyTrajectory .historyClimb { padding-right: 0 !important; }
 .historyTrajectory .historyClimbLine { right: 0 !important; }
 .historyTrajectory .historyClimbAxis { right: 0; }
-
-/* Round 44: Ladder - the "You" row keeps the other rows' columns */
-.ladderPlate.isCurrentUser { margin-inline: 0 !important; }
 
 /* Round 44: Settings - save status inline in the footer row, one 48px button height */
 .feedbackSettingsSheet .feedbackSettingsActions > .feedbackSettingsStatus { border-top: 0 !important; padding: 0 !important; margin: 0 0 0 8px !important; align-self: center; white-space: nowrap; }
@@ -4581,8 +4371,6 @@
 /* Profile recent form: no stamps; ranked rounds show RR as plain text */
 .profileFormTokens .profileStampOutcome { border: 0 !important; padding: 0 !important; transform: none !important; font: 400 13px/1 var(--ca-font-display) !important; color: #2f7d4f !important; }
 .profileFormTokens .profileFormToken.isLoss .profileStampOutcome { color: #b23a2c !important; }
-/* Ladder: the sorted-stat label prints once, on the top row */
-.ladderPlate:not(:first-child) .ladderPlateHero small { display: none !important; }
 /* History highlights: no medal beside numbers that already say it */
 .historyHighlightCard::before, .historyHighlightCard + .historyHighlightCard::before, .historyHighlightCard:nth-child(2)::before { content: none !important; }
 /* History highlights: medal column removed, so no reserved left padding */
