@@ -25,7 +25,7 @@
 .card, .cardWide,
 .shopCommandSurface, .shopItemCard,
 .profileCockpit, .profileCommandHeader, .achievementTile,
-.leaderboardPodium, .leaderboardStandingPanel,
+.leaderboardPodium,
 .challengeCard, .duelComposer,
 .historyTrajectory, .historyHighlightCard, .historyRoundCard,
 .helpMissionMap, .helpBlock,
@@ -1431,48 +1431,6 @@
 .leaderboardPodiumPlayer.isRank1 .podiumStep .leaderboardPodiumRank { font-size: 62px !important; }
 .podiumStep .leaderboardPodiumRank small { font-size: 0.4em; vertical-align: top; margin-left: 2px; }
 .leaderboardPodiumPlayer.isCurrentUser .podiumStep { outline: 3px solid #4fd8ff; outline-offset: -3px; }
-
-/* "Your standing" is one rank plate: shield + name + a single recessed stat bar */
-.leaderboardTopRow .leaderboardStandingPanel {
-    background:
-        radial-gradient(circle at 8px 8px, #8aa4c8 2px, transparent 3px),
-        radial-gradient(circle at calc(100% - 8px) 8px, #8aa4c8 2px, transparent 3px),
-        linear-gradient(180deg, #1d4f7e 0%, #123659 55%, #0b223b 100%) !important;
-}
-.leaderboardTopRow .standingShield {
-    min-width: 104px !important;
-    height: 120px;
-    padding: 14px 8px 22px !important;
-    display: grid !important;
-    place-items: center;
-    align-content: center;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: linear-gradient(180deg, #9fe6ff, #2a9ad6 55%, #135a8c) !important;
-    clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
-    box-shadow: none !important;
-    filter: drop-shadow(0 3px 0 #040912);
-}
-.leaderboardTopRow .standingShield .leaderboardStandingSpotlightLabel { color: #04263f !important; font-size: 10px; letter-spacing: 0.14em; }
-.leaderboardTopRow .standingShield .leaderboardStandingSpotlightValue {
-    color: #fff !important; font-family: var(--ca-font-display); font-size: 40px !important;
-    -webkit-text-stroke: 2px #04263f; paint-order: stroke fill;
-}
-.leaderboardTopRow .leaderboardStandingStats {
-    gap: 0 !important;
-    border: 2px solid #040912;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #060d19;
-    box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%);
-}
-.leaderboardTopRow .leaderboardStandingStat {
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: inset -1px 0 0 rgb(120 160 210 / 14%), inset 0 -1px 0 rgb(120 160 210 / 14%) !important;
-}
-.leaderboardTopRow .leaderboardStandingStatValue { font-family: var(--ca-font-display); color: #ffe08a !important; }
 
 /* ---- B1. Global nav: a framed game bar ---------------------------------- */
 .topbar {
@@ -4633,10 +4591,6 @@
 .leaderboardControls .leaderboardControlRow { display: flex !important; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 !important; }
 .leaderboardControls .ladderSortFlip { flex: none; min-height: 44px; }
 .leaderboardTopRow { align-items: stretch !important; }
-.leaderboardTopRow .leaderboardStandingPanel { display: flex !important; flex-direction: column; gap: 14px; }
-.leaderboardTopRow .leaderboardStandingPanel .leaderboardStandingMain { align-items: center; }
-.leaderboardTopRow .leaderboardStandingPanel { justify-content: center; gap: 22px !important; }
-.leaderboardTopRow .leaderboardStandingPanel .leaderboardStandingScope { margin: 0 0 -12px !important; }
 
 /* Round 36: Profile achievement banner clear of its tabs; build stats on one line */
 .profileAchievementsSection .achievementHeaderRow { align-items: center !important; gap: 24px !important; margin-bottom: 8px; }
@@ -4720,13 +4674,7 @@
 /* Round 40: Ladder on the 8px rhythm */
 .leaderboardSeasonBanner { padding: 16px 24px; margin-bottom: 24px; gap: 32px; }
 .leaderboardTopRow { gap: 24px; margin-bottom: 24px; }
-.leaderboardTopRow .leaderboardPodium, .leaderboardTopRow .leaderboardStandingPanel { margin: 0; padding: 24px; }
-.leaderboardTopRow .leaderboardStandingPanel { gap: 16px !important; }
-.leaderboardTopRow .leaderboardStandingMain { gap: 16px; }
-.leaderboardTopRow .standingShield { padding: 16px 8px 24px !important; }
-.leaderboardTopRow .leaderboardStandingHeading { gap: 8px; }
-.leaderboardTopRow .leaderboardStandingStat { padding: 8px; }
-.leaderboardTopRow .leaderboardStandingPanel .leaderboardStandingScope { margin: 0 0 -8px !important; }
+.leaderboardTopRow .leaderboardPodium { margin: 0; padding: 24px; }
 .leaderboardPodiumDeck { gap: 16px; }
 .leaderboardPodium .podiumFigure { justify-items: center; text-align: center; padding-inline: 8px; gap: 4px; }
 .leaderboardControls { padding: 16px !important; gap: 16px !important; margin: 0 0 24px; }
@@ -4736,7 +4684,6 @@
 .ladderPlate { gap: 16px; padding: 8px 16px; }
 .ladderPlate.isCurrentUser { margin: 0 -10px; }
 .leaderboardTopRow { gap: 16px; }
-.leaderboardTopRow .leaderboardStandingPanel { padding: 24px 16px; }
 
 /* Round 40: Duels on the 8px rhythm */
 .duelCommandSurface > .commandHeader { margin-bottom: 16px !important; }
@@ -4874,15 +4821,6 @@
 @media (min-width: 901px) {
   .readyCard.arenaLobby .lobbyStageRig { width: 276px !important; height: auto; top: 43% !important; transform: translate(-50%, 0) !important; filter: drop-shadow(0 10px 8px rgb(4 9 18 / 55%)); }
 }
-
-/* Art pass: Ladder standing spot as a hanging cloth pennant (generated image) */
-.leaderboardTopRow .standingShield {
-  width: 112px !important; min-width: 112px !important; height: 160px !important; padding: 34px 8px 52px !important;
-  clip-path: none !important; background: url("/art/ladder/spot-pennant.png") center / contain no-repeat !important;
-  filter: drop-shadow(0 6px 6px rgb(4 9 18 / 55%)) !important;
-}
-.leaderboardTopRow .standingShield .leaderboardStandingSpotlightLabel { color: #e8f6ff !important; text-shadow: 0 1px 0 #04263f; }
-
 
 /* Art pass: Shop button skins rest on item-specific illustrated supports */
 .shopGrid .shopItemCard .shopItemPreviewFrame.is-button { position: relative; }
@@ -5277,3 +5215,18 @@ html[data-motion-reduced="true"] .goldTargetRing circle { stroke-dashoffset: 0 !
 
 /* Podium columns are narrow: cut long names with an ellipsis rather than breaking them mid-word. */
 .leaderboardPodium .podiumFigure > strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; }
+
+/* Ladder podium on narrow screens: equal columns wide enough for the tier label, nothing overlapping */
+@media (max-width: 700px) {
+  .leaderboardTopRow .leaderboardPodium { padding: 16px 8px; }
+  .leaderboardPodiumDeck { gap: 0 !important; }
+  .leaderboardPodiumPlayer.isRank2 { margin-left: 0; }
+  .leaderboardPodiumPlayer.isRank3 { margin-right: 0; }
+  .podiumStep::before { width: 8px; }
+  .leaderboardPodiumPlayer.isRank2 .podiumStep::before { left: -8px; }
+  .leaderboardPodiumPlayer.isRank3 .podiumStep::before { right: -8px; }
+  .leaderboardPodium .podiumFigure { padding-inline: 0; }
+  .podiumFigure > strong { font-size: 14px !important; }
+  .leaderboardPodiumTier { font-size: 11px; letter-spacing: 0.02em; white-space: nowrap; }
+  .leaderboardPodiumRating { margin-top: 2px; font-size: 17px; white-space: nowrap; }
+}

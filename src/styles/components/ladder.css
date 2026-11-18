@@ -184,39 +184,41 @@
 @media (max-width: 1000px) { .leaderboardTopRow { grid-template-columns: 1fr; } }
 .leaderboardTopRow .leaderboardPodiumDeck { transform: scale(0.88); transform-origin: center bottom; margin-top: -18px; }
 .leaderboardTopRow .leaderboardPodiumDeck { transform: none; margin-top: 0; }
+/* Your standing is one hanging pennant: the art is the panel, the text sits on the cloth. */
 .leaderboardTopRow .leaderboardStandingPanel {
-    display: grid;
-    align-content: start;
-    gap: 12px;
-    margin: 0;
-    padding: 16px 18px;
-}
-.leaderboardTopRow .leaderboardStandingMain {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 14px;
+    justify-content: center;
+    gap: 8px;
+    width: min(100%, 300px);
+    justify-self: center;
+    margin: 0;
+    padding: 0 8px;
+    border: solid transparent;
+    border-width: 62px 42px 90px;
+    border-image: url("/art/ladder/spot-pennant.png") 56 38 80 fill / 62px 42px 90px stretch;
+    background: none;
+    box-shadow: none;
+    text-align: center;
+    filter: drop-shadow(0 6px 6px rgb(4 9 18 / 55%));
 }
-.leaderboardTopRow .leaderboardStandingSpotlight { order: -1; min-width: 96px; padding: 10px 12px; }
-.leaderboardTopRow .leaderboardStandingSpotlightValue { font-size: 34px; line-height: 1; }
-.leaderboardTopRow .leaderboardStandingHeading { display: grid; gap: 6px; }
-.leaderboardTopRow .leaderboardStandingTitle { font-size: 20px; line-height: 1.1; }
-.leaderboardTopRow .leaderboardStandingLead { margin: 0; font-size: 12.5px; line-height: 1.35; }
-.leaderboardTopRow .leaderboardStandingTierBadge { justify-self: start; }
-.leaderboardTopRow .leaderboardStandingStats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+.leaderboardStandingPanel .leaderboardSectionEyebrow { margin: 0; color: #e8f6ff; text-shadow: 0 1px 0 #04263f; }
+.leaderboardStandingSpotlight { display: grid; justify-items: center; }
+.leaderboardStandingSpotlightLabel { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #e8f6ff; text-shadow: 0 1px 0 #04263f; }
+.leaderboardStandingSpotlightValue {
+    color: #fff; font-family: var(--ca-font-display); font-size: 40px; line-height: 1;
+    -webkit-text-stroke: 2px #04263f; paint-order: stroke fill;
 }
-.leaderboardTopRow .leaderboardStandingStat { display: grid; gap: 2px; min-width: 0; padding: 7px 9px; }
-.leaderboardTopRow .leaderboardStandingStatLabel {
-    overflow: hidden;
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.leaderboardTopRow .leaderboardStandingStatValue { font-size: 18px; line-height: 1.1; white-space: nowrap; }
+.leaderboardStandingPanel .leaderboardStandingTierBadge { border: 0; background: none; padding: 0; font-size: 13px; color: #fff; text-shadow: 0 1px 0 #04263f; }
+.leaderboardStandingTitleGroup { display: grid; gap: 4px; }
+.leaderboardStandingTitle { margin: 0; font-size: 16px; line-height: 1.15; }
+.leaderboardStandingLead { margin: 0; font-size: 12px; line-height: 1.3; color: #e8f6ff; }
+.leaderboardStandingPanel .leaderboardStandingScope { margin: 0; color: #cfe6fa; text-shadow: 0 1px 0 #04263f; }
+.leaderboardStandingStats { align-self: stretch; display: grid; gap: 2px; }
+.leaderboardStandingStat { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.leaderboardStandingStatLabel { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #e8f6ff; text-shadow: 0 1px 0 #04263f; }
+.leaderboardStandingStatValue { font-family: var(--ca-font-display); font-size: 17px; line-height: 1.1; color: #ffe08a; text-shadow: 0 1px 0 #04263f; white-space: nowrap; }
 /* r56: standing stats state their scope once and never clip */
 .leaderboardStandingScope {
     margin: 0 0 -4px;
@@ -226,8 +228,6 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
-.leaderboardTopRow .leaderboardStandingStatLabel { overflow: visible; text-overflow: clip; }
-.leaderboardTopRow .leaderboardStandingStatValue { font-size: 17px; }
 
 /* Feature trial 003: a Duel action on other players' plates opens Duels with them as the rival. */
 .ladderPlateEnd { display: grid; gap: 6px; min-width: 0; }

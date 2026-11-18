@@ -292,29 +292,21 @@ function LeaderboardStandingPanel({
 
   return (
     <section className="leaderboardStandingPanel" aria-label="Your leaderboard standing">
-      <div className="leaderboardStandingMain">
-        <div className="leaderboardStandingText">
-          <p className="leaderboardSectionEyebrow">Your Standing</p>
-          <div className="leaderboardStandingHeading">
-            {title ? (
-              <div className="leaderboardStandingTitleGroup">
-                <h2 className="cardH2 leaderboardStandingTitle">{title}</h2>
-                <p className="leaderboardStandingLead">{lead}</p>
-              </div>
-            ) : null}
-            <TierBadge
-              tierLabel={currentRankProgress?.tierLabel || "Unranked"}
-              className="leaderboardStandingTierBadge"
-            />
-          </div>
-        </div>
-
-        <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
-          <span className="leaderboardStandingSpotlightLabel">Spot</span>
-          <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
-        </div>
+      <p className="leaderboardSectionEyebrow">Your Standing</p>
+      <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
+        <span className="leaderboardStandingSpotlightLabel">Spot</span>
+        <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
       </div>
-
+      <TierBadge
+        tierLabel={currentRankProgress?.tierLabel || "Unranked"}
+        className="leaderboardStandingTierBadge"
+      />
+      {title ? (
+        <div className="leaderboardStandingTitleGroup">
+          <h2 className="cardH2 leaderboardStandingTitle">{title}</h2>
+          <p className="leaderboardStandingLead">{lead}</p>
+        </div>
+      ) : null}
       <p className="leaderboardStandingScope">Current rating &middot; season Ranked games</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
