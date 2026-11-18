@@ -151,6 +151,7 @@
 }
 
 .profileAvatar,
+.challengeRivalCrest,
 .commandHeaderGlyph {
     clip-path: none;
     border-radius: 12px;
@@ -169,6 +170,8 @@
 .profileAvatar .playerPortrait { width: 100%; height: 100%; border-radius: 14px; }
 .profileHoverAvatar .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
 .shopCommandLoadoutAvatar .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
+.challengeVersusSide .playerPortrait { border-radius: 50%; }
+.challengeRivalCrest .playerPortrait,
 .duelCombatantCrest .playerPortrait { width: 100%; height: 100%; border-radius: inherit; }
 
 .helpGuideStatus,
@@ -189,7 +192,8 @@
 .duelInputWrap,
 .duelMessageField input,
 .duelReplayLock,
-.profileInstrument {
+.profileInstrument,
+.challengeTargetMode {
     border-radius: 10px;
 }
 

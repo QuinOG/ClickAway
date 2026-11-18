@@ -54,6 +54,7 @@
 .shopCommandSurface,
 .shopTabRail,
 .duelComposer,
+.duelCommandSurface .challengeCard,
 .table {
     border: 0;
     background:
@@ -100,6 +101,57 @@
 .duelInbox { margin-top: 0; margin-bottom: 22px; }
 .duelCommandSurface .challengeList { grid-template-columns: 1fr; }
 
+.duelCommandSurface .challengeCard {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr) auto;
+    grid-template-areas: "versus header actions" "versus target actions" "versus meta actions" "versus time actions";
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 4px;
+    padding: 18px 22px;
+    border-radius: 16px;
+}
+
+.challengeVersus { grid-area: versus; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+.challengeVersusSide {
+    width: 74px;
+    height: 74px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    box-shadow: 0 0 0 3px var(--skin-ink), inset 0 2px 0 rgb(255 255 255 / 30%), 0 4px 0 #0a1220;
+    font-family: var(--ca-font-display);
+    color: #ffffff;
+    -webkit-text-stroke: 1.5px var(--skin-ink);
+    paint-order: stroke fill;
+}
+
+.challengeVersusSide.isYou { background: linear-gradient(160deg, #3fd0ff, #1477b8); font-size: 18px; }
+.challengeVersusSide.isRival { background: linear-gradient(160deg, #ff7a9a, #b8325a); font-size: 32px; }
+
+.challengeVersusBadge {
+    font: 400 22px/1 var(--ca-font-display);
+    color: #ffe27a;
+    -webkit-text-stroke: 2px var(--skin-ink);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--skin-ink);
+    transform: rotate(-8deg);
+}
+
+.duelCommandSurface .challengeCardHeader { grid-area: header; }
+.duelCommandSurface .challengeTargetLine { grid-area: target; margin: 6px 0; }
+.duelCommandSurface .challengeCardMessage { grid-area: meta; margin: 0; }
+.duelCommandSurface .challengeCardTimestamp { grid-area: time; margin: 0; font-size: 12px; }
+.duelCommandSurface .challengeCardActions { grid-area: actions; flex-direction: column; }
+.duelCommandSurface .challengeCardActions .primaryButton { min-width: 150px; min-height: 52px; font-size: 18px; }
+.challengeRivalCrest { display: none; }
+.challengeTargetScore strong { font-family: var(--ca-font-display); font-weight: 400; font-size: 30px; }
+
+@media (max-width: 760px) {
+    .duelCommandSurface .challengeCard { grid-template-columns: 1fr; grid-template-areas: "versus" "header" "target" "meta" "time" "actions"; }
+    .duelCommandSurface .challengeCardActions { flex-direction: row; }
+}
 
 /* History: match tickets are the primary record. */
 .historyTableWrap { display: none; }
@@ -170,6 +222,7 @@
 .historyTrajectory,
 .shopCommandSurface,
 .duelComposer,
+.duelCommandSurface .challengeCard,
 .profileCockpit {
     position: relative;
 }
@@ -177,7 +230,8 @@
 .leaderboardPodium::after,
 .historyTrajectory::after,
 .shopCommandSurface::after,
-.duelComposer::after {
+.duelComposer::after,
+.duelCommandSurface .challengeCard::after {
     content: "";
     position: absolute;
     inset: 6px;
