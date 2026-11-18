@@ -1817,11 +1817,6 @@
     background: linear-gradient(180deg, #ffe9a0, #e9a93a 60%, #a8792a);
     clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%, 10px 50%);
 }
-.arenaLobby .lobbyModeRecord {
-    border: 2px solid #040912 !important;
-    background: linear-gradient(180deg, #050a14, #0a1426) !important;
-    box-shadow: inset 0 3px 8px rgb(0 0 0 / 65%), 0 1px 0 rgb(255 255 255 / 8%) !important;
-}
 
 /* ---- E. Help: each chapter is a bound field-manual page ---------------- */
 .helpDoc .helpTopicGroup {
@@ -3016,44 +3011,6 @@
 .historyHighlightCard {
     background: linear-gradient(180deg, #f3d382 0%, #e2b252 35%, #c38f36 70%, #9a6a22 100%) !important;
     background-size: auto !important;
-}
-
-/* ---- E. Play: mode cards are plaques; the record is a scoreboard ------- */
-
-/* the mode emblem is a medallion set into the plaque */
-
-.arenaLobby .lobbyModeRecord {
-    border: 3px solid #040912 !important;
-    border-radius: 8px !important;
-    background:
-        radial-gradient(circle, rgb(255 184 74 / 9%) 1px, transparent 1.6px) 0 0 / 5px 5px,
-        linear-gradient(180deg, #020509, #060c16) !important;
-    box-shadow: inset 0 0 0 3px #1d2a40, inset 0 0 24px rgb(0 0 0 / 85%), 0 0 0 3px #2c3c58, 0 0 0 5px #040912, 0 5px 0 5px #040912 !important;
-}
-.arenaLobby .lobbyModeRecord .lobbyModeRecordHeader > span {
-    color: #ffb84a !important;
-    font-family: var(--ca-font-display);
-    letter-spacing: 0.22em;
-    text-shadow: 0 0 6px rgb(255 160 50 / 70%);
-}
-.arenaLobby .lobbyModeRecord .lobbyModeRecordTiles > span {
-    border: 2px solid #1d2a40 !important;
-    background: #010306 !important;
-    box-shadow: inset 0 2px 6px rgb(0 0 0 / 80%) !important;
-}
-.arenaLobby .lobbyModeRecord .lobbyModeRecordTiles b {
-    color: #ffc94a !important;
-    font-family: var(--ca-font-display);
-    text-shadow: 0 0 8px rgb(255 180 60 / 75%);
-}
-.arenaLobby .lobbyModeRecord .lobbyModeRecordTiles small { color: rgb(255 184 74 / 60%) !important; }
-.arenaLobby .lobbyModeRecord .lobbyModeRecordChart b:not(.isEmpty) {
-    background: repeating-linear-gradient(0deg, #ffb84a 0 4px, transparent 4px 6px) !important;
-    box-shadow: none !important;
-    filter: drop-shadow(0 0 4px rgb(255 170 50 / 70%));
-}
-.arenaLobby .lobbyModeRecord .lobbyModeRecordChart b.isLatest {
-    background: repeating-linear-gradient(0deg, #fff0b8 0 4px, transparent 4px 6px) !important;
 }
 
 /* The rig shares the target's centre and scales with its face. */
