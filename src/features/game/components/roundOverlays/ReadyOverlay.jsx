@@ -362,6 +362,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
       <section className="lobbyDailyGoals" aria-label="Daily goals">
         <header className="lobbyDailyGoalsHeader"><span>Daily goals</span></header>
         <p className="lobbyDailyGoalsNote">New goals are ready. They'll show after your next round.</p>
+        {dailyBonusAvailable ? <p className="lobbyDailyGoalsNote isBonus">Your first round today earns 2× XP.</p> : null}
       </section>
     )
   }
@@ -401,8 +402,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
   )
 }
 
-// Phones only: the full list sits below Start, so one line above it says the
-// goals are there and what's next.
+// Retain the legacy summary hook for integrations; the board is the visible source.
 function DailyGoalsSummary({ dailyGoals, nowMs }) {
   if (!dailyGoals?.goals?.length) return null
   if (areDailyGoalsExpired(dailyGoals, nowMs)) {
@@ -662,7 +662,7 @@ export function ReadyOverlay({
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
-            {/* On wide screens the goals list carries this note; phones keep it here, above Start. */}
+            {/* The board carries the bonus when goals are available. */}
             {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First round today earns double XP</p> : null}
             <button
               type="button"

@@ -557,23 +557,10 @@
     
 }
 
-/* The once-a-day double XP, right above Start. */
+/* Daily goals: a quiet steel mission board; one location on every screen. */
 .arenaLobbyActions:has(.arenaLobbyDailyBonus) { flex-wrap: wrap; }
-.arenaLobbyDailyBonus {
-    flex-basis: 100%;
-    margin: 0 0 var(--ca-space-2, 8px);
-    text-align: center;
-    font-size: 14px;
-    font-weight: 800;
-    color: #ffd76a;
-}
-
-/* ---- Daily goals: three small tasks a day --------------------------------
- * One plain line per goal (mark, label, progress, coin and XP reward); a done
- * goal gets a check and dims. The mode column has no room left above Start, so
- * on wide screens the list sits on the open stage (top left), and on phones it
- * follows Start.
- * ------------------------------------------------------------------------ */
+.arenaLobbyDailyBonus { flex-basis: 100%; margin: 0 0 8px; text-align: center; font-size: 14px; font-weight: 800; color: #ffd76a; }
+.arenaLobbyDailyBonus.hasDailyGoals, .lobbyDailyGoalsSummary { display: none; }
 .lobbyDailyGoals {
     position: relative;
     z-index: 1;
@@ -581,82 +568,47 @@
     grid-row: 1 / span 2;
     align-self: start;
     justify-self: start;
-    width: min(380px, 100%);
-    background: rgb(4 9 18 / 78%) !important;
+    width: min(420px, 100%);
     display: grid;
-    gap: 4px;
-    padding: 8px 12px;
-    border-radius: 14px;
-    background: rgb(0 0 0 / 22%);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+    gap: 9px;
+    padding: 20px 24px;
+    border: 0 solid transparent;
+    border-image: url('/art/lobby/daily-goals-board.png') 60 fill / 30px / 0 stretch;
+    color: #e8f1ff;
+    filter: drop-shadow(0 5px 4px #0008);
 }
-.lobbyDailyGoalsHeader { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.lobbyDailyGoalsHeader span {
-    color: #ffd76a;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-}
-.lobbyDailyGoalsHeader small { color: rgb(255 255 255 / 60%); font-size: 11px; font-weight: 700; }
-.lobbyDailyGoalsNote { margin: 2px 0 0; color: rgb(255 255 255 / 60%); font-size: 11px; font-weight: 700; }
-.lobbyDailyGoalsNote.isBonus { color: #ffd76a; }
-.lobbyDailyGoals ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.lobbyDailyGoalsHeader { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; }
+.lobbyDailyGoalsHeader span { color: #f3d996; font-family: var(--ca-font-display); font-size: 18px; }
+.lobbyDailyGoalsHeader small, .lobbyDailyGoalsNote { color: #c0ccd5; font-size: 13px; line-height: 1.4; }
+.lobbyDailyGoalsNote { margin: 0; }
+.lobbyDailyGoalsNote.isBonus { color: #f3d996; }
+.lobbyDailyGoals ul { display: grid; margin: 0; padding: 0; list-style: none; }
 .lobbyDailyGoals li {
     display: grid;
-    grid-template-columns: 16px minmax(0, 1fr) auto auto;
-    column-gap: 8px;
+    grid-template-columns: 14px minmax(0, 1fr) auto auto;
+    gap: 4px 8px;
     align-items: center;
-    min-height: 20px;
+    padding: 8px 0;
+    border-top: 1px solid #9baeb82b;
     font-size: 13px;
     font-weight: 700;
-    color: #e8f1ff;
 }
-.lobbyDailyGoalMark {
-    display: grid;
-    place-items: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 28%);
-    font-size: 10px;
-    line-height: 1;
-}
-.lobbyDailyGoalLabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lobbyDailyGoalProgress { font-variant-numeric: tabular-nums; color: #7fc8ff; font-size: 12px; font-weight: 800; text-align: right; }
-.lobbyDailyGoalReward { display: inline-flex; gap: 8px; color: #ffd76a; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.lobbyDailyGoalReward > span[aria-hidden] { display: inline-flex; align-items: center; gap: 2px; }
-.lobbyDailyGoalReward > span[aria-hidden]:last-child { color: #8fe3ff; }
-.lobbyDailyGoals li.isComplete { color: rgb(232 241 255 / 55%); }
-.lobbyDailyGoals li.isComplete .lobbyDailyGoalMark { background: #3fd99a; box-shadow: none; color: #04120b; }
-.lobbyDailyGoals li.isComplete .lobbyDailyGoalProgress { color: #6ff0bd; }
-.lobbyDailyGoals li.isComplete .lobbyDailyGoalReward { opacity: 0.45; }
+.lobbyDailyGoalMark { color: #7de1b4; font-size: 16px; line-height: 1; }
+.lobbyDailyGoalLabel { min-width: 0; }
+.lobbyDailyGoalProgress { color: #a6dcff; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+.lobbyDailyGoalReward { display: inline-flex; gap: 8px; color: #f3d996; font-variant-numeric: tabular-nums; }
+.lobbyDailyGoalReward > span[aria-hidden] { display: inline-flex; align-items: center; gap: 3px; }
+.lobbyDailyGoalReward > span[aria-hidden]:last-child { color: #a6dcff; }
+.lobbyDailyGoals li.isComplete { color: #a4b1bc; }
+.lobbyDailyGoals li.isComplete .lobbyDailyGoalProgress { color: #94cbb4; }
+.lobbyDailyGoals li.isComplete .lobbyDailyGoalReward { color: #b7ad8f; }
+.lobbyDailyGoals li.isComplete .lobbyDailyGoalReward > span[aria-hidden]:last-child { color: #92a9b7; }
 @media (max-width: 900px) {
-    .lobbyDailyGoals { grid-column: 2; grid-row: 6; width: auto; justify-self: stretch; }
-    .lobbyDailyGoalLabel { white-space: normal; }
-}
-.lobbyDailyGoalsSummary { display: none; }
-@media (max-width: 900px) {
-    .lobbyDailyGoalsSummary {
-        grid-column: 2;
-        display: flex;
-        align-items: baseline;
-        gap: 8px;
-        min-width: 0;
-        margin: 0;
-        font-size: 12px;
-        font-weight: 700;
-        color: #e8f1ff;
-    }
-    .lobbyDailyGoalsSummary span { flex: none; color: #ffd76a; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
-    .lobbyDailyGoalsSummary b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
-}
-/* The double-XP note: in the goals list on wide screens, above Start on phones. */
-@media (min-width: 901px) {
-    .arenaLobbyDailyBonus.hasDailyGoals { display: none; }
-}
-@media (max-width: 900px) {
-    .lobbyDailyGoalsNote.isBonus { display: none; }
+    .lobbyDailyGoals { grid-column: 2; grid-row: 6; width: auto; justify-self: stretch; padding: 18px 20px; }
+    .lobbyDailyGoalsHeader small, .lobbyDailyGoalsNote { font-size: 12px; }
+    .lobbyDailyGoals li { grid-template-columns: 14px minmax(0, 1fr) auto; padding: 7px 0; }
+    .lobbyDailyGoalMark { grid-row: 1 / span 2; }
+    .lobbyDailyGoalReward { grid-column: 2 / -1; font-size: 12px; }
 }
 
 /* Narrow mode cards need a full row for the Pressure label and its pips. */
