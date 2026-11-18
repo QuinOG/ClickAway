@@ -1,20 +1,15 @@
-/* Duels: one steel family with the Lobby plates, History tickets and Ladder rows.
-   Rows and the composer are painted plates; everything inside them is plain type. */
+/* Duels: fighting-game VS banners (hot, live, won, done) and a blue-vs-red stage for the composer.
+   Everything inside them is plain type. */
 .duelPage { width: min(1240px, 100%); display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-content: start; --duel-muted: #b7c7da; }
 .duelPage .playerPortrait { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
 .duelPage > .commandHeader { margin: 0; }
 .duelInbox, .duelRows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 
-/* Plates: steel by default, rose for a duel waiting on you, blue once accepted, gold for a win. */
-.duelRow, .duelComposer {
-    --plate: url('/art/ladder/row-steel.png');
-    border: 0 solid transparent;
-    border-image: var(--plate) 64 fill / 32px / 0 stretch;
-    color: #f4f7fb;
-}
-.duelRow.is-incoming { --plate: url('/art/duels/plate-rose.png'); }
-.duelRow.is-accepted { --plate: url('/art/ladder/row-self.png'); }
-.duelRow.is-won { --plate: url('/art/ladder/row-gold.png'); }
+/* Banners end in lightning notches: the 140px slice keeps each end whole. Hot = waiting on you, live = accepted, won, done = the rest. */
+.duelRow, .duelComposer { --plate: url('/art/duels/duel-card-done.png'); --cap: 54px; border: 0 solid transparent; border-image: var(--plate) 40 140 / 16px var(--cap) / 0 stretch; color: #f4f7fb; }
+.duelRow.is-incoming { --plate: url('/art/duels/duel-card-hot.png'); }
+.duelRow.is-accepted { --plate: url('/art/duels/duel-card-live.png'); }
+.duelRow.is-won { --plate: url('/art/duels/duel-card-won.png'); }
 
 .duelRow {
     display: grid;
@@ -22,7 +17,7 @@
     align-items: center;
     gap: 20px;
     min-height: 116px;
-    padding: 20px 40px;
+    padding: 18px 40px;
 }
 .duelRow.is-incoming { min-height: 150px; }
 .duelRow.is-lost, .duelRow[data-status="expired"], .duelRow[data-status="declined"] { color: var(--duel-muted); }
@@ -59,7 +54,7 @@
 .duelNotice p { margin: 4px 0 0; color: var(--duel-muted); font-size: 15px; }
 
 /* Composer: face-off, stake machine, send row */
-.duelComposer { --plate: url('/art/duels/plate-tall.png'); padding: 30px 48px 34px; }
+.duelComposer { border-image: url('/art/duels/duel-stage.png') 130 fill / 90px / 0 stretch; padding: 56px 64px 76px; }
 .duelForm { display: grid; gap: 18px; }
 
 .duelFaceoff {
@@ -86,16 +81,18 @@
 .duelField {
     min-height: 48px;
     padding: 0 16px;
-    border: 2px solid #040912;
-    border-radius: 8px;
-    background: #070e1a;
-    box-shadow: inset 0 3px 6px rgb(0 0 0 / 55%), 0 1px 0 rgb(160 200 245 / 12%);
+    border: 0;
+    border-radius: 10px;
+    background: #01081a;
+    box-shadow: inset 0 3px 7px rgb(0 0 0 / 70%), 0 2px 0 rgb(45 245 248 / 28%);
     color: #fff;
     font: inherit;
     font-size: 16px;
 }
 .duelField::placeholder { color: #8fa3bb; }
-.duelField:focus { outline: 0; box-shadow: inset 0 3px 6px rgb(0 0 0 / 60%), 0 0 0 2px #e8b54a, 0 0 14px rgb(232 181 74 / 35%); }
+.duelField:focus { outline: 0; box-shadow: inset 0 3px 7px rgb(0 0 0 / 70%), 0 0 0 2px #e8b54a, 0 0 14px rgb(232 181 74 / 35%); }
+.duelRivalInput { box-shadow: inset 0 3px 7px rgb(0 0 0 / 70%), 0 2px 0 rgb(255 70 80 / 40%); }
+.duelRivalInput:focus { box-shadow: inset 0 3px 7px rgb(0 0 0 / 70%), 0 0 0 2px #e8b54a, 0 0 14px rgb(232 181 74 / 35%); }
 
 .duelLadderRivalNote { margin: 0; color: #ffe6b0; font-size: 14px; font-weight: 600; text-align: center; }
 .duelLadderRivalNote:focus { outline: none; }
@@ -148,7 +145,7 @@
 .duelHint.is-success { color: #7df0b4; }
 
 @media (max-width: 1000px) {
-    .duelRow { grid-template-columns: 184px minmax(0, 1fr) minmax(168px, auto); grid-template-areas: "face info action" "face score action"; row-gap: 4px; }
+    .duelRow { --cap: 46px; grid-template-columns: 184px minmax(0, 1fr) minmax(168px, auto); grid-template-areas: "face info action" "face score action"; row-gap: 4px; }
     .duelFace { grid-area: face; }
     .duelInfo { grid-area: info; }
     .duelScore { grid-area: score; justify-items: start; text-align: left; }
@@ -157,14 +154,16 @@
 
 @media (max-width: 720px) {
     .duelPage { gap: 16px; }
-    .duelRow { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "face info" "score action"; gap: 8px 14px; padding: 22px 26px; }
-    .duelRow:has(button) { grid-template-areas: "face info" "score score" "action action"; }
+    .duelRow { --cap: 38px; border-image-width: 12px var(--cap); grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "face action" "info info" "score score"; gap: 6px 12px; padding: 16px 40px; }
+    .duelRow:has(button) { grid-template-areas: "face score" "info info" "action action"; }
     .duelRow.is-incoming { min-height: 0; }
     .duelFace img { width: 56px; height: 56px; }
     .duelFace b { font-size: 20px; }
     .duelInfo h3 { font-size: 26px; }
     .duelKind { font-size: 12px; }
     .duelScore { align-self: center; justify-self: start; text-align: left; justify-items: start; }
+    .duelRow:not(:has(button)) .duelAction { justify-self: end; text-align: right; }
+    .duelRow:has(button) .duelScore { justify-self: end; text-align: right; justify-items: end; }
     .duelScore strong { font-size: 34px; }
     .duelScore span { font-size: 12px; }
     .duelAction { grid-auto-flow: column; grid-auto-columns: 1fr; align-items: center; }
@@ -172,7 +171,7 @@
     .duelNotice { flex-wrap: wrap; justify-content: flex-start; min-height: 0; }
     .duelNotice img { width: 64px; height: 64px; }
 
-    .duelComposer { padding: 26px 22px 28px; border-image-width: 24px; }
+    .duelComposer { padding: 50px 34px 56px; border-image-width: 44px; }
     .duelFaceoff { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "yart vs rart" "yname . ." "stake stake stake" "rinput rinput rinput"; gap: 2px 8px; }
     .duelYouArt, .duelRivalArt { width: 96px; height: 96px; }
     .duelYouName { font-size: 20px; }
@@ -180,7 +179,7 @@
     .duelVs { font-size: 52px; -webkit-text-stroke-width: 6px; }
     .duelStake { margin-top: 6px; grid-auto-flow: column; gap: 10px; align-items: baseline; }
     .duelStake strong { font-size: 30px; }
-    .duelStakes { width: calc(100% + 36px); margin-inline: -18px; padding: 46px 10% 78px; background: none; border: 0 solid transparent; border-image: url('/art/duels/stake-platform.png') 200 280 340 280 fill / 43px 61px 74px 61px / 0 stretch; }
+    .duelStakes { width: calc(100% + 24px); margin-inline: -12px; padding: 46px 10% 78px; background: none; border: 0 solid transparent; border-image: url('/art/duels/stake-platform.png') 200 280 340 280 fill / 43px 61px 74px 61px / 0 stretch; }
     .duelStakes legend { margin-top: -28px; font-size: 17px; }
     .duelTokens { gap: 4px 8px; }
     .duelToken { width: 70px; height: 70px; }
@@ -190,9 +189,9 @@
 }
 
 @media (max-width: 420px) {
-    .duelRow { padding: 20px 22px; }
     .duelInbox .leaderboardBoardTab { padding: 10px 12px !important; }
     .duelFace img { width: 48px; height: 48px; }
+    .duelRow:has(button) .duelScore strong { font-size: 28px; }
     .duelAction .secondaryButton { padding-inline: 12px; }
 }
 

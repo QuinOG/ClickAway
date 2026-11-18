@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises"
 import path from "node:path"
 import { prepareDeterministicPage, gotoRoute } from "./fixtures.js"
 
-const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/duels"
+const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/materials/duels"
 const phase = process.env.DUEL_PHASE || "before"
 const only = process.env.DUEL_ONLY ? process.env.DUEL_ONLY.split(",") : null
 test.setTimeout(600_000)
