@@ -265,6 +265,7 @@
     color: var(--row-ink);
 }
 .leaderboardPageScene .ladderPlate.isRank1 { --row-art: url('/art/ladder/row-gold.png'); }
+.leaderboardPageScene .ladderPlate.isRank2 { --row-art: url('/art/ladder/row-silver.png'); }
 .leaderboardPageScene .ladderPlate.isRank3 { --row-art: url('/art/ladder/row-bronze.png'); }
 .leaderboardPageScene .ladderPlate.isCurrentUser { --row-art: url('/art/ladder/row-self.png'); }
 .leaderboardPageScene .ladderPlate:hover, .leaderboardPageScene .ladderPlate:focus-within { z-index: 100; filter: brightness(1.1); }
