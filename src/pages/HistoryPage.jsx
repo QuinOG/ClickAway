@@ -239,22 +239,21 @@ function HistoryRoundCard({ round, markers = [] }) {
         <p className="historyRoundCardHeadline">
           <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
           <span className="historyRoundCardScoreLabel">score</span>
+          {markers.map((marker) => <small key={marker} className="historyRoundCardStamp">{marker}</small>)}
         </p>
       </div>
-      {markers.map((marker) => <small key={marker} className="historyRoundCardStamp">{marker}</small>)}
       <div className="historyRoundCardMeters">
+        <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}<em>accuracy</em></span>
         <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}<em>hits</em></span>
-        {isPractice ? null : (
-          <>
-            <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}<em>coins</em></span>
-            <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}<em>XP</em></span>
-          </>
-        )}
       </div>
       <div className="historyRoundCardOutcome">
-        <strong className="historyRoundCardAccuracy">{formatPercent(round.accuracyPercent)}</strong>
-        <span className="historyRoundCardAccuracyLabel">accuracy</span>
         {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
+        {isPractice ? <span className="historyRoundCardNoRewards">No rewards</span> : (
+          <>
+            <span className="historyRoundCardReward"><CoinIcon size={18} /> {formatNumber(round.coinsEarned)}<em>coins</em></span>
+            <span className="historyRoundCardReward"><GemIcon size={18} /> {formatNumber(round.xpEarned ?? 0)}<em>XP</em></span>
+          </>
+        )}
       </div>
     </article>
   )

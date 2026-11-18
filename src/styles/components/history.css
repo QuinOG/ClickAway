@@ -454,43 +454,54 @@
 .historyTrajectoryLegend [data-mode="ranked"] i { color: var(--ca-mode-ranked); clip-path: polygon(50% 0, 100% 35%, 82% 100%, 18% 100%, 0 35%); }
 
 /* Illustrated match ticket at its natural height (0.4 scale) so the punches never stretch.
-   Each mode has its own ticket colour. The face reads left to right: emblem and score,
-   then any achievement stamp, then the round's stats; the stub carries accuracy and RR. */
+   Each mode has its own ticket colour. The face holds the round (mode, score, accuracy, hits);
+   the tear-off stub holds what the player took home (RR, coins, XP). Desktop uses a wide-stub ticket. */
 .historyRoundCard {
     --ticket: url('/art/history/ticket.png');
+    --ticket-wide: url('/art/history/ticket-wide.png');
     --ticket-ink: #b9cdea;
     position: relative;
     min-width: 0;
     min-height: 162px;
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) max-content;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 112px 12px 34px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 108px 12px 32px;
     border: 0 solid transparent;
     border-image: var(--ticket) 140 240 140 72 fill / 56px 96px 56px 29px / 0 stretch;
 }
-.historyRoundCard.isRanked { --ticket: url('/art/history/ticket-ranked.png'); --ticket-ink: #ffe7a8; }
-.historyRoundCard.isPractice { --ticket: url('/art/history/ticket-practice.png'); --ticket-ink: #b6f5e2; }
-.historyRoundCardMain { grid-column: 1; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 12px; min-width: 0; }
+.historyRoundCard.isRanked { --ticket: url('/art/history/ticket-ranked.png'); --ticket-wide: url('/art/history/ticket-wide-ranked.png'); --ticket-ink: #ffe7a8; }
+.historyRoundCard.isPractice { --ticket: url('/art/history/ticket-practice.png'); --ticket-wide: url('/art/history/ticket-wide-practice.png'); --ticket-ink: #b6f5e2; }
+.historyRoundCardMain { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; min-width: 0; }
 .historyRoundCardSignal { grid-row: span 2; width: 56px; height: 56px; object-fit: contain; }
 .historyRoundCardTopline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; color: var(--ticket-ink); font-size: 13px; }
 .historyRoundCardMode { font: 400 13px/1 var(--ca-font-display); letter-spacing: .06em; text-transform: uppercase; }
-.historyRoundCardHeadline { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.historyRoundCardHeadline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px; margin: 0; }
 .historyRoundCardScore { color: #fff; font: 400 40px/1 var(--ca-font-display); text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
 .historyRoundCardScoreLabel { color: var(--ticket-ink); font-size: 11px; font-weight: 800; text-transform: uppercase; }
-.historyRoundCardStamp { grid-column: 2; justify-self: center; padding: 4px 9px; border: 2px solid currentColor; border-radius: 5px; color: #ffd66b; font: 400 13px/1 var(--ca-font-display); text-transform: uppercase; white-space: nowrap; transform: rotate(-6deg); }
-.historyRoundCardMeters { grid-column: 3; display: grid; gap: 8px; color: #fff; font-size: 14px; font-weight: 700; }
-.historyRoundCardMeters span { display: inline-flex; align-items: center; gap: 6px; }
+.historyRoundCardStamp { align-self: center; margin-left: 8px; padding: 4px 9px; border: 2px solid currentColor; border-radius: 5px; color: #ffd66b; font: 400 12px/1 var(--ca-font-display); text-transform: uppercase; white-space: nowrap; transform: rotate(-6deg); }
+.historyRoundCardMeters { display: flex; flex-wrap: wrap; gap: 6px 18px; color: #fff; font-size: 14px; font-weight: 700; }
+.historyRoundCardMeters span, .historyRoundCardReward { display: inline-flex; align-items: center; gap: 6px; }
 .historyRoundCardMeters svg { width: 15px; height: 15px; color: var(--ticket-ink); }
-.historyRoundCardMeters em { color: var(--ticket-ink); font-size: 11px; font-style: normal; font-weight: 800; text-transform: uppercase; }
-.historyRoundCardOutcome { position: absolute; inset: 14px 18px 14px auto; width: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
-.historyRoundCardAccuracy { color: #fff; font: 400 24px/1 var(--ca-font-display); text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
-.historyRoundCardAccuracyLabel { color: var(--ticket-ink); font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-.historyRoundCardOutcome .historyRankBadge { margin-top: 8px; transform: none; border: 0 !important; border-radius: 0 !important; padding: 0; background: none !important; box-shadow: none !important; opacity: 1; font: 400 16px/1.1 var(--ca-font-display); letter-spacing: .02em; text-shadow: 0 1px 0 rgba(0, 0, 0, .55); }
+.historyRoundCard em { color: var(--ticket-ink); font-size: 11px; font-style: normal; font-weight: 800; text-transform: uppercase; }
+.historyRoundCardOutcome { position: absolute; inset: 14px 18px 14px auto; width: 66px; display: grid; align-content: center; justify-content: center; justify-items: start; gap: 6px; }
+.historyRoundCardReward { color: #fff; font-size: 13px; font-weight: 800; }
+.historyRoundCardReward em { display: none; }
+.historyRoundCardNoRewards { color: var(--ticket-ink); font: 400 10px/1.2 var(--ca-font-display); text-transform: uppercase; }
+.historyRoundCardOutcome .historyRankBadge { transform: none; border: 0 !important; border-radius: 0 !important; padding: 0; background: none !important; box-shadow: none !important; opacity: 1; font: 400 16px/1.1 var(--ca-font-display); letter-spacing: .02em; text-shadow: 0 1px 0 rgba(0, 0, 0, .55); }
 .historyRoundCardOutcome .historyRankBadge.isPositive { color: #7dffbf; }
 .historyRoundCardOutcome .historyRankBadge.isNegative { color: #ffb3a6; }
 .historyRoundCardOutcome .historyRankBadge.isNeutral { color: var(--ticket-ink); font-size: 11px; }
+
+@media (min-width: 761px) {
+    .historyRoundCard { padding-right: 176px; border-image-source: var(--ticket-wide); border-image-slice: 140 400 140 72 fill; border-image-width: 56px 160px 56px 29px; }
+    .historyRoundCardOutcome { right: 24px; width: 120px; gap: 8px; }
+    .historyRoundCardOutcome .historyRankBadge { font-size: 24px; }
+    .historyRoundCardReward { font-size: 17px; }
+    .historyRoundCardReward em { display: inline; }
+    .historyRoundCardNoRewards { font-size: 12px; }
+}
 
 .historyRoundDeck { display: none; }
 
@@ -511,12 +522,11 @@
 
     .historyTableWrap { display: none; }
     .historyRoundDeck { display: grid; gap: 10px; }
-    .historyRoundCard { grid-template-columns: minmax(0, 1fr); gap: 8px; padding-left: 32px; }
     .historyRoundCardTopline { grid-column: 1 / -1; grid-row: 1; }
     .historyRoundCardSignal { grid-row: 2; width: 36px; height: 36px; }
     .historyRoundCardScore { font-size: 34px; }
-    .historyRoundCardStamp { grid-column: 1; justify-self: start; font-size: 11px; }
-    .historyRoundCardMeters { grid-column: 1; display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; }
+    .historyRoundCardStamp { margin-left: 0; font-size: 11px; }
+    .historyRoundCardMeters { gap: 6px 12px; font-size: 13px; }
     .historyRoundCardMeters em { display: none; }
 }
 
