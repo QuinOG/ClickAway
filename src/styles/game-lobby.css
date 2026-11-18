@@ -675,7 +675,8 @@
     min-height: 100px;
     padding: 16px 24px;
     border: 0 solid transparent;
-    border-image: var(--plate) 36 fill / 18px / 0 stretch;
+    /* The slice must hold the whole corner (rivet and angled inner edge) or the face covers it. */
+    border-image: var(--plate) 60 fill / 30px / 0 stretch;
     background: none;
     color: #fff;
     text-align: left;
@@ -703,7 +704,7 @@
 .lobbyModeBriefStat small { color: #bdcfe1; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .lobbyModeBriefStat b { color: rgb(var(--mode)); font: 400 14px/1 var(--ca-font-display); }
 @media (max-width: 520px) {
-    .lobbyModeChoice { grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 10px; min-height: 86px; padding: 13px 18px; border-image-width: 13px; }
+    .lobbyModeChoice { grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 10px; min-height: 86px; padding: 13px 18px; border-image-width: 22px; }
     .lobbyModeEmblem { width: 48px; height: 48px; }
     .lobbyModeName { font-size: 20px; }
     .lobbyModeSummary { font-size: 12px; }
