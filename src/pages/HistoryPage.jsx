@@ -233,9 +233,9 @@ function HistoryRoundCard({ round, markers = [] }) {
   const isPractice = isPracticeRound(round)
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
-      <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
       <div className="historyRoundCardMain">
         <div className="historyRoundCardTopline">
+          <ModeEmblem className="historyRoundCardSignal" tone={getModeTone(round)} size={32} />
           <span className="uiVisuallyHidden">{getModeLabelFromHistoryEntry(round)}</span>
           <time>{getPlayedAtLabel(round)}</time>
         </div>

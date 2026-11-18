@@ -27,7 +27,7 @@
 .profileCockpit, .profileCommandHeader, .achievementTile,
 .leaderboardPodium,
 .challengeCard, .duelComposer,
-.historyTrajectory, .historyHighlightCard, .historyRoundCard,
+.historyTrajectory, .historyHighlightCard,
 .helpMissionMap, .helpBlock,
 .uiDialogSurface {
     border-style: solid !important;
@@ -602,46 +602,11 @@
 .shopCommandSurface::after,
 .duelComposer::after,
 .duelCommandSurface .challengeCard::after { display: none !important; }
-.historyRoundCard, .historyHighlightCard, .helpBlock {
+.historyHighlightCard, .helpBlock {
     border-image: none !important;
     border-width: 2px !important;
     border-color: #040912 !important;
     border-radius: 12px !important;
-}
-
-/* ---- History: match tickets ------------------------------------------- */
-.historyRoundCard {
-    --tone: #4fb8ff;
-    position: relative;
-    padding-left: 92px !important;
-    background:
-        radial-gradient(circle at 78px 0, #0a1322 0 9px, transparent 10px),
-        radial-gradient(circle at 78px 100%, #0a1322 0 9px, transparent 10px),
-        linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, #0b1424) 0 78px, transparent 78px),
-        repeating-linear-gradient(180deg, transparent 0 4px, rgb(255 255 255 / 1.5%) 4px 5px),
-        linear-gradient(180deg, #1c2e49, #0e1828) !important;
-    box-shadow: inset 0 1px 0 rgb(160 200 245 / 16%), inset 0 -4px 0 rgb(0 0 0 / 30%), 0 5px 0 #040912 !important;
-}
-.historyRoundCard.isRanked { --tone: #ffc94a; }
-.historyRoundCard.isPractice { --tone: #3ee59a; }
-.historyRoundCard::before {
-    content: "";
-    position: absolute;
-    left: 77px; top: 12px; bottom: 12px;
-    border-left: 3px dashed rgb(4 9 18 / 80%);
-}
-.historyRoundCardSignal {
-    position: absolute !important;
-    left: 14px; top: 50%; translate: 0 -50%;
-    width: 52px !important; height: 52px !important;
-    display: grid !important; place-items: center;
-    border-radius: 50% !important;
-    border: 2px solid #040912 !important;
-    background: radial-gradient(circle at 50% 30%, rgb(255 255 255 / 30%), rgb(0 0 0 / 25%) 75%) !important;
-    box-shadow: inset 0 2px 0 rgb(255 255 255 / 30%), 0 3px 0 #040912 !important;
-}
-.historyRoundCardScore {
-    font-family: var(--ca-font-display) !important; font-weight: 400 !important;
 }
 /* result chip becomes a rubber stamp */
 .historyRankBadge {
@@ -1057,17 +1022,6 @@
     .ladderPlate { grid-template-columns: 58px minmax(0, 1fr) 110px; }
     .ladderPlateStats { display: none; }
 }
-
-/* ---- History tickets: the punched notch and tear line read at 1440 ---- */
-.historyRoundCard {
-    background:
-        radial-gradient(circle at 78px 0, #050a14 0 12px, rgb(160 200 245 / 35%) 12px 14px, transparent 14.5px),
-        radial-gradient(circle at 78px 100%, #050a14 0 12px, rgb(160 200 245 / 35%) 12px 14px, transparent 14.5px),
-        linear-gradient(90deg, color-mix(in srgb, var(--tone) 55%, #0b1424) 0 78px, transparent 78px),
-        repeating-linear-gradient(180deg, transparent 0 4px, rgb(255 255 255 / 1.5%) 4px 5px),
-        linear-gradient(180deg, #1c2e49, #0e1828) !important;
-}
-.historyRoundCard::before { border-left: 3px dashed rgb(220 235 255 / 45%) !important; top: 16px !important; bottom: 16px !important; }
 .ladderPlate .leaderboardTierBadge { white-space: nowrap; }
 .duelFighterPortrait { overflow: hidden; }
 .duelFighterPortrait > * { width: 100% !important; height: 100% !important; border-radius: 50%; clip-path: circle(50%); }
@@ -1115,7 +1069,6 @@
 .duelFightCenter .duelVsMark { font-size: 80px !important; }
 .duelFightComposer .duelReplayCard { width: 112px; height: 112px; }
 .duelFightComposer .duelLaunchForm { gap: 16px !important; padding-bottom: 18px !important; }
-.historyRoundCard::before { border-left-color: rgb(235 244 255 / 75%) !important; }
 
 /* ---- Profile: competitor card + attribute sheet ------------------------- */
 .profileSheet {
@@ -3752,38 +3705,6 @@
 .feedbackSettingsSheet .feedbackRangeSetting input[type='range']::-webkit-slider-thumb { border: 2px solid #101721 !important; border-radius: 5px !important; box-shadow: inset 0 2px #fff9, 0 3px 3px #000b !important; }
 .feedbackSettingsSheet .feedbackSettingsActions .uiAction:not([type='submit']) { border: 2px solid #101722 !important; border-radius: 5px !important; color: #e6edf5 !important; background: linear-gradient(#68778a, #354255 55%, #263142) !important; box-shadow: inset 0 2px #ffffff55, 0 4px 0 #0b111b !important; font-family: var(--ca-font-display); }
 .feedbackSettingsSheet .feedbackSettingsStatus { border-top: 1px solid #68788a; padding-top: 8px; font-family: var(--ca-font-display); letter-spacing: .04em; }
-
-/* Round 18: History ticket stubs carry the result stamp; tighter trajectory chart */
-.historyRoundDeck .historyRoundCard { overflow: hidden; }
-.historyRoundDeck .historyRoundCard::after {
-  right: 124px !important; top: 0 !important; bottom: 0 !important;
-  border-right: 3px dashed rgb(4 9 18 / 85%) !important;
-}
-.historyRoundDeck .historyRoundCardOutcome {
-  position: absolute !important;
-  top: 0; right: 0; bottom: 0;
-  width: 124px !important;
-  display: flex !important; flex-direction: column !important;
-  justify-content: center !important; align-items: center !important; gap: 6px !important;
-  margin: 0 !important;
-  background:
-    radial-gradient(circle at 0 0, #050a14 0 9px, transparent 10px),
-    radial-gradient(circle at 0 100%, #050a14 0 9px, transparent 10px),
-    repeating-linear-gradient(180deg, transparent 0 4px, rgb(255 255 255 / 2%) 4px 5px),
-    linear-gradient(180deg, color-mix(in srgb, var(--tone) 18%, #13213a), color-mix(in srgb, var(--tone) 10%, #0a1220));
-  box-shadow: inset 1px 0 0 rgb(160 200 245 / 12%);
-}
-.historyRoundDeck .historyRoundCardOutcome .historyRankBadge {
-  font-size: 12.5px !important; letter-spacing: 0.03em !important;
-  padding: 5px 9px !important;
-  white-space: nowrap;
-  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 55%));
-}
-.historyRoundDeck .historyRoundCardOutcome small {
-  font: 400 10px/1.15 var(--ca-font-display);
-  letter-spacing: 0.08em; text-transform: uppercase; text-align: center;
-  color: color-mix(in srgb, var(--tone) 70%, #ffffff);
-}
 .historyTrajectory .historyClimb { height: 300px !important; }
 
 /* Round 19: Unlock wall module bays */
@@ -4553,17 +4474,10 @@
 .historyHighlightCard > * + * { margin-top: 8px !important; }
 .historyHighlightCard > .historyHighlightStats { margin-top: 16px !important; gap: 8px; }
 .historyRoundDeck { gap: 16px !important; }
-.historyRoundDeck .historyRoundCard { padding: 16px !important; gap: 16px !important; }
-.historyRoundCardTopline { gap: 8px; }
-.historyRoundCardScore { margin-top: 8px; }
-.historyRoundCardScoreLabel { margin-left: 8px; }
-.historyRoundCardMeters { margin-top: 16px; gap: 8px 16px; }
-.historyRoundDeck .historyRoundCardOutcome { gap: 8px !important; }
 .historyPagination { margin-top: 16px; }
 .historyTrendStrip { padding: 16px; gap: 16px; }
 .historyTrajectory { padding: 16px !important; gap: 8px 24px; }
 .historyContent > .historyHighlightsSection .historyHighlightCard { padding-block: 16px !important; }
-.historyRoundDeck .historyRoundCard { padding-left: 96px !important; }
 
 /* Round 41: Results on the 8px rhythm */
 
@@ -4579,8 +4493,6 @@
 .historyTrajectory .historyClimb { padding-right: 0 !important; }
 .historyTrajectory .historyClimbLine { right: 0 !important; }
 .historyTrajectory .historyClimbAxis { right: 0; }
-.historyRoundDeck .historyRoundCard > .historyRoundCardMain { grid-column: 1 / -1 !important; justify-self: stretch !important; width: auto !important; margin-right: 126px !important; }
-.historyRoundCard .historyRoundCardTopline { justify-content: space-between; }
 
 /* Round 44: Ladder - the "You" row keeps the other rows' columns */
 .ladderPlate.isCurrentUser { margin-inline: 0 !important; }
@@ -4752,14 +4664,6 @@
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar::before { width: 150px !important; height: 150px !important; bottom: 14px !important; }
 .ladderPlate .leaderboardEntryHoverWrap:is(:hover, :focus-within) .leaderboardEntryHoverCard .ladderPlayerHoverCard .profileHoverAvatar > .playerPortrait { width: 160px !important; height: 160px !important; margin-bottom: -6px !important; }
 
-/* ---- Cleanup: History result is plain text; mode logo without a disc --- */
-.historyRoundDeck .historyRoundCardOutcome .historyRankBadge { transform: none; border: 0 !important; border-radius: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; filter: none; opacity: 1; font-size: 20px !important; letter-spacing: .02em !important; text-shadow: 0 2px 0 #050912; }
-.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isPositive { color: #6ff0b0; }
-.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNegative { color: #ff8a7a; }
-.historyRoundDeck .historyRoundCardOutcome .historyRankBadge.isNeutral { color: #8fa3b8; font-size: 13px !important; }
-.historyRoundCardSignal { border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
-.historyRoundCardSignal > .gameArt { width: 46px !important; height: 46px !important; filter: drop-shadow(0 2px 0 #040912); }
-
 /* ==== Run 7 cleanup: spacing, redundancy, less ornament ================== */
 /* Play lobby: one emblem size for all three modes; no SELECTED tag */
 .lobbyModeRail .lobbyModeChoice, .lobbyModeRail .lobbyModeChoice.isSelected { padding-left: 94px !important; }
@@ -4782,8 +4686,6 @@
 .ladderPlate:not(:first-child) .ladderPlateHero small { display: none !important; }
 /* History highlights: no medal beside numbers that already say it */
 .historyHighlightCard::before, .historyHighlightCard + .historyHighlightCard::before, .historyHighlightCard:nth-child(2)::before { content: none !important; }
-/* History: unranked tickets have no result stub, so no perforation either */
-.historyRoundDeck .historyRoundCard:not(:has(.historyRoundCardOutcome))::after { display: none !important; }
 /* History highlights: medal column removed, so no reserved left padding */
 .historyContent > .historyHighlightsSection .historyHighlightCard { padding-left: 26px !important; }
 /* Profile achievements: progress follows the requirement text; tighter medal tiles */
