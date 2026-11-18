@@ -10,10 +10,10 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]
     const ticket = page.locator(".historyRoundCard").first()
     await expect(ticket).toBeVisible()
     await ticket.scrollIntoViewIfNeeded()
-    await page.waitForTimeout(1100)
+    await page.waitForTimeout(2000)
     const phase = process.env.ART_PHASE || "after"
-    await ticket.screenshot({ path: `${out}/${phase}-${name}-ticket.png` })
-    await page.screenshot({ path: `${out}/${phase}-${name}-page.png`, fullPage: true })
+    // Element and full-page captures come out blank here (inner scroll container), so take the viewport.
+    await page.screenshot({ path: `${out}/${phase}-${name}-page.png` })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   })
 }

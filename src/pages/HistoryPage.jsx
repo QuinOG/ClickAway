@@ -238,9 +238,8 @@ function HistoryRoundCard({ round, markers = [] }) {
           <ModeEmblem className="historyRoundCardSignal" tone={getModeTone(round)} size={32} />
           <span className="uiVisuallyHidden">{getModeLabelFromHistoryEntry(round)}</span>
           <time>{getPlayedAtLabel(round)}</time>
+          {markers.length > 0 ? <span className="historyRoundCardMarkers">{markers.map((marker) => <small key={marker}>{marker}</small>)}</span> : null}
         </div>
-        <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
-        <span className="historyRoundCardScoreLabel">score</span>
         <div className="historyRoundCardMeters">
           <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
           <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
@@ -252,12 +251,11 @@ function HistoryRoundCard({ round, markers = [] }) {
           )}
         </div>
       </div>
-      {isRankedModeEntry(round) || markers.length > 0 ? (
-        <div className="historyRoundCardOutcome">
-          {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
-          {markers.map((marker) => <small key={marker}>{marker}</small>)}
-        </div>
-      ) : null}
+      <div className="historyRoundCardOutcome">
+        <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
+        <span className="historyRoundCardScoreLabel">score</span>
+        {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
+      </div>
     </article>
   )
 }

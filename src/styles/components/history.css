@@ -453,30 +453,32 @@
 .historyTrajectoryLegend [data-mode="casual"] i { color: var(--ca-mode-casual); transform: rotate(45deg); }
 .historyTrajectoryLegend [data-mode="ranked"] i { color: var(--ca-mode-ranked); clip-path: polygon(50% 0, 100% 35%, 82% 100%, 18% 100%, 0 35%); }
 
-/* Illustrated match ticket: fixed side slices preserve both punches and the whole stub. */
+/* Illustrated match ticket at its natural height (0.4 scale) so the punches never stretch; the stub always holds the score. */
 .historyRoundCard {
     position: relative;
     min-width: 0;
-    min-height: 232px;
-    padding: 24px 132px 24px 28px;
+    min-height: 162px;
+    display: flex;
+    align-items: center;
+    padding: 12px 112px 12px 36px;
     border: 0 solid transparent;
-    border-image: url('/art/history/ticket.png') 160 240 160 72 fill / 80px 120px 80px 36px / 0 stretch;
+    border-image: url('/art/history/ticket.png') 140 240 140 72 fill / 56px 96px 56px 29px / 0 stretch;
 }
-.historyRoundCardMain { min-width: 0; }
-.historyRoundCardTopline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.historyRoundCardMain { display: grid; gap: 14px; min-width: 0; }
+.historyRoundCardTopline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
 .historyRoundCardSignal { width: 32px; height: 32px; object-fit: contain; }
-.historyRoundCardTopline time { color: #c3d5ed; font-size: 11px; }
-.historyRoundCardScore { display: inline-block; margin-top: 8px; color: #f3f7ff; font: 400 30px/1 var(--ca-font-display); }
-.historyRoundCardScoreLabel { margin-left: 8px; color: #b5c9e5; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.historyRoundCardMeters { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 16px; color: #c3d5ed; font-size: 11px; font-weight: 700; }
-.historyRoundCardMeters span { display: inline-flex; align-items: center; gap: 4px; }
-.historyRoundCardMeters svg { width: 13px; height: 13px; color: var(--scene-accent); }
-.historyRoundCardOutcome { position: absolute; inset: 24px 20px 24px auto; width: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
-.historyRoundCardOutcome .historyRankBadge { transform: none; border: 0 !important; border-radius: 0 !important; padding: 0; background: none !important; box-shadow: none !important; opacity: 1; font: 400 18px/1.2 var(--ca-font-display); letter-spacing: .02em; }
+.historyRoundCardTopline time { color: #c3d5ed; font-size: 12px; }
+.historyRoundCardMarkers { display: inline-flex; gap: 10px; color: #ffdc80; font: 400 11px/1 var(--ca-font-display); text-transform: uppercase; white-space: nowrap; }
+.historyRoundCardMeters { display: flex; flex-wrap: wrap; gap: 8px 14px; color: #c3d5ed; font-size: 13px; font-weight: 700; }
+.historyRoundCardMeters span { display: inline-flex; align-items: center; gap: 5px; }
+.historyRoundCardMeters svg { width: 14px; height: 14px; color: var(--scene-accent); }
+.historyRoundCardOutcome { position: absolute; inset: 14px 18px 14px auto; width: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
+.historyRoundCardScore { color: #f3f7ff; font: 400 24px/1 var(--ca-font-display); }
+.historyRoundCardScoreLabel { color: #b5c9e5; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.historyRoundCardOutcome .historyRankBadge { margin-top: 6px; transform: none; border: 0 !important; border-radius: 0 !important; padding: 0; background: none !important; box-shadow: none !important; opacity: 1; font: 400 15px/1.1 var(--ca-font-display); letter-spacing: .02em; }
 .historyRoundCardOutcome .historyRankBadge.isPositive { color: #6ff0b0; }
 .historyRoundCardOutcome .historyRankBadge.isNegative { color: #ff8a7a; }
-.historyRoundCardOutcome .historyRankBadge.isNeutral { color: #b5c9e5; font-size: 12px; }
-.historyRoundCardOutcome small { color: #ffdc80; font: 400 10px/1.3 var(--ca-font-display); text-transform: uppercase; }
+.historyRoundCardOutcome .historyRankBadge.isNeutral { color: #b5c9e5; font-size: 11px; }
 
 .historyRoundDeck { display: none; }
 
@@ -497,6 +499,8 @@
 
     .historyTableWrap { display: none; }
     .historyRoundDeck { display: grid; gap: 10px; }
+    .historyRoundCard { padding-left: 32px; }
+    .historyRoundCardMeters { display: grid; grid-template-columns: repeat(2, max-content); }
 }
 
 @media (max-width: 430px) {
