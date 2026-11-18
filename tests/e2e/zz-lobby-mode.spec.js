@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { prepareDeterministicPage, gotoRoute } from "./fixtures.js"
 
-const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/lobby"
+const out = "C:/Users/quinl/AppData/Local/Temp/claude/8f5fc2fbe33c61b7/52a8d379-0918-4105-90fd-d3f7d1db2f63/scratchpad/artpass/lobby-sol"
 for (const [name, width, height] of [["desktop", 1440, 900], ["tablet", 768, 1024], ["phone", 390, 844], ["narrow", 320, 700]]) {
   test(`lobby mode cards ${name}`, async ({ page }) => {
     await page.setViewportSize({ width, height })
