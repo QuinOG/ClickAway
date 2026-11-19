@@ -56,7 +56,7 @@ for (const width of [1440,390,320]) {
    await page.route('**/api/auth/me',r=>r.fulfill({json:{...sessionFixture,progress:{...sessionFixture.progress,coins:0,roundHistory:[],totalRoundCount:0,lifetimeStats:{},loadoutStats:[],unlockedAchievementIds:[],levelXp:0,rankMmr:0,rankedState:{placementMatchesPlayed:0}}}}))
    await gotoRoute(page,{path:'/profile',heading:'Vector'})
    await shot(page,`${width}-new-player`)
-   await expect(page.getByText('Arena Rookie',{exact:true})).toBeVisible()
+   await expect(page.getByRole('heading',{name:'Attributes'})).toBeVisible()
    for (const [name,selector] of [['attributes','.profileAttributes'],['form','.profileFormPanel'],['achievements','.profileAchievementsSection']]) {
      await page.locator(selector).scrollIntoViewIfNeeded()
      await shot(page,`${width}-new-player-${name}`)

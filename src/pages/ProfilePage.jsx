@@ -44,21 +44,6 @@ function formatSignedValue(value = 0) {
   return `${normalized > 0 ? "+" : ""}${normalized}`
 }
 
-function getProfileTagline({ totalRounds, accuracyPercent, bestStreak }) {
-  if (totalRounds === 0) return "No rounds logged yet. Your first signal starts in the arena."
-  if (accuracyPercent >= 85 && bestStreak >= 10) return "Precision specialist. Your tempo is locked in."
-  if (accuracyPercent >= 70) return "Strong fundamentals. Keep building consistency."
-  return "Momentum is building. Focus accuracy and chain longer streaks."
-}
-
-function getPlayerTitle({ totalRounds, rankedRounds, bestStreak }) {
-  if (totalRounds === 0) return "Arena Rookie"
-  if (rankedRounds >= 25) return "Ranked Specialist"
-  if (bestStreak >= 15) return "Combo Architect"
-  if (totalRounds >= 60) return "Arena Veteran"
-  return "Rising Contender"
-}
-
 function getRankMetaText(rankProgress = {}) {
   if (rankProgress.isUnranked) {
     return `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank`
@@ -235,11 +220,6 @@ export default function ProfilePage({
   const xpToNextLevel = levelProgress.xpToNextLevel ?? 0
   const levelProgressPercent = Math.max(0, Math.min(100, levelProgress.progressPercent ?? 0))
   const nextLevelValue = levelValue + 1
-  const playerTitle = getPlayerTitle({
-    totalRounds: profileStats.totalRounds,
-    rankedRounds: profileStats.rankedRounds,
-    bestStreak: profileStats.bestStreak,
-  })
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
   const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
@@ -258,10 +238,6 @@ export default function ProfilePage({
 
         <div className="profileSheet">
           <aside className="profileCompetitorCard" aria-label={`${rankLabel} rank, level ${levelValue}`}>
-            <div className="profileCardBanner">
-              <span>Competitor</span>
-              <span className="profileOrbitLevel">LV {levelValue}</span>
-            </div>
             <div className="profilePortraitSlab">
               <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
                 {hasProfileImage
@@ -278,7 +254,6 @@ export default function ProfilePage({
               <h1 className="profilePlayerName" id="profile-player-name">
                 {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
               </h1>
-              <p className="profilePlayerTitle">{playerTitle}</p>
               <div className="profileDivisionPlate">
                 <strong className="profileRankTitle">{rankLabel}</strong>
                 <span>{rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank ? rankGoal : `${getRankMetaText(rankProgress)} · next ${rankProgress.nextTierLabel ?? "rank"}`}</span>
@@ -298,7 +273,6 @@ export default function ProfilePage({
             <section className="profileAttributes" aria-labelledby="performance-title">
               <div className="profilePanelHeading">
                 <div>
-                  <span className="profileSectionKicker">{getProfileTagline(profileStats)}</span>
                   <h2 id="performance-title">Attributes</h2>
                 </div>
               </div>
@@ -337,7 +311,6 @@ export default function ProfilePage({
               <section className="profileFormPanel" aria-labelledby="recent-form-title">
                 <div className="profileMiniHeading">
                   <div>
-                    <span className="profileSectionKicker">Recent form</span>
                     <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
                   </div>
                   <strong className={recentForm.trendPercent >= 0 ? "isPositive" : "isNegative"}>
