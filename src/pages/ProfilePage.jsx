@@ -95,13 +95,12 @@ function getStrongestTrait(profileStats, reactionStats) {
 
 const GAUGE_PIPS = 12
 
-function AttributeRow({ label, detail, value, fill, isStrongest = false }) {
+function AttributeRow({ label, value, fill, isStrongest = false }) {
   const lit = Math.round(Math.max(0, Math.min(1, Number(fill) || 0)) * GAUGE_PIPS)
   return (
     <li className={`profileAttribute ${isStrongest ? "isStrongest" : ""}`}>
       <span className="profileAttributeLabel">
         <strong>{label}</strong>
-        <small>{detail}</small>
       </span>
       <svg className="profileAttributeDial" viewBox="0 0 100 58" aria-hidden="true">
         <path className="profileDialTrack" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" />
@@ -279,28 +278,24 @@ export default function ProfilePage({
               <ul className="profileAttributeList">
                 <AttributeRow
                   label="Accuracy"
-                  detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
                   value={`${profileStats.accuracyPercent}%`}
                   fill={profileStats.accuracyPercent / 100}
                   isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "precision"}
                 />
                 <AttributeRow
                   label="Best streak"
-                  detail="unbroken targets"
                   value={formatNumber(profileStats.bestStreak)}
                   fill={profileStats.bestStreak / 30}
                   isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "chain"}
                 />
                 <AttributeRow
                   label="Reaction"
-                  detail={reactionStats.bestReactionMs !== null ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
                   value={formatReactionTime(reactionStats.avgReactionMs)}
                   fill={reactionStats.avgReactionMs !== null ? (520 - reactionStats.avgReactionMs) / 360 : 0}
                   isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "tempo"}
                 />
                 <AttributeRow
                   label="Peak score"
-                  detail={`${formatNumber(profileStats.roundsThisWeek)} rounds this week`}
                   value={formatNumber(profileStats.bestScore)}
                   fill={profileStats.bestScore / 1500}
                 />
