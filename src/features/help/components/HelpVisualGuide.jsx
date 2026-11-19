@@ -83,7 +83,7 @@ export function HelpPowerupCards() {
           <div>
             <h3>{powerup.label}</h3>
             <p>{powerup.description}</p>
-            <span className="helpPowerupMeta">Charges every {powerup.awardEvery} streak <span className="helpPowerupMetaLevel">· Lv {powerup.unlockLevel}</span></span>
+            <span className="helpPowerupMeta">Charges every {powerup.awardEvery} hits in a row <span className="helpPowerupMetaLevel">· Lv {powerup.unlockLevel}</span></span>
           </div>
         </article>
       ))}

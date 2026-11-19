@@ -393,7 +393,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                 setSendSuccess("")
                 setSendForm((current) => ({ ...current, opponentUsername: event.target.value }))
               }}
-              placeholder="Enter username"
+              placeholder="Enter rival’s username"
               aria-label="Opponent username"
               required
             />
@@ -470,7 +470,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
           {!launchReady && !sendSuccess ? (
             <p className="duelHint">
-              {rivalName ? "Choose a run to send the duel." : "Pick a rival and a run to send the duel."}
+              {rivalName ? "Choose a run to send the duel." : selectedReplay ? "Enter your rival’s username." : "Pick a rival and a run to send the duel."}
             </p>
           ) : null}
           {sendError ? <p className="formError duelHint is-error" role="alert">{sendError}</p> : null}

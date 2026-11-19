@@ -166,6 +166,14 @@ function LeaderboardTableSkeleton() {
   )
 }
 
+function formatPodiumValue(player, board) {
+  if (board === "bestScore") return <>{formatNumericValue(player.bestScore)} <small>pts</small></>
+  if (board === "bestStreak") return <>{formatNumericValue(player.bestStreak)} <small>streak</small></>
+  if (board === "accuracy") return formatPercent(player.accuracyPercent)
+  if (board === "reaction") return player.bestReactionMs !== null ? <>{formatNumericValue(player.bestReactionMs)} <small>ms</small></> : "—"
+  return <>{formatNumericValue(player.mmr)} <small>RR</small></>
+}
+
 function formatLadderStat(player, key) {
   if (key === "accuracyPercent") return formatPercent(player.accuracyPercent)
   if (key === "bestReactionMs") return player.bestReactionMs !== null ? `${formatNumericValue(player.bestReactionMs)} ms` : "—"
@@ -409,7 +417,7 @@ function LeaderboardControls({
   )
 }
 
-function PodiumStage({ rows = [], currentUserId, currentUsername }) {
+function PodiumStage({ rows = [], board = "mmr", currentUserId, currentUsername }) {
   const podiumRows = [...rows]
     .filter((player) => player.rank >= 1 && player.rank <= 3)
     .sort((leftPlayer, rightPlayer) => leftPlayer.rank - rightPlayer.rank)
@@ -423,7 +431,6 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
       </div>
       <div className="leaderboardPodiumHeader">
         <div>
-          <p className="leaderboardSectionEyebrow">Board leaders</p>
           <h2>Players to beat</h2>
         </div>
         <Crown weight="duotone" aria-hidden="true" />
@@ -447,7 +454,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               </span>
               <strong>{player.username}</strong>
               <span className="leaderboardPodiumTier">{player.rankLabel}</span>
-              <span className="leaderboardPodiumRating">{formatNumericValue(player.mmr)} <small>RR</small></span>
+              <span className="leaderboardPodiumRating">{formatPodiumValue(player, board)}</span>
               </span>
               <span className="podiumStep">
                 <span className="leaderboardPodiumRank">{player.rank}<small>{player.rank === 1 ? "st" : player.rank === 2 ? "nd" : "rd"}</small></span>
@@ -705,6 +712,7 @@ export default function LeaderboardPage({
           {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
             <PodiumStage
               rows={leaderboardRows}
+              board={board}
               currentUserId={currentUserId}
               currentUsername={currentUsername}
             />

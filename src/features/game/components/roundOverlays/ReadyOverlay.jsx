@@ -363,7 +363,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
       <section className="lobbyDailyGoals" aria-label="Daily goals">
         <header className="lobbyDailyGoalsHeader"><span>Daily goals</span></header>
         <p className="lobbyDailyGoalsNote">New goals are ready. They'll show after your next round.</p>
-        {dailyBonusAvailable ? <p className="lobbyDailyGoalsNote isBonus">Your first round today earns 2× XP.</p> : null}
+        {dailyBonusAvailable ? <p className="lobbyDailyGoalsNote isBonus">Your first Casual or Ranked round today earns 2× XP.</p> : null}
       </section>
     )
   }
@@ -371,7 +371,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
   const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
   const note = isPracticeSelected
     ? "Practice rounds don't count toward goals."
-    : dailyBonusAvailable ? "Your first round today earns 2× XP." : ""
+    : dailyBonusAvailable ? "Your first Casual or Ranked round today earns 2× XP." : ""
 
   return (
     <section className="lobbyDailyGoals" aria-label="Daily goals">
@@ -664,7 +664,7 @@ export function ReadyOverlay({
 
           <div className="arenaLobbyActions">
             {/* The board carries the bonus when goals are available. */}
-            {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First round today earns double XP</p> : null}
+            {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First Casual or Ranked round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"

@@ -285,7 +285,7 @@ export default function ProfilePage({
               </div>
               <div className="profileXpReadout">
                 <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
-                <span>{formatNumber(xpToNextLevel)} XP</span>
+                <span>{formatNumber(xpToNextLevel)} XP to go</span>
                 <ProgressBar percent={levelProgressPercent} label={`XP to level ${nextLevelValue}`} />
               </div>
               <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
@@ -377,7 +377,7 @@ export default function ProfilePage({
               <section className="profileNearestGoal" aria-labelledby="nearest-goal-title">
                 <span className="profilePanelEmblem" aria-hidden="true"><TrophyIcon size={30} /></span>
                 <div>
-                  <span className="profileSectionKicker">Nearest achievement</span>
+                  <span className="profileSectionKicker">{nearestAchievement?.isUnlocked ? "Unlocked achievement" : "Nearest achievement"}</span>
                   <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>
                   <ProgressBar percent={nearestAchievement?.percent ?? 0} label="Nearest achievement" progressText={nearestAchievement?.progressText ?? "Awaiting progress"} />
                 </div>
