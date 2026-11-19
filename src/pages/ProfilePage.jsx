@@ -369,7 +369,7 @@ export default function ProfilePage({
                       {formatNumber(signatureBuild.totalRounds)} rounds · {buildAccuracy}% acc · {formatNumber(signatureBuild.bestScore)} peak
                     </p>
                   ) : (
-                    <p className="profileEmptySignal">Run a saved loadout to reveal your field signature.</p>
+                    <p className="profileEmptySignal">Finish a round with a saved loadout to see its stats.</p>
                   )}
                 </div>
               </section>

@@ -341,7 +341,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
                   eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
                 })
               }}
-            >Retry scan</button>
+            >Reload duels</button>
           </div>
         ) : null}
 

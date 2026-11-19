@@ -160,7 +160,6 @@ export default function LoginPage({ onLogin }) {
         </form>
 
         <div className="authFooter">
-          <span className="authFooterText">Need a new account?</span>
           <Link className="authFooterLink" to="/signup">
             Create account
           </Link>

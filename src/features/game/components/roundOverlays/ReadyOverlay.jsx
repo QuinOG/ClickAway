@@ -305,7 +305,6 @@ function PracticeDrawer({
             >
               <strong>Free Practice</strong>
               <span>No timer pressure or drill goal.</span>
-              <small>Open training</small>
             </button>
             {drills.map((drill) => (
               <button

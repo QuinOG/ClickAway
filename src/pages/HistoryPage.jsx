@@ -455,11 +455,7 @@ export default function HistoryPage({
 
         {!hasHistory ? (
           <section className="historyEmptyState" role="status" aria-live="polite">
-            <p className="historyEmptyEyebrow">No rounds logged</p>
-            <h2 className="historyEmptyTitle">Your match history will appear here after your first run.</h2>
-            <p className="historyEmptyLead">
-              Finish a round to start tracking score, accuracy, rewards, and ranked results over time.
-            </p>
+            <h2 className="historyEmptyTitle">No rounds yet</h2>
             <div className="historyEmptyActions">
               <Link className="primaryButton" to="/game">
                 Play a Round

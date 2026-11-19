@@ -266,10 +266,10 @@ export function GameOverOverlay({
         <div className="resultUnlock">
           {unlockedPart.kind === "power" ? <PowerEmblem powerupId={unlockedPart.id} size={68} /> : <PartEmblem partId={unlockedPart.id} slotId={unlockedPart.slotId} size={68} />}
           <div><p className="resultUnlockLabel">New Armory part</p><strong>{unlockedPart.label}</strong></div>
-          <Link className="resultEquip" to={unlockedPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(unlockedPart.slotId)}`} aria-label={`Unlocked ${unlockedPart.label}. Open Armory`}>Equip <span aria-hidden="true">›</span></Link>
+          <Link className="resultEquip" to={unlockedPart.kind === "power" ? "/armory?step=hotbar&powerSlot=1" : `/armory?step=passives&lane=${encodeURIComponent(unlockedPart.slotId)}`} aria-label={`Unlocked ${unlockedPart.label}. Open Armory`}>Open Armory <span aria-hidden="true">›</span></Link>
         </div>
       ) : null}
-      {isPracticeMode ? <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No economy or rank was changed.</p> : null}
+      {isPracticeMode ? <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No coins, XP, or RR earned.</p> : null}
       {roundSaveStatus === "idle" && roundSaveNote ? <p className="gameOverPracticeNote">{roundSaveNote}</p> : null}
       {roundSaveStatus === "failed" ? <p className="gameOverSaveStatus isFailed" role="alert">This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}</p> : null}
       <div className="gameOverActions">

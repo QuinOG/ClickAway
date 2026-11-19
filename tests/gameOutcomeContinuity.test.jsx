@@ -159,7 +159,7 @@ describe("B3 outcome and reward continuity", () => {
       roundCoinsEarned: 0,
     })
 
-    expect(screen.getByText("Practice result recorded. No economy or rank was changed.")).not.toBeNull()
+    expect(screen.getByText("Practice result recorded. No coins, XP, or RR earned.")).not.toBeNull()
     expect(screen.queryByText("Rewards Settled")).toBeNull()
     await user.click(screen.getByRole("button", { name: "Play Again" }))
     expect(props.onRematch).toHaveBeenCalledOnce()
