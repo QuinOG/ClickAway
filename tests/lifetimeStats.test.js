@@ -12,8 +12,8 @@ import {
 describe("lifetimeStatsUtils", () => {
   it("increments durable counters for a ranked round", () => {
     const nextStats = applyRoundToLifetimeStats({}, {
-      hits: 18,
-      misses: 2,
+      hits: 36,
+      misses: 4,
       score: 420,
       bestStreak: 9,
       coinsEarned: 35,
@@ -93,7 +93,7 @@ describe("lifetimeStatsUtils", () => {
       },
       {
         playedAtIso: "2026-07-02T12:00:00.000Z",
-        hits: 15,
+        hits: 30,
         misses: 0,
         score: 360,
         bestStreak: 10,
