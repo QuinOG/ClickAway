@@ -3266,3 +3266,9 @@
     .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-powerRig { left: calc(100% - 44px); }
     .armoryMachine .armoryMachineHousingRow .armoryMachineHousing.housing-streakLens { top: 264px; left: 50%; }
 }
+
+/* The backplate spans the same width as the loadout bar and powerups plate. */
+@media (min-width: 701px) {
+    .armoryMachine .armoryMachineCore { container-type: inline-size; }
+    .armoryMachine .armoryMachineBench { width: calc(100cqw / var(--armory-machine-scale, 1)); }
+}
