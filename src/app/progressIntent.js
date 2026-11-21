@@ -2,7 +2,6 @@ export const PROGRESS_INTENT_FIELDS = new Set([
   "savedLoadouts",
   "activeLoadoutId",
   "buildWalkthrough",
-  "selectedModeId",
   "seenUnlockPartIds",
 ])
 

@@ -170,7 +170,6 @@ function normalizeProgressPayload(body = {}) {
     equippedProfileImageId: body.equippedProfileImageId,
     activeLoadoutId: body.activeLoadoutId,
     savedLoadouts: body.savedLoadouts,
-    selectedModeId: body.selectedModeId,
     buildWalkthrough: body.buildWalkthrough,
     seenUnlockPartIds: body.seenUnlockPartIds,
   }
