@@ -99,3 +99,20 @@ test("does not offer Time Boost in untimed Practice", () => {
   expect(screen.getByRole("button", { name: /Time \+2s: No timer/ }).disabled).toBe(true)
   expect(container.querySelector(".powerupCoach").textContent).not.toContain("Time +2s ready")
 })
+
+test("shows active tray state for Second Wind and Overclock", () => {
+  render(
+    <PowerupTray
+      powerupSlots={[
+        { id: "second_wind", label: "Second Wind", slotKey: "1", awardEvery: 10, effectType: "second_wind", charges: 0, isSecondWindActive: true },
+        { id: "overclock", label: "Overclock", slotKey: "2", awardEvery: 12, effectType: "overclock", charges: 0 },
+      ]}
+      isPlaying
+      activatedPowerup={{ id: "overclock", label: "Overclock", effectType: "overclock", durationMs: 5000, sequence: 1 }}
+    />
+  )
+  const windButton = screen.getByRole("button", { name: /Second Wind: Wind active/ })
+  const overclockButton = screen.getByRole("button", { name: /Overclock: Active/ })
+  expect(windButton.classList.contains("active")).toBe(true)
+  expect(overclockButton.classList.contains("timedActive")).toBe(true)
+})

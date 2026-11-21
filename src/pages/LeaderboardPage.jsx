@@ -152,48 +152,26 @@ function LeaderboardTableSkeleton() {
       aria-live="polite"
       aria-label="Loading leaderboard standings"
     >
-      <div className="leaderboardSkeletonIntro">
-        <div className="skeletonBlock skeletonBlock--pill" aria-hidden="true" />
+      <p className="muted">Loading standings…</p>
+      <div className="ladderSkeletonRows" aria-hidden="true">
+        {Array.from({ length: LEADERBOARD_SKELETON_ROW_COUNT }, (_, index) => (
+          <div key={index} className="ladderSkeletonRow">
+            <span className="skeletonBlock skeletonBlock--rank" />
+            <span className="skeletonBlock skeletonBlock--md" />
+            <span className="skeletonBlock skeletonBlock--num" />
+          </div>
+        ))}
       </div>
-      <table className="table helpTable leaderboardTable leaderboardSkeletonTable">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Player</th>
-            <th scope="col">Tier</th>
-            {SORTABLE_COLUMNS.map((column) => (
-              <th key={column.key} scope="col" className="leaderboardNumeric">
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: LEADERBOARD_SKELETON_ROW_COUNT }, (_, rowIndex) => (
-            <tr
-              key={`leaderboard-skeleton-${rowIndex}`}
-              className="leaderboardTableRow leaderboardSkeletonRow"
-            >
-              <td>
-                <div className="skeletonBlock skeletonBlock--rank" aria-hidden="true" />
-              </td>
-              <td>
-                <div className="skeletonBlock skeletonBlock--md leaderboardSkeletonPlayer" aria-hidden="true" />
-              </td>
-              <td>
-                <div className="skeletonBlock skeletonBlock--tier" aria-hidden="true" />
-              </td>
-              {SORTABLE_COLUMNS.map((column) => (
-                <td key={column.key} className="leaderboardNumeric">
-                  <div className="skeletonBlock skeletonBlock--num" aria-hidden="true" />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   )
+}
+
+function formatPodiumValue(player, board) {
+  if (board === "bestScore") return <>{formatNumericValue(player.bestScore)} <small>pts</small></>
+  if (board === "bestStreak") return <>{formatNumericValue(player.bestStreak)} <small>streak</small></>
+  if (board === "accuracy") return formatPercent(player.accuracyPercent)
+  if (board === "reaction") return player.bestReactionMs !== null ? <>{formatNumericValue(player.bestReactionMs)} <small>ms</small></> : "—"
+  return <>{formatNumericValue(player.mmr)} <small>RR</small></>
 }
 
 function formatLadderStat(player, key) {
@@ -292,29 +270,21 @@ function LeaderboardStandingPanel({
 
   return (
     <section className="leaderboardStandingPanel" aria-label="Your leaderboard standing">
-      <div className="leaderboardStandingMain">
-        <div className="leaderboardStandingText">
-          <p className="leaderboardSectionEyebrow">Your Standing</p>
-          <div className="leaderboardStandingHeading">
-            {title ? (
-              <div className="leaderboardStandingTitleGroup">
-                <h2 className="cardH2 leaderboardStandingTitle">{title}</h2>
-                <p className="leaderboardStandingLead">{lead}</p>
-              </div>
-            ) : null}
-            <TierBadge
-              tierLabel={currentRankProgress?.tierLabel || "Unranked"}
-              className="leaderboardStandingTierBadge"
-            />
-          </div>
-        </div>
-
-        <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
-          <span className="leaderboardStandingSpotlightLabel">Spot</span>
-          <strong className="leaderboardStandingSpotlightValue">{displaySpot}</strong>
-        </div>
+      <p className="leaderboardSectionEyebrow">Your Standing</p>
+      <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
+        <span className="leaderboardStandingSpotlightLabel">Spot</span>
+        <strong className={`leaderboardStandingSpotlightValue${displaySpot.length > 5 ? " isWord" : ""}`}>{displaySpot}</strong>
       </div>
-
+      <TierBadge
+        tierLabel={currentRankProgress?.tierLabel || "Unranked"}
+        className="leaderboardStandingTierBadge"
+      />
+      {title ? (
+        <div className="leaderboardStandingTitleGroup">
+          <h2 className="cardH2 leaderboardStandingTitle">{title}</h2>
+          <p className="leaderboardStandingLead">{lead}</p>
+        </div>
+      ) : null}
       <p className="leaderboardStandingScope">Current rating &middot; season Ranked games</p>
       <div className="leaderboardStandingStats" aria-label="Your ranked summary">
         {statItems.map((item) => (
@@ -447,7 +417,7 @@ function LeaderboardControls({
   )
 }
 
-function PodiumStage({ rows = [], currentUserId, currentUsername }) {
+function PodiumStage({ rows = [], board = "mmr", currentUserId, currentUsername }) {
   const podiumRows = [...rows]
     .filter((player) => player.rank >= 1 && player.rank <= 3)
     .sort((leftPlayer, rightPlayer) => leftPlayer.rank - rightPlayer.rank)
@@ -461,7 +431,6 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
       </div>
       <div className="leaderboardPodiumHeader">
         <div>
-          <p className="leaderboardSectionEyebrow">Board leaders</p>
           <h2>Players to beat</h2>
         </div>
         <Crown weight="duotone" aria-hidden="true" />
@@ -485,7 +454,7 @@ function PodiumStage({ rows = [], currentUserId, currentUsername }) {
               </span>
               <strong>{player.username}</strong>
               <span className="leaderboardPodiumTier">{player.rankLabel}</span>
-              <span className="leaderboardPodiumRating">{formatNumericValue(player.mmr)} <small>RR</small></span>
+              <span className="leaderboardPodiumRating">{formatPodiumValue(player, board)}</span>
               </span>
               <span className="podiumStep">
                 <span className="leaderboardPodiumRank">{player.rank}<small>{player.rank === 1 ? "st" : player.rank === 2 ? "nd" : "rd"}</small></span>
@@ -743,6 +712,7 @@ export default function LeaderboardPage({
           {!isLoading && !loadError && view === "top" && page === 1 && !searchQuery ? (
             <PodiumStage
               rows={leaderboardRows}
+              board={board}
               currentUserId={currentUserId}
               currentUsername={currentUsername}
             />
@@ -871,13 +841,13 @@ export default function LeaderboardPage({
                           aria-label={`Open ${player.username} profile`}
                         >
                           <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
-                          {player.username}
+                          <span className="ladderPlayerLabel">{player.username}</span>
                           <span className="leaderboardYouBadge">YOU</span>
                         </button>
                       ) : (
                         <span className="leaderboardPlayerName" tabIndex={0} aria-label={`${player.username} player details`}>
                           <PlayerPortrait name={player.username} size={44} className="leaderboardPlayerPortrait" />
-                          {player.username}
+                          <span className="ladderPlayerLabel">{player.username}</span>
                         </span>
                       )}
                       <TierBadge tierLabel={player.rankLabel} className="leaderboardTierBadge" />

@@ -100,7 +100,7 @@ describe("Game screen controller", () => {
 })
 
 // Feedback must describe the simulation rather than the minimum cue lifetime.
-test.each([["magnet_center", 400], ["freeze_movement", 1000]])("clears %s active feedback at expiry", async (powerupId, duration) => {
+test.each([["magnet_center", 400], ["freeze_movement", 1000], ["overclock", 5000]])("clears %s active feedback at expiry", async (powerupId, duration) => {
   vi.useFakeTimers()
   try {
     const loadout = { ...DEFAULT_SAVED_LOADOUTS[0], moduleIds: { ...DEFAULT_SAVED_LOADOUTS[0].moduleIds, powerRigId: "power_reserve" }, powerupIds: [powerupId, "size_boost", "time_boost"] }
@@ -232,4 +232,28 @@ test.each([
     lifetimeStats: {},
   }))
   expect(result.current.readyOverlayProps.dailyGoals).toBe(expected === "goals" ? serverDailyGoals : null)
+})
+
+test.each(["expiry", "miss"])("clears second_wind active state on %s", async (trigger) => {
+  vi.useFakeTimers()
+  try {
+    const loadout = { ...DEFAULT_SAVED_LOADOUTS[0], moduleIds: { ...DEFAULT_SAVED_LOADOUTS[0].moduleIds, powerRigId: "power_reserve" }, powerupIds: ["second_wind", "size_boost", "time_boost"] }
+    const { result, unmount } = renderHook(() => useGameScreenController({ activeLoadout: loadout }))
+    result.current.arenaProps.arenaRef.current = { getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 452 }) }
+    await act(async () => result.current.readyOverlayProps.onStart("normal"))
+    act(() => vi.advanceTimersByTime(3000))
+    expect(result.current.powerupTrayProps.powerupSlots[0].isSecondWindActive).toBe(false)
+    act(() => result.current.powerupTrayProps.onUsePowerup("second_wind"))
+    expect(result.current.powerupTrayProps.powerupSlots[0].isSecondWindActive).toBe(true)
+    if (trigger === "expiry") {
+      act(() => vi.advanceTimersByTime(4999))
+      expect(result.current.powerupTrayProps.powerupSlots[0].isSecondWindActive).toBe(true)
+      act(() => vi.advanceTimersByTime(1))
+    } else {
+      act(() => vi.advanceTimersByTime(100))
+      act(() => result.current.arenaProps.onArenaClick({ clientX: 0, clientY: 0 }))
+    }
+    expect(result.current.powerupTrayProps.powerupSlots[0].isSecondWindActive).toBe(false)
+    unmount()
+  } finally { vi.useRealTimers() }
 })

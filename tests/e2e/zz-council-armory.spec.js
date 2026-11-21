@@ -26,7 +26,7 @@ for (const shot of ["default-desktop", "default-phone", "powerrig-desktop", "pow
       expect(await page.locator(".armoryPartCard").first().evaluate(el => getComputedStyle(el, "::after").content)).toBe("none")
       if (shot === "powerrig-desktop" || shot === "default-phone") {
         await gotoRoute(page, { path: "/armory?step=passives&lane=powerRig", heading: "Armory" })
-        await page.locator('[data-part-id="power_reserve"]').hover()
+        await page.locator('[data-part-id="power_reserve"]').click()
         await expect(page.locator(".armoryPartFeatureName")).toHaveText("Reserve Rig")
         const overflow = await page.locator(".armoryPartFeature").evaluate(el => {
           const card = el.getBoundingClientRect()

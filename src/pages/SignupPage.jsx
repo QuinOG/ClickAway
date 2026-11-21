@@ -233,7 +233,7 @@ export default function SignupPage({ onSignup }) {
             isLoading={isSubmitting}
             loadingLabel="Creating competitor…"
           >
-            Issue pass
+            Create account
           </ActionButton>
 
           {submitError ? (

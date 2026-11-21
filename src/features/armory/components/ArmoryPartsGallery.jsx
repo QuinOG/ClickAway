@@ -6,7 +6,7 @@ import ArmoryStateEmblem from "./ArmoryStateEmblem.jsx"
 import ArmorySegmentGauge from "./ArmorySegmentGauge.jsx"
 
 // The parts gallery (Phases 5–6): a lane's modules — or the tool rack's powers —
-// laid out as machined parts. Clicking an unlocked card equips it immediately.
+// laid out as machined parts. Click to preview; Install commits the choice.
 
 function getPartStateLabel({ part, isLocked, isInstalled }) {
   if (isLocked) return getUnlockText(part.unlockLevel)
@@ -160,12 +160,12 @@ export default function ArmoryPartsGallery({
   installedPartId = "",
   renderPartGlyph,
   onInstallPart,
-  onInspectLockedPart,
   footer = null,
   currentRules = null,
   getCandidateRules = null,
   chargeMultiplier = null,
   onPreviewPart = null,
+  onSelectPart = null,
 }) {
   const cardRefs = useRef({})
   const installedPart = parts.find((part) => part.id === installedPartId) ?? null
@@ -182,27 +182,11 @@ export default function ArmoryPartsGallery({
     : isUnlockedHere(installedPartId)
       ? installedPartId
       : unlockedParts[0]?.id ?? null
-  // One candidate is always featured large with its trade-off: whatever the
-  // player points at, else the first unlocked part they could swap in.
-  const [hoveredPartId, setHoveredPartId] = useState(null)
-  // Hover only re-features a part after a short dwell, so sweeping the pointer
-  // across other tiles on the way to Install cannot swap the candidate.
-  const hoverTimerRef = useRef(null)
-  useEffect(() => () => clearTimeout(hoverTimerRef.current), [])
-  // After an install the card holds on the part just fitted, with the changes
-  // it applied, until the player deliberately points at another part.
+  // Selection is deliberate: moving the pointer or keyboard focus never swaps it.
+  const [selectedPartId, setSelectedPartId] = useState(null)
   const [confirmed, setConfirmed] = useState(null)
-  const featureHover = (partId) => {
-    clearTimeout(hoverTimerRef.current)
-    hoverTimerRef.current = setTimeout(() => {
-      setHoveredPartId(partId)
-      setConfirmed((current) => (current && current.partId !== partId ? null : current))
-    }, 140)
-  }
-  const cancelHover = () => clearTimeout(hoverTimerRef.current)
   const candidateParts = unlockedParts.filter((part) => part.id !== installedPartId)
-  const featuredPart = candidateParts.find((part) => part.id === hoveredPartId)
-    ?? candidateParts.find((part) => part.id === rovingPartId)
+  const featuredPart = candidateParts.find((part) => part.id === selectedPartId)
     ?? candidateParts[0]
     ?? null
   const featuredChips = featuredPart?.effects ? getModuleDeltaChips(featuredPart, installedPart) : []
@@ -217,11 +201,13 @@ export default function ArmoryPartsGallery({
   }, [onPreviewPart, previewPartId])
   useEffect(() => () => onPreviewPart?.(null), [onPreviewPart])
 
+  useEffect(() => () => onSelectPart?.(null), [onSelectPart])
+
   const installPart = (partId) => {
-    cancelHover()
+    onSelectPart?.(null)
     const rows = getCandidateRules ? getSwapImpact(currentRules, getCandidateRules(partId)) : []
     setConfirmed({ partId, rows })
-    setHoveredPartId(null)
+    setSelectedPartId(null)
     onInstallPart?.(partId)
   }
 
@@ -262,11 +248,8 @@ export default function ArmoryPartsGallery({
     >
       {confirmedPart ? (
         <div className={`armoryPartFeature tone-${tone} isConfirmed`} aria-label={`Installed: ${confirmedPart.label}`}>
-          <span className={`armoryPartFeatureGlyph tone-${tone}`} aria-hidden="true">
-            {renderPartGlyph?.(confirmedPart)}
-          </span>
+          {renderPartGlyph?.(confirmedPart, "armoryPreviewArt")}
           <div className="armoryPartFeatureHead">
-            <span className="armoryPartFeatureEyebrow">Installed in this build</span>
             <strong className="armoryPartFeatureName">{confirmedPart.label}</strong>
             <span className="armoryPartFeatureFeel">{confirmedPart.description}</span>
           </div>
@@ -275,13 +258,8 @@ export default function ArmoryPartsGallery({
         </div>
       ) : featuredPart ? (
         <div className={`armoryPartFeature tone-${tone}`} aria-label={`Featured: ${featuredPart.label}`}>
-          <span className={`armoryPartFeatureGlyph tone-${tone}`} aria-hidden="true">
-            {renderPartGlyph?.(featuredPart)}
-          </span>
+          {renderPartGlyph?.(featuredPart, "armoryPreviewArt")}
           <div className="armoryPartFeatureHead">
-            <span className="armoryPartFeatureEyebrow">
-              {installedPart ? `Swap in for ${installedPart.label}` : "Candidate"}
-            </span>
             <strong className="armoryPartFeatureName">{featuredPart.label}</strong>
             <span className="armoryPartFeatureFeel">{featuredPart.description}</span>
           </div>
@@ -329,25 +307,18 @@ export default function ArmoryPartsGallery({
               data-part-id={part.id}
               data-armory-state={visualState}
               className={`armoryPartCard tone-${tone} ${isInstalled ? "isInstalled" : ""} ${isLocked ? "isLocked" : ""} ${!confirmedPart && part.id === featuredPart?.id ? "isFeatured" : ""}`}
+              aria-label={isLocked ? `${part.label}: ${stateLabel}` : undefined}
               disabled={isLocked}
               tabIndex={isLocked ? undefined : (part.id === tabStopPartId ? 0 : -1)}
               aria-pressed={isInstalled}
-              onMouseEnter={() => {
-                if (isLocked) onInspectLockedPart?.(part.id)
-                else featureHover(part.id)
-              }}
-              onMouseLeave={cancelHover}
-              onFocus={() => {
-                setRovingPartId(part.id)
-                setConfirmed((current) => (current && current.partId !== part.id ? null : current))
-              }}
+              onFocus={() => setRovingPartId(part.id)}
               onClick={() => {
-                if (!isInstalled) installPart(part.id)
+                onSelectPart?.(isInstalled ? null : part.id)
+                setSelectedPartId(part.id)
+                setConfirmed(isInstalled ? { partId: part.id, rows: [] } : null)
               }}
             >
-              <span className={`armoryPartGlyph tone-${tone}`} aria-hidden="true">
-                {renderPartGlyph?.(part)}
-              </span>
+              {renderPartGlyph?.(part, "armoryChoiceArt")}
               <span className="armoryPartBody">
                 <strong className="armoryPartLabel">{part.label}</strong>
                 <span className="armoryPartFeel">{part.description}</span>

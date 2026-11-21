@@ -147,6 +147,41 @@ describe("B3 outcome and reward continuity", () => {
     expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
   })
 
+  test("labels placement-reveal rank movement in placement points instead of RR", async () => {
+    const user = userEvent.setup()
+    renderOutcome({
+      allowsCoinRewards: true,
+      allowsLevelProgression: true,
+      allowsRankProgression: true,
+      roundSaveStatus: "saved",
+      roundRankDelta: 16,
+      previousRankProgress: {
+        tierLabel: "Placement 4/5",
+        rankOrder: 0,
+        placementMatchesPlayed: 4,
+        isPlacement: true,
+      },
+      projectedRankProgress: {
+        tierLabel: "Silver II",
+        rankOrder: 4,
+        rr: 50,
+        rrMax: 100,
+        isPlacement: false,
+        isUnranked: false,
+      },
+    })
+
+    await user.click(screen.getByRole("button", { name: "Reveal Rank" }))
+    await user.click(screen.getByRole("button", { name: "View Rewards" }))
+
+    const rankPath = screen.getByLabelText(/Rank movement: Placement 4\/5 to Silver II/)
+    expect(rankPath.getAttribute("aria-label")).toContain("+16 placement points")
+    expect(rankPath.textContent).toContain("+16 placement points")
+    expect(rankPath.textContent).not.toContain("+16 RR")
+    expect(screen.getByText("Placement Score")).not.toBeNull()
+    expect(screen.getByText("16 / 20")).not.toBeNull()
+  })
+
   test("provides a complete static practice outcome without inventing rewards", async () => {
     const user = userEvent.setup()
     const props = renderOutcome({
@@ -159,7 +194,7 @@ describe("B3 outcome and reward continuity", () => {
       roundCoinsEarned: 0,
     })
 
-    expect(screen.getByText("Practice result recorded. No economy or rank was changed.")).not.toBeNull()
+    expect(screen.getByText("Practice result recorded. No coins, XP, or RR earned.")).not.toBeNull()
     expect(screen.queryByText("Rewards Settled")).toBeNull()
     await user.click(screen.getByRole("button", { name: "Play Again" }))
     expect(props.onRematch).toHaveBeenCalledOnce()
@@ -240,4 +275,14 @@ test("logged out round keeps sign-in copy and claims no rewards", () => {
   expect(screen.getByText("Sign in to save your progress.")).toBeTruthy()
   expect(screen.queryByLabelText("Round rewards")).toBeNull()
   expect(screen.queryByLabelText("Round events")).toBeNull()
+})
+
+
+test("saved round shows partial-save warning note alongside rewards", () => {
+  const noteText = "Your round was saved, but its replay or duel result couldn't be stored."
+  renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, roundSaveStatus: "saved", roundSaveNote: noteText })
+  const note = screen.getByText(noteText)
+  expect(note.getAttribute("role")).toBe("status")
+  expect(screen.getByLabelText("Round rewards").textContent).toContain("+18")
+  expect(screen.getByLabelText("Round rewards").textContent).toContain("+42")
 })

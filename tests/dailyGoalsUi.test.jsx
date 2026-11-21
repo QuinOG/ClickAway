@@ -57,9 +57,9 @@ describe("Daily goals in the lobby", () => {
     renderLobby({ dailyBonusAvailable: true })
     const goals = screen.getByRole("region", { name: "Daily goals" })
     expect(within(goals).getByText("New goals in 5h")).toBeTruthy()
-    expect(within(goals).getByText("Your first round today earns 2× XP.")).toBeTruthy()
+    expect(within(goals).getByText("Your first Casual or Ranked round today earns 2× XP.")).toBeTruthy()
     // Hidden on wide screens by CSS (hasDailyGoals); phones still see it above Start.
-    expect(screen.getByText("First round today earns double XP").className).toContain("hasDailyGoals")
+    expect(screen.getByText("First Casual or Ranked round today earns double XP").className).toContain("hasDailyGoals")
   })
 
   test("says Practice doesn't count while Practice is selected", async () => {
@@ -90,7 +90,7 @@ describe("Daily goals in the lobby", () => {
   test("without goals from the server the lobby is unchanged", () => {
     renderLobby({ dailyGoals: null, dailyBonusAvailable: true })
     expect(screen.queryByRole("region", { name: "Daily goals" })).toBeNull()
-    expect(screen.getByText("First round today earns double XP")).toBeTruthy()
+    expect(screen.getByText("First Casual or Ranked round today earns double XP")).toBeTruthy()
   })
 })
 

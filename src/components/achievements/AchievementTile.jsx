@@ -25,12 +25,7 @@ const CATEGORY_EMBLEMS = {
   master: CrownIcon,
 }
 
-/*
- * Achievements read as medals: the category's illustrated emblem on a disc
- * whose metal steps up a tier with each milestone in the category. A ring
- * around the medal fills with progress, so unlocked, in-progress and
- * untouched achievements are told apart at a glance.
- */
+/* Open category emblems use colour for progress and grey for untouched goals. */
 function AchievementMedal({ iconKey, tier, percent = 0, isUnlocked }) {
   const Emblem = CATEGORY_EMBLEMS[iconKey] ?? CrestIcon
   const progress = isUnlocked ? 100 : Math.max(0, Math.min(100, Number(percent) || 0))
@@ -142,7 +137,7 @@ export default function AchievementTile({ achievement, variant = "default", tier
 
           <div className="achievementStatusRow">
             <span className={stateClassName}>
-              {isUnlocked ? "Unlocked" : "Locked"}
+              {isUnlocked || Number(percent) > 0 ? null : "Locked"}
             </span>
           </div>
         </div>
@@ -176,7 +171,7 @@ export default function AchievementTile({ achievement, variant = "default", tier
 
       <div className="achievementStatusRow">
         <span className={stateClassName}>
-          {isUnlocked ? "Unlocked" : "Locked"}
+          {isUnlocked || Number(percent) > 0 ? null : "Locked"}
         </span>
       </div>
 

@@ -23,7 +23,6 @@ import {
 import {
   createUser,
   completeUserRound,
-  RoundAlreadySubmittedError,
   createChallenge,
   findChallengeById,
   findChallengesForUser,
@@ -50,7 +49,8 @@ import {
 } from "./playerMysqlDatabase.js"
 import { calculateRoundRewards, simulateRound, getTokenlessGeometrySeed, isRaceableReplay } from "./roundRewards.js"
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
-import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
+import { createPlayerStateStore } from "./playerStateStore.js"
+import { handleExpressError, handleRouteError } from "./routeErrors.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
@@ -170,7 +170,6 @@ function normalizeProgressPayload(body = {}) {
     equippedProfileImageId: body.equippedProfileImageId,
     activeLoadoutId: body.activeLoadoutId,
     savedLoadouts: body.savedLoadouts,
-    selectedModeId: body.selectedModeId,
     buildWalkthrough: body.buildWalkthrough,
     seenUnlockPartIds: body.seenUnlockPartIds,
   }
@@ -206,16 +205,6 @@ function clampProgressBounds(progress = {}) {
     levelXp: clampXp(progress.levelXp),
     rankMmr: clampMmr(progress.rankMmr),
   }
-}
-
-function handleRouteError(error, response) {
-  if (error instanceof PlayerStateError || error instanceof RoundAlreadySubmittedError) {
-    response.status(error.status).json({ error: error.message })
-    return
-  }
-
-  console.error(error)
-  response.status(500).json({ error: "Unexpected server error." })
 }
 
 function requireAuth(request, response, next) {
@@ -1003,6 +992,8 @@ if (existsSync(distPath)) {
     response.sendFile(join(distPath, "index.html"))
   })
 }
+
+app.use(handleExpressError)
 
 async function startServer() {
   if (DB_AUTO_MIGRATE) {

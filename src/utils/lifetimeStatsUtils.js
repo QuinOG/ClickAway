@@ -1,5 +1,6 @@
 import { isRankedModeEntry } from "./gameModeLabelsAndRankedFilters.js"
 import { normalizeDrillStats } from "./drillStatsUtils.js"
+import { ACCURACY_MIN_ATTEMPTS, CLEAN_ROUND_MIN_HITS } from "../game/achievements/achievementsList.js"
 
 export const RECENT_HISTORY_LIMIT = 50
 export const HISTORY_PAGE_SIZE = 25
@@ -126,7 +127,7 @@ export function applyRoundToLifetimeStats(stats = {}, round = {}) {
     bestRankedStreak: isRanked
       ? Math.max(normalizedStats.bestRankedStreak, bestStreak)
       : normalizedStats.bestRankedStreak,
-    bestSingleRoundAccuracy: attempts >= 10
+    bestSingleRoundAccuracy: attempts >= ACCURACY_MIN_ATTEMPTS
       ? Math.max(
           normalizedStats.bestSingleRoundAccuracy,
           // Floored, not rounded: this feeds the 90%+/95%+ achievements, and
@@ -134,7 +135,7 @@ export function applyRoundToLifetimeStats(stats = {}, round = {}) {
           Math.floor((hits / attempts) * 100)
         )
       : normalizedStats.bestSingleRoundAccuracy,
-    cleanRounds: misses === 0 && hits >= 5
+    cleanRounds: misses === 0 && hits >= CLEAN_ROUND_MIN_HITS
       ? normalizedStats.cleanRounds + 1
       : normalizedStats.cleanRounds,
     totalCoinsEarned: normalizedStats.totalCoinsEarned + coinsEarned,
