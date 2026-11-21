@@ -4,12 +4,15 @@ import { createRoundClock } from "../../../game/engine/roundClock.js"
 import { isKeyboardActivation, mapPlayfieldClick, measurePlayfield } from "../../../game/engine/roundPlayfield.js"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { createRoundSimulation, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
+import { createRoundSimulation, MIN_CLICK_INTERVAL_MS, OVERCLOCK_DURATION_MS } from "../../../game/engine/roundEngine.js"
 import {
   createGeometrySimulation,
   isBullseyeHit,
   isGoldHit,
   deriveGoldSeed,
+  FREEZE_MOVEMENT_DURATION_MS,
+  MAGNET_CENTER_FREEZE_MS,
+  SIZE_LOCK_DURATION_MS,
 } from "../../../game/engine/roundGeometry.js"
 import {
   FEEDBACK_LIFETIME_MS,
@@ -105,6 +108,7 @@ export function useArmoryRangeRound({
   ))
   const [comboSurgeHitsRemaining, setComboSurgeHitsRemaining] = useState(0)
   const [guardActiveUntilMs, setGuardActiveUntilMs] = useState(0)
+  const [secondWindActiveUntilMs, setSecondWindActiveUntilMs] = useState(0)
   const [activatedPowerup, setActivatedPowerup] = useState(null)
 
   const isTimedRoundForPowers = roundRules.isTimedRound !== false
@@ -234,6 +238,11 @@ export function useArmoryRangeRound({
     setPowerupCharges(buildStartingCharges(roundRules.equippedPowerups, roundRules.startingPowerupCharges))
     setComboSurgeHitsRemaining(0)
     setGuardActiveUntilMs(0)
+    setSecondWindActiveUntilMs(0)
+    if (activationCueTimeoutRef.current) {
+      window.clearTimeout(activationCueTimeoutRef.current)
+      activationCueTimeoutRef.current = null
+    }
     setActivatedPowerup(null)
     clearFeedbackTimeouts()
 
@@ -366,6 +375,7 @@ export function useArmoryRangeRound({
     setStreak(result.streak)
     setMisses(result.misses)
     setGuardActiveUntilMs(result.guardActiveUntilMs)
+    setSecondWindActiveUntilMs(result.secondWindActiveUntilMs)
 
     if (result.guarded) {
       addClickFeedback(event.clientX, event.clientY, "Absorbed", "guarded")
@@ -427,12 +437,25 @@ export function useArmoryRangeRound({
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
-    setActivatedPowerup({ id: powerup.id, label: powerup.label, sequence: eventTimeMs })
+    setSecondWindActiveUntilMs(outcome.secondWindActiveUntilMs)
+    const activeDurationMs = {
+      freeze_movement: FREEZE_MOVEMENT_DURATION_MS,
+      magnet_center: MAGNET_CENTER_FREEZE_MS,
+      size_lock: SIZE_LOCK_DURATION_MS,
+      overclock: OVERCLOCK_DURATION_MS,
+    }[powerup.effectType] ?? 0
+    setActivatedPowerup({
+      id: powerup.id,
+      label: powerup.label,
+      effectType: powerup.effectType,
+      durationMs: activeDurationMs,
+      sequence: eventTimeMs,
+    })
     if (activationCueTimeoutRef.current) window.clearTimeout(activationCueTimeoutRef.current)
     activationCueTimeoutRef.current = window.setTimeout(() => {
       setActivatedPowerup(null)
       activationCueTimeoutRef.current = null
-    }, 1100)
+    }, activeDurationMs || 1100)
     applyPowerupPresentation(powerup, eventTimeMs)
   }, [addCenterFeedback, applyPowerupPresentation, endRound, getElapsedMs, isPlaying, roundRules.equippedPowerups])
 
@@ -443,6 +466,13 @@ export function useArmoryRangeRound({
     const timeoutId = window.setTimeout(() => setGuardActiveUntilMs(0), remainingMs)
     return () => window.clearTimeout(timeoutId)
   }, [getElapsedMs, guardActiveUntilMs])
+
+  useEffect(() => {
+    if (secondWindActiveUntilMs <= 0) return undefined
+    const remainingMs = Math.max(0, secondWindActiveUntilMs - getElapsedMs())
+    const timeoutId = window.setTimeout(() => setSecondWindActiveUntilMs(0), remainingMs)
+    return () => window.clearTimeout(timeoutId)
+  }, [getElapsedMs, secondWindActiveUntilMs])
 
   // Keyboard: 1/2/3 fire tools; DEV `g` ends the sample early (parity with /game).
   useEffect(() => {
@@ -475,6 +505,7 @@ export function useArmoryRangeRound({
 
   const comboMultiplier = getComboMultiplier(streak, roundRules.comboStep)
   const isGuardActive = guardActiveUntilMs > 0
+  const isSecondWindActive = secondWindActiveUntilMs > 0
 
   const powerupSlots = useMemo(() => (
     roundRules.equippedPowerups.map((powerup) => ({
@@ -482,8 +513,9 @@ export function useArmoryRangeRound({
       charges: powerupCharges[powerup.id] ?? 0,
       comboSurgeHitsRemaining,
       isGuardActive,
+      isSecondWindActive,
     }))
-  ), [comboSurgeHitsRemaining, isGuardActive, powerupCharges, roundRules.equippedPowerups])
+  ), [comboSurgeHitsRemaining, isGuardActive, isSecondWindActive, powerupCharges, roundRules.equippedPowerups])
 
   return {
     phase,
