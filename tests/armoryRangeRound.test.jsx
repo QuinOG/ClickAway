@@ -1,7 +1,8 @@
-import { act, renderHook } from "@testing-library/react"
+import { act, render, renderHook, screen } from "@testing-library/react"
 import { afterEach, expect, test, vi } from "vitest"
 import { buildRoundRules, DEFAULT_SAVED_LOADOUTS } from "../src/constants/buildcraft.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
+import ArmoryTestRange from "../src/features/armory/components/ArmoryTestRange.jsx"
 import { useArmoryRangeRound } from "../src/features/armory/hooks/useArmoryRangeRound.js"
 
 import { createGeometrySimulation } from "../src/game/engine/roundGeometry.js"
@@ -60,4 +61,60 @@ test.each([['hit', 'freeze_movement'], ['freeze_movement', 'hit'], ['hit', 'magn
   act(() => vi.advanceTimersByTime(3000))
   expect(result.current.arenaProps.buttonStyle.left).toBe(initialLeft)
   vi.restoreAllMocks()
+})
+
+test("Practice test range passes isTimedRound=false so Time +2s is disabled with No timer", () => {
+  vi.useFakeTimers()
+  const loadout = {
+    ...DEFAULT_SAVED_LOADOUTS[0],
+    powerupIds: ["time_boost", "size_boost", "freeze_movement"],
+  }
+  const practiceRules = buildRoundRules(DIFFICULTIES[0], loadout)
+  practiceRules.startingPowerupCharges = 1
+  const casualRules = buildRoundRules(DIFFICULTIES[1], loadout)
+  casualRules.startingPowerupCharges = 1
+
+  const { result: practiceHook } = renderHook(() =>
+    useArmoryRangeRound({ roundRules: practiceRules, isActive: true, runToken: 1 })
+  )
+  expect(practiceHook.current.powerupTrayProps.isTimedRound).toBe(false)
+
+  const { result: casualHook } = renderHook(() =>
+    useArmoryRangeRound({ roundRules: casualRules, isActive: true, runToken: 1 })
+  )
+  expect(casualHook.current.powerupTrayProps.isTimedRound).toBe(true)
+
+  const { rerender } = render(
+    <ArmoryTestRange
+      isOpen
+      roundRules={practiceRules}
+      modeLabel="Practice"
+      loadoutName="Starter"
+      runToken={1}
+      onRunAgain={() => {}}
+      onExit={() => {}}
+    />
+  )
+  act(() => vi.advanceTimersByTime(3000))
+
+  const practiceTimeBtn = screen.getByRole("button", { name: /Time \+2s/i })
+  expect(practiceTimeBtn.disabled).toBe(true)
+  expect(practiceTimeBtn.textContent).toContain("No timer")
+
+  rerender(
+    <ArmoryTestRange
+      isOpen
+      roundRules={casualRules}
+      modeLabel="Casual"
+      loadoutName="Starter"
+      runToken={2}
+      onRunAgain={() => {}}
+      onExit={() => {}}
+    />
+  )
+  act(() => vi.advanceTimersByTime(3000))
+
+  const casualTimeBtn = screen.getByRole("button", { name: /Time \+2s/i })
+  expect(casualTimeBtn.disabled).toBe(false)
+  expect(casualTimeBtn.textContent).toContain("Ready")
 })

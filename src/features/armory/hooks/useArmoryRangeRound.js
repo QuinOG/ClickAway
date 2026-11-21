@@ -525,6 +525,7 @@ export function useArmoryRangeRound({
       powerupSlots,
       streak,
       isPlaying,
+      isTimedRound: isTimedRoundForPowers,
       activatedPowerup,
       onUsePowerup: handleUsePowerup,
     },
