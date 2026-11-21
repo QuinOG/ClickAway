@@ -270,7 +270,7 @@ export function GameOverOverlay({
         </div>
       ) : null}
       {isPracticeMode ? <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No coins, XP, or RR earned.</p> : null}
-      {roundSaveStatus === "idle" && roundSaveNote ? <p className="gameOverPracticeNote">{roundSaveNote}</p> : null}
+      {(isRoundSaved || roundSaveStatus === "idle") && roundSaveNote ? <p className="gameOverPracticeNote" role={isRoundSaved ? "status" : undefined}>{roundSaveNote}</p> : null}
       {roundSaveStatus === "failed" ? <p className="gameOverSaveStatus isFailed" role="alert">This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}</p> : null}
       <div className="gameOverActions">
         <p className="gameOverNextGoal" data-goal={nextRoundGoal?.kind}>Next round · {nextRoundGoal?.text || `Push for ${formatNumber(Math.max(score, bestScore) + 1)} points`}</p>

@@ -241,3 +241,13 @@ test("logged out round keeps sign-in copy and claims no rewards", () => {
   expect(screen.queryByLabelText("Round rewards")).toBeNull()
   expect(screen.queryByLabelText("Round events")).toBeNull()
 })
+
+
+test("saved round shows partial-save warning note alongside rewards", () => {
+  const noteText = "Your round was saved, but its replay or duel result couldn't be stored."
+  renderOutcome({ allowsCoinRewards: true, allowsLevelProgression: true, roundSaveStatus: "saved", roundSaveNote: noteText })
+  const note = screen.getByText(noteText)
+  expect(note.getAttribute("role")).toBe("status")
+  expect(screen.getByLabelText("Round rewards").textContent).toContain("+18")
+  expect(screen.getByLabelText("Round rewards").textContent).toContain("+42")
+})
