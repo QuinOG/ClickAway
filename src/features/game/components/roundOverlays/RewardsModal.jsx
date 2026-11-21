@@ -254,7 +254,7 @@ function getRankPathData(previousRankProgress = {}, projectedRankProgress = {}) 
     detail: projectedRankProgress?.isTopRank
       ? `${formatNumber(projectedRankProgress?.mmr)} rating`
       : `${projectedRr} / ${rrMax} RR`,
-    deltaUnit: "RR",
+    deltaUnit: previousRankProgress?.isPlacement ? "placement points" : "RR",
   }
 }
 

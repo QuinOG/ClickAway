@@ -147,6 +147,41 @@ describe("B3 outcome and reward continuity", () => {
     expect(screen.getByRole("button", { name: "Play Again" })).not.toBeNull()
   })
 
+  test("labels placement-reveal rank movement in placement points instead of RR", async () => {
+    const user = userEvent.setup()
+    renderOutcome({
+      allowsCoinRewards: true,
+      allowsLevelProgression: true,
+      allowsRankProgression: true,
+      roundSaveStatus: "saved",
+      roundRankDelta: 16,
+      previousRankProgress: {
+        tierLabel: "Placement 4/5",
+        rankOrder: 0,
+        placementMatchesPlayed: 4,
+        isPlacement: true,
+      },
+      projectedRankProgress: {
+        tierLabel: "Silver II",
+        rankOrder: 4,
+        rr: 50,
+        rrMax: 100,
+        isPlacement: false,
+        isUnranked: false,
+      },
+    })
+
+    await user.click(screen.getByRole("button", { name: "Reveal Rank" }))
+    await user.click(screen.getByRole("button", { name: "View Rewards" }))
+
+    const rankPath = screen.getByLabelText(/Rank movement: Placement 4\/5 to Silver II/)
+    expect(rankPath.getAttribute("aria-label")).toContain("+16 placement points")
+    expect(rankPath.textContent).toContain("+16 placement points")
+    expect(rankPath.textContent).not.toContain("+16 RR")
+    expect(screen.getByText("Placement Score")).not.toBeNull()
+    expect(screen.getByText("16 / 20")).not.toBeNull()
+  })
+
   test("provides a complete static practice outcome without inventing rewards", async () => {
     const user = userEvent.setup()
     const props = renderOutcome({
