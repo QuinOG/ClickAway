@@ -14,6 +14,7 @@ export default function GameArena({
   buttonStyle,
   isGold = false,
   goldRemainingMs = 0,
+  getGoldRemainingMs,
   onButtonClick,
   isButtonDisabled,
   buttonLabel,
@@ -79,6 +80,7 @@ export default function GameArena({
             disabled={isButtonDisabled}
             isGold={isGold}
             goldRemainingMs={goldRemainingMs}
+            getGoldRemainingMs={getGoldRemainingMs}
             label={buttonLabel}
             labelFontSize={buttonLabelFontSize}
             skinClass={buttonSkinClass}

@@ -483,7 +483,7 @@ export function useGameScreenController({
     setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
-  const goldRemainingMs = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
+  const { goldRemainingMs, getGoldRemainingMs } = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
 
   const mirrorGeometry = useCallback((state, spawned = false) => {
     if (!state) return
@@ -1640,6 +1640,7 @@ export function useGameScreenController({
       isButtonDisabled: !isPlaying,
       isGold: goldRemainingMs > 0,
       goldRemainingMs,
+      getGoldRemainingMs,
       buttonLabel,
       buttonLabelFontSize,
       buttonSkinClass,

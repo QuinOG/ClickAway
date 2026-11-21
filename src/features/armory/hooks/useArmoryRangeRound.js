@@ -114,7 +114,7 @@ export function useArmoryRangeRound({
     clockRef.current?.elapsedMs() ?? 0
   ), [])
 
-  const goldRemainingMs = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
+  const { goldRemainingMs, getGoldRemainingMs } = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
 
   const clearFeedbackTimeouts = useCallback(() => {
     feedbackTimeoutIdsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId))
@@ -514,6 +514,7 @@ export function useArmoryRangeRound({
       isButtonDisabled: !isPlaying,
       isGold: goldRemainingMs > 0,
       goldRemainingMs,
+      getGoldRemainingMs,
       buttonLabel: getButtonLabel(buttonSize),
       buttonLabelFontSize: getButtonLabelFontSize(buttonSize),
       clickFeedbackItems,
