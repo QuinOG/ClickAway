@@ -42,6 +42,7 @@ function toNullableReactionMs(value) {
 }
 
 export function normalizeLifetimeStats(stats = {}) {
+  if (!stats || typeof stats !== "object" || Array.isArray(stats)) stats = {}
   const bestReactionMs = toNullableReactionMs(stats.bestReactionMs)
 
   return {
@@ -202,11 +203,15 @@ export function applyRoundToLoadoutStats(stats = {}, round = {}) {
  * Rebuilds lifetime counters by scanning a chronological round list.
  */
 export function buildLifetimeStatsFromRounds(rounds = []) {
-  const chronologicalRounds = [...rounds].sort((leftRound, rightRound) => {
-    const leftTime = Date.parse(leftRound?.playedAtIso || leftRound?.playedAt || 0)
-    const rightTime = Date.parse(rightRound?.playedAtIso || rightRound?.playedAt || 0)
-    return leftTime - rightTime
-  })
+  const timestamp = (round) => {
+    const value = round.playedAtIso ?? round.playedAt
+    if (value === null || value === undefined || value === "") return 0
+    const parsed = typeof value === "number" ? value : Date.parse(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  const chronologicalRounds = (Array.isArray(rounds) ? rounds : [])
+    .filter((round) => round && typeof round === "object" && !Array.isArray(round))
+    .sort((leftRound, rightRound) => timestamp(leftRound) - timestamp(rightRound))
 
   return chronologicalRounds.reduce(
     (stats, round) => applyRoundToLifetimeStats(stats, round),
