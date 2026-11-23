@@ -2,7 +2,7 @@
 
 import { equipShopItem, purchaseShopItem } from "../services/clickAwayHttpApiClient.js"
 import { canPurchaseShopItem, isShopItemOwned } from "../utils/shopUtils.js"
-import { applyProgressResponse, beginProgressRequest, isCurrentSession, settleProgressMutation } from "./progressResponseGuard.js"
+import { applyProgressResponse, beginProgressRequest, captureProgressSession, isCurrentSession, settleProgressMutation } from "./progressResponseGuard.js"
 
 function buildPurchaseError(item, coins, ownedItemIds) {
   if (!item?.id) return "Unknown item."
@@ -44,15 +44,18 @@ export function useShopActions({
       }
     }
 
-    const ticket = beginProgressRequest()
+    const progressSession = captureProgressSession()
+    let ticket
+    let mutationSucceeded = false
     try {
-      // The ticket is taken before waiting, so a purchase or equip started by one
-      // account is never sent after another account has logged in.
+      // Preserve the account across the wait, then order tickets by dispatch.
       await waitForPendingProgress?.()
-      if (!isCurrentSession(ticket)) {
+      if (!isCurrentSession(progressSession)) {
         return { ok: false, discarded: true }
       }
+      ticket = beginProgressRequest()
       const session = await purchaseShopItem(item.id)
+      mutationSucceeded = true
       const outcome = await applyProgressResponse(ticket, session.progress, applyProgress)
       if (!isCurrentSession(ticket) || outcome === "other-session") return { ok: false, discarded: true }
       if (outcome === "refresh-failed") {
@@ -60,13 +63,13 @@ export function useShopActions({
       }
       return { ok: true }
     } catch (error) {
-      if (!isCurrentSession(ticket)) return { ok: false, discarded: true }
+      if (!isCurrentSession(progressSession)) return { ok: false, discarded: true }
       return {
         ok: false,
         error: error.message || "Could not unlock that item.",
       }
     } finally {
-      settleProgressMutation(ticket, applyProgress)
+      if (mutationSucceeded) settleProgressMutation(ticket, applyProgress)
     }
   }, [
     applyProgress,
@@ -99,15 +102,18 @@ export function useShopActions({
       }
     }
 
-    const ticket = beginProgressRequest()
+    const progressSession = captureProgressSession()
+    let ticket
+    let mutationSucceeded = false
     try {
-      // The ticket is taken before waiting, so a purchase or equip started by one
-      // account is never sent after another account has logged in.
+      // Preserve the account across the wait, then order tickets by dispatch.
       await waitForPendingProgress?.()
-      if (!isCurrentSession(ticket)) {
+      if (!isCurrentSession(progressSession)) {
         return { ok: false, discarded: true }
       }
+      ticket = beginProgressRequest()
       const session = await equipShopItem(item.id)
+      mutationSucceeded = true
       const outcome = await applyProgressResponse(ticket, session.progress, applyProgress)
       if (!isCurrentSession(ticket) || outcome === "other-session") return { ok: false, discarded: true }
       if (outcome === "refresh-failed") {
@@ -115,13 +121,13 @@ export function useShopActions({
       }
       return { ok: true }
     } catch (error) {
-      if (!isCurrentSession(ticket)) return { ok: false, discarded: true }
+      if (!isCurrentSession(progressSession)) return { ok: false, discarded: true }
       return {
         ok: false,
         error: error.message || "Could not equip that item.",
       }
     } finally {
-      settleProgressMutation(ticket, applyProgress)
+      if (mutationSucceeded) settleProgressMutation(ticket, applyProgress)
     }
   }, [
     applyProgress,

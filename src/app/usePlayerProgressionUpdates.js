@@ -27,6 +27,7 @@ export function usePlayerProgressionUpdates({
       if (!isAuthed) return { ok: false, error: "You're logged out, so this round wasn't saved." }
 
       const ticket = beginProgressRequest()
+      let mutationSucceeded = false
       try {
         const response = await submitRound({
           modeId,
@@ -41,6 +42,7 @@ export function usePlayerProgressionUpdates({
           challengeId,
           drillId,
         })
+        mutationSucceeded = true
         const applied = await applyProgressResponse(ticket, response.progress, applyProgress)
         return {
           ok: true,
@@ -62,7 +64,7 @@ export function usePlayerProgressionUpdates({
         console.error("Unable to submit round:", error)
         return { ok: false, error: error?.message || "Couldn't reach the server." }
       } finally {
-        settleProgressMutation(ticket, applyProgress)
+        if (mutationSucceeded) settleProgressMutation(ticket, applyProgress)
       }
     },
     [isAuthed, applyProgress]
