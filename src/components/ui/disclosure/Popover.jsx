@@ -51,7 +51,9 @@ export function Popover({
   }, [controlledOpen, onOpenChange])
 
   const childRefRef = useRef(childRef)
-  childRefRef.current = childRef
+  useLayoutEffect(() => {
+    childRefRef.current = childRef
+  }, [childRef])
 
   const setAnchorNode = useCallback((node) => {
     anchorRef.current = node

@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react"
@@ -43,7 +44,9 @@ export function Tooltip({
   } = child.props
 
   const childRefRef = useRef(childRef)
-  childRefRef.current = childRef
+  useLayoutEffect(() => {
+    childRefRef.current = childRef
+  }, [childRef])
 
   const setAnchorNode = useCallback((node) => {
     anchorRef.current = node
