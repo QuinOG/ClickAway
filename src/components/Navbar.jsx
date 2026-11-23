@@ -325,8 +325,7 @@ export default function Navbar({
                 aria-haspopup="dialog"
                 aria-expanded={isIdentityOpen}
                 aria-controls={identityPopoverId}
-                onFocus={openIdentity}
-                onClick={openIdentity}
+                onClick={() => isIdentityOpen ? closeIdentity() : openIdentity()}
               >
                 <CompactAvatar username={playerUsername} profileImage={equippedProfileImage} />
                 <span className="shellIdentityText">

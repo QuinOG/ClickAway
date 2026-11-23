@@ -484,6 +484,7 @@ export function ReadyOverlay({
   const dailyGoalsNowMs = useMinuteClock()
   const lobbyRef = useRef(null)
   const previousFocusRef = useRef(null)
+  const restoreFocusOnCloseRef = useRef(false)
   const [localSelectedModeId, setLocalSelectedModeId] = useState(selectedModeId)
   const [isPracticeDrawerOpen, setIsPracticeDrawerOpen] = useState(false)
 
@@ -494,7 +495,9 @@ export function ReadyOverlay({
   useEffect(() => {
     previousFocusRef.current = document.activeElement
     lobbyRef.current?.focus()
-    return () => previousFocusRef.current?.focus?.()
+    return () => {
+      if (restoreFocusOnCloseRef.current) previousFocusRef.current?.focus?.()
+    }
   }, [])
 
   const lobbyModes = useMemo(() => modes.map(toLobbyMode).filter(Boolean), [modes])
@@ -525,6 +528,7 @@ export function ReadyOverlay({
         setIsPracticeDrawerOpen(false)
       } else if (onClose) {
         event.preventDefault()
+        restoreFocusOnCloseRef.current = true
         onClose()
       }
       return
@@ -532,8 +536,17 @@ export function ReadyOverlay({
 
     if (event.key === "Tab") {
       const focusable = [...lobbyRef.current.querySelectorAll(
-        'button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
-      )]
+        'button:not(:disabled), a[href], summary, [tabindex]:not([tabindex="-1"])'
+      )].filter((element) => {
+        if (element.getAttribute("tabindex") === "-1") return false
+        for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+          if (ancestor.matches('details:not([open])')) {
+            const summary = [...ancestor.children].find((child) => child.tagName === 'SUMMARY')
+            if (!summary?.contains(element)) return false
+          }
+        }
+        return true
+      }).sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
       if (!focusable.length) return
       const first = focusable[0]
       const last = focusable[focusable.length - 1]

@@ -25,7 +25,7 @@ function renderLobby(overrides = {}) {
     ...overrides,
   }
 
-  render(
+  const view = render(
     <MemoryRouter>
       <FeedbackPreferencesProvider>
         <ReadyOverlay {...props} />
@@ -33,14 +33,14 @@ function renderLobby(overrides = {}) {
     </MemoryRouter>
   )
 
-  return props
+  return { ...props, unmount: view.unmount }
 }
 
 describe("Arena lobby", () => {
   test("wraps Shift+Tab from the initial lobby focus", () => {
     renderLobby()
     expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Enter the arena" }).closest("section"))
-    const lastControl = [...document.activeElement.querySelectorAll('button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])')].at(-1)
+    const lastControl = screen.getByRole("button", { name: "Start Casual" })
     fireEvent.keyDown(document.activeElement, { key: "Tab", shiftKey: true })
     expect(document.activeElement).toBe(lastControl)
   })
@@ -152,4 +152,46 @@ describe("Arena lobby", () => {
     await user.click(screen.getByRole("button", { name: "Warm up in Practice" }))
     expect(onStartRankedWarmup).toHaveBeenCalledOnce()
   })
+})
+
+
+test.each(["round start", "route navigation"])("does not restore navbar focus after %s", (reason) => {
+  const trigger = document.createElement("button")
+  document.body.append(trigger)
+  trigger.focus()
+  const focus = vi.spyOn(trigger, "focus")
+  const props = renderLobby()
+  if (reason === "round start") fireEvent.click(screen.getByRole("button", { name: "Start Casual" }))
+  props.unmount()
+  expect(focus).not.toHaveBeenCalled()
+  trigger.remove()
+})
+
+test("restores the prior focus when explicitly closed with Escape", () => {
+  const trigger = document.createElement("button")
+  document.body.append(trigger)
+  trigger.focus()
+  const onClose = vi.fn()
+  const props = renderLobby({ onClose })
+  fireEvent.keyDown(document.activeElement, { key: "Escape" })
+  expect(onClose).toHaveBeenCalledOnce()
+  props.unmount()
+  expect(document.activeElement).toBe(trigger)
+  trigger.remove()
+})
+
+test("Tab wraps through summaries and skips controls in closed details", () => {
+  renderLobby()
+  const lobby = document.activeElement
+  const first = screen.getByText("Tempo Control")
+  const details = document.createElement("details")
+  details.innerHTML = '<summary>More options</summary><button>Hidden action</button>'
+  lobby.append(details)
+  fireEvent.keyDown(lobby, { key: "Tab", shiftKey: true })
+  expect(document.activeElement).toBe(details.querySelector("summary"))
+  fireEvent.keyDown(document.activeElement, { key: "Tab" })
+  expect(document.activeElement).toBe(first)
+  details.open = true
+  fireEvent.keyDown(first, { key: "Tab", shiftKey: true })
+  expect(document.activeElement).toBe(details.querySelector("button"))
 })

@@ -473,7 +473,7 @@ export default function HistoryPage({
             </div>
           </section>
         ) : (
-          <main className="historyContent">
+          <div className="historyContent">
             <HistoryTrajectory rounds={historyRows} />
 
             {highlightCards.length > 0 ? (
@@ -618,7 +618,7 @@ export default function HistoryPage({
                 </div>
               </section>
             ) : null}
-          </main>
+          </div>
         )}
       </section>
     </div>

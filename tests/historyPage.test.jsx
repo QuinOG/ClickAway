@@ -101,3 +101,10 @@ test("peak highlight preserves zero reaction times and leaves missing metrics em
   expect(screen.queryByText("0 ms")).toBeNull()
   expect(screen.getByText("\u2014", { selector: ".historyHighlightStat" })).toBeTruthy()
 })
+
+
+test("history content leaves the main landmark to Layout", () => {
+  const { container } = render(page("first"))
+  expect(container.querySelector(".historyContent")).toBeTruthy()
+  expect(container.querySelector("main")).toBeNull()
+})
