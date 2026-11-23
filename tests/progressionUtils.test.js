@@ -132,3 +132,25 @@ test("getLevelProgress clamps invalid totals and floors fractional XP", () => {
   assert.equal(fractional.level, 2)
   assert.equal(fractional.xpIntoLevel, 49)
 })
+
+
+test("level progress stays below 100 until the next level starts", () => {
+  const progress = getLevelProgress(699)
+  assert.equal(progress.level, 4)
+  assert.equal(progress.xpToNextLevel, 1)
+  assert.equal(progress.progressPercent, 99)
+  assert.equal(getLevelProgress(700).progressPercent, 0)
+  assert.equal(getLevelProgress(149).progressPercent, 33)
+})
+
+test("progression accepts numeric strings and rejects empty or non-finite values", () => {
+  assert.deepEqual(getLevelProgress("500"), getLevelProgress(500))
+  assert.equal(getRequiredXpForLevel("3"), 200)
+  assert.equal(calculateRoundXp({ hits: "9", misses: "1", bestStreak: "3", score: "50" }), 89)
+  for (const value of [null, "", "  ", true, false, NaN, Infinity, "Infinity", "invalid"]) {
+    assert.equal(getLevelProgress(value).totalXp, 0)
+    assert.equal(calculateRoundXp({ hits: value, misses: value, bestStreak: value, score: value }), 0)
+  }
+  assert.equal(calculateRoundXp(), 0)
+  assert.equal(calculateRoundXp(null), 0)
+})

@@ -205,8 +205,7 @@ export default function App() {
   const handleModeChange = useCallback((nextModeId) => {
     if (!isValidModeId(nextModeId)) return
     setSelectedModeId(nextModeId)
-    void persistIntent({ selectedModeId: nextModeId })
-  }, [persistIntent, setSelectedModeId])
+  }, [setSelectedModeId])
 
   const pendingDuelCount = usePendingDuelCount({ isAuthed, sessionKey: isAuthed ? playerUserId : "" })
 

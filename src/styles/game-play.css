@@ -175,22 +175,6 @@
 
 
 /* ---- Round 3: arena environment + streak heat ------------------------- */
-.arenaHorizon {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 34%;
-    width: 100%;
-    height: 24%;
-    opacity: 0.78;
-    mask-image: linear-gradient(to bottom, #000 0 48%, transparent 100%);
-}
-
-.arenaHorizonStands { fill: #0a1628; stroke: rgb(79 216 255 / 28%); stroke-width: 2; }
-.arenaHorizonArchitecture path { fill: none; stroke: #18304b; stroke-width: 5; opacity: 0.85; }
-.arenaHorizonCrowd path { fill: none; stroke: rgb(118 184 219 / 16%); stroke-width: 2; stroke-dasharray: 2 7; }
-.arenaHorizonPylons path { stroke: #1d3352; stroke-width: 6; fill: none; }
-.arenaHorizonLights circle { fill: #c8f4ff; filter: drop-shadow(0 0 10px #4fd8ff); }
 
 .arenaStage { background:
         radial-gradient(ellipse 18% 40% at 12.5% 18%, rgb(79 216 255 / 16%), transparent 70%),
@@ -640,9 +624,7 @@
         linear-gradient(rgba(var(--heat), calc(0.34 + var(--heat-strength) * 0.3)) 2px, transparent 2px) 0 0 / 64px 64px,
         linear-gradient(90deg, rgba(var(--heat), calc(0.34 + var(--heat-strength) * 0.3)) 2px, transparent 2px) 0 0 / 64px 64px;
 }
-.arenaHorizonLights circle,
 .arenaWorldLamps circle { fill: rgb(255 244 224); filter: drop-shadow(0 0 10px rgb(var(--heat))); }
-.arenaHorizonStands { stroke: rgba(var(--heat), 0.4); }
 .arenaHeatGlow {
     position: absolute;
     inset: auto 0 0;

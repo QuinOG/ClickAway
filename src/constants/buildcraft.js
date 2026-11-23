@@ -436,6 +436,7 @@ export function normalizeLoadoutSnapshotForLevel(level = 1, snapshot = {}) {
 
   return {
     ...baseSnapshot,
+    loadoutId: LOADOUT_ID_SET.has(baseSnapshot.loadoutId) ? baseSnapshot.loadoutId : DEFAULT_ACTIVE_LOADOUT_ID,
     moduleIds: normalizeModuleIds(level, baseSnapshot.moduleIds, fallbackLoadout),
     powerupIds: fillPowerupIds(level, baseSnapshot.powerupIds, fallbackLoadout.powerupIds),
   }

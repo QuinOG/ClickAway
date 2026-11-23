@@ -2138,6 +2138,8 @@ export async function saveUserProgress({ userId, providedFields = [], ...progres
     const normalizedProgress = normalizeProgressInput({
       ...DEFAULT_PROGRESS,
       ...progress,
+      // Normalize unlocks against the state protected by this transaction.
+      levelXp: userRow.xp,
     })
 
     const assignments = []

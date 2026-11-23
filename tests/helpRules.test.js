@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { AUTHENTICATED_ROUTES } from "../src/app/routeMetadata.js"
 import { DIFFICULTIES } from "../src/constants/gameModesConfig.js"
-import { DIFFICULTY_ROWS, NAVIGATION_ROWS } from "../src/features/help/helpPageStructuredContent.js"
+import { ACCOUNT_ROWS, DIFFICULTY_ROWS, NAVIGATION_ROWS } from "../src/features/help/helpPageStructuredContent.js"
 
 test("Help navigation covers every authenticated destination by its shell label", () => {
   const labels = NAVIGATION_ROWS.map(([label]) => label)
@@ -21,4 +21,9 @@ test("Help base mode rules agree with the rules used by live rounds", () => {
       mode.allowsRankProgression ? "On" : "Off",
     ])
   }
+})
+
+test("Help account creation states the supported username limit", () => {
+  assert.equal(ACCOUNT_ROWS.find(([label]) => label === "Create Account")[1],
+    "Sign up with a 3-24 character username and an 8+ character password.")
 })

@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react"
@@ -42,18 +43,26 @@ export function Tooltip({
     onKeyDown: childOnKeyDown,
   } = child.props
 
+  const childRefRef = useRef(childRef)
+  useLayoutEffect(() => {
+    childRefRef.current = childRef
+  }, [childRef])
+
   const setAnchorNode = useCallback((node) => {
     anchorRef.current = node
-    assignRef(childRef, node)
+    assignRef(childRefRef.current, node)
 
     if (node && typeof document !== "undefined") {
       const dialogSurface = node.closest(".uiDialogSurface")
-      setPortalContext({
-        container: dialogSurface?.closest(".uiOverlayLayer") || document.body,
-        ownerId: dialogSurface?.dataset.uiDialogScope,
-      })
+      const container = dialogSurface?.closest(".uiOverlayLayer") || document.body
+      const ownerId = dialogSurface?.dataset.uiDialogScope
+      setPortalContext((current) => (
+        current?.container === container && current?.ownerId === ownerId
+          ? current
+          : { container, ownerId }
+      ))
     }
-  }, [childRef])
+  }, [])
 
   const handleMouseEnter = useCallback((event) => {
     childOnMouseEnter?.(event)
@@ -85,6 +94,7 @@ export function Tooltip({
   useAnchoredPosition({
     open,
     anchorRef,
+    portalContext,
     floatingRef: tooltipRef,
     placement,
     offset,

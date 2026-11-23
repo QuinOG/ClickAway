@@ -44,21 +44,6 @@ function formatSignedValue(value = 0) {
   return `${normalized > 0 ? "+" : ""}${normalized}`
 }
 
-function getProfileTagline({ totalRounds, accuracyPercent, bestStreak }) {
-  if (totalRounds === 0) return "No rounds logged yet. Your first signal starts in the arena."
-  if (accuracyPercent >= 85 && bestStreak >= 10) return "Precision specialist. Your tempo is locked in."
-  if (accuracyPercent >= 70) return "Strong fundamentals. Keep building consistency."
-  return "Momentum is building. Focus accuracy and chain longer streaks."
-}
-
-function getPlayerTitle({ totalRounds, rankedRounds, bestStreak }) {
-  if (totalRounds === 0) return "Arena Rookie"
-  if (rankedRounds >= 25) return "Ranked Specialist"
-  if (bestStreak >= 15) return "Combo Architect"
-  if (totalRounds >= 60) return "Arena Veteran"
-  return "Rising Contender"
-}
-
 function getRankMetaText(rankProgress = {}) {
   if (rankProgress.isUnranked) {
     return `Complete ${PLACEMENT_MATCH_COUNT} placement matches to reveal your rank`
@@ -72,14 +57,14 @@ function getRankMetaText(rankProgress = {}) {
 
 function buildRecentForm(roundHistory = []) {
   const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
-  const scores = recentRounds.map((round) => toNumber(round.score))
+  const scores = recentRounds.map((round) => toNumber(round?.score))
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
     score: scores[index],
-    mode: getModeLabelFromHistoryEntry(round),
-    rankDelta: toNumber(round.rankDelta),
-    rankResultLabel: round.rankResultKind === "placement" ? "placement points" : "RR",
-    isRanked: isRankedModeEntry(round),
+    mode: getModeLabelFromHistoryEntry(round ?? {}),
+    rankDelta: toNumber(round?.rankDelta),
+    rankResultLabel: round?.rankResultKind === "placement" ? "placement points" : "RR",
+    isRanked: isRankedModeEntry(round ?? {}),
   }))
   const midpoint = Math.max(1, Math.floor(scores.length / 2))
   const olderAverage = scores.slice(0, midpoint).reduce((sum, score) => sum + score, 0) / midpoint
@@ -110,13 +95,12 @@ function getStrongestTrait(profileStats, reactionStats) {
 
 const GAUGE_PIPS = 12
 
-function AttributeRow({ label, detail, value, fill, isStrongest = false }) {
+function AttributeRow({ label, value, fill, isStrongest = false }) {
   const lit = Math.round(Math.max(0, Math.min(1, Number(fill) || 0)) * GAUGE_PIPS)
   return (
     <li className={`profileAttribute ${isStrongest ? "isStrongest" : ""}`}>
       <span className="profileAttributeLabel">
         <strong>{label}</strong>
-        <small>{detail}</small>
       </span>
       <svg className="profileAttributeDial" viewBox="0 0 100 58" aria-hidden="true">
         <path className="profileDialTrack" d="M10 52 A40 40 0 0 1 90 52" pathLength="100" />
@@ -145,6 +129,7 @@ export default function ProfilePage({
   achievementStats = {},
   persistedAchievementIds = [],
 }) {
+  const safePlayerName = String(playerName || "Player")
   const { signalAction } = useActionFeedback()
   const [requestedCategoryKey, setRequestedCategoryKey] = useState(
     DEFAULT_ACHIEVEMENT_CATEGORY_KEY
@@ -235,13 +220,8 @@ export default function ProfilePage({
   const xpToNextLevel = levelProgress.xpToNextLevel ?? 0
   const levelProgressPercent = Math.max(0, Math.min(100, levelProgress.progressPercent ?? 0))
   const nextLevelValue = levelValue + 1
-  const playerTitle = getPlayerTitle({
-    totalRounds: profileStats.totalRounds,
-    rankedRounds: profileStats.rankedRounds,
-    bestStreak: profileStats.bestStreak,
-  })
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
-  const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
+  const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(safePlayerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
   const rankGoal = rankProgress.isUnranked
     ? `${PLACEMENT_MATCH_COUNT} placements to calibrate`
@@ -258,15 +238,11 @@ export default function ProfilePage({
 
         <div className="profileSheet">
           <aside className="profileCompetitorCard" aria-label={`${rankLabel} rank, level ${levelValue}`}>
-            <div className="profileCardBanner">
-              <span>Competitor card</span>
-              <span className="profileOrbitLevel">LV {levelValue}</span>
-            </div>
             <div className="profilePortraitSlab">
               <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
                 {hasProfileImage
                   ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
-                  : <PlayerPortrait name={playerName} size={176} />}
+                  : <PlayerPortrait name={safePlayerName} size={176} />}
               </div>
               <div className={`profileRankCrest ${rankProgress.isUnranked ? "isUnranked" : ""}`} aria-hidden="true">
                 {rankIconSrc
@@ -274,22 +250,22 @@ export default function ProfilePage({
                   : <span className="profileRankCrestFallback">?</span>}
               </div>
             </div>
-            <h1 className="profilePlayerName" id="profile-player-name">
-              {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
-            </h1>
-            <p className="profilePlayerTitle">{playerTitle}</p>
-            <div className="profileDivisionPlate">
-              <small>Division</small>
-              <strong className="profileRankTitle">{rankLabel}</strong>
-              <span>{rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank ? rankGoal : `${getRankMetaText(rankProgress)} · next ${rankProgress.nextTierLabel ?? "rank"}`}</span>
-            </div>
-            <div className="profileXpReadout">
-              <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
-              <span>{formatNumber(xpToNextLevel)} XP</span>
-              <ProgressBar percent={levelProgressPercent} label={`XP to level ${nextLevelValue}`} />
-            </div>
-            <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
-              <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+            <div className="profileIdentityDetails">
+              <h1 className="profilePlayerName" id="profile-player-name">
+                {safePlayerName.charAt(0).toUpperCase() + safePlayerName.slice(1)}
+              </h1>
+              <div className="profileDivisionPlate">
+                <strong className="profileRankTitle">{rankLabel}</strong>
+                <span>{rankProgress.isUnranked || rankProgress.isPlacement || rankProgress.isTopRank ? rankGoal : `${getRankMetaText(rankProgress)} · next ${rankProgress.nextTierLabel ?? "rank"}`}</span>
+              </div>
+              <div className="profileXpReadout">
+                <span><strong>{levelProgressPercent}%</strong> to LV {nextLevelValue}</span>
+                <span>{formatNumber(xpToNextLevel)} XP to go</span>
+                <ProgressBar percent={levelProgressPercent} label={`XP to level ${nextLevelValue}`} />
+              </div>
+              <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
+                <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+              </div>
             </div>
           </aside>
 
@@ -297,35 +273,30 @@ export default function ProfilePage({
             <section className="profileAttributes" aria-labelledby="performance-title">
               <div className="profilePanelHeading">
                 <div>
-                  <span className="profileSectionKicker">{getProfileTagline(profileStats)}</span>
                   <h2 id="performance-title">Attributes</h2>
                 </div>
               </div>
               <ul className="profileAttributeList">
                 <AttributeRow
                   label="Accuracy"
-                  detail={`${formatNumber(profileStats.totalRounds)} career rounds`}
                   value={`${profileStats.accuracyPercent}%`}
                   fill={profileStats.accuracyPercent / 100}
-                  isStrongest={strongestTrait.key === "precision"}
+                  isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "precision"}
                 />
                 <AttributeRow
                   label="Best streak"
-                  detail="unbroken targets"
                   value={formatNumber(profileStats.bestStreak)}
                   fill={profileStats.bestStreak / 30}
-                  isStrongest={strongestTrait.key === "chain"}
+                  isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "chain"}
                 />
                 <AttributeRow
                   label="Reaction"
-                  detail={reactionStats.bestReactionMs !== null ? `${formatReactionTime(reactionStats.bestReactionMs)} fastest` : "awaiting timed hits"}
                   value={formatReactionTime(reactionStats.avgReactionMs)}
                   fill={reactionStats.avgReactionMs !== null ? (520 - reactionStats.avgReactionMs) / 360 : 0}
-                  isStrongest={strongestTrait.key === "tempo"}
+                  isStrongest={profileStats.totalRounds > 0 && strongestTrait.key === "tempo"}
                 />
                 <AttributeRow
                   label="Peak score"
-                  detail={`${formatNumber(profileStats.roundsThisWeek)} rounds this week`}
                   value={formatNumber(profileStats.bestScore)}
                   fill={profileStats.bestScore / 1500}
                 />
@@ -336,7 +307,6 @@ export default function ProfilePage({
               <section className="profileFormPanel" aria-labelledby="recent-form-title">
                 <div className="profileMiniHeading">
                   <div>
-                    <span className="profileSectionKicker">Recent form</span>
                     <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
                   </div>
                   <strong className={recentForm.trendPercent >= 0 ? "isPositive" : "isNegative"}>
@@ -347,7 +317,7 @@ export default function ProfilePage({
                   {recentForm.bars.length > 0 ? recentForm.bars.map((bar) => (
                     <li
                       key={bar.id}
-                      className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
+                      className={`profileFormToken ${bar.isRanked ? "isRanked" : ""} ${bar.mode === "Practice" ? "isPractice" : ""} ${bar.rankDelta < 0 ? "isLoss" : ""}`}
                       title={`${formatNumber(bar.score)} score${bar.isRanked ? `, ${formatSignedValue(bar.rankDelta)} ${bar.rankResultLabel}` : ""}`}
                     >
                       <span className="profileReceiptMode">{bar.mode}</span>
@@ -368,7 +338,7 @@ export default function ProfilePage({
                       {formatNumber(signatureBuild.totalRounds)} rounds · {buildAccuracy}% acc · {formatNumber(signatureBuild.bestScore)} peak
                     </p>
                   ) : (
-                    <p className="profileEmptySignal">Run a saved loadout to reveal your field signature.</p>
+                    <p className="profileEmptySignal">Finish a round with a saved loadout to see its stats.</p>
                   )}
                 </div>
               </section>
@@ -376,7 +346,7 @@ export default function ProfilePage({
               <section className="profileNearestGoal" aria-labelledby="nearest-goal-title">
                 <span className="profilePanelEmblem" aria-hidden="true"><TrophyIcon size={30} /></span>
                 <div>
-                  <span className="profileSectionKicker">Nearest achievement</span>
+                  <span className="profileSectionKicker">{nearestAchievement?.isUnlocked ? "Unlocked achievement" : "Nearest achievement"}</span>
                   <h2 id="nearest-goal-title">{nearestAchievement?.title ?? "Signal unavailable"}</h2>
                   <ProgressBar percent={nearestAchievement?.percent ?? 0} label="Nearest achievement" progressText={nearestAchievement?.progressText ?? "Awaiting progress"} />
                 </div>
@@ -402,6 +372,8 @@ export default function ProfilePage({
                     key={category.key}
                     type="button"
                     role="tab"
+                    id={`achievement-tab-${category.key}`}
+                    aria-controls="achievement-panel"
                     aria-selected={isSelected}
                     tabIndex={isSelected ? 0 : -1}
                     onKeyDown={(event) => {
@@ -430,16 +402,18 @@ export default function ProfilePage({
               })}
             </div>
           </div>
-          <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
-            {featuredMasterAchievement
-              ? <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
-              : <p className="achievementsEmptyState">No master achievement found.</p>}
-          </div>
-          <div className="achievementsMainArea">
-            <AchievementsCarousel
-              key={`achievements-${selectedCategoryKey}`}
-              achievements={carouselAchievements}
-            />
+          <div id="achievement-panel" role="tabpanel" aria-labelledby={`achievement-tab-${selectedCategoryKey}`}>
+            <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
+              {featuredMasterAchievement
+                ? <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
+                : <p className="achievementsEmptyState">No master achievement found.</p>}
+            </div>
+            <div className="achievementsMainArea">
+              <AchievementsCarousel
+                key={`achievements-${selectedCategoryKey}`}
+                achievements={carouselAchievements}
+              />
+            </div>
           </div>
         </section>
       </section>

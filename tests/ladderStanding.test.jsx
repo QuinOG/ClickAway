@@ -33,6 +33,9 @@ test("placed players without a reaction measurement get reaction guidance", asyn
   await screen.findByRole("list", { name: /Ladder sorted/ })
   await user.click(screen.getByRole("tab", { name: "Reaction" }))
   await screen.findByText("No reaction time recorded")
+  const standing = screen.getByRole("region", { name: "Your leaderboard standing" })
+  expect(within(standing).queryByText("UNRANKED")).toBeNull()
+  expect(within(standing).getAllByText("--").length).toBeGreaterThan(0)
   await user.click(screen.getByRole("button", { name: "Around Me" }))
   await waitFor(() => expect(screen.getAllByText("Record a reaction time to join this board.")).toHaveLength(2))
   expect(screen.queryByText(/Finish your placement matches/)).toBeNull()
@@ -94,4 +97,37 @@ test("Ladder explains which records carry across seasons", async () => {
   show()
   await screen.findByRole("list", { name: /Ladder sorted/ })
   expect(screen.getByText("Rating carries across seasons. Score, streak, accuracy and reaction records are all-time.")).toBeTruthy()
+})
+
+test("failed pagination and logout clear stale page controls", async () => {
+  fetchLeaderboard.mockResolvedValueOnce({ ...result, totalPages: 3, totalCount: 60 })
+    .mockRejectedValueOnce(new Error("offline"))
+  const view = show()
+  await screen.findByRole("button", { name: /Next/i })
+  await userEvent.click(screen.getByRole("tab", { name: "Reaction" }))
+  await screen.findByText("Ladder unavailable")
+  expect(screen.queryByRole("button", { name: /Next/i })).toBeNull()
+  fetchLeaderboard.mockResolvedValue({ ...result, totalPages: 3, totalCount: 60 })
+  await userEvent.click(screen.getByRole("button", { name: "Retry" }))
+  await screen.findByRole("button", { name: /Next/i })
+  view.rerender(<MemoryRouter><LeaderboardPage isAuthed={false} /></MemoryRouter>)
+  await screen.findByText("Ladder unavailable")
+  expect(screen.queryByRole("button", { name: /Next/i })).toBeNull()
+})
+
+test("board tabs rove focus and selection with arrows, Home and End", async () => {
+  fetchLeaderboard.mockResolvedValue({ ...result, rows: [], selfRank: null })
+  show()
+  await screen.findByText("No ranked players yet.")
+  const tabs = screen.getAllByRole("tab")
+  const user = userEvent.setup()
+  tabs[0].focus()
+  for (const [key, index] of [["{ArrowRight}", 1], ["{End}", 4], ["{ArrowRight}", 0], ["{ArrowLeft}", 4], ["{Home}", 0]]) {
+    await user.keyboard(key)
+    expect(document.activeElement).toBe(tabs[index])
+    tabs.forEach((tab, i) => {
+      expect(tab.tabIndex).toBe(i === index ? 0 : -1)
+      expect(tab.getAttribute("aria-selected")).toBe(String(i === index))
+    })
+  }
 })

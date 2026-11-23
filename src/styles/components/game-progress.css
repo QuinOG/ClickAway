@@ -7,4 +7,3 @@
 .gameProgress.isUnavailable .gameProgressFill { background: #64748b; }
 .gameProgressValue { position: relative; z-index: 1; display: block; padding: 0 9px; text-align: right; font: 700 12px/24px var(--ca-font-body, sans-serif); color: #fff; text-shadow: 0 1px 3px #000, 0 0 3px #000; }
 .gameProgressText { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; color: #d3deec; overflow-wrap: anywhere; }
-.profileXpReadout > .gameProgress { flex-basis: 100%; }

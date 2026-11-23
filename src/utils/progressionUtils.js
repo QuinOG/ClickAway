@@ -8,7 +8,9 @@ const LEVEL_BASE_REQUIREMENT = 100
 const LEVEL_REQUIREMENT_STEP = 50
 
 function normalizeNumber(value) {
-  return Number.isFinite(value) ? value : 0
+  if (typeof value !== "number" && (typeof value !== "string" || !value.trim())) return 0
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
 }
 
 function clampNonNegative(value) {
@@ -20,7 +22,9 @@ export function getRequiredXpForLevel(level) {
   return LEVEL_BASE_REQUIREMENT + (normalizedLevel - 1) * LEVEL_REQUIREMENT_STEP
 }
 
-export function calculateRoundXp({ hits = 0, misses = 0, bestStreak = 0, score = 0 }) {
+export function calculateRoundXp(options = {}) {
+  const { hits = 0, misses = 0, bestStreak = 0, score = 0 } =
+    options && typeof options === "object" ? options : {}
   const normalizedHits = clampNonNegative(hits)
   const normalizedMisses = clampNonNegative(misses)
   const normalizedBestStreak = clampNonNegative(bestStreak)
@@ -55,7 +59,7 @@ export function getLevelProgress(totalXp = 0) {
   const xpIntoLevel = xpRemaining
   const xpToNextLevel = Math.max(0, requiredForCurrentLevel - xpIntoLevel)
   const progressPercent = requiredForCurrentLevel > 0
-    ? Math.round((xpIntoLevel / requiredForCurrentLevel) * 100)
+    ? Math.min(xpToNextLevel > 0 ? 99 : 100, Math.round((xpIntoLevel / requiredForCurrentLevel) * 100))
     : 0
 
   return {

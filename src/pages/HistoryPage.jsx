@@ -75,10 +75,6 @@ function getRankResultToneClassName(round = {}) {
 function getRoundMarkers(round = {}, historySnapshot = {}) {
   const markers = []
 
-  if (historySnapshot.latestRound?.id === round.id) {
-    markers.push("Latest")
-  }
-
   if (historySnapshot.bestScoreRound?.id === round.id && Number(round.score) > 0) {
     markers.push("Peak score")
   }
@@ -97,7 +93,8 @@ function getRoundMarkers(round = {}, historySnapshot = {}) {
     markers.push("Best climb")
   }
 
-  return markers.slice(0, 2)
+  // One stamp per ticket: the strongest achievement. The newest ticket is already first in the log.
+  return markers.slice(0, 1)
 }
 
 function HighlightCard({ eyebrow, title, value, meta, stats = [], tone = "neutral" }) {
@@ -233,31 +230,31 @@ function HistoryRoundCard({ round, markers = [] }) {
   const isPractice = isPracticeRound(round)
   return (
     <article className={`historyRoundCard ${getModeToneClassName(round)}`}>
-      <div className="historyRoundCardSignal" aria-hidden="true"><ModeEmblem tone={getModeTone(round)} size={40} /></div>
       <div className="historyRoundCardMain">
-        <div className="historyRoundCardTopline">
-          <span className="uiVisuallyHidden">{getModeLabelFromHistoryEntry(round)}</span>
+        <ModeEmblem className="historyRoundCardSignal" tone={getModeTone(round)} size={56} />
+        <p className="historyRoundCardTopline">
+          <span className="historyRoundCardMode">{getModeLabelFromHistoryEntry(round)}</span>
           <time>{getPlayedAtLabel(round)}</time>
-        </div>
-        <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
-        <span className="historyRoundCardScoreLabel">score</span>
-        <div className="historyRoundCardMeters">
-          <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}</span>
-          <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}</span>
-          {isPractice ? null : (
-            <>
-              <span><CoinIcon size={16} /> {formatNumber(round.coinsEarned)}</span>
-              <span><GemIcon size={16} /> {formatNumber(round.xpEarned ?? 0)}</span>
-            </>
-          )}
-        </div>
+        </p>
+        <p className="historyRoundCardHeadline">
+          <strong className="historyRoundCardScore">{formatNumber(round.score)}</strong>
+          <span className="historyRoundCardScoreLabel">score</span>
+          {markers.map((marker) => <small key={marker} className="historyRoundCardStamp">{marker}</small>)}
+        </p>
       </div>
-      {isRankedModeEntry(round) || markers.length > 0 ? (
-        <div className="historyRoundCardOutcome">
-          {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
-          {markers.map((marker) => <small key={marker}>{marker}</small>)}
-        </div>
-      ) : null}
+      <div className="historyRoundCardMeters">
+        <span><Target weight="bold" aria-hidden="true" /> {formatPercent(round.accuracyPercent)}<em>accuracy</em></span>
+        <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}<em>hits</em></span>
+      </div>
+      <div className="historyRoundCardOutcome">
+        {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
+        {isPractice ? <span className="historyRoundCardNoRewards">No rewards</span> : (
+          <>
+            <span className="historyRoundCardReward"><CoinIcon size={18} /> {formatNumber(round.coinsEarned)}<em>coins</em></span>
+            <span className="historyRoundCardReward"><GemIcon size={18} /> {formatNumber(round.xpEarned ?? 0)}<em>XP</em></span>
+          </>
+        )}
+      </div>
     </article>
   )
 }
@@ -458,11 +455,7 @@ export default function HistoryPage({
 
         {!hasHistory ? (
           <section className="historyEmptyState" role="status" aria-live="polite">
-            <p className="historyEmptyEyebrow">No rounds logged</p>
-            <h2 className="historyEmptyTitle">Your match history will appear here after your first run.</h2>
-            <p className="historyEmptyLead">
-              Finish a round to start tracking score, accuracy, rewards, and ranked results over time.
-            </p>
+            <h2 className="historyEmptyTitle">No rounds yet</h2>
             <div className="historyEmptyActions">
               <Link className="primaryButton" to="/game">
                 Play a Round
@@ -480,7 +473,7 @@ export default function HistoryPage({
             </div>
           </section>
         ) : (
-          <main className="historyContent">
+          <div className="historyContent">
             <HistoryTrajectory rounds={historyRows} />
 
             {highlightCards.length > 0 ? (
@@ -625,7 +618,7 @@ export default function HistoryPage({
                 </div>
               </section>
             ) : null}
-          </main>
+          </div>
         )}
       </section>
     </div>

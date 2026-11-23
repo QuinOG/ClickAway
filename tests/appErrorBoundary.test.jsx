@@ -8,6 +8,8 @@ test("a failed page import leaves a reload control instead of an empty app", asy
   const FailedPage = lazy(() => Promise.reject(new Error("Page chunk unavailable")))
   render(<AppErrorBoundary><Suspense fallback="Loading"><FailedPage /></Suspense></AppErrorBoundary>)
   expect(await screen.findByRole("alert")).not.toBeNull()
+  expect(screen.getByRole("main").contains(screen.getByRole("alert"))).toBe(true)
+  expect(screen.getByRole("main")).not.toBe(screen.getByRole("alert"))
   expect(screen.getByRole("button", { name: "Reload page" })).not.toBeNull()
   expect(screen.getByText(/Saved account progress is kept/)).not.toBeNull()
 })

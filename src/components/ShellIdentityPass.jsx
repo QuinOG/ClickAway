@@ -43,7 +43,7 @@ export default function ShellIdentityPass({ id, className = "", role, username =
   // Coins and level sit in the header bar right above this card, so it shows personal bests instead.
   const count = (value) => (Number.isFinite(value) ? Math.max(0, value) : 0).toLocaleString()
   const stats = [["Best score", count(bestScore)], ["Best streak", count(bestStreak)], ["Accuracy", formatPercent(accuracyPercent)]]
-  return <div id={id} className={`${className} shellIdentityPass`.trim()} role={role} aria-label={role ? `${username} player details` : undefined}>
+  return <div tabIndex={-1} id={id} className={`${className} shellIdentityPass`.trim()} role={role} aria-label={role ? `${username} player details` : undefined}>
     <header className="shellPassBanner">Competitor Pass</header>
     <div className="shellPassHero">
       <span className="shellPassPortraitMount"><span className={["shellPassPortrait", profileImage?.effectClass, hasImage ? "hasImage" : ""].filter(Boolean).join(" ")} style={hasImage ? undefined : getProfileAvatarStyle(username)} aria-hidden="true">{hasImage ? <img src={profileImage.imageSrc} alt="" width="512" height="512" decoding="async" /> : <PlayerPortrait name={username} size={88} />}</span></span>

@@ -33,6 +33,8 @@ function formatCoins(value) {
 function getActionLabel({ item, isOwned, canAfford, coins, defaultLabel }) {
   if (isOwned || canAfford) return defaultLabel
 
+  if (!Number.isFinite(coins) || !Number.isFinite(item?.cost)) return defaultLabel
+
   const missingCoins = Math.max(0, item.cost - coins)
   return `Need ${formatCoins(missingCoins)} more`
 }

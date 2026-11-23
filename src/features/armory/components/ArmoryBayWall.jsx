@@ -29,7 +29,7 @@ function ArmoryBayServicePlate({ stats }) {
 function ArmoryBay({ loadout, presentation, isActive, onActivate, bayApi, bayNumber }) {
   const identity = (presentation?.identity.label || "Balanced").toLowerCase()
   return (
-    <div className={`armoryBay armoryCart ${isActive ? "isActive" : ""}`} data-identity={identity}>
+    <div className={`armoryBay armoryCart ${isActive ? "isActive" : ""}`} data-identity={identity} data-bay={bayNumber}>
       <button
         type="button"
         className="armoryBaySelect armoryCartBody"

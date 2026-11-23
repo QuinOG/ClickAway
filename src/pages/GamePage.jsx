@@ -95,16 +95,16 @@ export default function GamePage({ onPhaseChange, ...props }) {
 
   useEffect(() => () => {
     stopFeedback()
-  }, [game.phase, stopFeedback])
+  }, [stopFeedback])
 
   const duelError = (challengeId && !replayId ? "This duel link is missing its rival run." : "")
     || ghostLoadError || game.duelStartError
   let activeOverlay = null
-  const entranceOverlay = game.entranceOverlayProps
+  const entranceOverlay = !duelError && game.entranceOverlayProps
     ? <CountdownOverlay key="round-entrance" {...game.entranceOverlayProps} />
     : null
 
-  if (game.phase === ROUND_PHASE.READY && !entranceOverlay) {
+  if (game.phase === ROUND_PHASE.READY && !entranceOverlay && !duelError) {
     activeOverlay = (
       <ReadyOverlay
         key="ready-overlay"

@@ -12,9 +12,9 @@ for (const [name, width, height] of [['desktop',1280,800],['phone',360,800]]) {
    await expect(summary.locator('..')).toHaveAttribute('open','')
   }
   await page.locator('.helpRulebook > summary').first().scrollIntoViewIfNeeded()
-  await page.screenshot({path:`docs/feature-improvement/shots/cleanup/${phase}-help-expanded-${name}.png`})
+  await page.screenshot({path:`test-results/profile-cleanup/${phase}-help-expanded-${name}.png`})
   await page.locator('.rankTierGrid').scrollIntoViewIfNeeded()
-  await page.screenshot({path:`docs/feature-improvement/shots/cleanup/${phase}-help-ranks-${name}.png`})
+  await page.screenshot({path:`test-results/profile-cleanup/${phase}-help-ranks-${name}.png`})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
   if (phase !== 'before') {
    expect(await page.locator('.helpRulebook').first().evaluate(el=>el.clientWidth)).toBeGreaterThan(width < 600 ? 240 : 600)
@@ -27,12 +27,12 @@ for (const [name, width, height] of [['desktop',1280,800],['phone',360,800]]) {
    }
   }
   await gotoRoute(page, AUTHENTICATED_ROUTES.find(r=>r.id==='ladder'))
-  await page.screenshot({path:`docs/feature-improvement/shots/cleanup/${phase}-ladder-${name}.png`})
+  await page.screenshot({path:`test-results/profile-cleanup/${phase}-ladder-${name}.png`})
   await page.locator('.ladderPlate').first().scrollIntoViewIfNeeded()
-  await page.screenshot({path:`docs/feature-improvement/shots/cleanup/${phase}-ladder-rows-${name}.png`})
+  await page.screenshot({path:`test-results/profile-cleanup/${phase}-ladder-rows-${name}.png`})
   await gotoRoute(page, AUTHENTICATED_ROUTES.find(r=>r.id==='profile'))
   await page.locator('.shellIdentityButton').click()
   await expect(page.locator('.shellIdentityPass')).toBeVisible()
-  await page.screenshot({path:`docs/feature-improvement/shots/cleanup/${phase}-pass-${name}.png`})
+  await page.screenshot({path:`test-results/profile-cleanup/${phase}-pass-${name}.png`})
  })
 }

@@ -15,6 +15,7 @@ const DEFAULT_MODULE_ID_BY_SLOT_ID = Object.fromEntries(
 
 function getTargetSkinStyle({ targetSize, imageSrc, imageScale }) {
   return {
+    "--target-size": `${targetSize}px`,
     width: `${targetSize}px`,
     height: `${targetSize}px`,
     backgroundImage: imageSrc ? `url(${imageSrc})` : undefined,
@@ -34,7 +35,7 @@ function MachineHousing({ module, isSelected = false, onOpenLane }) {
       title={`Open ${module.slotLabel} parts`}
     >
       <span className={`armoryMachineHousingGlyph tone-${module.slotId}`} aria-hidden="true">
-        <PartEmblem partId={module.moduleId} slotId={module.slotId} size={40} />
+        <PartEmblem partId={module.moduleId} slotId={module.slotId} size={64} />
       </span>
       {/* Keyed by installed module so a fresh part visibly seats into place. */}
       <span
@@ -127,14 +128,16 @@ function MachineWorkshopActions({ machineApi }) {
 export default function ArmoryMachine({
   loadout,
   presentation,
+  previewRules = null,
   nameplateRef,
   machineRef,
   machineApi,
 }) {
   const { buttonSkinClass = "", buttonSkinImageSrc = "", buttonSkinImageScale = 100 } = machineApi
   const hasSkinImage = Boolean(buttonSkinImageSrc)
+  const targetRules = previewRules ?? presentation.roundRules
   const targetSize = Math.round(
-    presentation.roundRules.initialButtonSize * MACHINE_TARGET_SCALE
+    targetRules.initialButtonSize * MACHINE_TARGET_SCALE
   )
   return (
     <section className="armoryStage" aria-label="Active build machine">
@@ -154,11 +157,8 @@ export default function ArmoryMachine({
 
         <div className="armoryMachineCore">
           <div className="armoryMachineAssembly">
-            {/* The workbench cradle the instrument is bolted to. */}
-            <span className="armoryMachineBench" aria-hidden="true">
-              <i /><i /><i /><i />
-              <em>CA-01</em>
-            </span>
+            {/* One swappable backplate behind the lens, core and both side parts. */}
+            <span className="armoryMachineBench" aria-hidden="true" />
             <div className="armoryMachineCoreStage">
               <span className="armoryMachineRig" aria-hidden="true">
                 <span className="armoryMachineRigRing">
@@ -176,14 +176,6 @@ export default function ArmoryMachine({
                     className={`armoryMachineRigConduit conduit-${module.slotId} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
                   />
                 ))}
-                {presentation.moduleStack.map((module) => (
-                  <span
-                    key={module.slotId}
-                    className={`armoryMachineRigMount mount-${module.slotId} tone-${module.slotId} ${module.moduleId === DEFAULT_MODULE_ID_BY_SLOT_ID[module.slotId] ? "isStock" : "isFitted"} ${machineApi.selectedModuleSlotId === module.slotId ? "isSelected" : ""}`}
-                  >
-                    <PartEmblem partId={module.moduleId} slotId={module.slotId} size={30} />
-                  </span>
-                ))}
                 <span className="armoryMachineRigBed" />
               </span>
 
@@ -195,12 +187,12 @@ export default function ArmoryMachine({
                   imageScale: buttonSkinImageScale,
                 })}
                 role="img"
-                aria-label={`Target starts at ${presentation.roundRules.initialButtonSize} pixels and shrinks with each hit`}
+                aria-label={`Target starts at ${targetRules.initialButtonSize} pixels and shrinks with each hit`}
               >
                 {/* Keep the first explanation short; exact rules live in the spec sheet. */}
                 <span className="armoryMachineAimReadout">
                   <small>TARGET SIZE</small>
-                  <b>{presentation.roundRules.initialButtonSize}<span>px</span></b>
+                  <b>{targetRules.initialButtonSize}<span>px</span></b>
                   <em>Shrinks as you hit</em>
                 </span>
               </span>

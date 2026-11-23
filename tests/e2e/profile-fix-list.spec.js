@@ -12,7 +12,7 @@ for (const [device, width, height] of [['desktop', 1440, 1000], ['phone', 390, 8
       await page.goto('/profile')
       await expect(page.locator('#profile-player-name')).toBeVisible({ timeout: 90_000 })
       await page.evaluate(async () => document.fonts.ready)
-      const shots = 'docs/feature-improvement/shots/fix-list'
+      const shots = 'test-results/profile-fix-list'
       if (!username.includes(' ')) {
         await page.screenshot({ path: `${shots}/profile-${phase}-${device}.png` })
         if (device === 'desktop') {

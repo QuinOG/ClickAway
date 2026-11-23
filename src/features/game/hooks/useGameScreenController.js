@@ -38,7 +38,7 @@ import {
   getComboMultiplier,
   getStreakAtmosphereTier,
 } from "../../../utils/gameMath.js"
-import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS } from "../../../game/engine/roundEngine.js"
+import { createRoundSimulation, getMaxClickEvents, MIN_CLICK_INTERVAL_MS, OVERCLOCK_DURATION_MS } from "../../../game/engine/roundEngine.js"
 import {
   createGeometrySimulation,
   isBullseyeHit,
@@ -305,6 +305,7 @@ export function useGameScreenController({
   const [bestReactionMs, setBestReactionMs] = useState(null)
   const [comboSurgeHitsRemaining, setComboSurgeHitsRemaining] = useState(0)
   const [guardActiveUntilMs, setGuardActiveUntilMs] = useState(0)
+  const [secondWindActiveUntilMs, setSecondWindActiveUntilMs] = useState(0)
   const [sessionStats, setSessionStats] = useState({ rounds: 0, bestScore: 0, netRR: 0 })
   const [selectedDrillId, setSelectedDrillId] = useState(null)
   const activeDrillIdRef = useRef(null)
@@ -408,6 +409,7 @@ export function useGameScreenController({
     }
   }, [elapsedSeconds, isPlaying, isTimedRound, playerBestScore, roundMode.durationSeconds, score])
   const isGuardActive = guardActiveUntilMs > 0
+  const isSecondWindActive = secondWindActiveUntilMs > 0
   const displayMode = phase === ROUND_PHASE.READY ? resolvedSelectedMode : roundMode
   const previewPowerupCharges = useMemo(
     () => buildPowerupChargeState(
@@ -483,7 +485,7 @@ export function useGameScreenController({
     setButtonPosition(getCenteredPosition(getPlayfieldRect(arenaElement), nextButtonSize))
   }, [])
 
-  const goldRemainingMs = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
+  const { goldRemainingMs, getGoldRemainingMs } = useGoldTargetWindow(goldSpawn, isPlaying, getElapsedMs)
 
   const mirrorGeometry = useCallback((state, spawned = false) => {
     if (!state) return
@@ -546,6 +548,7 @@ export function useGameScreenController({
     setPowerupCharges(simulationState.powerupCharges)
     setComboSurgeHitsRemaining(simulationState.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(simulationState.guardActiveUntilMs)
+    setSecondWindActiveUntilMs(simulationState.secondWindActiveUntilMs)
   }, [])
 
   const resetRoundState = useCallback((modeSettings) => {
@@ -580,6 +583,7 @@ export function useGameScreenController({
     )
     setComboSurgeHitsRemaining(0)
     setGuardActiveUntilMs(0)
+    setSecondWindActiveUntilMs(0)
     geometryRef.current = null
     buttonSpawnedAtRef.current = 0
     reactionTotalMsRef.current = 0
@@ -794,6 +798,7 @@ export function useGameScreenController({
   ])
 
   const cancelPendingRoundStart = useCallback(() => {
+    rankedWarmupIntentRef.current = false
     if (challengeIdRef.current) onExitDuelRef.current?.()
     roundNonceRef.current += 1
     pendingRoundStartRef.current = null
@@ -941,12 +946,14 @@ export function useGameScreenController({
     setPowerupCharges(outcome.powerupCharges)
     setComboSurgeHitsRemaining(outcome.comboSurgeHitsRemaining)
     setGuardActiveUntilMs(outcome.guardActiveUntilMs)
+    setSecondWindActiveUntilMs(outcome.secondWindActiveUntilMs)
     // Timed effects (freeze, center hold, size lock) stay "active" for their
     // real duration so the tray and the target can show it.
     const activeDurationMs = {
       freeze_movement: FREEZE_MOVEMENT_DURATION_MS,
       magnet_center: MAGNET_CENTER_FREEZE_MS,
       size_lock: SIZE_LOCK_DURATION_MS,
+      overclock: OVERCLOCK_DURATION_MS,
     }[powerup.effectType] ?? 0
     setActivatedPowerup({
       id: powerup.id,
@@ -1300,7 +1307,7 @@ export function useGameScreenController({
 
     const timeoutId = window.setTimeout(() => {
       autoStartedChallengeRef.current = challengeId
-      startRoundWithCountdown(ghostReplay.modeId || selectedModeId, activeLoadoutId)
+      startRoundWithCountdown(ghostReplay.modeId || selectedModeId, activeLoadoutId, null)
     }, 0)
 
     return () => window.clearTimeout(timeoutId)
@@ -1348,6 +1355,17 @@ export function useGameScreenController({
 
     return () => window.clearTimeout(timeoutId)
   }, [getElapsedMs, guardActiveUntilMs])
+
+  useEffect(() => {
+    if (secondWindActiveUntilMs <= 0) return undefined
+
+    const remainingMs = Math.max(0, secondWindActiveUntilMs - getElapsedMs())
+    const timeoutId = window.setTimeout(() => {
+      setSecondWindActiveUntilMs(0)
+    }, remainingMs)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [getElapsedMs, secondWindActiveUntilMs])
 
   useEffect(() => {
     if (!gameOnboardingStep?.modeId) return
@@ -1486,11 +1504,13 @@ export function useGameScreenController({
         : (powerupCharges[powerup.id] ?? 0),
       comboSurgeHitsRemaining,
       isGuardActive,
+      isSecondWindActive,
     }))
   ), [
     comboSurgeHitsRemaining,
     displayMode.equippedPowerups,
     isGuardActive,
+    isSecondWindActive,
     phase,
     powerupCharges,
     previewPowerupCharges,
@@ -1640,6 +1660,7 @@ export function useGameScreenController({
       isButtonDisabled: !isPlaying,
       isGold: goldRemainingMs > 0,
       goldRemainingMs,
+      getGoldRemainingMs,
       buttonLabel,
       buttonLabelFontSize,
       buttonSkinClass,

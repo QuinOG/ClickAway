@@ -19,9 +19,9 @@ test("pickProgressIntent keeps only server-owned intent fields", () => {
     savedLoadouts: [{ id: "loadout_1" }],
     activeLoadoutId: "loadout_1",
     buildWalkthrough: { status: "completed" },
-    selectedModeId: "normal",
     seenUnlockPartIds: ["tempo-balanced", "streak-balanced"],
   })
+  assert.equal(intent.selectedModeId, undefined)
   assert.equal(intent.coins, undefined)
   assert.equal(intent.rankMmr, undefined)
 })

@@ -29,6 +29,13 @@ function getPowerupState(powerup, charges, isTimedRound) {
     }
   }
 
+  if (powerup.effectType === "second_wind" && powerup.isSecondWindActive) {
+    return {
+      label: "Wind active",
+      tone: "active",
+    }
+  }
+
   if (charges > 0) {
     return {
       label: "Ready",
@@ -65,7 +72,8 @@ export default function PowerupTray({
         const charges = powerup.charges ?? 0
         const isActive = powerup.effectType === "combo_surge"
           ? powerup.comboSurgeHitsRemaining > 0
-          : powerup.effectType === "guard_charge" && powerup.isGuardActive
+          : (powerup.effectType === "guard_charge" && powerup.isGuardActive)
+            || (powerup.effectType === "second_wind" && powerup.isSecondWindActive)
         const canUse = isPlaying && isUsable(powerup) && charges > 0
         const isRecentlyActivated = activatedPowerup?.id === powerup.id
         const isTimedActive = isRecentlyActivated && activatedPowerup.durationMs > 0

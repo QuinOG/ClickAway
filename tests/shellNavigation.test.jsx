@@ -86,3 +86,27 @@ test("a live round dismisses More without reopening it afterward", async () => {
   rerender(shell(false))
   expect(screen.queryByRole("dialog", { name: "More" })).toBeNull()
 })
+
+
+test("identity trigger toggles closed and focus alone leaves it closed", async () => {
+  const user = userEvent.setup()
+  renderShell()
+  const trigger = document.querySelector(".shellIdentityButton")
+  trigger.focus()
+  expect(screen.queryByRole("dialog")).toBeNull()
+  await user.click(trigger)
+  expect(screen.getByRole("dialog")).toBeTruthy()
+  await user.click(trigger)
+  expect(screen.queryByRole("dialog")).toBeNull()
+})
+
+test("clicking identity pass content keeps the popover open", async () => {
+  const user = userEvent.setup()
+  renderShell()
+  await user.click(document.querySelector(".shellIdentityButton"))
+  await user.click(screen.getByText("Competitor Pass"))
+  expect(screen.getByRole("dialog")).toBeTruthy()
+  expect(document.activeElement).toBe(screen.getByRole("dialog"))
+  await user.click(screen.getByRole("button", { name: "Outside shell" }))
+  expect(screen.queryByRole("dialog")).toBeNull()
+})

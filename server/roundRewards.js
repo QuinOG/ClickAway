@@ -1,3 +1,4 @@
+import { buildDrillMode, isValidDrillId } from "../src/constants/drillConfig.js"
 import {
   buildRoundRules,
   normalizeLoadoutSnapshotForLevel,
@@ -139,11 +140,18 @@ export function simulateRound(events, modeId, {
   roundSeed = null,
   arenaWidth = null,
   arenaHeight = null,
+  drillId = null,
 } = {}) {
   const mode = getDifficultyById(modeId)
   if (!mode || mode.id !== modeId) return { valid: false, reason: "Invalid modeId." }
 
-  const streamValidation = validateEventStream(events, mode)
+  const hasDrill = drillId !== null && drillId !== undefined && drillId !== ""
+  if (hasDrill && (mode.id !== "easy" || !isValidDrillId(drillId))) {
+    return { valid: false, reason: "Invalid drillId." }
+  }
+  const effectiveMode = hasDrill ? buildDrillMode(drillId, mode) : mode
+
+  const streamValidation = validateEventStream(events, effectiveMode)
   if (!streamValidation.valid) return streamValidation
 
   // Events must already be in chronological order — an honest client records
@@ -159,14 +167,14 @@ export function simulateRound(events, modeId, {
     ? normalizeLoadoutSnapshotForLevel(playerLevel, loadoutSnapshot)
     : null
   const roundRules = normalizedSnapshot
-    ? buildRoundRules(mode, normalizedSnapshot)
-    : mode
+    ? buildRoundRules(effectiveMode, normalizedSnapshot)
+    : effectiveMode
 
   const hasRoundSeed = roundSeed !== null && roundSeed !== undefined
   const replay = replayRoundEvents(roundRules, events, hasRoundSeed ? { seed: roundSeed, arenaWidth, arenaHeight } : {})
   if (!replay.valid) return replay
 
-  const deadlineCheck = validateRoundDeadline(roundRules, mode, events)
+  const deadlineCheck = validateRoundDeadline(roundRules, effectiveMode, events)
   if (!deadlineCheck.valid) return deadlineCheck
 
   if (mode.allowsRankProgression && !hasRoundSeed) {

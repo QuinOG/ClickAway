@@ -3,7 +3,7 @@ import {
   buildAchievementStatsFromLifetime,
   normalizeLifetimeStats,
 } from "../../utils/lifetimeStatsUtils.js"
-import { ACHIEVEMENTS } from "./achievementsList.js"
+import { ACCURACY_MIN_ATTEMPTS, ACHIEVEMENTS, CLEAN_ROUND_MIN_HITS } from "./achievementsList.js"
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
@@ -90,11 +90,11 @@ export function buildAchievementStats({
     bestStreak = Math.max(bestStreak, roundBestStreak)
     bestSingleScore = Math.max(bestSingleScore, score)
 
-    if (misses === 0 && hits >= 5) {
+    if (misses === 0 && hits >= CLEAN_ROUND_MIN_HITS) {
       cleanRounds += 1
     }
 
-    if (attempts >= 10) {
+    if (attempts >= ACCURACY_MIN_ATTEMPTS) {
       const accuracy = Math.floor((hits / attempts) * 100)
       bestSingleRoundAccuracy = Math.max(bestSingleRoundAccuracy, accuracy)
     }

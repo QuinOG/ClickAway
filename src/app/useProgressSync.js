@@ -97,7 +97,10 @@ export function useProgressSync({ isAuthed, applyProgress }) {
       })
       .finally(() => {
         settlePendingPreferences(pendingHandle)
-        settleProgressMutation(ticket, applyProgress)
+        if (sessionEpochRef.current === requestEpoch
+          && intentSequence === latestIntentSequenceRef.current) {
+          settleProgressMutation(ticket, applyProgress)
+        }
       })
 
     return persistQueueRef.current

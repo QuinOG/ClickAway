@@ -257,7 +257,6 @@ export default function FeedbackSettingsSheet({
       onOpenChange={onOpenChange}
       triggerRef={triggerRef}
       title="Feedback settings"
-      description="Tune sound, motion, flashes, shake, and optional touch cues independently."
       size="sm"
       mobilePresentation="sheet"
       surfaceClassName="feedbackSettingsSheet"

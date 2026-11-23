@@ -1,0 +1,20 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMax slice'>
+<defs>
+<linearGradient id='beam' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#9fd8ff' stop-opacity='.16'/><stop offset='1' stop-color='#9fd8ff' stop-opacity='0'/></linearGradient>
+<linearGradient id='floor' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#1aa6d6' stop-opacity='0'/><stop offset='1' stop-color='#1aa6d6' stop-opacity='.22'/></linearGradient>
+<radialGradient id='glow' cx='.5' cy='1' r='.6'><stop offset='0' stop-color='#ff7a3c' stop-opacity='.10'/><stop offset='1' stop-color='#ff7a3c' stop-opacity='0'/></radialGradient>
+</defs>
+<rect width='1600' height='900' fill='url(#glow)'/>
+<path d='M120 120 L560 1000 M1480 120 L1040 1000' stroke='none'/>
+<g fill='none' stroke='#5d8cc4' stroke-opacity='.22' stroke-width='3'>
+<path d='M0 300 Q800 150 1600 300'/><path d='M0 340 Q800 200 1600 340'/>
+<path d='M80 300 V560 M240 270 V560 M1360 270 V560 M1520 300 V560'/>
+<path d='M80 330 L240 300 M80 400 L240 370 M80 470 L240 440 M1360 300 L1520 330 M1360 370 L1520 400 M1360 440 L1520 470'/>
+</g>
+<g fill='#0a1424' fill-opacity='.85'><path d='M0 560 Q400 520 800 530 Q1200 520 1600 560 V640 H0Z'/></g>
+<rect y='640' width='1600' height='260' fill='url(#floor)'/>
+<g stroke='#3fc8f0' stroke-opacity='.18' stroke-width='1.5'>
+<path d='M800 640 L-400 900 M800 640 L0 900 M800 640 L400 900 M800 640 L800 900 M800 640 L1200 900 M800 640 L1600 900 M800 640 L2000 900'/>
+<path d='M0 660 H1600 M0 690 H1600 M0 735 H1600 M0 800 H1600 M0 885 H1600'/>
+</g>
+</svg>

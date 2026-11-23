@@ -5,6 +5,10 @@ function getMetricNumber(stats = {}, metricKey = "") {
   return Number.isFinite(numericValue) ? Math.max(0, numericValue) : null
 }
 
+// Minimums so a short first round cannot clear the accuracy and clean-round goals.
+export const ACCURACY_MIN_ATTEMPTS = 40
+export const CLEAN_ROUND_MIN_HITS = 25
+
 export const ACHIEVEMENT_CATEGORIES = [
   { key: "rounds", label: "Rounds", isCoreCategory: true },
   { key: "level", label: "Level", isCoreCategory: true },
@@ -97,6 +101,7 @@ function buildCoreCategoryAchievements(categoryKey = "", metricAchievements = []
   )
 }
 
+// Ids are stored in players' unlock lists, so they stay fixed when targets are retuned.
 const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
   rounds: [
     {
@@ -144,18 +149,18 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
     {
       id: "easy-level-5",
       title: "Arena Regular",
-      description: "Reach level 5.",
+      description: "Reach level 10.",
       iconKey: "level",
       metricKey: "level",
-      targetValue: 5,
+      targetValue: 10,
     },
     {
       id: "hard-level-15",
       title: "Arcade Operator",
-      description: "Reach level 15.",
+      description: "Reach level 25.",
       iconKey: "level",
       metricKey: "level",
-      targetValue: 15,
+      targetValue: 25,
     },
     {
       id: "career-level-50",
@@ -270,49 +275,49 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
     {
       id: "easy-streak-20",
       title: "Combo Starter",
-      description: "Reach a highest streak of 20.",
-      iconKey: "streak",
-      metricKey: "bestStreak",
-      targetValue: 20,
-    },
-    {
-      id: "hard-streak-30",
-      title: "Hot Hand",
-      description: "Reach a highest streak of 30.",
-      iconKey: "streak",
-      metricKey: "bestStreak",
-      targetValue: 30,
-    },
-    {
-      id: "hard-streak-40",
-      title: "Momentum Engine",
       description: "Reach a highest streak of 40.",
       iconKey: "streak",
       metricKey: "bestStreak",
       targetValue: 40,
     },
     {
-      id: "career-streak-45",
-      title: "Chain Keeper",
-      description: "Reach a highest streak of 45.",
-      iconKey: "streak",
-      metricKey: "bestStreak",
-      targetValue: 45,
-    },
-    {
-      id: "career-streak-50",
-      title: "Combo Crown",
+      id: "hard-streak-30",
+      title: "Hot Hand",
       description: "Reach a highest streak of 50.",
       iconKey: "streak",
       metricKey: "bestStreak",
       targetValue: 50,
+    },
+    {
+      id: "hard-streak-40",
+      title: "Momentum Engine",
+      description: "Reach a highest streak of 60.",
+      iconKey: "streak",
+      metricKey: "bestStreak",
+      targetValue: 60,
+    },
+    {
+      id: "career-streak-45",
+      title: "Chain Keeper",
+      description: "Reach a highest streak of 70.",
+      iconKey: "streak",
+      metricKey: "bestStreak",
+      targetValue: 70,
+    },
+    {
+      id: "career-streak-50",
+      title: "Combo Crown",
+      description: "Reach a highest streak of 80.",
+      iconKey: "streak",
+      metricKey: "bestStreak",
+      targetValue: 80,
     },
   ],
   skill: [
     {
       id: "skill-clean-1",
       title: "Flawless",
-      description: "Complete a round with 0 misses (5+ hits).",
+      description: "Complete a round with 0 misses (25+ hits).",
       iconKey: "skill",
       metricKey: "cleanRounds",
       targetValue: 1,
@@ -320,7 +325,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
     {
       id: "skill-clean-10",
       title: "Precision Craft",
-      description: "Complete 10 rounds with 0 misses (5+ hits).",
+      description: "Complete 10 rounds with 0 misses (25+ hits).",
       iconKey: "skill",
       metricKey: "cleanRounds",
       targetValue: 10,
@@ -328,7 +333,7 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
     {
       id: "skill-clean-25",
       title: "Zero Fault",
-      description: "Complete 25 rounds with 0 misses (5+ hits).",
+      description: "Complete 25 rounds with 0 misses (25+ hits).",
       iconKey: "skill",
       metricKey: "cleanRounds",
       targetValue: 25,
@@ -336,18 +341,18 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
     {
       id: "skill-accuracy-90",
       title: "Sharp Eye",
-      description: "Achieve 90%+ accuracy in a single round (10+ attempts).",
+      description: "Achieve 95%+ accuracy in a single round (40+ attempts).",
       iconKey: "skill",
       metricKey: "bestSingleRoundAccuracy",
-      targetValue: 90,
+      targetValue: 95,
     },
     {
       id: "skill-accuracy-95",
       title: "Precision Lock",
-      description: "Achieve 95%+ accuracy in a single round (10+ attempts).",
+      description: "Achieve 98%+ accuracy in a single round (40+ attempts).",
       iconKey: "skill",
       metricKey: "bestSingleRoundAccuracy",
-      targetValue: 95,
+      targetValue: 98,
     },
     {
       id: "skill-ranked-streak-15",
@@ -383,19 +388,19 @@ const CORE_CATEGORY_ACHIEVEMENT_DEFINITIONS = {
     },
     {
       id: "skill-score-100",
-      title: "Century",
-      description: "Score 100 or more in a single round.",
+      title: "High Roller",
+      description: "Score 600 or more in a single round.",
       iconKey: "skill",
       metricKey: "bestSingleScore",
-      targetValue: 100,
+      targetValue: 600,
     },
     {
       id: "skill-score-200",
-      title: "Double Century",
-      description: "Score 200 or more in a single round.",
+      title: "Four Figures",
+      description: "Score 1,000 or more in a single round.",
       iconKey: "skill",
       metricKey: "bestSingleScore",
-      targetValue: 200,
+      targetValue: 1000,
     },
   ],
 }

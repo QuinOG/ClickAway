@@ -10,8 +10,8 @@ export default class AppErrorBoundary extends Component {
   render() {
     if (!this.state.failed) return this.props.children
     return (
-      <main className="pageCenter" role="alert">
-        <section className="routeFallback">
+      <main className="pageCenter">
+        <section className="routeFallback" role="alert">
           <h1>Could not open ClickAway</h1>
           <p>Reload the page to try again. Saved account progress is kept.</p>
           <button type="button" onClick={() => window.location.reload()}>Reload page</button>

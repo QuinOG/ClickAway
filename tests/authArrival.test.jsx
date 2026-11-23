@@ -30,7 +30,7 @@ describe("Branded auth arrival", () => {
     await user.type(screen.getByLabelText("Username"), "ab")
     await user.type(screen.getByLabelText("Password"), "short")
     await user.type(screen.getByLabelText("Confirm Password"), "short")
-    await user.click(screen.getByRole("button", { name: "Issue pass" }))
+    await user.click(screen.getByRole("button", { name: "Create account" }))
 
     expect(onSignup).not.toHaveBeenCalled()
     expect(screen.getByText("Username must be at least 3 characters.")).not.toBeNull()

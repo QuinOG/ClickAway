@@ -1,4 +1,7 @@
-﻿import "dotenv/config"
+import "dotenv/config"
+
+import { parsePositiveIntId } from "./positiveIntId.js"
+import { isValidDrillId } from "../src/constants/drillConfig.js"
 
 import bcrypt from "bcryptjs"
 import cors from "cors"
@@ -23,7 +26,6 @@ import {
 import {
   createUser,
   completeUserRound,
-  RoundAlreadySubmittedError,
   createChallenge,
   findChallengeById,
   findChallengesForUser,
@@ -50,7 +52,8 @@ import {
 } from "./playerMysqlDatabase.js"
 import { calculateRoundRewards, simulateRound, getTokenlessGeometrySeed, isRaceableReplay } from "./roundRewards.js"
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
-import { createPlayerStateStore, PlayerStateError } from "./playerStateStore.js"
+import { createPlayerStateStore } from "./playerStateStore.js"
+import { handleExpressError, handleRouteError } from "./routeErrors.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
@@ -170,52 +173,9 @@ function normalizeProgressPayload(body = {}) {
     equippedProfileImageId: body.equippedProfileImageId,
     activeLoadoutId: body.activeLoadoutId,
     savedLoadouts: body.savedLoadouts,
-    selectedModeId: body.selectedModeId,
     buildWalkthrough: body.buildWalkthrough,
     seenUnlockPartIds: body.seenUnlockPartIds,
   }
-}
-
-function mergeProgressPayload(existingProgress = {}, nextProgress = {}) {
-  return Object.entries(nextProgress).reduce(
-    (mergedProgress, [key, value]) => (
-      value === undefined
-        ? mergedProgress
-        : { ...mergedProgress, [key]: value }
-    ),
-    { ...existingProgress }
-  )
-}
-
-function clampCoins(value) {
-  return Math.min(MAX_COINS, Math.max(0, Number(value) || 0))
-}
-
-function clampXp(value) {
-  return Math.min(MAX_XP, Math.max(0, Number(value) || 0))
-}
-
-function clampMmr(value) {
-  return Math.min(MAX_MMR, Math.max(0, Number(value) || 0))
-}
-
-function clampProgressBounds(progress = {}) {
-  return {
-    ...progress,
-    coins: clampCoins(progress.coins),
-    levelXp: clampXp(progress.levelXp),
-    rankMmr: clampMmr(progress.rankMmr),
-  }
-}
-
-function handleRouteError(error, response) {
-  if (error instanceof PlayerStateError || error instanceof RoundAlreadySubmittedError) {
-    response.status(error.status).json({ error: error.message })
-    return
-  }
-
-  console.error(error)
-  response.status(500).json({ error: "Unexpected server error." })
 }
 
 function requireAuth(request, response, next) {
@@ -450,7 +410,12 @@ app.get("/api/replays/:replayId", requireAuth, async (request, response) => {
   }
 
   try {
-    const replay = await findReplayById(Number(request.params.replayId))
+    const replayId = parsePositiveIntId(request.params.replayId)
+    if (replayId === null) {
+      response.status(400).json({ error: "Invalid replayId: expected a positive safe integer." })
+      return
+    }
+    const replay = await findReplayById(replayId)
     if (!replay) {
       response.status(404).json({ error: "Replay not found." })
       return
@@ -515,7 +480,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
 
   try {
     const opponentUsername = String(request.body?.opponentUsername || "").trim()
-    const replayId = Number(request.body?.replayId)
+    const replayId = parsePositiveIntId(request.body?.replayId)
+    if (replayId === null) {
+      response.status(400).json({ error: "Invalid replayId: expected a positive safe integer." })
+      return
+    }
     const message = String(request.body?.message || "").trim()
 
     if (!opponentUsername || !replayId) {
@@ -573,6 +542,11 @@ app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, re
   }
 
   try {
+    const challengeId = parsePositiveIntId(request.params.challengeId)
+    if (challengeId === null) {
+      response.status(400).json({ error: "Invalid challengeId: expected a positive safe integer." })
+      return
+    }
     const action = String(request.body?.action || "")
     if (action !== "accept" && action !== "decline") {
       response.status(400).json({ error: "action must be accept or decline." })
@@ -580,7 +554,7 @@ app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, re
     }
 
     const result = await respondToChallenge({
-      challengeId: Number(request.params.challengeId),
+      challengeId,
       userId: user.id,
       action,
     })
@@ -675,7 +649,13 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
   // replay and compared with the challenger's on the same targets.
   let seed = createRoundSeed()
   let replayId = null
-  const challengeId = Number(request.body?.challengeId) || null
+  const rawChallengeId = request.body?.challengeId
+  const hasChallengeId = rawChallengeId !== undefined && rawChallengeId !== null && rawChallengeId !== ""
+  const challengeId = hasChallengeId ? parsePositiveIntId(rawChallengeId) : null
+  if (hasChallengeId && challengeId === null) {
+    response.status(400).json({ error: "Invalid challengeId: expected a positive safe integer." })
+    return
+  }
   if (challengeId) {
     try {
       const challenge = await findChallengeById(challengeId)
@@ -739,6 +719,12 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     return
   }
 
+  const normalizedDrillId = drillId !== undefined && drillId !== null && drillId !== "" ? String(drillId) : null
+  if (normalizedDrillId !== null && (mode.id !== "easy" || !isValidDrillId(normalizedDrillId))) {
+    response.status(400).json({ error: "Invalid drillId: drills require easy mode and a known drill." })
+    return
+  }
+
   if (mode.allowsRankProgression && !roundToken) {
     response.status(400).json({ error: "Ranked rounds require a round token." })
     return
@@ -782,6 +768,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const playerLevel = getLevelProgress(currentProgress.levelXp).level
 
     const simulation = await measure("simulate", () => simulateRound(events, modeId, {
+      drillId: normalizedDrillId,
       loadoutSnapshot: loadoutSnapshot ?? null,
       playerLevel,
       roundSeed: roundSeed ?? getTokenlessGeometrySeed(clientSeed, arenaWidth, arenaHeight),
@@ -842,7 +829,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       rankDelta: estimatedRankOutcome.appliedRankDelta,
       modeId,
       progressionMode,
-      drillId: typeof drillId === "string" ? drillId : null,
+      drillId: normalizedDrillId,
       loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }
@@ -976,16 +963,11 @@ app.put("/api/progress", requireAuth, async (request, response) => {
   }
 
   try {
-    const currentProgress = await findUserProgressByUserId(user.id)
     const incoming = normalizeProgressPayload(request.body)
-
-    const nextProgress = clampProgressBounds(
-      mergeProgressPayload(currentProgress, incoming)
-    )
 
     const progress = await saveUserProgress({
       userId: user.id,
-      ...nextProgress,
+      ...incoming,
       providedFields: Object.keys(incoming).filter((key) => incoming[key] !== undefined),
     })
 
@@ -1003,6 +985,8 @@ if (existsSync(distPath)) {
     response.sendFile(join(distPath, "index.html"))
   })
 }
+
+app.use(handleExpressError)
 
 async function startServer() {
   if (DB_AUTO_MIGRATE) {

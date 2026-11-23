@@ -111,11 +111,9 @@ test("achievement category tabs support roving keyboard selection", () => {
 test("Profile displays zero reaction measurements and keeps missing reactions empty", () => {
   const { container, rerender } = render(<ProfilePage lifetimeStats={{ reactionRounds: 1, totalReactionMs: 0, bestReactionMs: 0 }} />)
   const reaction = () => [...container.querySelectorAll(".profileAttribute")].find((row) => row.textContent.includes("Reaction"))
-  expect(reaction().textContent).toContain("0 ms fastest")
   expect(reaction().querySelector(".profileAttributeValue").textContent).toBe("0 ms")
   expect(reaction().querySelector(".profileDialFill").getAttribute("stroke-dasharray")).toBe("100 100")
   rerender(<ProfilePage lifetimeStats={{}} />)
-  expect(reaction().textContent).toContain("awaiting timed hits")
   expect(reaction().querySelector(".profileAttributeValue").textContent).toBe("\u2014")
 })
 
@@ -127,4 +125,23 @@ test("Profile recent form distinguishes placement points from RR", () => {
   expect(screen.getByText("+50 placement points")).not.toBeNull()
   expect(screen.getByText("+12 RR")).not.toBeNull()
   expect(container.querySelector('[title="100 score, +50 placement points"]')).not.toBeNull()
+})
+
+test("Profile tolerates null names and malformed recent rounds", () => {
+  const { container } = render(<ProfilePage playerName={null} roundHistory={[null, undefined, {}, { score: "bad" }]} />)
+  expect(screen.getByRole("heading", { name: "Player" })).not.toBeNull()
+  expect(screen.getByRole("heading", { name: "Last 4 rounds" })).not.toBeNull()
+  expect(container.querySelectorAll('.profileFormToken[title="0 score"]').length).toBe(4)
+})
+
+test("achievement tabs label and control their displayed panel", () => {
+  renderProfile()
+  const panel = screen.getByRole("tabpanel")
+  for (const tab of screen.getAllByRole("tab")) {
+    expect(tab.getAttribute("aria-controls")).toBe(panel.id)
+    fireEvent.click(tab)
+    expect(panel.getAttribute("aria-labelledby")).toBe(tab.id)
+    expect(tab.getAttribute("aria-selected")).toBe("true")
+    expect(panel.contains(document.querySelector(".achievementsMainArea"))).toBe(true)
+  }
 })

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { PartEmblem } from "../../../components/art/GameIcons.jsx"
+import { PartEmblem, PowerEmblem } from "../../../components/art/GameIcons.jsx"
 
 import {
   LOADOUT_POWERUPS,
@@ -15,7 +15,6 @@ import {
 } from "../../../constants/buildcraftPresentation.js"
 import {
   ModuleSlotGlyph,
-  PowerupGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import {
   getModuleExactChips,
@@ -84,6 +83,21 @@ export default function ArmoryScreen({
     ? buildRoundRules(selectedMode, {
         ...activeLoadout,
         moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: previewModuleId },
+      })
+    : null
+
+  const [targetPreview, setTargetPreview] = useState(null)
+  const handleSelectModule = useCallback((moduleId) => setTargetPreview(moduleId ? {
+    moduleId,
+    slotKey: passiveApi.selectedModuleSlot.key,
+    loadoutId: activeLoadout.id,
+  } : null), [passiveApi.selectedModuleSlot.key, activeLoadout.id])
+  const targetPreviewRules = targetPreview && activeStepId === "passives"
+    && targetPreview.slotKey === passiveApi.selectedModuleSlot.key
+    && targetPreview.loadoutId === activeLoadout.id
+    ? buildRoundRules(selectedMode, {
+        ...activeLoadout,
+        moduleIds: { ...activeLoadout.moduleIds, [targetPreview.slotKey]: targetPreview.moduleId },
       })
     : null
 
@@ -169,6 +183,7 @@ export default function ArmoryScreen({
       <ArmoryMachine
         loadout={activeLoadout}
         presentation={activePresentation}
+        previewRules={targetPreviewRules}
         nameplateRef={nameplateRef}
         machineRef={machineRef}
         machineApi={machineApi}
@@ -228,11 +243,11 @@ export default function ArmoryScreen({
                 parts={passiveApi.moduleOptionsBySlot[passiveApi.selectedModuleSlot.id]}
                 playerLevel={playerLevel}
                 installedPartId={installedModuleId}
-                renderPartGlyph={(part) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} size={30} />}
+                renderPartGlyph={(part, className) => <PartEmblem partId={part.id} slotId={passiveApi.selectedModuleSlot.id} className={className} size={30} />}
                 onInstallPart={(moduleId) => passiveApi.selectModule(passiveApi.selectedModuleSlot.key, moduleId)}
-                onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 currentRules={activePresentation.roundRules}
                 onPreviewPart={handlePreviewModule}
+                onSelectPart={handleSelectModule}
                 getCandidateRules={(moduleId) => buildRoundRules(selectedMode, {
                   ...activeLoadout,
                   moduleIds: { ...activeLoadout.moduleIds, [passiveApi.selectedModuleSlot.key]: moduleId },
@@ -302,10 +317,9 @@ export default function ArmoryScreen({
                 parts={powerParts}
                 playerLevel={playerLevel}
                 installedPartId={hotbarApi.selectedPowerupId}
-                renderPartGlyph={(part) => <PowerupGlyph powerupId={part.id} />}
+                renderPartGlyph={(part, className) => <PowerEmblem powerupId={part.id} className={className} size={30} />}
                 onInstallPart={hotbarApi.installPower}
                 chargeMultiplier={activePresentation.roundRules?.powerupAwardMultiplier ?? 1}
-                onInspectLockedPart={firstTouchApi.notifyLockedPart}
                 footer={(
                   <>
                     <ArmoryCadenceTimeline

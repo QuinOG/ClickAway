@@ -241,6 +241,43 @@ describe("Modal and MobileSheet", () => {
     expect(document.activeElement).toBe(trigger)
   })
 
+  test("Shift+Tab moves backward from an owned popover into the dialog", async () => {
+    const user = userEvent.setup()
+    render(<DialogWithPopoverHarness />)
+    await user.click(screen.getByRole("button", { name: "Open player tools" }))
+    await user.click(screen.getByRole("button", { name: "Show quick actions" }))
+    screen.getByRole("button", { name: "View player profile" }).focus()
+
+    await user.tab({ shift: true })
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Rating help" }))
+  })
+
+  test("the first backdrop click closes only the owned popover", async () => {
+    const user = userEvent.setup()
+    render(<DialogWithPopoverHarness />)
+    await user.click(screen.getByRole("button", { name: "Open player tools" }))
+    await user.click(screen.getByRole("button", { name: "Show quick actions" }))
+    const backdrop = screen.getByRole("dialog", { name: "Player tools" }).parentElement
+
+    await user.click(backdrop)
+    expect(screen.queryByRole("dialog", { name: "Quick actions" })).toBeNull()
+    expect(screen.getByRole("dialog", { name: "Player tools" })).not.toBeNull()
+    await user.click(backdrop)
+    expect(screen.queryByRole("dialog", { name: "Player tools" })).toBeNull()
+  })
+
+  test("a backdrop click dismissing a focused tooltip preserves its parent dialog", async () => {
+    const user = userEvent.setup()
+    render(<DialogWithPopoverHarness />)
+    await user.click(screen.getByRole("button", { name: "Open player tools" }))
+    await user.click(screen.getByRole("button", { name: "Rating help" }))
+    expect(screen.getByRole("tooltip")).not.toBeNull()
+    const dialog = screen.getByRole("dialog", { name: "Player tools" })
+    await user.click(dialog.parentElement)
+    expect(screen.queryByRole("tooltip")).toBeNull()
+    expect(screen.getByRole("dialog", { name: "Player tools" })).toBe(dialog)
+  })
+
   test("an owned popover remains inside the modal focus scope", async () => {
     const user = userEvent.setup()
     render(<DialogWithPopoverHarness />)
@@ -267,6 +304,66 @@ describe("Modal and MobileSheet", () => {
 })
 
 describe("Tooltip and Popover", () => {
+  test.each(["controlled", "default"])("an initially open %s popover positions and focuses after mounting its portal", (mode) => {
+    const focusRef = { current: null }
+    const openProps = mode === "controlled" ? { open: true } : { defaultOpen: true }
+    const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockReturnValue({ left: 100, top: 100, right: 180, bottom: 140, width: 80, height: 40 })
+    const observe = vi.fn()
+    const disconnect = vi.fn()
+    vi.stubGlobal("ResizeObserver", class {
+      observe = observe
+      disconnect = disconnect
+    })
+    try {
+      const { unmount } = render(
+        <Popover {...openProps} title="Initially open" initialFocusRef={focusRef}
+          content={<button ref={focusRef}>Initial action</button>}>
+          <button>Anchor</button>
+        </Popover>
+      )
+      const popover = screen.getByRole("dialog", { name: "Initially open" })
+      expect(popover.style.position).toBe("fixed")
+      expect(popover.style.left).toBe("100px")
+      expect(popover.style.top).toBe("148px")
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "Initial action" }))
+      expect(observe).toHaveBeenCalledWith(popover)
+      rectSpy.mockReturnValue({ left: 120, top: 100, right: 200, bottom: 140, width: 80, height: 40 })
+      fireEvent.resize(window)
+      expect(popover.style.left).toBe("120px")
+      unmount()
+      expect(disconnect).toHaveBeenCalled()
+    } finally {
+      rectSpy.mockRestore()
+      vi.unstubAllGlobals()
+    }
+  })
+
+  test.each([Popover, Tooltip])("%s keeps its anchor callback stable with inline child refs", async (Disclosure) => {
+    const user = userEvent.setup()
+    const assigned = vi.fn()
+    function Harness() {
+      const [count, setCount] = useState(0)
+      return (
+        <>
+          <button onClick={() => setCount(count + 1)}>Rerender {count}</button>
+          <Disclosure title="Details" content="Details">
+            <button ref={(node) => assigned(node)}>Inline anchor</button>
+          </Disclosure>
+        </>
+      )
+    }
+    render(<Harness />)
+    const anchor = screen.getByRole("button", { name: "Inline anchor" })
+    expect(assigned.mock.calls).toEqual([[anchor]])
+    await user.click(screen.getByRole("button", { name: "Rerender 0" }))
+    expect(assigned.mock.calls).toEqual([[anchor]])
+    await user.click(anchor)
+    const floating = Disclosure === Popover ? screen.getByRole("dialog") : screen.getByRole("tooltip")
+    expect(floating.style.position).toBe("fixed")
+    expect(assigned.mock.calls).toEqual([[anchor]])
+  })
+
   test("shows nonessential tooltip copy on focus and closes it with Escape", async () => {
     const user = userEvent.setup()
     render(

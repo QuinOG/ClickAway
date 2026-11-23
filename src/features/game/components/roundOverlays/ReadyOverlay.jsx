@@ -194,17 +194,19 @@ function LobbyStage({ targetPreview, tone, loadoutName, loadoutDetail, powerSlot
         )}
       </span>
       <div className="lobbyStageLoadout" aria-label="Current active build">
-        <Tooltip content={loadoutDetail} placement="top">
-          <strong tabIndex="0">{loadoutName || "Loadout"}</strong>
-        </Tooltip>
-        <Link className="lobbyTextLink lobbyStageEdit" to="/armory">
-          View in Armory
-          {showArmoryBadge ? <b>New</b> : null}
-        </Link>
+        <div className="lobbyStageIdentity">
+          <Tooltip content={loadoutDetail} placement="top">
+            <strong tabIndex="0">{loadoutName || "Loadout"}</strong>
+          </Tooltip>
+          <Link className="lobbyTextLink lobbyStageEdit" to="/armory">
+            View in Armory
+            {showArmoryBadge ? <b>New</b> : null}
+          </Link>
+        </div>
         <span className="lobbyStagePowers" aria-hidden="true">
           {powerSlots.slice(0, 3).map((slot, index) => (
             <span key={`${slot.id ?? index}`} className="lobbyStagePower">
-              <PowerEmblem powerupId={slot.id} size={22} />
+              <PowerEmblem powerupId={slot.id} size={30} />
               <kbd>{index + 1}</kbd>
             </span>
           ))}
@@ -242,12 +244,8 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
         disabled={disabled}
         onClick={() => onSelect(mode.id)}
       >
-        <span className="lobbyModeEmblem" aria-hidden="true"><ModeEmblem tone={mode.tone} size={56} /></span>
-        <span className="lobbyModeChoiceTopline">
-          <span className="lobbyModeGlyph" aria-hidden="true">{mode.glyph}</span>
-          <span className="lobbyModeName">{mode.label}</span>
-          <span className="lobbyModeSelectedMark" aria-hidden="true">✓</span>
-        </span>
+        <ModeEmblem className="lobbyModeEmblem" tone={mode.tone} size={64} />
+        <span className="lobbyModeName">{mode.label}</span>
         <span className="lobbyModeSummary">{mode.roundLabel} · {mode.goalLabel}</span>
         <span className="lobbyModeReward">{mode.rewardLabel}</span>
         {isSelected ? (
@@ -256,9 +254,7 @@ function ModeChoice({ mode, isSelected, disabled, onSelect }) {
             <span className="lobbyModeBriefStat"><small>Miss</small><b>{mode.missPenalty > 0 ? `-${mode.missPenalty}` : "Free"}</b></span>
             <span className="lobbyModeBriefStat">
               <small>Pressure</small>
-              <span className="lobbyModeBriefPips">
-                {[1, 2, 3].map((level) => <i key={level} className={level <= mode.pressureLevel ? "isOn" : ""} />)}
-              </span>
+              <b>{mode.shrinkLabel}</b>
             </span>
           </span>
         ) : null}
@@ -309,7 +305,6 @@ function PracticeDrawer({
             >
               <strong>Free Practice</strong>
               <span>No timer pressure or drill goal.</span>
-              <small>Open training</small>
             </button>
             {drills.map((drill) => (
               <button
@@ -368,6 +363,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
       <section className="lobbyDailyGoals" aria-label="Daily goals">
         <header className="lobbyDailyGoalsHeader"><span>Daily goals</span></header>
         <p className="lobbyDailyGoalsNote">New goals are ready. They'll show after your next round.</p>
+        {dailyBonusAvailable ? <p className="lobbyDailyGoalsNote isBonus">Your first Casual or Ranked round today earns 2× XP.</p> : null}
       </section>
     )
   }
@@ -375,7 +371,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
   const doneCount = dailyGoals.goals.filter((goal) => goal.isComplete).length
   const note = isPracticeSelected
     ? "Practice rounds don't count toward goals."
-    : dailyBonusAvailable ? "Your first round today earns 2× XP." : ""
+    : dailyBonusAvailable ? "Your first Casual or Ranked round today earns 2× XP." : ""
 
   return (
     <section className="lobbyDailyGoals" aria-label="Daily goals">
@@ -407,8 +403,7 @@ function DailyGoals({ dailyGoals, nowMs, isPracticeSelected, dailyBonusAvailable
   )
 }
 
-// Phones only: the full list sits below Start, so one line above it says the
-// goals are there and what's next.
+// Retain the legacy summary hook for integrations; the board is the visible source.
 function DailyGoalsSummary({ dailyGoals, nowMs }) {
   if (!dailyGoals?.goals?.length) return null
   if (areDailyGoalsExpired(dailyGoals, nowMs)) {
@@ -489,6 +484,7 @@ export function ReadyOverlay({
   const dailyGoalsNowMs = useMinuteClock()
   const lobbyRef = useRef(null)
   const previousFocusRef = useRef(null)
+  const restoreFocusOnCloseRef = useRef(false)
   const [localSelectedModeId, setLocalSelectedModeId] = useState(selectedModeId)
   const [isPracticeDrawerOpen, setIsPracticeDrawerOpen] = useState(false)
 
@@ -499,7 +495,9 @@ export function ReadyOverlay({
   useEffect(() => {
     previousFocusRef.current = document.activeElement
     lobbyRef.current?.focus()
-    return () => previousFocusRef.current?.focus?.()
+    return () => {
+      if (restoreFocusOnCloseRef.current) previousFocusRef.current?.focus?.()
+    }
   }, [])
 
   const lobbyModes = useMemo(() => modes.map(toLobbyMode).filter(Boolean), [modes])
@@ -530,6 +528,7 @@ export function ReadyOverlay({
         setIsPracticeDrawerOpen(false)
       } else if (onClose) {
         event.preventDefault()
+        restoreFocusOnCloseRef.current = true
         onClose()
       }
       return
@@ -537,8 +536,17 @@ export function ReadyOverlay({
 
     if (event.key === "Tab") {
       const focusable = [...lobbyRef.current.querySelectorAll(
-        'button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
-      )]
+        'button:not(:disabled), a[href], summary, [tabindex]:not([tabindex="-1"])'
+      )].filter((element) => {
+        if (element.getAttribute("tabindex") === "-1") return false
+        for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+          if (ancestor.matches('details:not([open])')) {
+            const summary = [...ancestor.children].find((child) => child.tagName === 'SUMMARY')
+            if (!summary?.contains(element)) return false
+          }
+        }
+        return true
+      }).sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))
       if (!focusable.length) return
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
@@ -668,8 +676,8 @@ export function ReadyOverlay({
         <footer className="arenaLobbyFooter">
 
           <div className="arenaLobbyActions">
-            {/* On wide screens the goals list carries this note; phones keep it here, above Start. */}
-            {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First round today earns double XP</p> : null}
+            {/* The board carries the bonus when goals are available. */}
+            {dailyBonusAvailable ? <p className={`arenaLobbyDailyBonus ${dailyGoals?.goals?.length ? "hasDailyGoals" : ""}`}>First Casual or Ranked round today earns double XP</p> : null}
             <button
               type="button"
               className="primaryButton arenaLobbyStart"
