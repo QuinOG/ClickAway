@@ -1,3 +1,4 @@
+import { parsePositiveIntId } from "../server/positiveIntId.js"
 import test from "node:test"
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
@@ -10,7 +11,7 @@ const code = source.slice(source.indexOf('app.get("/api/replays/:replayId"'), so
 function harness(visibility, loadoutSnapshot = { arenaWidth: 600, arenaHeight: 400 }) {
   const routes = new Map()
   let writes = 0
-  const ctx = {
+  const ctx = { parsePositiveIntId,
     app: { get: (path, auth, handler) => routes.set(path, handler), post: (path, auth, handler) => routes.set(path, handler) },
     requireAuth: {}, findUserById: async id => ({ id, username: "Player" }),
     findUserByUsernameForChallenge: async () => ({ id: 2, username: "Rival" }),

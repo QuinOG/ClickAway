@@ -1,4 +1,7 @@
-﻿import "dotenv/config"
+import "dotenv/config"
+
+import { parsePositiveIntId } from "./positiveIntId.js"
+import { isValidDrillId } from "../src/constants/drillConfig.js"
 
 import bcrypt from "bcryptjs"
 import cors from "cors"
@@ -439,7 +442,12 @@ app.get("/api/replays/:replayId", requireAuth, async (request, response) => {
   }
 
   try {
-    const replay = await findReplayById(Number(request.params.replayId))
+    const replayId = parsePositiveIntId(request.params.replayId)
+    if (replayId === null) {
+      response.status(400).json({ error: "Invalid replayId: expected a positive safe integer." })
+      return
+    }
+    const replay = await findReplayById(replayId)
     if (!replay) {
       response.status(404).json({ error: "Replay not found." })
       return
@@ -504,7 +512,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
 
   try {
     const opponentUsername = String(request.body?.opponentUsername || "").trim()
-    const replayId = Number(request.body?.replayId)
+    const replayId = parsePositiveIntId(request.body?.replayId)
+    if (replayId === null) {
+      response.status(400).json({ error: "Invalid replayId: expected a positive safe integer." })
+      return
+    }
     const message = String(request.body?.message || "").trim()
 
     if (!opponentUsername || !replayId) {
@@ -562,6 +574,11 @@ app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, re
   }
 
   try {
+    const challengeId = parsePositiveIntId(request.params.challengeId)
+    if (challengeId === null) {
+      response.status(400).json({ error: "Invalid challengeId: expected a positive safe integer." })
+      return
+    }
     const action = String(request.body?.action || "")
     if (action !== "accept" && action !== "decline") {
       response.status(400).json({ error: "action must be accept or decline." })
@@ -569,7 +586,7 @@ app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, re
     }
 
     const result = await respondToChallenge({
-      challengeId: Number(request.params.challengeId),
+      challengeId,
       userId: user.id,
       action,
     })
@@ -664,7 +681,13 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
   // replay and compared with the challenger's on the same targets.
   let seed = createRoundSeed()
   let replayId = null
-  const challengeId = Number(request.body?.challengeId) || null
+  const rawChallengeId = request.body?.challengeId
+  const hasChallengeId = rawChallengeId !== undefined && rawChallengeId !== null && rawChallengeId !== ""
+  const challengeId = hasChallengeId ? parsePositiveIntId(rawChallengeId) : null
+  if (hasChallengeId && challengeId === null) {
+    response.status(400).json({ error: "Invalid challengeId: expected a positive safe integer." })
+    return
+  }
   if (challengeId) {
     try {
       const challenge = await findChallengeById(challengeId)
@@ -728,6 +751,12 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     return
   }
 
+  const normalizedDrillId = drillId !== undefined && drillId !== null && drillId !== "" ? String(drillId) : null
+  if (normalizedDrillId !== null && (mode.id !== "easy" || !isValidDrillId(normalizedDrillId))) {
+    response.status(400).json({ error: "Invalid drillId: drills require easy mode and a known drill." })
+    return
+  }
+
   if (mode.allowsRankProgression && !roundToken) {
     response.status(400).json({ error: "Ranked rounds require a round token." })
     return
@@ -771,6 +800,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     const playerLevel = getLevelProgress(currentProgress.levelXp).level
 
     const simulation = await measure("simulate", () => simulateRound(events, modeId, {
+      drillId: normalizedDrillId,
       loadoutSnapshot: loadoutSnapshot ?? null,
       playerLevel,
       roundSeed: roundSeed ?? getTokenlessGeometrySeed(clientSeed, arenaWidth, arenaHeight),
@@ -831,7 +861,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       rankDelta: estimatedRankOutcome.appliedRankDelta,
       modeId,
       progressionMode,
-      drillId: typeof drillId === "string" ? drillId : null,
+      drillId: normalizedDrillId,
       loadoutSnapshot: simulation.loadoutSnapshot,
       playedAtIso: new Date().toISOString(),
     }

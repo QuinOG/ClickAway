@@ -71,7 +71,8 @@ export const TRAINING_DRILLS_BY_ID = Object.fromEntries(
 )
 
 export function getTrainingDrillById(drillId) {
-  return TRAINING_DRILLS_BY_ID[String(drillId || "")] ?? null
+  const id = String(drillId || "")
+  return Object.hasOwn(TRAINING_DRILLS_BY_ID, id) ? TRAINING_DRILLS_BY_ID[id] : null
 }
 
 export function buildDrillMode(drillId, baseMode = getDifficultyById(DIFFICULTY_IDS.EASY)) {
