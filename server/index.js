@@ -178,38 +178,6 @@ function normalizeProgressPayload(body = {}) {
   }
 }
 
-function mergeProgressPayload(existingProgress = {}, nextProgress = {}) {
-  return Object.entries(nextProgress).reduce(
-    (mergedProgress, [key, value]) => (
-      value === undefined
-        ? mergedProgress
-        : { ...mergedProgress, [key]: value }
-    ),
-    { ...existingProgress }
-  )
-}
-
-function clampCoins(value) {
-  return Math.min(MAX_COINS, Math.max(0, Number(value) || 0))
-}
-
-function clampXp(value) {
-  return Math.min(MAX_XP, Math.max(0, Number(value) || 0))
-}
-
-function clampMmr(value) {
-  return Math.min(MAX_MMR, Math.max(0, Number(value) || 0))
-}
-
-function clampProgressBounds(progress = {}) {
-  return {
-    ...progress,
-    coins: clampCoins(progress.coins),
-    levelXp: clampXp(progress.levelXp),
-    rankMmr: clampMmr(progress.rankMmr),
-  }
-}
-
 function requireAuth(request, response, next) {
   const token = extractCookieToken(request.headers.cookie || "")
   if (!token) {
@@ -995,16 +963,11 @@ app.put("/api/progress", requireAuth, async (request, response) => {
   }
 
   try {
-    const currentProgress = await findUserProgressByUserId(user.id)
     const incoming = normalizeProgressPayload(request.body)
-
-    const nextProgress = clampProgressBounds(
-      mergeProgressPayload(currentProgress, incoming)
-    )
 
     const progress = await saveUserProgress({
       userId: user.id,
-      ...nextProgress,
+      ...incoming,
       providedFields: Object.keys(incoming).filter((key) => incoming[key] !== undefined),
     })
 

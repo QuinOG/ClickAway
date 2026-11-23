@@ -111,3 +111,34 @@ test("old-session failed saves never reconcile or announce an error", async () =
   expect(applyProgress).not.toHaveBeenCalled()
   expect(toast.error).not.toHaveBeenCalled()
 })
+
+test("superseded saves do not reconcile while the latest queued save is in flight", async () => {
+  vi.useFakeTimers()
+  try {
+    let resolveFirst
+    let resolveSecond
+    updatePlayerProgress
+      .mockReturnValueOnce(new Promise(resolve => { resolveFirst = resolve }))
+      .mockReturnValueOnce(new Promise(resolve => { resolveSecond = resolve }))
+    fetchCurrentUser.mockResolvedValue({ progress: { activeLoadoutId: "loadout_3" } })
+    const applyProgress = vi.fn()
+    const { result } = renderHook(() => useProgressSync({ isAuthed: true, applyProgress }))
+    const first = result.current.persistIntent({ activeLoadoutId: "loadout_2" })
+    const second = result.current.persistIntent({ activeLoadoutId: "loadout_3" })
+    await vi.advanceTimersByTimeAsync(0)
+    resolveFirst({ progress: { activeLoadoutId: "loadout_2" } })
+    await first
+    await vi.advanceTimersByTimeAsync(300)
+    expect(updatePlayerProgress).toHaveBeenCalledTimes(2)
+    expect(fetchCurrentUser).not.toHaveBeenCalled()
+    resolveSecond({ progress: { activeLoadoutId: "loadout_3" } })
+    await second
+    await vi.advanceTimersByTimeAsync(299)
+    expect(fetchCurrentUser).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(fetchCurrentUser).toHaveBeenCalledOnce()
+  } finally {
+    startNewProgressSession()
+    vi.useRealTimers()
+  }
+})

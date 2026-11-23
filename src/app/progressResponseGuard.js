@@ -74,9 +74,8 @@ export function claimProgressResponse(ticket) {
   return "apply"
 }
 
-// Applies a response's progress if it is still the newest for this session. If
-// a newer response already landed, this one's snapshot may be missing changes,
-// so the current state is fetched again instead of applying the old snapshot.
+// Applies a response when its request is current or its timestamp proves the
+// snapshot is newer. Otherwise fetch current state to avoid losing changes.
 // Returns "applied", "refreshed", "refresh-failed" or "other-session".
 function isOlderSnapshot(progress) {
   const snapshotAt = Number(progress?.snapshotAtMs) || 0
@@ -91,6 +90,10 @@ function applySnapshot(progress, applyProgress) {
 export async function applyProgressResponse(ticket, progress, applyProgress) {
   const claim = claimProgressResponse(ticket)
   if (claim === "other-session") return "other-session"
+  if (claim === "superseded" && Number(progress?.snapshotAtMs) > lastAppliedSnapshotAt) {
+    applySnapshot(progress, applyProgress)
+    return "applied"
+  }
   // Applied directly only when it is the newest for this session and the server
   // read it no earlier than what is on screen. A missing snapshot (the server
   // saved but couldn't read progress back) or an older one is fetched fresh.

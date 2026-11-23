@@ -52,3 +52,12 @@ test('an in-flight reconcile never rolls back a newer applied snapshot', async (
   await vi.advanceTimersByTimeAsync(1)
   expect(apply.mock.calls.map(([p]) => p.coins)).toEqual([200])
 })
+
+test('a superseded ticket with a strictly newer snapshot applies without a read', async () => {
+  const apply = vi.fn()
+  const earlier = beginProgressRequest()
+  await applyProgressResponse(beginProgressRequest(), { coins: 10, snapshotAtMs: 100 }, apply)
+  expect(await applyProgressResponse(earlier, { coins: 20, snapshotAtMs: 200 }, apply)).toBe('applied')
+  expect(apply).toHaveBeenLastCalledWith({ coins: 20, snapshotAtMs: 200 })
+  expect(fetchCurrentUser).not.toHaveBeenCalled()
+})
