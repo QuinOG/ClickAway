@@ -12,9 +12,9 @@ const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("// Saves only the preferences"))
   .replace("export ", "")
 
-async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false } = {}) {
+async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {} } = {}) {
   const trace = [], writes = [], headers = {}
-  let handler, saveInputs, simulatedLevel, stats = 0
+  let handler, saveInputs, simulatedLevel, seasonInputs, stats = 0
   const locked = { coins: 990, xp: 990, mmr: 400, rankSystemVersion: RANK_SYSTEM_VERSION,
     placementMatchesPlayed: 10, demotionProtectionRounds: 0 }
   const connection = {
@@ -50,13 +50,13 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     getTodaysDailyGoalRounds: async () => ({ dayKey: null, rounds: [] }),
     sumDailyGoalRewards: () => ({ coins: 0, xp: 0 }),
     backfillLifetimeStatsFromHistory: async () => trace.push("backfill"),
-    insertRoundHistoryEntry: async (_connection, _id, entry) => { trace.push("history"); return entry },
+    insertRoundHistoryEntry: async (_connection, _id, entry) => { trace.push("history"); return { ...entry, ...savedTimestamp } },
     getLifetimeStatsRow: async () => ({}), mapLifetimeStatsRow: () => ({}),
     applyRoundToLifetimeStats: () => ({}), persistLifetimeStats: async () => { stats++ },
     buildAchievementStatsFromLifetime: () => ({}), evaluateAchievements: () => [], getUnlockedAchievementIds: () => [], addUnlockedAchievements: async () => {},
     insertRoundReplay: async () => { trace.push("replay"); if (failure === "replay") throw Error("failure"); return { id: 8 } },
     completeChallenge: async () => { trace.push("duel"); return { ok: true, challenge: { id: 11 } } },
-    applyUserSeasonProgress: async () => { trace.push("season"); if (failure === "season") throw Error("failure"); return {} },
+    applyUserSeasonProgress: async (_id, inputs) => { seasonInputs = inputs; trace.push("season"); if (failure === "season") throw Error("failure"); return {} },
     findUserProgressByUserId: async () => { trace.push("progress"); if (failure === "progress") throw Error("failure"); return { final: true } },
     handleRouteError: (_error, response) => response.status(409).json({ error: "save failed" }),
   }
@@ -68,8 +68,24 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     setHeader: (name, value) => { headers[name] = value }, json(body) { this.body = body; return this } }
   await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0 }], roundToken: token ? "private-token" : null } }, response)
   assert.match(headers["Server-Timing"], /^context;dur=\d+\.\d{2}, simulate;dur=\d+\.\d{2}, save;dur=\d+\.\d{2}, followups;dur=\d+\.\d{2}, progress;dur=\d+\.\d{2}, total;dur=\d+\.\d{2}$/)
-  return { trace, writes, response, saveInputs, simulatedLevel, stats }
+  return { trace, writes, response, saveInputs, simulatedLevel, seasonInputs, stats }
 }
+
+test("season attribution prefers the committed DB timestamp across a rollover", async () => {
+  const playedAtIso = "2026-12-01T00:00:00.000Z"
+  const h = await run({ savedTimestamp: { playedAtIso, playedAt: "2026-11-30T23:59:59.999Z" } })
+  assert.equal(h.response.statusCode, 200)
+  assert.notEqual(h.saveInputs.historyEntry.playedAtIso, playedAtIso)
+  assert.equal(h.seasonInputs.playedAt, playedAtIso)
+})
+
+test("season attribution retains legacy and request timestamp fallbacks", async () => {
+  const playedAt = "2026-11-30T23:59:59.999Z"
+  const legacy = await run({ savedTimestamp: { playedAtIso: null, playedAt } })
+  assert.equal(legacy.seasonInputs.playedAt, playedAt)
+  const fallback = await run({ savedTimestamp: { playedAtIso: null } })
+  assert.equal(fallback.seasonInputs.playedAt, fallback.saveInputs.historyEntry.playedAtIso)
+})
 
 test("context drives simulation; locked wallet and rank override stale context; final progress follows all writes", async () => {
   const h = await run({ ranked: true })

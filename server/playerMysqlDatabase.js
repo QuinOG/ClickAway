@@ -2431,8 +2431,9 @@ export async function findUserByUsernameForChallenge(username) {
     `SELECT id, username
      FROM users
      WHERE LOWER(username) = LOWER(?)
+     ORDER BY CASE WHEN username = ? THEN 0 ELSE 1 END, id ASC
      LIMIT 1`,
-    [normalizedUsername]
+    [normalizedUsername, normalizedUsername]
   )
 
   if (!rows[0]) {

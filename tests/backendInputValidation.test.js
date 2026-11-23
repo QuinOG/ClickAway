@@ -8,10 +8,21 @@ const {
   default: pool,
   findLeaderboardPage,
   findRoundHistoryPage,
+  findUserByUsernameForChallenge,
   normalizePaginationPage,
   normalizePaginationLimit,
 } = await import("../server/playerMysqlDatabase.js")
 const { createPlayerStateStore, PlayerStateError } = await import("../server/playerStateStore.js")
+
+test("challenge username lookup prioritizes exact case then ID deterministically", async (t) => {
+  const query = t.mock.method(pool, "query", async (sql, params) => {
+    assert.match(sql, /WHERE LOWER\(username\) = LOWER\(\?\)\s+ORDER BY CASE WHEN username = \? THEN 0 ELSE 1 END, id ASC\s+LIMIT 1/)
+    assert.deepEqual(params, ["alice", "alice"])
+    return [[{ id: 2, username: "alice" }]]
+  })
+  assert.deepEqual(await findUserByUsernameForChallenge(" alice "), { id: 2, username: "alice" })
+  assert.equal(query.mock.callCount(), 1)
+})
 
 const PAGE_CASES = [
   [Infinity, 1], [-Infinity, 1], [NaN, 1], [1e30, 1_000_000], ["1e20", 1_000_000],

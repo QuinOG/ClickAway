@@ -762,6 +762,11 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     roundTokenIssuedAtMs = tokenCheck.issuedAtMs
   }
 
+  if (normalizedDrillId !== null && roundTokenChallengeId !== null) {
+    response.status(400).json({ error: "Duel rounds cannot use training drills." })
+    return
+  }
+
   try {
     const currentProgress = await measure("context", () => findRoundCompletionContext(user.id))
     const { hasRankedHistory } = currentProgress
@@ -912,7 +917,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         isRankedRound: progressionMode === "ranked",
         isPlaced: !rankOutcome.nextRankProgress?.isPlacement,
         // The saved row's time (the database's), not the request's.
-        playedAt: savedHistoryEntry?.playedAt ?? historyEntry.playedAtIso,
+        playedAt: savedHistoryEntry?.playedAtIso ?? savedHistoryEntry?.playedAt ?? historyEntry.playedAtIso,
       })
     } catch (error) {
       console.error("Round saved, but the season update failed:", error)

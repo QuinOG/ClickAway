@@ -82,3 +82,23 @@ test("completion rejects invalid drills before simulation", async () => {
   }
 })
 
+test("completion rejects a valid training drill on a duel token before round processing", async () => {
+  const res = response()
+  let verified = false
+  const failRoundProcessing = () => assert.fail("Duel drill reached round processing")
+  await route("post", "/api/round/complete", {
+    JWT_SECRET: "test", ROUND_SUBMIT_CLOCK_SLACK_MS: 0,
+    verifyRoundToken: () => {
+      verified = true
+      return { valid: true, seed: 42, roundId: "duel-round", challengeId: 11, issuedAtMs: 0 }
+    },
+    findRoundCompletionContext: failRoundProcessing,
+    simulateRound: failRoundProcessing,
+    completeUserRound: failRoundProcessing,
+    completeChallenge: failRoundProcessing,
+  })({ auth: { userId: 1 }, body: { modeId: "easy", drillId: "streak_hold", roundToken: "duel-token", events: [] } }, res)
+  assert.equal(verified, true)
+  assert.equal(res.statusCode, 400)
+  assert.equal(res.body.error, "Duel rounds cannot use training drills.")
+})
+
