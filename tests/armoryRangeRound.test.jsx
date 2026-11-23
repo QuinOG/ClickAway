@@ -201,3 +201,108 @@ test.each(["miss", "expiry"])("Second Wind renders Wind active in ArmoryTestRang
   expect(windBtn.classList.contains("active")).toBe(false)
   expect(windBtn.getAttribute("aria-label")).not.toContain("Wind active")
 })
+function startRange(powerupIds = ["guard_charge", "second_wind", "overclock"], overrides = {}) {
+  vi.useFakeTimers()
+  const roundRules = {
+    ...buildRoundRules(DIFFICULTIES[1], { ...DEFAULT_SAVED_LOADOUTS[0], powerupIds }),
+    startingPowerupCharges: 1,
+    ...overrides,
+  }
+  const hook = renderHook(({ isActive }) => useArmoryRangeRound({ roundRules, isActive, runToken: 1 }), {
+    initialProps: { isActive: true },
+  })
+  hook.result.current.arenaProps.arenaRef.current = {
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 400 }),
+  }
+  act(() => vi.advanceTimersByTime(3000))
+  return hook
+}
+
+test("closing the range clears active powers, feedback, timers and pending results", () => {
+  const { result, rerender } = startRange()
+  act(() => {
+    for (const id of ["guard_charge", "second_wind", "overclock"]) {
+      result.current.powerupTrayProps.onUsePowerup(id)
+    }
+  })
+  expect(result.current.powerupTrayProps.activatedPowerup).not.toBeNull()
+  expect(result.current.arenaProps.clickFeedbackItems.length).toBeGreaterThan(0)
+  act(() => result.current.endRound())
+  expect(result.current.phase).toBe("playing")
+  expect(result.current.isPlaying).toBe(false)
+  expect(result.current.arenaProps.isButtonDisabled).toBe(true)
+  rerender({ isActive: false })
+  expect(result.current.phase).toBe("countdown")
+  expect(result.current.isPlaying).toBe(false)
+  expect(result.current.powerupTrayProps.activatedPowerup).toBeNull()
+  expect(result.current.arenaProps.clickFeedbackItems).toEqual([])
+  expect(result.current.powerupTrayProps.powerupSlots.every((slot) => !slot.isGuardActive && !slot.isSecondWindActive)).toBe(true)
+  expect(vi.getTimerCount()).toBe(0)
+  act(() => vi.advanceTimersByTime(10000))
+  expect(result.current.completedRunToken).toBeNull()
+  rerender({ isActive: true })
+  expect(result.current.phase).toBe("countdown")
+  act(() => vi.advanceTimersByTime(3000))
+  expect(result.current.isPlaying).toBe(true)
+})
+
+test("closing completed results resets phase before reopening", () => {
+  const { result, rerender } = startRange()
+  act(() => result.current.endRound())
+  act(() => vi.advanceTimersByTime(1000))
+  expect(result.current.phase).toBe("done")
+  rerender({ isActive: false })
+  expect(result.current.phase).toBe("countdown")
+  rerender({ isActive: true })
+  expect(result.current.phase).toBe("countdown")
+  expect(result.current.completedRunToken).toBeNull()
+})
+
+test("a miss at zero score shows Miss without claiming a score loss", () => {
+  const { result } = startRange()
+  act(() => result.current.arenaProps.onArenaClick({ clientX: 10, clientY: 10 }))
+  expect(result.current.score).toBe(0)
+  expect(result.current.misses).toBe(1)
+  expect(result.current.arenaProps.clickFeedbackItems.at(-1).value).toBe("Miss")
+})
+
+test.each([[11, "+1s"], [10, "+0s"]])("time boost reports its actual clamped addition at cap %s", (cap, feedback) => {
+  const { result } = startRange(["time_boost", "size_boost", "freeze_movement"], { maxTimeBufferSeconds: cap })
+  act(() => result.current.powerupTrayProps.onUsePowerup("time_boost"))
+  expect(result.current.timeLeft).toBe(cap)
+  expect(result.current.arenaProps.clickFeedbackItems.at(-1).value).toBe(feedback)
+})
+
+test("arena receives timed active effects and final seconds only during play", () => {
+  const { result } = startRange()
+  expect(result.current.arenaProps.activeEffect).toBeNull()
+  expect(result.current.arenaProps.finalSeconds).toBeNull()
+  act(() => result.current.powerupTrayProps.onUsePowerup("overclock"))
+  expect(result.current.arenaProps.activeEffect).toBe("overclock")
+  act(() => vi.advanceTimersByTime(5000))
+  expect(result.current.arenaProps.activeEffect).toBeNull()
+  expect(result.current.arenaProps.finalSeconds).toBe(5)
+  act(() => result.current.endRound())
+  expect(result.current.arenaProps.finalSeconds).toBeNull()
+})
+
+test("closing during a gold window removes its focus and visibility listeners", () => {
+  vi.spyOn(Math, "random").mockReturnValue(0.25)
+  const addDocument = vi.spyOn(document, "addEventListener")
+  const removeDocument = vi.spyOn(document, "removeEventListener")
+  const addWindow = vi.spyOn(window, "addEventListener")
+  const removeWindow = vi.spyOn(window, "removeEventListener")
+  const { result, rerender } = startRange()
+  for (let hit = 0; !result.current.arenaProps.isGold && hit < 60; hit += 1) {
+    act(() => vi.advanceTimersByTime(80))
+    act(() => result.current.arenaProps.onButtonClick({ stopPropagation() {}, clientX: 100, clientY: 100 }))
+  }
+  expect(result.current.arenaProps.isGold).toBe(true)
+  const visibilityListener = addDocument.mock.calls.filter(([name]) => name === "visibilitychange").at(-1)[1]
+  const focusListener = addWindow.mock.calls.filter(([name]) => name === "focus").at(-1)[1]
+  rerender({ isActive: false })
+  expect(removeDocument).toHaveBeenCalledWith("visibilitychange", visibilityListener)
+  expect(removeWindow).toHaveBeenCalledWith("focus", focusListener)
+  expect(result.current.arenaProps.goldRemainingMs).toBe(0)
+  expect(vi.getTimerCount()).toBe(0)
+})

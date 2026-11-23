@@ -87,6 +87,7 @@ export function useArmoryRangeRound({
   const rngRef = useRef(Math.random)
   const goldRngRef = useRef(null)
 
+  const [isRoundEnding, setIsRoundEnding] = useState(false)
   const [phase, setPhase] = useState(RANGE_PHASE.COUNTDOWN)
   const [countdownValue, setCountdownValue] = useState(READY_COUNTDOWN_START)
   const [score, setScore] = useState(0)
@@ -112,7 +113,7 @@ export function useArmoryRangeRound({
   const [activatedPowerup, setActivatedPowerup] = useState(null)
 
   const isTimedRoundForPowers = roundRules.isTimedRound !== false
-  const isPlaying = phase === RANGE_PHASE.PLAYING
+  const isPlaying = isActive && phase === RANGE_PHASE.PLAYING && !isRoundEnding
 
   const getElapsedMs = useCallback(() => (
     clockRef.current?.elapsedMs() ?? 0
@@ -185,6 +186,7 @@ export function useArmoryRangeRound({
 
   const endRound = useCallback(() => {
     isEndingRef.current = true
+    setIsRoundEnding(true)
     setPhase((current) => {
       if (current === RANGE_PHASE.DONE) return current
       if (endTimeoutRef.current) window.clearTimeout(endTimeoutRef.current)
@@ -205,6 +207,7 @@ export function useArmoryRangeRound({
 
     simulationRef.current = createRoundSimulation(roundRules)
     isEndingRef.current = false
+    setIsRoundEnding(false)
     lastClickMsRef.current = null
     setCompletedRunToken(null)
     if (endTimeoutRef.current) {
@@ -286,7 +289,18 @@ export function useArmoryRangeRound({
       window.clearTimeout(endTimeoutRef.current)
       endTimeoutRef.current = null
     }
-  }, [isActive])
+    if (activationCueTimeoutRef.current) window.clearTimeout(activationCueTimeoutRef.current)
+    activationCueTimeoutRef.current = null
+    clearFeedbackTimeouts()
+    setClickFeedbackItems([])
+    setGuardActiveUntilMs(0)
+    setSecondWindActiveUntilMs(0)
+    setActivatedPowerup(null)
+    setIsRoundEnding(false)
+    setCompletedRunToken(null)
+    setGoldSpawn(null)
+    setPhase(RANGE_PHASE.COUNTDOWN)
+  }, [clearFeedbackTimeouts, isActive])
 
   // The 10-second sample clock. Always runs so even untimed modes terminate.
   useEffect(() => {
@@ -370,7 +384,9 @@ export function useArmoryRangeRound({
     const eventTimeMs = getElapsedMs()
     if (isTooSoonAfter(lastClickMsRef.current, eventTimeMs)) return
     lastClickMsRef.current = eventTimeMs
+    const scoreBeforeMiss = simulationRef.current.getState().score
     const result = simulationRef.current.applyMiss(eventTimeMs)
+    const scoreLost = scoreBeforeMiss - result.score
     setScore(result.score)
     setStreak(result.streak)
     setMisses(result.misses)
@@ -384,7 +400,7 @@ export function useArmoryRangeRound({
     addClickFeedback(
       event.clientX,
       event.clientY,
-      result.penaltyApplied > 0 ? `-${result.penaltyApplied}` : "Miss",
+      scoreLost > 0 ? `-${scoreLost}` : "Miss",
       streak > 0 && result.streak === 0 ? "streakBreak" : "miss",
       streak > 0 && result.streak > 0 ? "Streak saved" : null
     )
@@ -393,9 +409,11 @@ export function useArmoryRangeRound({
   const applyPowerupPresentation = useCallback((powerup, eventTimeMs) => {
     mirrorGeometry(geometryRef.current?.applyPowerup(powerup.id, eventTimeMs))
     if (powerup.effectType === "time_boost") {
+      const remainingBefore = clockRef.current?.remainingMs() ?? 0
       clockRef.current?.boost()
+      const secondsAdded = Math.max(0, Math.round(((clockRef.current?.remainingMs() ?? 0) - remainingBefore) / 10) / 100)
       setTimeLeft(clockRef.current?.secondsLeft() ?? 0)
-      addCenterFeedback("+2s", "power power-time_boost")
+      addCenterFeedback(`+${secondsAdded}s`, "power power-time_boost")
     } else if (powerup.effectType === "size_boost") {
       setTargetSpawnSequence((sequence) => sequence + 1)
       addCenterFeedback("Grow", "power power-size_boost")
@@ -533,6 +551,8 @@ export function useArmoryRangeRound({
     completedRunToken,
     endRound,
     arenaProps: {
+      finalSeconds: isPlaying && isTimedRoundForPowers && timeLeft > 0 && timeLeft <= 5 ? timeLeft : null,
+      activeEffect: activatedPowerup?.durationMs > 0 ? activatedPowerup.effectType : null,
       arenaRef,
       logicalDimensions,
       onArenaClick: handleArenaClick,
