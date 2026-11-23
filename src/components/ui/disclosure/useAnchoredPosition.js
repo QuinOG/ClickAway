@@ -35,6 +35,7 @@ export function useAnchoredPosition({
   open,
   anchorRef,
   floatingRef,
+  portalContext,
   placement = "top",
   offset = 8,
 }) {
@@ -88,5 +89,5 @@ export function useAnchoredPosition({
       window.removeEventListener("scroll", updatePosition, true)
       resizeObserver?.disconnect()
     }
-  }, [anchorRef, floatingRef, offset, open, placement])
+  }, [anchorRef, floatingRef, offset, open, placement, portalContext])
 }

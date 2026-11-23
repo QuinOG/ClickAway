@@ -56,6 +56,7 @@ export function OverlayDialog({
   const descriptionId = `ui-dialog-description-${generatedId}`
   const focusScopeId = `ui-dialog-scope-${generatedId}`
   const layerRef = useRef(null)
+  const ownedLayerOnPointerDownRef = useRef(false)
   const surfaceRef = useRef(null)
   const closeButtonRef = useRef(null)
   const capturedReturnFocusRef = useRef(null)
@@ -108,7 +109,10 @@ export function OverlayDialog({
       const lastElement = focusableElements.at(-1)
       const activeElement = document.activeElement
 
-      if (event.shiftKey && (activeElement === firstElement || !surface.contains(activeElement))) {
+      if (event.shiftKey && (
+        activeElement === firstElement
+        || !isInsideDialogFocusScope(activeElement, surface, layer, focusScopeId)
+      )) {
         event.preventDefault()
         focusElement(lastElement)
       } else if (!event.shiftKey && activeElement === lastElement) {
@@ -125,10 +129,18 @@ export function OverlayDialog({
       focusElement(getDialogFocusableElements(surface, layer, focusScopeId)[0] || surface)
     }
 
+    // Remember ownership before document pointer handlers dismiss the child layer.
+    function handlePointerDown(event) {
+      ownedLayerOnPointerDownRef.current = event.target === layer
+        && hasOwnedEscapeDismissableLayer(layer, focusScopeId)
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown, true)
     document.addEventListener("keydown", handleKeyDown, true)
     document.addEventListener("focusin", handleFocusIn, true)
 
     return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true)
       document.removeEventListener("keydown", handleKeyDown, true)
       document.removeEventListener("focusin", handleFocusIn, true)
       unregisterModalLayer()
@@ -142,7 +154,10 @@ export function OverlayDialog({
   if (!open || typeof document === "undefined") return null
 
   function handleBackdropClick(event) {
+    const hadOwnedLayer = ownedLayerOnPointerDownRef.current
+    ownedLayerOnPointerDownRef.current = false
     if (event.target !== event.currentTarget || !dismissOnBackdrop) return
+    if (hadOwnedLayer || hasOwnedEscapeDismissableLayer(layerRef.current, focusScopeId)) return
     if (!dismissible) return
     onOpenChange?.(false, { reason: "backdrop", originalEvent: event })
   }
