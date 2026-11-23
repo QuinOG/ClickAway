@@ -554,18 +554,20 @@ export default function LeaderboardPage({
   const [loadError, setLoadError] = useState("")
 
   useEffect(() => {
+    if (searchInput.trim() === searchQuery) return
     const timeoutId = window.setTimeout(() => {
       setSearchQuery(searchInput.trim())
       setPage(1)
     }, 250)
 
     return () => window.clearTimeout(timeoutId)
-  }, [searchInput])
+  }, [searchInput, searchQuery])
 
   const loadLeaderboard = useCallback(async () => {
     if (!isAuthed) {
       setLeaderboardRows([])
       setTotalPages(0)
+      setSelfRank(null)
       setLoadError("You must be logged in to view the leaderboard.")
       setIsLoading(false)
       return false
@@ -601,6 +603,8 @@ export default function LeaderboardPage({
       if (!isLatest()) return false
       setLeaderboardRows([])
       setTotalPages(0)
+      setSelfRank(null)
+      setResultsQuery(searchQuery)
       setLoadError(error.message || "Unable to load leaderboard.")
       return false
     } finally {
