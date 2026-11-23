@@ -6,7 +6,7 @@
  */
 export function isShopItemOwned(item, ownedItemIds) {
   if (!item?.id) return false
-  return Boolean(item.builtIn || ownedItemIds.includes(item.id))
+  return Boolean(item.builtIn || (Array.isArray(ownedItemIds) && ownedItemIds.includes(item.id)))
 }
 
 /**
@@ -17,10 +17,10 @@ export function isShopItemOwned(item, ownedItemIds) {
  * @returns {boolean}
  */
 export function canPurchaseShopItem(item, coins, ownedItemIds) {
-  if (!item?.id || typeof item.cost !== "number") return false
+  if (!item?.id || !Number.isFinite(item.cost)) return false
   if (item.builtIn) return false
-  if (ownedItemIds.includes(item.id)) return false
-  return coins >= item.cost
+  if (Array.isArray(ownedItemIds) && ownedItemIds.includes(item.id)) return false
+  return Number.isFinite(coins) && coins >= item.cost
 }
 
 /**
@@ -42,8 +42,11 @@ export function getShopItemStatus({
   equippedArenaThemeId,
   equippedProfileImageId,
 }) {
+  if (!item) {
+    return { isOwned: false, canAfford: false, isAffordable: false, isEquipped: false, state: "locked" }
+  }
   const isOwned = isShopItemOwned(item, ownedItemIds)
-  const canAfford = coins >= item.cost
+  const canAfford = Number.isFinite(coins) && Number.isFinite(item.cost) && coins >= item.cost
   const isEquipped =
     (item.type === "button_skin" && item.id === equippedButtonSkinId) ||
     (item.type === "arena_theme" && item.id === equippedArenaThemeId) ||

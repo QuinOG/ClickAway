@@ -6,6 +6,8 @@ import {
   buildDefaultRankedState,
   buildRankedPreflight,
   calculatePlacementMatchScore,
+  calculateRoundRankDelta,
+  normalizeRankedState,
   getRankProgress,
   getRankProgressWithPlacement,
   migrateLegacyRankData,
@@ -243,4 +245,19 @@ test("demotion protection clamps rating to the current division floor", () => {
   assert.equal(result.nextMmr, 400)
   assert.equal(result.nextRankProgress.tierLabel, "Silver II")
   assert.equal(result.nextRankedState.demotionProtectionRounds, 1)
+})
+
+
+test("rank utilities accept missing, null, and non-object data", () => {
+  for (const input of [undefined, null, false, 12, "invalid"]) {
+    assert.deepEqual(normalizeRankedState(input), normalizeRankedState({}))
+    assert.deepEqual(migrateLegacyRankData(input), {
+      rankMmr: 0,
+      rankedState: buildDefaultRankedState(),
+    })
+    assert.equal(calculatePlacementMatchScore(input), 0)
+    assert.equal(calculateRoundRankDelta(input), 0)
+  }
+  assert.deepEqual(migrateLegacyRankData({ rankedState: null }), migrateLegacyRankData())
+  assert.equal(getRankProgressWithPlacement({ rankedState: null }).isUnranked, true)
 })

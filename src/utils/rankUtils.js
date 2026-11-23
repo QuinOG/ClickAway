@@ -260,19 +260,20 @@ export function buildDefaultRankedState() {
 }
 
 export function normalizeRankedState(rankedState = {}) {
+  const state = rankedState && typeof rankedState === "object" ? rankedState : {}
   return {
     rankSystemVersion: clampInteger(
-      rankedState.rankSystemVersion,
+      state.rankSystemVersion,
       0,
       RANK_SYSTEM_VERSION
     ),
     placementMatchesPlayed: clampInteger(
-      rankedState.placementMatchesPlayed,
+      state.placementMatchesPlayed,
       0,
       PLACEMENT_MATCH_COUNT
     ),
     demotionProtectionRounds: clampInteger(
-      rankedState.demotionProtectionRounds,
+      state.demotionProtectionRounds,
       0,
       DEMOTION_PROTECTION_MATCHES
     ),
@@ -320,10 +321,11 @@ export function migrateLegacyRankMmr(mmr = INITIAL_RANK_MMR) {
   )
 }
 
-export function migrateLegacyRankData({
-  rankMmr = INITIAL_RANK_MMR,
-  rankedState = {},
-}) {
+export function migrateLegacyRankData(options = {}) {
+  const {
+    rankMmr = INITIAL_RANK_MMR,
+    rankedState = {},
+  } = options && typeof options === "object" ? options : {}
   const normalizedRankedState = normalizeRankedState(rankedState)
 
   if (normalizedRankedState.rankSystemVersion >= RANK_SYSTEM_VERSION) {
@@ -672,16 +674,17 @@ export function getRankImageSrc(rankInput = "") {
   return RANK_IMAGE_BY_TONE_ID[toneId] ?? ""
 }
 
-export function calculatePlacementMatchScore({
-  score = 0,
-  hits = 0,
-  misses = 0,
-  bestStreak = 0,
-  modeId = "",
-  difficultyId = "",
-  progressionMode = "",
-  allowsRankProgression = false,
-}) {
+export function calculatePlacementMatchScore(options = {}) {
+  const {
+    score = 0,
+    hits = 0,
+    misses = 0,
+    bestStreak = 0,
+    modeId = "",
+    difficultyId = "",
+    progressionMode = "",
+    allowsRankProgression = false,
+  } = options && typeof options === "object" ? options : {}
   const resolvedModeId = modeId || difficultyId
   const isHardMode = resolvedModeId === DIFFICULTY_IDS.HARD
   const isRankedMode = progressionMode === PROGRESSION_MODE.RANKED
@@ -706,16 +709,17 @@ export function calculatePlacementMatchScore({
   return clampInteger(placementScore, 0, PLACEMENT_MATCH_SCORE_MAX)
 }
 
-export function calculateRoundRankDelta({
-  score = 0,
-  hits = 0,
-  misses = 0,
-  bestStreak = 0,
-  modeId = "",
-  difficultyId = "",
-  progressionMode = "",
-  allowsRankProgression = false,
-}) {
+export function calculateRoundRankDelta(options = {}) {
+  const {
+    score = 0,
+    hits = 0,
+    misses = 0,
+    bestStreak = 0,
+    modeId = "",
+    difficultyId = "",
+    progressionMode = "",
+    allowsRankProgression = false,
+  } = options && typeof options === "object" ? options : {}
   const resolvedModeId = modeId || difficultyId
   const isHardMode = resolvedModeId === DIFFICULTY_IDS.HARD
   const isRankedMode = progressionMode === PROGRESSION_MODE.RANKED

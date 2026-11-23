@@ -14,7 +14,7 @@ const ALL_TAB_ID = "all_items"
 const SHOP_ITEMS = SHOP_CATEGORIES.flatMap((category) => category.items)
 
 function getOwnedCount(items, ownedItemIds) {
-  return items.filter((item) => item.builtIn || ownedItemIds.includes(item.id)).length
+  return items.filter((item) => item.builtIn || (Array.isArray(ownedItemIds) && ownedItemIds.includes(item.id))).length
 }
 
 export default function ShopPage({
