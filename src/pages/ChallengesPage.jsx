@@ -20,6 +20,12 @@ const FILTERS = [
   { id: "outgoing", label: "Sent" },
 ]
 
+function isSameUserId(a, b) {
+  const first = String(a ?? "").trim()
+  const second = String(b ?? "").trim()
+  return Boolean(first && second && first === second)
+}
+
 function formatTimestamp(value) {
   if (!value) return "Unknown"
   const parsed = new Date(value)
@@ -38,7 +44,7 @@ function formatTimestamp(value) {
 // How one duel reads from the viewer's side: the rival, which plate it sits on
 // and the score line.
 function describeDuel(challenge, currentUserId) {
-  const isIncoming = challenge.opponentUserId === currentUserId
+  const isIncoming = isSameUserId(challenge.opponentUserId, currentUserId)
   const rival = (isIncoming ? challenge.challengerUsername : challenge.opponentUsername) || "Rival"
   const base = {
     isIncoming,
@@ -208,13 +214,13 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
   const pendingIncomingCount = useMemo(
     () => challenges.filter(
-      (challenge) => challenge.opponentUserId === currentUserId && challenge.status === "pending"
+      (challenge) => isSameUserId(challenge.opponentUserId, currentUserId) && challenge.status === "pending"
     ).length,
     [challenges, currentUserId]
   )
   const visibleChallenges = useMemo(() => {
-    if (filter === "incoming") return challenges.filter((challenge) => challenge.opponentUserId === currentUserId)
-    if (filter === "outgoing") return challenges.filter((challenge) => challenge.challengerUserId === currentUserId)
+    if (filter === "incoming") return challenges.filter((challenge) => isSameUserId(challenge.opponentUserId, currentUserId))
+    if (filter === "outgoing") return challenges.filter((challenge) => isSameUserId(challenge.challengerUserId, currentUserId))
     return challenges
   }, [challenges, currentUserId, filter])
 

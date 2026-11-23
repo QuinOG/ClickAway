@@ -221,9 +221,7 @@ function LeaderboardStandingPanel({
       ? `#${selfRank}`
       : currentRankProgress?.isPlacement
         ? "PLACEMENT"
-        : currentRankProgress?.isUnranked
-          ? "--"
-          : "UNRANKED"
+        : "--"
 
   let title = "Your ladder rank"
   let lead = totalCount > 0
@@ -342,12 +340,24 @@ function LeaderboardControls({
   return (
     <div className="leaderboardControls">
       <div className="leaderboardBoardTabs" role="tablist" aria-label="Ladder boards">
-        {BOARD_OPTIONS.map((option) => (
+        {BOARD_OPTIONS.map((option, index) => (
           <button
             key={option.key}
             type="button"
             role="tab"
             aria-selected={board === option.key}
+            tabIndex={board === option.key ? 0 : -1}
+            onKeyDown={(event) => {
+              const last = BOARD_OPTIONS.length - 1
+              const next = event.key === "ArrowRight" ? (index + 1) % BOARD_OPTIONS.length
+                : event.key === "ArrowLeft" ? (index + last) % BOARD_OPTIONS.length
+                  : event.key === "Home" ? 0 : event.key === "End" ? last : null
+              if (next === null) return
+              event.preventDefault()
+              const target = event.currentTarget.parentElement.querySelectorAll('[role="tab"]')[next]
+              target.focus()
+              onBoardChange(BOARD_OPTIONS[next].key, target)
+            }}
             className={`leaderboardBoardTab${board === option.key ? " isActive" : ""}`}
             onClick={(event) => onBoardChange(option.key, event.currentTarget)}
           >
@@ -555,6 +565,7 @@ export default function LeaderboardPage({
   const loadLeaderboard = useCallback(async () => {
     if (!isAuthed) {
       setLeaderboardRows([])
+      setTotalPages(0)
       setLoadError("You must be logged in to view the leaderboard.")
       setIsLoading(false)
       return false
@@ -589,6 +600,7 @@ export default function LeaderboardPage({
     } catch (error) {
       if (!isLatest()) return false
       setLeaderboardRows([])
+      setTotalPages(0)
       setLoadError(error.message || "Unable to load leaderboard.")
       return false
     } finally {
