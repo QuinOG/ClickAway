@@ -143,16 +143,20 @@ export default function SignupPage({ onSignup }) {
     }
 
     setIsSubmitting(true)
-    const signupResult = await onSignup?.(username.trim(), password)
-    if (signupResult?.ok === false) {
-      setSubmitError(signupResult.error || "Unable to create account.")
-      setIsSubmitting(false)
-      return
-    }
+    try {
+      const signupResult = await onSignup?.(username.trim(), password)
+      if (signupResult?.ok === false) {
+        setSubmitError(signupResult.error || "Unable to create account.")
+        return
+      }
 
-    setSubmitError("")
-    setIsSubmitting(false)
-    navigate("/game")
+      setSubmitError("")
+      navigate("/game")
+    } catch (error) {
+      setSubmitError(error?.message || "Unable to create account.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

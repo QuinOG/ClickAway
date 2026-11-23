@@ -18,7 +18,10 @@ export function useActionFeedback() {
   const cleanupTimersRef = useRef(new Map())
 
   useEffect(() => () => {
-    cleanupTimersRef.current.forEach((timerId) => window.clearTimeout(timerId))
+    cleanupTimersRef.current.forEach((timerId, sourceNode) => {
+      window.clearTimeout(timerId)
+      sourceNode.removeAttribute("data-action-feedback")
+    })
     cleanupTimersRef.current.clear()
   }, [])
 
