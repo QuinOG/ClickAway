@@ -195,3 +195,13 @@ test("muting cancels active voices and any vibration pattern", async () => {
   assert.equal(vibrations.at(-1), 0)
   await service.destroy()
 })
+
+test("playback failure remains unavailable when the context later suspends", async () => {
+  const service = new FeedbackService({ AudioContextConstructor: ThrowingAudioContext })
+  await service.unlock()
+  service.dispatch(FEEDBACK_EVENTS.HIT)
+  service.audioContext.state = "suspended"
+  assert.equal(service.getStatus().audio, "unavailable")
+  assert.equal(await service.unlock(), false)
+  await service.destroy()
+})

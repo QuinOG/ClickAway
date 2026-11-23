@@ -413,9 +413,11 @@ export class FeedbackService {
 
   getStatus() {
     const hapticsAvailable = Boolean(this.vibrateAdapter || globalThis.navigator?.vibrate)
-    const resolvedAudioState = this.audioContext && this.audioContext.state !== "running"
-      ? "locked"
-      : this.audioState
+    const resolvedAudioState = this.audioState === "unavailable"
+      ? "unavailable"
+      : this.audioContext && this.audioContext.state !== "running"
+        ? "locked"
+        : this.audioState
     return {
       audio: resolvedAudioState,
       haptics: Boolean(this.preferences.haptics && hapticsAvailable),

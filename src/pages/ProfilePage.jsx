@@ -57,14 +57,14 @@ function getRankMetaText(rankProgress = {}) {
 
 function buildRecentForm(roundHistory = []) {
   const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
-  const scores = recentRounds.map((round) => toNumber(round.score))
+  const scores = recentRounds.map((round) => toNumber(round?.score))
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
     score: scores[index],
-    mode: getModeLabelFromHistoryEntry(round),
-    rankDelta: toNumber(round.rankDelta),
-    rankResultLabel: round.rankResultKind === "placement" ? "placement points" : "RR",
-    isRanked: isRankedModeEntry(round),
+    mode: getModeLabelFromHistoryEntry(round ?? {}),
+    rankDelta: toNumber(round?.rankDelta),
+    rankResultLabel: round?.rankResultKind === "placement" ? "placement points" : "RR",
+    isRanked: isRankedModeEntry(round ?? {}),
   }))
   const midpoint = Math.max(1, Math.floor(scores.length / 2))
   const olderAverage = scores.slice(0, midpoint).reduce((sum, score) => sum + score, 0) / midpoint
@@ -129,6 +129,7 @@ export default function ProfilePage({
   achievementStats = {},
   persistedAchievementIds = [],
 }) {
+  const safePlayerName = String(playerName || "Player")
   const { signalAction } = useActionFeedback()
   const [requestedCategoryKey, setRequestedCategoryKey] = useState(
     DEFAULT_ACHIEVEMENT_CATEGORY_KEY
@@ -220,7 +221,7 @@ export default function ProfilePage({
   const levelProgressPercent = Math.max(0, Math.min(100, levelProgress.progressPercent ?? 0))
   const nextLevelValue = levelValue + 1
   const hasProfileImage = Boolean(equippedProfileImage?.imageSrc)
-  const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(playerName)
+  const avatarStyle = hasProfileImage ? undefined : getProfileAvatarStyle(safePlayerName)
   const avatarClassName = `profileAvatar ${equippedProfileImage?.effectClass ?? ""} ${hasProfileImage ? "hasImage" : ""}`
   const rankGoal = rankProgress.isUnranked
     ? `${PLACEMENT_MATCH_COUNT} placements to calibrate`
@@ -241,7 +242,7 @@ export default function ProfilePage({
               <div className={avatarClassName} style={avatarStyle} aria-hidden="true">
                 {hasProfileImage
                   ? <img className="profileAvatarImage" src={equippedProfileImage.imageSrc} alt="" width="512" height="512" decoding="async" />
-                  : <PlayerPortrait name={playerName} size={176} />}
+                  : <PlayerPortrait name={safePlayerName} size={176} />}
               </div>
               <div className={`profileRankCrest ${rankProgress.isUnranked ? "isUnranked" : ""}`} aria-hidden="true">
                 {rankIconSrc
@@ -251,7 +252,7 @@ export default function ProfilePage({
             </div>
             <div className="profileIdentityDetails">
               <h1 className="profilePlayerName" id="profile-player-name">
-                {playerName.charAt(0).toUpperCase() + playerName.slice(1)}
+                {safePlayerName.charAt(0).toUpperCase() + safePlayerName.slice(1)}
               </h1>
               <div className="profileDivisionPlate">
                 <strong className="profileRankTitle">{rankLabel}</strong>
@@ -371,6 +372,8 @@ export default function ProfilePage({
                     key={category.key}
                     type="button"
                     role="tab"
+                    id={`achievement-tab-${category.key}`}
+                    aria-controls="achievement-panel"
                     aria-selected={isSelected}
                     tabIndex={isSelected ? 0 : -1}
                     onKeyDown={(event) => {
@@ -399,16 +402,18 @@ export default function ProfilePage({
               })}
             </div>
           </div>
-          <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
-            {featuredMasterAchievement
-              ? <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
-              : <p className="achievementsEmptyState">No master achievement found.</p>}
-          </div>
-          <div className="achievementsMainArea">
-            <AchievementsCarousel
-              key={`achievements-${selectedCategoryKey}`}
-              achievements={carouselAchievements}
-            />
+          <div id="achievement-panel" role="tabpanel" aria-labelledby={`achievement-tab-${selectedCategoryKey}`}>
+            <div className="achievementFeaturedBannerWrap" aria-label="Featured master achievement">
+              {featuredMasterAchievement
+                ? <AchievementTile achievement={featuredMasterAchievement} variant="featuredBanner" />
+                : <p className="achievementsEmptyState">No master achievement found.</p>}
+            </div>
+            <div className="achievementsMainArea">
+              <AchievementsCarousel
+                key={`achievements-${selectedCategoryKey}`}
+                achievements={carouselAchievements}
+              />
+            </div>
           </div>
         </section>
       </section>

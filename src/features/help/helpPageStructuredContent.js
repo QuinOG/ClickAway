@@ -203,7 +203,7 @@ export const DATA_SYSTEM_POINTS = [
 ]
 
 export const ACCOUNT_ROWS = [
-  ["Create Account", "Sign up with a 3-32 character username and an 8+ character password."],
+  ["Create Account", "Sign up with a 3-24 character username and an 8+ character password."],
   ["Login", "Use the same username/password later to restore your saved account progress."],
   ["Protected Pages", "Play, Armory, Profile, Shop, History, Ladder, Duels, and Help all require sign-in."],
   ["Session Restore", "On refresh, the app checks your saved session and reloads your account automatically."],
