@@ -211,6 +211,7 @@ export function useGameScreenController({
   const rngRef = useRef(Math.random)
   const ghostReplayRef = useRef(ghostReplay)
   const challengeIdRef = useRef(challengeId)
+  const previousChallengeIdRef = useRef(challengeId)
   // Whether the finished round reached the server, and what it actually awarded.
   const [roundSave, setRoundSave] = useState({ status: "idle" })
   // A duel is raced once. After its round, Play Again and Change Mode leave the
@@ -226,11 +227,6 @@ export function useGameScreenController({
   useEffect(() => {
     ghostReplayRef.current = ghostReplay
   }, [ghostReplay])
-
-  useEffect(() => {
-    challengeIdRef.current = challengeId
-    finishedDuelRef.current = false
-  }, [challengeId])
 
   const [ghostScore, setGhostScore] = useState(0)
 
@@ -610,7 +606,12 @@ export function useGameScreenController({
     nextLoadoutId = activeLoadoutId,
     nextDrillId = selectedDrillId
   ) => {
-    if (finishedDuelRef.current) onExitDuelRef.current?.()
+    if (finishedDuelRef.current) {
+      // Detach the completed duel before navigation: clearing its URL must not
+      // cancel the ordinary round this action is about to start.
+      challengeIdRef.current = null
+      onExitDuelRef.current?.()
+    }
     // A duel can't start until its ghost has loaded; starting earlier would run
     // an ordinary round that can never settle the duel.
     else if (challengeIdRef.current && !isValidGhostReplay(ghostReplayRef.current)) return
@@ -797,13 +798,18 @@ export function useGameScreenController({
     selectedDrillId,
   ])
 
-  const cancelPendingRoundStart = useCallback(() => {
+  const abortCurrentRound = useCallback(() => {
     rankedWarmupIntentRef.current = false
-    if (challengeIdRef.current) onExitDuelRef.current?.()
     roundNonceRef.current += 1
     pendingRoundStartRef.current = null
     roundTokenRef.current = null
     simulationRef.current = null
+    roundEventsRef.current = []
+    roundStartTimeRef.current = 0
+    arenaDimensionsRef.current = null
+    setLogicalDimensions(null)
+    setGhostScore(0)
+    setRoundSave({ status: "idle" })
     countdownEndsAtRef.current = 0
     setRoundStartStatus("idle")
     setRoundStartError("")
@@ -812,6 +818,31 @@ export function useGameScreenController({
     resetRoundState(resolvedSelectedMode)
     setPhase(ROUND_PHASE.READY)
   }, [resetRoundState, resolvedSelectedMode])
+
+  useEffect(() => {
+    const previousChallengeId = previousChallengeIdRef.current
+    if (previousChallengeId === challengeId) return
+    const isFinishedDuelExit = challengeId === null
+      && challengeIdRef.current === null && finishedDuelRef.current
+    previousChallengeIdRef.current = challengeId
+    challengeIdRef.current = challengeId
+    finishedDuelRef.current = false
+    autoStartedChallengeRef.current = null
+    // A new duel also supersedes any ordinary round that was already starting
+    // or playing. Invalidate its async start before resetting the countdown.
+    if (!isFinishedDuelExit && (previousChallengeId !== null || (challengeId !== null && (
+      pendingRoundStartRef.current || phase === ROUND_PHASE.COUNTDOWN || phase === ROUND_PHASE.PLAYING
+    )))) {
+      // Navigation must invalidate external start promises and timers immediately.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      abortCurrentRound()
+    }
+  }, [abortCurrentRound, challengeId, phase])
+
+  const cancelPendingRoundStart = useCallback(() => {
+    if (challengeIdRef.current) onExitDuelRef.current?.()
+    abortCurrentRound()
+  }, [abortCurrentRound])
 
   const retryPendingRoundStart = useCallback(() => {
     const pendingStart = pendingRoundStartRef.current
@@ -824,7 +855,10 @@ export function useGameScreenController({
   }, [startRoundWithCountdown])
 
   const returnToReadyOverlay = useCallback(() => {
-    if (finishedDuelRef.current) onExitDuelRef.current?.()
+    if (finishedDuelRef.current) {
+      challengeIdRef.current = null
+      onExitDuelRef.current?.()
+    }
     const shouldReturnToRanked = rankedWarmupIntentRef.current
     rankedWarmupIntentRef.current = false
     const nextRoundMode = shouldReturnToRanked
