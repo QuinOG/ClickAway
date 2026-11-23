@@ -798,6 +798,7 @@ export function useGameScreenController({
   ])
 
   const cancelPendingRoundStart = useCallback(() => {
+    rankedWarmupIntentRef.current = false
     if (challengeIdRef.current) onExitDuelRef.current?.()
     roundNonceRef.current += 1
     pendingRoundStartRef.current = null
@@ -1306,7 +1307,7 @@ export function useGameScreenController({
 
     const timeoutId = window.setTimeout(() => {
       autoStartedChallengeRef.current = challengeId
-      startRoundWithCountdown(ghostReplay.modeId || selectedModeId, activeLoadoutId)
+      startRoundWithCountdown(ghostReplay.modeId || selectedModeId, activeLoadoutId, null)
     }, 0)
 
     return () => window.clearTimeout(timeoutId)

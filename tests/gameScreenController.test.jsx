@@ -257,3 +257,37 @@ test.each(["expiry", "miss"])("clears second_wind active state on %s", async (tr
     unmount()
   } finally { vi.useRealTimers() }
 })
+
+
+test("an easy ghost duel ignores a previously selected Practice drill", async () => {
+  vi.useFakeTimers()
+  try {
+    const { result, rerender } = renderHook((props) => useGameScreenController({
+      selectedModeId: "easy", activeLoadout: DEFAULT_SAVED_LOADOUTS[0], ...props,
+    }), { initialProps: {} })
+    act(() => result.current.readyOverlayProps.onSelectDrill("accuracy_shooter"))
+    rerender({ ghostReplay: { id: 1, modeId: "easy", seed: 123 }, autoStartGhostDuel: true, challengeId: 1 })
+    await act(async () => vi.advanceTimersByTimeAsync(0))
+    expect(result.current.powerupTrayProps.isTimedRound).toBe(false)
+  } finally { vi.useRealTimers() }
+})
+
+test("cancelling Ranked Warmup does not redirect a later Practice round to Ranked", async () => {
+  vi.useFakeTimers()
+  try {
+    const onModeChange = vi.fn()
+    const { result } = renderHook(() => useGameScreenController({
+      selectedModeId: "easy", activeLoadout: DEFAULT_SAVED_LOADOUTS[0], onModeChange,
+    }))
+    act(() => result.current.readyOverlayProps.onStartRankedWarmup())
+    act(() => result.current.entranceOverlayProps.onCancel())
+    onModeChange.mockClear()
+    await act(async () => result.current.readyOverlayProps.onStart("easy"))
+    act(() => vi.advanceTimersByTime(3 * TIMER_TICK_MS))
+    act(() => result.current.hudProps.onEndRound())
+    act(() => vi.advanceTimersByTime(ROUND_END_SETTLE_MS))
+    act(() => result.current.gameOverOverlayProps.onChooseMode())
+    expect(onModeChange).not.toHaveBeenCalledWith("hard")
+    expect(result.current.readyOverlayProps.selectedModeId).toBe("easy")
+  } finally { vi.useRealTimers() }
+})

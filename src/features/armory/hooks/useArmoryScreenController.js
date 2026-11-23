@@ -82,7 +82,8 @@ export function useArmoryScreenController({
   const [walkthroughStepIndex, setWalkthroughStepIndex] = useState(0)
   const [walkthroughSpotlightRect, setWalkthroughSpotlightRect] = useState(null)
   // First-touch tips (Phase 12): local-only, "shown once ever per browser".
-  const [, setSeenFirstTouchTipIds] = useState(loadSeenFirstTouchTipIds)
+  const [seenFirstTouchTipIds, setSeenFirstTouchTipIds] = useState(loadSeenFirstTouchTipIds)
+  const seenFirstTouchTipIdsRef = useRef(seenFirstTouchTipIds)
   const [activeFirstTouchTipId, setActiveFirstTouchTipId] = useState(null)
   // Unlock ceremony queue (Phase 11): frozen at mount, so a visit reveals
   // whatever crossed the unlock wall since the last time this page opened.
@@ -135,24 +136,9 @@ export function useArmoryScreenController({
   )
   const activePresentation = activeLoadout?.id ? loadoutPresentations[activeLoadout.id] : null
 
-  const hasSyncedActiveLoadoutRef = useRef(false)
-
   useEffect(() => {
     setNameDraft(activeLoadout?.name ?? "")
   }, [activeLoadout?.name])
-
-  // Switching to a different loadout starts on key 1. Edits to the same loadout
-  // (installs, swaps, renames) keep the key being edited.
-  const activeLoadoutKey = activeLoadout?.id ?? null
-  useEffect(() => {
-    // Skip the initial run so a ?powerSlot= deep link isn't clobbered on mount.
-    if (!hasSyncedActiveLoadoutRef.current) {
-      hasSyncedActiveLoadoutRef.current = true
-      return
-    }
-
-    setEditingPowerSlotIndex(0)
-  }, [activeLoadoutKey])
 
   const selectedModuleSlot = useMemo(
     () => MODULE_SLOTS.find((slot) => slot.id === activeModuleSlotId) ?? MODULE_SLOTS[0] ?? null,
@@ -190,14 +176,12 @@ export function useArmoryScreenController({
   }, [commitLoadoutState, localSavedLoadouts])
 
   const triggerFirstTouchTip = useCallback((tipId) => {
-    setSeenFirstTouchTipIds((currentIds) => {
-      if (currentIds.includes(tipId)) return currentIds
-
-      const nextIds = [...currentIds, tipId]
-      saveSeenFirstTouchTipIds(nextIds)
-      setActiveFirstTouchTipId(tipId)
-      return nextIds
-    })
+    if (seenFirstTouchTipIdsRef.current.includes(tipId)) return
+    const nextIds = [...seenFirstTouchTipIdsRef.current, tipId]
+    seenFirstTouchTipIdsRef.current = nextIds
+    setSeenFirstTouchTipIds(nextIds)
+    saveSeenFirstTouchTipIds(nextIds)
+    setActiveFirstTouchTipId(tipId)
   }, [])
 
   const dismissFirstTouchTip = useCallback(() => {
@@ -220,6 +204,7 @@ export function useArmoryScreenController({
     }
 
     if (nextLoadoutId !== localActiveLoadoutId) {
+      setEditingPowerSlotIndex(0)
       emitFeedback?.(FEEDBACK_EVENTS.ARMORY_BAY_ACTIVATE)
       triggerFirstTouchTip("baySwitch")
     }
@@ -363,8 +348,8 @@ export function useArmoryScreenController({
   }, [onSeenUnlockPartIdsChange, seenUnlockPartIds])
 
   // The build tour goes first: two dialogs at once buried its first step. The
-  // unlock dialog waits until the tour is closed (or was dismissed before).
-  const isCeremonyHeld = isWalkthroughVisible || shouldAutoStartArmoryWalkthrough(buildWalkthroughStatus)
+  // unlock dialog waits until the tour and any live Test Range are closed.
+  const isCeremonyHeld = isRangeOpen || isWalkthroughVisible || shouldAutoStartArmoryWalkthrough(buildWalkthroughStatus)
 
   // A reveal is "seen" once it has actually been presented, not only after
   // the player chooses an action. Persist the frozen batch as soon as it shows

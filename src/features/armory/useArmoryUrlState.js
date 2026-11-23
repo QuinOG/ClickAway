@@ -47,12 +47,13 @@ export function useArmoryUrlState({
     const lane = searchParams.get("lane")
     if (lane && LANE_IDS.has(lane)) setActiveModuleSlotId(lane)
 
+    // Activate first: switching bays resets the key before the URL selects it.
+    const bay = searchParams.get("bay")
+    if (bay && savedLoadoutIds.includes(bay)) activateLoadout?.(bay)
+
     const ps = searchParams.get("powerSlot")
     const idx = parsePowerSlot(ps)
     if (idx !== null) setEditingPowerSlotIndex(idx)
-
-    const bay = searchParams.get("bay")
-    if (bay && savedLoadoutIds.includes(bay)) activateLoadout?.(bay)
 
     urlInitDone.current = true
   }, [
