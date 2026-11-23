@@ -3,9 +3,43 @@ import assert from "node:assert/strict"
 
 import {
   buildRoundRules,
+  buildLoadoutSnapshot,
+  DEFAULT_SAVED_LOADOUTS,
+  getPassiveModuleById,
+  getPowerupById,
+  normalizeLoadoutSnapshotForLevel,
   normalizeLoadoutState,
 } from "../src/constants/buildcraft.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
+
+test("buildcraft catalog lookups reject prototype and non-string ids", () => {
+  for (const id of ["toString", "constructor", "valueOf", "__proto__", null, undefined, 1,
+    { toString: () => "time_boost" }]) {
+    assert.equal(getPowerupById(id), null)
+    assert.equal(getPassiveModuleById(id), null)
+  }
+  assert.equal(getPowerupById("time_boost").id, "time_boost")
+  assert.equal(getPassiveModuleById("tempo_balanced").id, "tempo_balanced")
+})
+
+test("loadout normalization replaces prototype ids with unlocked starter items", () => {
+  const starter = DEFAULT_SAVED_LOADOUTS[0]
+  for (const id of ["toString", "constructor", "valueOf", "__proto__"]) {
+    const forged = {
+      id: "loadout_1",
+      moduleIds: { tempoCoreId: id, streakLensId: id, powerRigId: id },
+      passiveModuleIds: { tempo: id },
+      powerupIds: [id, "constructor"],
+    }
+    const snapshot = normalizeLoadoutSnapshotForLevel(1, forged)
+    assert.deepEqual(snapshot.moduleIds, starter.moduleIds)
+    assert.deepEqual(snapshot.powerupIds, starter.powerupIds)
+    const state = normalizeLoadoutState(1, [forged])
+    assert.deepEqual(state.activeLoadout.moduleIds, starter.moduleIds)
+    assert.deepEqual(state.activeLoadout.powerupIds, starter.powerupIds)
+    assert.deepEqual(buildLoadoutSnapshot(forged).powerupIds, starter.powerupIds)
+  }
+})
 
 test("normalizeLoadoutState falls back from locked or duplicate powerups", () => {
   const normalized = normalizeLoadoutState(1, [

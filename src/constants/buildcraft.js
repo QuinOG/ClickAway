@@ -356,10 +356,9 @@ function normalizeModuleIds(level = 1, moduleIds = {}, fallbackLoadout) {
   const nextModuleIds = {}
 
   MODULE_SLOT_DEFINITIONS.forEach((slot) => {
-    const requestedId = String(moduleIds?.[slot.key] || "")
-    const requestedModule = PASSIVE_MODULES_BY_ID[requestedId]
+    const requestedModule = getPassiveModuleById(moduleIds?.[slot.key])
     const fallbackId = fallbackLoadout.moduleIds?.[slot.key] || slot.defaultModuleId
-    const fallbackModule = PASSIVE_MODULES_BY_ID[fallbackId]
+    const fallbackModule = getPassiveModuleById(fallbackId)
 
     if (
       requestedModule &&
@@ -401,8 +400,8 @@ function fillPowerupIds(level = 1, requestedIds = [], fallbackIds = []) {
   candidateIds.forEach((candidateId) => {
     if (nextPowerupIds.length >= 3) return
 
-    const normalizedId = String(candidateId || "")
-    const powerup = POWERUPS_BY_ID[normalizedId]
+    const normalizedId = candidateId
+    const powerup = getPowerupById(normalizedId)
     if (!powerup || usedIds.has(normalizedId) || !isUnlocked(level, powerup.unlockLevel)) {
       return
     }
@@ -415,11 +414,13 @@ function fillPowerupIds(level = 1, requestedIds = [], fallbackIds = []) {
 }
 
 export function getPassiveModuleById(moduleId) {
-  return PASSIVE_MODULES_BY_ID[moduleId] ?? null
+  return typeof moduleId === "string" && Object.hasOwn(PASSIVE_MODULES_BY_ID, moduleId)
+    ? PASSIVE_MODULES_BY_ID[moduleId] : null
 }
 
 export function getPowerupById(powerupId) {
-  return POWERUPS_BY_ID[powerupId] ?? null
+  return typeof powerupId === "string" && Object.hasOwn(POWERUPS_BY_ID, powerupId)
+    ? POWERUPS_BY_ID[powerupId] : null
 }
 
 export function getLoadoutById(loadouts = [], loadoutId = DEFAULT_ACTIVE_LOADOUT_ID) {

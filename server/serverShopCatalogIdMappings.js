@@ -104,21 +104,27 @@ export const DEFAULT_PLAYER_STATE = {
 export const CATEGORY_CONFIGS = Object.values(CATEGORY_CONFIG_BY_TYPE)
 
 export function getCatalogItemById(itemId) {
-  return SHOP_ITEMS_BY_ID[itemId] ?? null
+  return typeof itemId === "string" && Object.hasOwn(SHOP_ITEMS_BY_ID, itemId)
+    ? SHOP_ITEMS_BY_ID[itemId] : null
 }
 
 export function getCategoryConfigByType(type) {
-  return CATEGORY_CONFIG_BY_TYPE[type] ?? null
+  return typeof type === "string" && Object.hasOwn(CATEGORY_CONFIG_BY_TYPE, type)
+    ? CATEGORY_CONFIG_BY_TYPE[type] : null
 }
 
 export function getDefaultItemIdForType(type) {
-  return CATEGORY_CONFIG_BY_TYPE[type]?.defaultItemId || ""
+  return getCategoryConfigByType(type)?.defaultItemId || ""
 }
 
 export function getMappedShopItemById(itemId) {
-  return SHOP_ITEM_DB_MAP[itemId] ?? null
+  return typeof itemId === "string" && Object.hasOwn(SHOP_ITEM_DB_MAP, itemId)
+    ? SHOP_ITEM_DB_MAP[itemId] : null
 }
 
 export function getFrontendItemIdByDbItemId(type, dbItemId) {
-  return FRONTEND_ITEM_ID_BY_DB_KEY[`${type}:${Number(dbItemId)}`] || ""
+  if (typeof type !== "string") return ""
+  const key = `${type}:${Number(dbItemId)}`
+  return Object.hasOwn(FRONTEND_ITEM_ID_BY_DB_KEY, key)
+    ? FRONTEND_ITEM_ID_BY_DB_KEY[key] : ""
 }

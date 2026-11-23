@@ -1648,6 +1648,18 @@ async function queryRankedLeaderboardRows(options = {}) {
   }
 }
 
+export function normalizePaginationPage(page = 1) {
+  const value = Number(page)
+  return Number.isFinite(value) ? Math.max(1, Math.min(1_000_000, Math.floor(value))) : 1
+}
+
+export function normalizePaginationLimit(limit, maxLimit, defaultLimit) {
+  if (limit === undefined || limit === null || limit === "") return defaultLimit
+  const value = Number(limit)
+  if (!Number.isFinite(value) || value === 0) return defaultLimit
+  return Math.max(1, Math.min(maxLimit, Math.floor(value)))
+}
+
 async function readRankedLeaderboardRows(connection, {
   board = LEADERBOARD_BOARDS.MMR,
   page = 1,
@@ -1660,11 +1672,8 @@ async function readRankedLeaderboardRows(connection, {
   const normalizedBoard = Object.values(LEADERBOARD_BOARDS).includes(board)
     ? board
     : LEADERBOARD_BOARDS.MMR
-  const normalizedLimit = Math.max(
-    1,
-    Math.min(LEADERBOARD_MAX_LIMIT, Math.floor(Number(limit) || LEADERBOARD_DEFAULT_LIMIT))
-  )
-  const normalizedPage = Math.max(1, Math.floor(Number(page) || 1))
+  const normalizedLimit = normalizePaginationLimit(limit, LEADERBOARD_MAX_LIMIT, LEADERBOARD_DEFAULT_LIMIT)
+  const normalizedPage = normalizePaginationPage(page)
   const normalizedSearch = String(search || "").trim().toLowerCase()
   const orderClause = buildLeaderboardOrderClause(normalizedBoard)
   const reactionFilter = normalizedBoard === LEADERBOARD_BOARDS.REACTION
@@ -1830,8 +1839,8 @@ export async function findLeaderboardRows({ limit = 25 } = {}) {
 }
 
 export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_PAGE_SIZE } = {}) {
-  const normalizedLimit = Math.max(1, Math.min(100, Math.floor(Number(limit) || HISTORY_PAGE_SIZE)))
-  const normalizedPage = Math.max(1, Math.floor(Number(page) || 1))
+  const normalizedLimit = normalizePaginationLimit(limit, 100, HISTORY_PAGE_SIZE)
+  const normalizedPage = normalizePaginationPage(page)
   const offset = (normalizedPage - 1) * normalizedLimit
   const totalCount = await getRoundHistoryCount(pool, userId)
   const totalPages = totalCount > 0 ? Math.ceil(totalCount / normalizedLimit) : 0

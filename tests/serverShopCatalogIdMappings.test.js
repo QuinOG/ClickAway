@@ -86,3 +86,15 @@ test("numeric database ids are normalized before lookup", () => {
   assert.equal(getFrontendItemIdByDbItemId("button_skin", "2"), "skin_neon")
   assert.equal(getFrontendItemIdByDbItemId("button_skin", 2.0), "skin_neon")
 })
+
+test("catalog lookups reject prototype keys and non-string keys", () => {
+  for (const key of ["toString", "constructor", "valueOf", "__proto__", null, undefined, 1,
+    { toString: () => "skin_neon" }]) {
+    assert.equal(getCatalogItemById(key), null)
+    assert.equal(getMappedShopItemById(key), null)
+    assert.equal(getCategoryConfigByType(key), null)
+    assert.equal(getDefaultItemIdForType(key), "")
+    assert.equal(getFrontendItemIdByDbItemId(key, 1), "")
+  }
+  assert.equal(getFrontendItemIdByDbItemId({ toString: () => "button_skin" }, 2), "")
+})
