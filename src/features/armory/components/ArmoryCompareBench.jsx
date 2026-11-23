@@ -1,3 +1,4 @@
+import { useId } from "react"
 import {
   BuildIdentityGlyph,
 } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
@@ -107,10 +108,10 @@ function BayCompareView({ activeLoadout, activePresentation, ghostLoadout, ghost
 
       <div className="armoryCompareSpecColumns">
         {[
-          { label: activeLoadout.name, presentation: activePresentation },
-          { label: ghostLoadout.name, presentation: ghostPresentation },
-        ].map(({ label, presentation }) => (
-          <div key={label} className="armoryCompareSpecColumn">
+          { slotKey: "active", label: activeLoadout.name, presentation: activePresentation },
+          { slotKey: "ghost", label: ghostLoadout.name, presentation: ghostPresentation },
+        ].map(({ slotKey, label, presentation }) => (
+          <div key={slotKey} className="armoryCompareSpecColumn">
             <span className="armoryCompareSpecColumnTitle">{label}</span>
             <div className="armoryCompareSpecColumnBody">
               <div>
@@ -156,6 +157,16 @@ export default function ArmoryCompareBench({
   modePresentations,
 }) {
   const dialogRef = useOverlayDismiss(isOpen, onClose)
+  const tabsId = useId()
+  function handleTabKeyDown(event) {
+    const tabs = ["bay", "matrix"]
+    const index = tabs.indexOf(view)
+    const nextIndex = { ArrowRight: (index + 1) % tabs.length, ArrowLeft: (index + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key]
+    if (nextIndex === undefined) return
+    event.preventDefault()
+    onChangeView(tabs[nextIndex])
+    event.currentTarget.parentElement.querySelectorAll('[role="tab"]')[nextIndex].focus()
+  }
   if (!isOpen) return null
 
   return (
@@ -176,6 +187,10 @@ export default function ArmoryCompareBench({
           <button
             type="button"
             role="tab"
+            id={`${tabsId}-bay`}
+            aria-controls={`${tabsId}-panel`}
+            tabIndex={view === "bay" ? 0 : -1}
+            onKeyDown={handleTabKeyDown}
             aria-selected={view === "bay"}
             className={`armoryCompareTab ${view === "bay" ? "isActive" : ""}`}
             onClick={() => onChangeView("bay")}
@@ -185,6 +200,10 @@ export default function ArmoryCompareBench({
           <button
             type="button"
             role="tab"
+            id={`${tabsId}-matrix`}
+            aria-controls={`${tabsId}-panel`}
+            tabIndex={view === "matrix" ? 0 : -1}
+            onKeyDown={handleTabKeyDown}
             aria-selected={view === "matrix"}
             className={`armoryCompareTab ${view === "matrix" ? "isActive" : ""}`}
             onClick={() => onChangeView("matrix")}
@@ -193,6 +212,7 @@ export default function ArmoryCompareBench({
           </button>
         </div>
 
+        <div role="tabpanel" id={`${tabsId}-panel`} aria-labelledby={`${tabsId}-${view}`} style={{ display: "grid", gap: "inherit" }}>
         {view === "matrix" ? (
           <ArmoryModeManifest loadoutName={activeLoadout.name} modePresentations={modePresentations} />
         ) : (
@@ -203,6 +223,7 @@ export default function ArmoryCompareBench({
             ghostPresentation={ghostPresentation}
           />
         )}
+        </div>
       </section>
     </>
   )

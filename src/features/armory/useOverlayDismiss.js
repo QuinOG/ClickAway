@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react"
 
 const openDialogs = []
 
+export function hasOpenOverlayDialog() {
+  return openDialogs.length > 0
+}
+
 // Keep workshop keyboard focus inside the open dialog and restore its opener.
 export function useOverlayDismiss(isOpen, onClose) {
   const dialogRef = useRef(null)

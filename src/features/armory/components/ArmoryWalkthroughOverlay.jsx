@@ -1,3 +1,6 @@
+import { useEffect } from "react"
+import { hasOpenOverlayDialog } from "../useOverlayDismiss.js"
+
 export default function ArmoryWalkthroughOverlay({
   step = null,
   stepIndex = 0,
@@ -13,6 +16,18 @@ export default function ArmoryWalkthroughOverlay({
   onGoToReady,
   onRunRange,
 }) {
+  const isOpen = Boolean(step)
+  useEffect(() => {
+    if (!isOpen) return undefined
+    const handleKeyDown = (event) => {
+      if (event.defaultPrevented || event.key !== "Escape" || hasOpenOverlayDialog()) return
+      event.preventDefault()
+      onSkip?.()
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, onSkip])
+
   if (!step) return null
 
   const dismissLabel = isManual ? "Close" : "Skip"
