@@ -14,6 +14,55 @@ accounts, and trust, not in core gameplay.
 
 ---
 
+## 0. Hands-on review findings (2026-11-25)
+
+From playing the app with mock data at desktop (1440×900) and phone (390×844) sizes,
+then checking the code behind what showed up.
+
+### Bugs and wrong behaviour
+- [ ] `P1` **Grade is too generous.** A Casual round where the player stopped after ~1.5 s
+      (score 34, PB 1,040) gets a **B**. `getRoundGrade` in `GameOverOverlay.jsx` averages five
+      equal ratings; accuracy and speed stay high after quitting, and "vs best" is only 1/5 of it.
+      Weight score heavily, or cap the grade when score is far below the player's average.
+- [ ] `P1` **"Next round · Push for 1,041 points" after scoring 34.** The next-round goal ignores
+      the round just played. Suggest a reachable step (e.g. the player's average, then PB).
+- [ ] `P1` **Hit feedback covers the target on phone.** "+6" floats over the live target and
+      "BULLSEYE ×2" text is clipped by the burst sprite. In a reaction game nothing may cover the
+      next target. Move popups away from the target or fade them faster.
+- [ ] `P2` Profile "Last 7 rounds" mixes Practice, Casual and Ranked scores in one trend ("+24%").
+      Those modes have different rules, so the trend is meaningless. Filter by mode.
+- [ ] `P2` Ladder shows "Season ending soon" with no date or countdown.
+- [ ] `P2` The mock `dataState: "empty"` still shows level 12, 1,850 coins and records, so the
+      **brand-new-player experience has never actually been captured or tested**. Fix the fixture,
+      then review every page as a level-1 player.
+
+### Design (my honest opinion)
+- [ ] `P1` **The meta layer is heavier than the game.** The core is "click the moving target",
+      but around it are Armory mods (tempo core, streak lens, power rig), powerups, spec sheets,
+      compare modes, a test range, an unlock wall, blueprints, drills, duels, seasons, placements,
+      daily goals, 38 achievements and a shop. A new player meets a lot of jargon before they've had
+      fun. Hide the Armory until ~level 5, start with one loadout, and unlock systems one at a time.
+- [ ] `P1` **Decide whether loadouts belong in Ranked.** Ranked uses the player's loadout, so
+      "Anchor" gives 12% bigger targets for −12% score. That's fine if balance is airtight, but it
+      makes rank partly about the build rather than skill. Options: a fixed standard loadout in Ranked,
+      or a balance test that proves no build wins on rating gains.
+- [ ] `P1` **The results screen hides the useful information.** Hits, accuracy, reaction time and
+      what to improve are behind "Round details". Show 2–3 key stats and one specific tip right away.
+- [ ] `P2` Too many top-level destinations (Play, Armory, Shop, Ladder, Duels, Profile, History,
+      Help, Settings = 9). Fold History into Profile and Help into Settings/first-run.
+
+### Codebase health (my honest opinion)
+- [ ] `P1` **CSS is built up in layers of overrides.** `game-feel.css` (3.7k lines), `armory.css` +
+      `game-armory.css` (6.6k), `polish.css`, `game.css` + `game-play.css`. That's the trace of many
+      polish passes stacked on top of each other, and why the CSS bundle is 708 kB. Consolidate per
+      component and delete overridden rules **before** more visual polish rounds.
+- [ ] `P1` **Stop polishing, start playtesting.** The repo has four self-improvement loop skills,
+      council screenshots, ~30 one-off `zz-*` capture specs and many audit/roadmap docs. Further
+      model-judged polish has diminishing returns. The highest-value input now is 5–10 real people
+      playing for a week, plus the analytics in §11 to see where they quit.
+
+---
+
 ## 1. Accounts & identity
 
 - [ ] `P0` **Password change** for a logged-in player (current password + new password).
@@ -175,3 +224,4 @@ accounts, and trust, not in core gameplay.
 ## Changelog of this list
 
 - 2026-11-25 — Initial list.
+- 2026-11-25 — Added §0 hands-on review findings (bugs, design and codebase opinions).
