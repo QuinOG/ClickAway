@@ -98,6 +98,21 @@ test("placement points are labelled separately while legacy rows retain RR", () 
   expect(screen.getAllByText("+9 RR").length).toBeGreaterThan(0)
 })
 
+test("a forfeited round shows the Forfeit label alongside its rating change", async () => {
+  fetchHistoryPage.mockResolvedValueOnce({
+    entries: [{ id: "forfeit", modeId: "hard", progressionMode: "ranked", outcome: "forfeit", rankDelta: -22 }],
+    hasMore: false,
+  })
+  render(page("current"))
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: "Load older rounds" })))
+
+  const labels = screen.getAllByText("Forfeit")
+  expect(labels).toHaveLength(2)
+  expect(labels.some((label) => label.closest("tbody"))).toBe(true)
+  expect(labels.some((label) => label.closest(".historyRoundCard"))).toBe(true)
+  expect(screen.getAllByText(/22 RR/)).toHaveLength(2)
+})
+
 test("peak highlight preserves zero reaction times and leaves missing metrics empty", () => {
   const history = [
     rounds("latest")[0],

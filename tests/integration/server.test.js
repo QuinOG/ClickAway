@@ -5,6 +5,7 @@ import test, { after, before } from "node:test"
 
 import { AUTH_COOKIE_NAME } from "../../server/auth.js"
 import { getDifficultyById } from "../../src/constants/gameModesConfig.js"
+import { PLACEMENT_MATCH_COUNT, RANK_SYSTEM_VERSION } from "../../src/utils/rankUtils.js"
 import { startTestDatabase } from "./testDatabase.js"
 
 let database
@@ -153,7 +154,7 @@ test("PUT /api/progress ignores client-supplied coins", async (t) => {
 
 test("a ranked token saves one history entry and rejects reuse", async (t) => {
   const request = await startTestApp(t)
-  const { cookie } = await signup(request, "RankedPlayer")
+  const { user, cookie, progress } = await signup(request, "RankedPlayer")
   const modeId = "hard"
   t.mock.timers.enable({ apis: ["Date"] })
 
@@ -182,9 +183,16 @@ test("a ranked token saves one history entry and rejects reuse", async (t) => {
   }
   const complete = await request("/api/round/complete", submission)
   assert.equal(complete.status, 200, JSON.stringify(complete.data))
+  assert.equal(complete.data.progress.rankedState.placementMatchesPlayed, progress.rankedState.placementMatchesPlayed + 1)
+  const [pending] = await pool.query("SELECT 1 FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+  assert.deepEqual(pending, [])
 
   const duplicate = await request("/api/round/complete", submission)
   assert.equal(duplicate.status, 409, JSON.stringify(duplicate.data))
+  const state = await request("/api/player/state", { cookie })
+  assert.equal(state.status, 200, JSON.stringify(state.data))
+  assert.equal(state.data.progress.rankMmr, complete.data.progress.rankMmr)
+  assert.deepEqual(state.data.progress.rankedState, complete.data.progress.rankedState)
 
   const history = await request("/api/history", { cookie })
   assert.equal(history.status, 200, JSON.stringify(history.data))
@@ -192,6 +200,137 @@ test("a ranked token saves one history entry and rejects reuse", async (t) => {
   assert.equal(history.data.entries.length, 1)
   assert.equal(history.data.entries[0].modeId, modeId)
   assert.equal(history.data.entries[0].misses, 1)
+  assert.equal(history.data.entries[0].outcome, "completed")
+})
+
+test("starting another ranked round forfeits the first and leaves one pending round", async (t) => {
+  const request = await startTestApp(t)
+  const { user, cookie, progress } = await signup(request, "ForfeitPlayer")
+  await pool.execute(
+    "UPDATE users SET mmr = ?, rank_system_version = ?, placement_matches_played = ? WHERE id = ?",
+    [400, RANK_SYSTEM_VERSION, PLACEMENT_MATCH_COUNT, user.id]
+  )
+  t.mock.timers.enable({ apis: ["Date"] })
+  const rankedStart = { method: "POST", cookie, body: { modeId: "hard" } }
+  const first = await request("/api/round/start", rankedStart)
+  assert.equal(first.status, 200, JSON.stringify(first.data))
+  const [firstPending] = await pool.query("SELECT round_id FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+  assert.equal(firstPending.length, 1)
+
+  const second = await request("/api/round/start", rankedStart)
+  assert.equal(second.status, 200, JSON.stringify(second.data))
+  const [pending] = await pool.query("SELECT round_id FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+  assert.equal(pending.length, 1)
+  assert.notEqual(pending[0].round_id, firstPending[0].round_id)
+  const [consumed] = await pool.query("SELECT token_id FROM consumed_round_tokens WHERE user_id = ?", [user.id])
+  assert.deepEqual(consumed, [{ token_id: firstPending[0].round_id }])
+
+  const [history] = await pool.query(
+    "SELECT outcome, progression_mode, score, rank_delta, coins_earned, xp_earned FROM round_history WHERE user_id = ?",
+    [user.id]
+  )
+  assert.deepEqual(history, [{
+    outcome: "forfeit", progression_mode: "ranked", score: 0, rank_delta: -22, coins_earned: 0, xp_earned: 0,
+  }])
+  const state = await request("/api/player/state", { cookie })
+  assert.equal(state.status, 200, JSON.stringify(state.data))
+  assert.equal(state.data.progress.rankMmr, 378)
+  assert.equal(state.data.progress.coins, progress.coins)
+  assert.equal(state.data.progress.levelXp, progress.levelXp)
+  assert.equal(state.data.progress.lifetimeStats.totalRounds, progress.lifetimeStats.totalRounds)
+  assert.equal(state.data.progress.roundHistory[0].outcome, "forfeit")
+  const historyPage = await request("/api/history", { cookie })
+  assert.equal(historyPage.status, 200, JSON.stringify(historyPage.data))
+  assert.equal(historyPage.data.entries[0].outcome, "forfeit")
+
+  t.mock.timers.tick(getDifficultyById("hard").durationSeconds * 1000)
+  const submitForfeit = await request("/api/round/complete", {
+    method: "POST",
+    cookie,
+    body: { modeId: "hard", roundToken: first.data.roundToken, events: [], arenaWidth: 640, arenaHeight: 400 },
+  })
+  assert.equal(submitForfeit.status, 409, JSON.stringify(submitForfeit.data))
+  assert.equal(submitForfeit.data.error, "This ranked round was already counted as a loss because a new one was started.")
+  const afterSubmit = await request("/api/player/state", { cookie })
+  assert.equal(afterSubmit.status, 200, JSON.stringify(afterSubmit.data))
+  for (const key of ["rankMmr", "rankedState", "coins", "levelXp", "roundHistory", "lifetimeStats"]) {
+    assert.deepEqual(afterSubmit.data.progress[key], state.data.progress[key])
+  }
+  const [pendingAfterSubmit] = await pool.query("SELECT round_id FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+  assert.deepEqual(pendingAfterSubmit, pending)
+})
+
+for (const [endpoint, username] of [["/api/player/state", "ExpiredState"], ["/api/auth/me", "ExpiredSession"]]) {
+  test(`${endpoint} settles expired ranked rounds and keeps fresh rounds pending`, async (t) => {
+    const request = await startTestApp(t)
+    const { user, cookie, progress } = await signup(request, username)
+    const start = await request("/api/round/start", { method: "POST", cookie, body: { modeId: "hard" } })
+    assert.equal(start.status, 200, JSON.stringify(start.data))
+
+    const freshState = await request(endpoint, { cookie })
+    assert.equal(freshState.status, 200, JSON.stringify(freshState.data))
+    assert.equal(freshState.data.progress.totalRoundCount, 0)
+    await pool.execute(
+      `INSERT INTO pending_ranked_rounds (round_id, user_id, mode_id, issued_at)
+       VALUES (?, ?, 'hard', now() - interval '61 minutes')`,
+      [`expired-${user.id}`, user.id]
+    )
+
+    const state = await request(endpoint, { cookie })
+    assert.equal(state.status, 200, JSON.stringify(state.data))
+    assert.equal(state.data.progress.totalRoundCount, 1)
+    assert.equal(state.data.progress.roundHistory[0].outcome, "forfeit")
+    assert.equal(state.data.progress.rankedState.placementMatchesPlayed, progress.rankedState.placementMatchesPlayed + 1)
+    const [pending] = await pool.query("SELECT round_id FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+    assert.equal(pending.length, 1)
+    assert.notEqual(pending[0].round_id, `expired-${user.id}`)
+    const [history] = await pool.query("SELECT outcome FROM round_history WHERE user_id = ?", [user.id])
+    assert.deepEqual(history, [{ outcome: "forfeit" }])
+
+    const reload = await request(endpoint, { cookie })
+    assert.equal(reload.status, 200, JSON.stringify(reload.data))
+    assert.equal(reload.data.progress.totalRoundCount, 1)
+  })
+}
+
+test("practice, casual, and duel starts do not create pending ranked rounds", async (t) => {
+  const request = await startTestApp(t)
+  const { user, cookie } = await signup(request, "DuelOpponent")
+  const { user: challenger } = await signup(request, "DuelChallenger")
+
+  for (const modeId of ["easy", "normal"]) {
+    const start = await request("/api/round/start", { method: "POST", cookie, body: { modeId } })
+    assert.equal(start.status, 200, JSON.stringify(start.data))
+    const [pending] = await pool.query("SELECT 1 FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+    assert.deepEqual(pending, [])
+  }
+
+  const [[replay]] = await pool.query(
+    `INSERT INTO round_replays (user_id, username, mode_id, seed, events_json, loadout_snapshot_json)
+     VALUES (?, ?, 'hard', 42, '[]', '{"arenaWidth":640,"arenaHeight":400}') RETURNING id`,
+    [challenger.id, challenger.username]
+  )
+  const [[challenge]] = await pool.query(
+    `INSERT INTO challenges (challenger_user_id, challenger_username, opponent_user_id, opponent_username, replay_id, mode_id, status)
+     VALUES (?, ?, ?, ?, ?, 'hard', 'accepted') RETURNING id`,
+    [challenger.id, challenger.username, user.id, user.username, replay.id]
+  )
+  t.mock.timers.enable({ apis: ["Date"] })
+  const duel = await request("/api/round/start", {
+    method: "POST", cookie, body: { modeId: "hard", challengeId: Number(challenge.id) },
+  })
+  assert.equal(duel.status, 200, JSON.stringify(duel.data))
+  assert.equal(duel.data.replayId, Number(replay.id))
+  const [pending] = await pool.query("SELECT 1 FROM pending_ranked_rounds WHERE user_id = ?", [user.id])
+  assert.deepEqual(pending, [])
+
+  t.mock.timers.tick(getDifficultyById("hard").durationSeconds * 1000)
+  const complete = await request("/api/round/complete", {
+    method: "POST",
+    cookie,
+    body: { modeId: "hard", roundToken: duel.data.roundToken, events: [], arenaWidth: 640, arenaHeight: 400 },
+  })
+  assert.equal(complete.status, 200, JSON.stringify(complete.data))
 })
 
 test("the auth rate limiter returns 429 on the 21st login attempt", async (t) => {

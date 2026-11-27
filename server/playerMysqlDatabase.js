@@ -1,6 +1,8 @@
 import "dotenv/config"
 
 import pool, { buildValuesClause } from "./db/pgPool.js"
+import { calculateRoundRewards } from "./roundRewards.js"
+import { ROUND_TOKEN_LIFETIME_MS } from "./roundToken.js"
 
 import {
   ACTIVE_LOADOUT_ID_DEFAULT,
@@ -85,6 +87,7 @@ const REQUIRED_DATABASE_TABLES = [
   "button_skins",
   "challenges",
   "consumed_round_tokens",
+  "pending_ranked_rounds",
   "profile_images",
   "round_history",
   "round_replays",
@@ -123,6 +126,12 @@ export async function verifySchema() {
     WHERE table_schema = 'public' AND table_name = 'round_history'
       AND column_name = 'rank_result_kind'`)
   if (!columns.length) throw new Error("Supabase schema is incomplete. Missing round_history.rank_result_kind; apply migration 013.")
+
+  const [outcomeColumns] = await pool.query(`SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'round_history'
+      AND column_name = 'outcome'`)
+  if (!outcomeColumns.length) throw new Error("Supabase schema is incomplete. Missing round_history.outcome; apply the ranked forfeit migration.")
 
   console.log("Supabase schema verified.")
 }
@@ -253,6 +262,7 @@ export async function initializeSchema() {
   await addColumnIfMissing("users", "build_walkthrough_status", "varchar(60) NOT NULL DEFAULT 'not_started'")
   await addColumnIfMissing("users", "seen_unlock_part_ids_json", "jsonb DEFAULT NULL")
   await addColumnIfMissing("round_history", "rank_result_kind", "varchar(10) DEFAULT NULL CHECK (rank_result_kind IN ('rr', 'placement'))")
+  await addColumnIfMissing("round_history", "outcome", "varchar(20) NOT NULL DEFAULT 'completed'")
   await addColumnIfMissing("round_history", "avg_reaction_ms", "int DEFAULT NULL")
   await addColumnIfMissing("round_history", "best_reaction_ms", "int DEFAULT NULL")
   await addColumnIfMissing("round_history", "loadout_name", "varchar(100) DEFAULT NULL")
@@ -380,6 +390,14 @@ export async function initializeSchema() {
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
   )`)
   await pool.query(`DELETE FROM consumed_round_tokens WHERE consumed_at < now() - interval '2 days'`)
+
+  await pool.query(`CREATE TABLE IF NOT EXISTS pending_ranked_rounds (
+    round_id varchar(64) PRIMARY KEY,
+    user_id bigint NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    mode_id varchar(50) NOT NULL,
+    issued_at timestamptz NOT NULL DEFAULT now()
+  )`)
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_pending_ranked_rounds_user ON pending_ranked_rounds (user_id)`)
 
   await pool.query(`CREATE TABLE IF NOT EXISTS challenges (
     id bigint GENERATED ALWAYS AS IDENTITY,
@@ -567,6 +585,7 @@ function normalizeRoundHistoryEntry(entry = {}, index = 0) {
     playedAtDate,
     modeId: String(entry.modeId || entry.difficultyId || DEFAULT_PROGRESS.selectedModeId),
     progressionMode: String(entry.progressionMode || DEFAULT_PROGRESSION_MODE),
+    outcome: entry.outcome === "forfeit" ? "forfeit" : "completed",
     score: toNonNegativeNumber(entry.score, 0),
     hits,
     misses,
@@ -686,6 +705,7 @@ function buildHistoryEntry(row) {
     modeId: String(row.modeId || DEFAULT_PROGRESS.selectedModeId),
     difficultyId: String(row.modeId || DEFAULT_PROGRESS.selectedModeId),
     progressionMode: String(row.progressionMode || DEFAULT_PROGRESSION_MODE),
+    outcome: row.outcome === "forfeit" ? "forfeit" : "completed",
     xpEarned: toNonNegativeNumber(row.xpEarned, 0),
     rankDelta: Number.isFinite(Number(row.rankDelta)) ? Number(row.rankDelta) : 0,
     rankResultKind: ["rr", "placement"].includes(row.rankResultKind) ? row.rankResultKind : null,
@@ -905,7 +925,7 @@ async function backfillLifetimeStatsFromHistory(executor, userId) {
        powerup_slot_3_id AS powerupSlot3Id,
        played_at AS playedAt
      FROM round_history
-     WHERE user_id = ?
+     WHERE user_id = ? AND outcome <> 'forfeit'
      ORDER BY played_at ASC, id ASC`,
     [userId]
   )
@@ -1020,6 +1040,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
        xp_earned,
        rank_delta,
        rank_result_kind,
+       outcome,
        loadout_name,
        loadout_id,
        tempo_core_id,
@@ -1029,7 +1050,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
        powerup_slot_2_id,
        powerup_slot_3_id,
        played_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      RETURNING id`,
     [
       userId,
@@ -1045,6 +1066,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
       normalizedEntry.xpEarned,
       normalizedEntry.rankDelta,
       normalizedEntry.rankResultKind,
+      normalizedEntry.outcome,
       normalizedEntry.loadoutSnapshot?.loadoutName || null,
       normalizedEntry.loadoutSnapshot?.loadoutId || null,
       normalizedEntry.loadoutSnapshot?.moduleIds?.tempoCoreId || null,
@@ -1071,6 +1093,7 @@ async function insertRoundHistoryEntry(executor, userId, entry = {}) {
     xpEarned: normalizedEntry.xpEarned,
     rankDelta: normalizedEntry.rankDelta,
     rankResultKind: normalizedEntry.rankResultKind,
+    outcome: normalizedEntry.outcome,
     loadoutName: normalizedEntry.loadoutSnapshot?.loadoutName,
     loadoutId: normalizedEntry.loadoutSnapshot?.loadoutId,
     tempoCoreId: normalizedEntry.loadoutSnapshot?.moduleIds?.tempoCoreId,
@@ -1242,6 +1265,7 @@ async function buildProgressRecord(executor, userId) {
        xp_earned AS xpEarned,
        rank_delta AS rankDelta,
        rank_result_kind AS rankResultKind,
+       outcome,
        loadout_name AS loadoutName,
        loadout_id AS loadoutId,
        tempo_core_id AS tempoCoreId,
@@ -1914,6 +1938,7 @@ export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_P
        xp_earned AS xpEarned,
        rank_delta AS rankDelta,
        rank_result_kind AS rankResultKind,
+       outcome,
        loadout_name AS loadoutName,
        loadout_id AS loadoutId,
        tempo_core_id AS tempoCoreId,
@@ -1940,10 +1965,127 @@ export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_P
   }
 }
 
+// Starting and completing rounds take the same user row lock before touching
+// pending rounds or token claims. The caller owns the transaction.
+async function settlePendingRankedRounds(connection, userId, { olderThanMs = 0 } = {}) {
+  const userRow = await getUserStateRow(connection, userId, { forUpdate: true })
+  if (!userRow) throw new Error(`User ${userId} was not found.`)
+
+  const [pendingRounds] = await connection.query(
+    `SELECT round_id AS roundId, mode_id AS modeId
+     FROM pending_ranked_rounds
+     WHERE user_id = ?
+       AND (?::double precision = 0 OR issued_at <= now() - ?::double precision * interval '1 millisecond')
+     ORDER BY issued_at, round_id`,
+    [userId, olderThanMs, olderThanMs]
+  )
+  if (!pendingRounds.length) return
+
+  let { rankMmr, rankedState } = migrateLegacyRankData({
+    rankMmr: userRow.mmr,
+    rankedState: {
+      rankSystemVersion: userRow.rankSystemVersion,
+      placementMatchesPlayed: userRow.placementMatchesPlayed,
+      demotionProtectionRounds: userRow.demotionProtectionRounds,
+    },
+  })
+
+  for (const { roundId, modeId } of pendingRounds) {
+    const { progressionMode, baseRankDelta, placementMatchScore, allowsRankProgression } =
+      calculateRoundRewards({ modeId, hits: 0, misses: 0, score: 0, bestStreak: 0 })
+    const rankOutcome = applyRankedMatchResult({
+      currentMmr: rankMmr,
+      currentRankedState: rankedState,
+      hasRankedHistory: rankedState.placementMatchesPlayed > 0,
+      baseRankDelta,
+      placementMatchScore,
+      allowsRankProgression,
+    })
+    rankMmr = rankOutcome.nextMmr
+    rankedState = rankOutcome.nextRankedState
+
+    await insertRoundHistoryEntry(connection, userId, {
+      modeId,
+      progressionMode,
+      score: 0,
+      coinsEarned: 0,
+      xpEarned: 0,
+      rankDelta: rankOutcome.appliedRankDelta,
+      rankResultKind: rankOutcome.previousRankProgress.isUnranked || rankOutcome.previousRankProgress.isPlacement
+        ? "placement"
+        : "rr",
+      outcome: "forfeit",
+    })
+    await connection.execute(
+      "INSERT INTO consumed_round_tokens (token_id, user_id) VALUES (?, ?)",
+      [roundId, userId]
+    )
+    await connection.execute(
+      "DELETE FROM pending_ranked_rounds WHERE round_id = ? AND user_id = ?",
+      [roundId, userId]
+    )
+  }
+
+  await connection.execute(
+    `UPDATE users
+     SET mmr = ?, rank_system_version = ?, placement_matches_played = ?, demotion_protection_rounds = ?
+     WHERE id = ?`,
+    [rankMmr, rankedState.rankSystemVersion, rankedState.placementMatchesPlayed, rankedState.demotionProtectionRounds, userId]
+  )
+}
+
+export async function recordPendingRankedRound({ userId, modeId, roundId }) {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    await settlePendingRankedRounds(connection, userId)
+    await connection.execute(
+      "INSERT INTO pending_ranked_rounds (round_id, user_id, mode_id) VALUES (?, ?, ?)",
+      [roundId, userId, modeId]
+    )
+    await connection.commit()
+  } catch (error) {
+    await connection.rollback().catch(() => {})
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
+export async function settleExpiredRankedRounds(userId) {
+  const [expired] = await pool.query(
+    `SELECT 1 FROM pending_ranked_rounds
+     WHERE user_id = ? AND issued_at <= now() - ?::double precision * interval '1 millisecond'
+     LIMIT 1`,
+    [userId, ROUND_TOKEN_LIFETIME_MS]
+  )
+  if (!expired.length) return
+
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    await settlePendingRankedRounds(connection, userId, { olderThanMs: ROUND_TOKEN_LIFETIME_MS })
+    await connection.commit()
+  } catch (error) {
+    await connection.rollback().catch(() => {})
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
 export class RoundAlreadySubmittedError extends Error {
   constructor() {
     super("This round has already been submitted.")
     this.name = "RoundAlreadySubmittedError"
+    this.status = 409
+  }
+}
+
+class RoundForfeitedError extends Error {
+  constructor() {
+    super("This ranked round was already counted as a loss because a new one was started.")
+    this.name = "RoundForfeitedError"
     this.status = 409
   }
 }
@@ -1959,6 +2101,7 @@ export async function completeUserRound({
   maxCoins = Number.MAX_SAFE_INTEGER,
   maxXp = Number.MAX_SAFE_INTEGER,
   roundTokenId = null,
+  requiresPendingRankedRound = false,
   maxMmr = Number.MAX_SAFE_INTEGER,
   // Inputs for the ranked result. It is calculated here from the locked row, so
   // two rounds finishing together both count, and a non-ranked round never
@@ -1991,6 +2134,13 @@ export async function completeUserRound({
          ON CONFLICT (token_id) DO NOTHING`,
         [String(roundTokenId), userId]
       )
+      if (requiresPendingRankedRound) {
+        const [pending] = await connection.execute(
+          "DELETE FROM pending_ranked_rounds WHERE round_id = ? AND user_id = ?",
+          [String(roundTokenId), userId]
+        )
+        if (!pending.affectedRows) throw new RoundForfeitedError()
+      }
       if (!claim.affectedRows) {
         throw new RoundAlreadySubmittedError()
       }

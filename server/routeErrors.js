@@ -1,7 +1,7 @@
 function isHandledRouteError(error) {
   return (
     error instanceof Error &&
-    (error.name === "PlayerStateError" || error.name === "RoundAlreadySubmittedError") &&
+    ["PlayerStateError", "RoundAlreadySubmittedError", "RoundForfeitedError"].includes(error.name) &&
     Number.isInteger(error.status)
   )
 }

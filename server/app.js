@@ -8,6 +8,7 @@ import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import { existsSync } from "fs"
 import { performance } from "node:perf_hooks"
+import { randomUUID } from "node:crypto"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -41,12 +42,14 @@ import {
   findUserReplays,
   insertRoundReplay,
   isUserSessionActive,
+  recordPendingRankedRound,
   applyUserSeasonProgress,
   completeChallenge,
   respondToChallenge,
   revokeAllUserSessions,
   revokeUserSession,
   saveUserProgress,
+  settleExpiredRankedRounds,
   LEADERBOARD_BOARDS,
 } from "./playerMysqlDatabase.js"
 import { calculateRoundRewards, simulateRound, getTokenlessGeometrySeed, isRaceableReplay } from "./roundRewards.js"
@@ -337,6 +340,7 @@ export function createApp() {
 
     try {
       await playerStateStore.ensurePlayerUser(user)
+      await settleExpiredRankedRounds(user.id)
       response.json({
         user: {
           id: user.id,
@@ -358,6 +362,7 @@ export function createApp() {
     }
 
     try {
+      await settleExpiredRankedRounds(user.id)
       response.json(await playerStateStore.getPlayerState({ user }))
     } catch (error) {
       handleRouteError(error, response)
@@ -684,12 +689,15 @@ export function createApp() {
       }
     }
 
-    const roundToken = signRoundToken(
-      { userId: request.auth.userId, modeId, seed, challengeId },
-      JWT_SECRET
-    )
-
-    response.json({ roundToken, seed, ...(challengeId ? { replayId } : {}) })
+    try {
+      const userId = request.auth.userId
+      const roundId = mode.allowsRankProgression && !challengeId ? randomUUID() : undefined
+      const roundToken = signRoundToken({ userId, modeId, seed, challengeId, roundId }, JWT_SECRET)
+      if (roundId) await recordPendingRankedRound({ userId, modeId, roundId })
+      response.json({ roundToken, seed, ...(challengeId ? { replayId } : {}) })
+    } catch (error) {
+      handleRouteError(error, response)
+    }
   })
 
   app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, response) => {
@@ -856,6 +864,7 @@ export function createApp() {
         maxXp: MAX_XP,
         maxMmr: MAX_MMR,
         roundTokenId,
+        requiresPendingRankedRound: allowsRankProgression && !roundTokenChallengeId,
         rankInputs: { hasRankedHistory, baseRankDelta, placementMatchScore, allowsRankProgression },
         fallbackRankState: {
           currentMmr: currentProgress.rankMmr,

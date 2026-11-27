@@ -6,13 +6,13 @@ import jwt from "jsonwebtoken"
 // The client derives button geometry from the seed, which is the groundwork
 // for replaying rounds and geometrically validating hits. Practice rounds are
 // untimed and can run long, so the expiry is generous.
-const ROUND_TOKEN_EXPIRY = "60m"
+export const ROUND_TOKEN_LIFETIME_MS = 60 * 60 * 1000
 
 export function createRoundSeed() {
   return Math.floor(Math.random() * 0xffffffff) >>> 0
 }
 
-export function signRoundToken({ userId, modeId, seed, challengeId = null }, jwtSecret) {
+export function signRoundToken({ userId, modeId, seed, challengeId = null, roundId = randomUUID() }, jwtSecret) {
   return jwt.sign(
     {
       sub: String(userId),
@@ -21,12 +21,12 @@ export function signRoundToken({ userId, modeId, seed, challengeId = null }, jwt
       purpose: "round",
       // Each token can complete exactly one round; the server records this id
       // when the round's rewards are written.
-      roundId: randomUUID(),
+      roundId,
       // Set when the round races a duel ghost; the seed is then the ghost's.
       challengeId: challengeId ?? null,
     },
     jwtSecret,
-    { expiresIn: ROUND_TOKEN_EXPIRY }
+    { expiresIn: ROUND_TOKEN_LIFETIME_MS / 1000 }
   )
 }
 
