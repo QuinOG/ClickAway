@@ -110,6 +110,7 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
     modeId: String(entry.modeId || entry.difficultyId || ""),
     difficultyId: String(entry.modeId || entry.difficultyId || ""),
     progressionMode: String(entry.progressionMode || ""),
+    outcome: entry.outcome === "forfeit" ? "forfeit" : "completed",
     xpEarned: normalizeNonNegativeNumber(entry.xpEarned),
     rankDelta: Number.isFinite(Number(entry.rankDelta)) ? Number(entry.rankDelta) : 0,
     rankResultKind: ["rr", "placement"].includes(entry.rankResultKind) ? entry.rankResultKind : null,

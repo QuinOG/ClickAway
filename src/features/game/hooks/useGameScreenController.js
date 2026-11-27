@@ -319,6 +319,15 @@ export function useGameScreenController({
   const allowsLevelProgression = roundMode.allowsLevelProgression !== false
   const allowsRankProgression = roundMode.allowsRankProgression === true
 
+  useEffect(() => {
+    if (!allowsRankProgression || isValidGhostReplay(ghostReplay)
+      || (phase !== ROUND_PHASE.COUNTDOWN && phase !== ROUND_PHASE.PLAYING)) return undefined
+
+    const warnBeforeLeaving = (event) => event.preventDefault()
+    window.addEventListener("beforeunload", warnBeforeLeaving)
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving)
+  }, [allowsRankProgression, ghostReplay, phase])
+
   const comboMultiplier = useMemo(
     () => getComboMultiplier(streak, roundMode.comboStep),
     [roundMode.comboStep, streak]

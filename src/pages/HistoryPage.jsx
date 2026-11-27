@@ -248,6 +248,7 @@ function HistoryRoundCard({ round, markers = [] }) {
         <span><Crosshair weight="bold" aria-hidden="true" /> {formatNumber(round.hits)}/{formatNumber(Number(round.hits) + Number(round.misses))}<em>hits</em></span>
       </div>
       <div className="historyRoundCardOutcome">
+        {round.outcome === "forfeit" ? <span>Forfeit</span> : null}
         {isRankedModeEntry(round) ? <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>{getRankResultText(round)}</span> : null}
         {isPractice ? <span className="historyRoundCardNoRewards">No rewards</span> : (
           <>
@@ -550,6 +551,7 @@ export default function HistoryPage({
                           <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.coinsEarned)}</td>
                           <td className="historyNumericCell">{isPracticeRound(round) ? "—" : formatNumber(round.xpEarned ?? 0)}</td>
                           <td className="historyNumericCell">
+                            {round.outcome === "forfeit" ? <span>Forfeit </span> : null}
                             <span className={`historyRankBadge ${getRankResultToneClassName(round)}`}>
                               {getRankResultText(round)}
                             </span>

@@ -73,3 +73,28 @@ ALTER TABLE public.user_lifetime_stats
 
 Existing lifetime stats and round history keep their reaction values. The
 Reaction ladder starts empty and fills as players complete eligible rounds.
+
+## Ranked forfeits
+
+`initializeSchema()` creates `pending_ranked_rounds` and adds `round_history.outcome`.
+For deployments with `DB_AUTO_MIGRATE=false`, run this SQL in Supabase before deploying.
+
+```sql
+CREATE TABLE IF NOT EXISTS public.pending_ranked_rounds (
+  round_id varchar(64) PRIMARY KEY,
+  user_id bigint NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
+  mode_id varchar(50) NOT NULL,
+  issued_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_pending_ranked_rounds_user
+  ON public.pending_ranked_rounds (user_id);
+ALTER TABLE public.round_history
+  ADD COLUMN IF NOT EXISTS outcome varchar(20) NOT NULL DEFAULT 'completed';
+DO $grant$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clickaway_app') THEN
+    GRANT SELECT, INSERT, DELETE ON public.pending_ranked_rounds TO clickaway_app;
+  END IF;
+END
+$grant$;
+```

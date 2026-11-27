@@ -607,6 +607,7 @@ export function ReadyOverlay({
             <span className="arenaLobbyKicker">Round lobby</span>
             <h2 id="round-ready-title">{readyTitle}</h2>
             <p>{readyLead}</p>
+            {selectedMode?.id === "hard" ? <p>Leaving a ranked round after it starts counts as a loss.</p> : null}
           </div>
           {onboardingCoach ? (
             <div className="readyOnboardingCoach" aria-label="First session onboarding">
