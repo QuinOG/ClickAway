@@ -7,6 +7,11 @@ export default class AppErrorBoundary extends Component {
     return { failed: true }
   }
 
+  componentDidCatch(error, info) {
+    // Without this the crash leaves no trace; the fallback alone hides the cause.
+    console.error("ClickAway crashed while rendering:", error, info?.componentStack ?? "")
+  }
+
   render() {
     if (!this.state.failed) return this.props.children
     return (

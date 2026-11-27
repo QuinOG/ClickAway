@@ -13,3 +13,17 @@ test("a failed page import leaves a reload control instead of an empty app", asy
   expect(screen.getByRole("button", { name: "Reload page" })).not.toBeNull()
   expect(screen.getByText(/Saved account progress is kept/)).not.toBeNull()
 })
+
+test("a render error is logged with the thrown error", () => {
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {})
+  const crash = new Error("Render exploded")
+  function BrokenPage() {
+    throw crash
+  }
+  render(<AppErrorBoundary><BrokenPage /></AppErrorBoundary>)
+  expect(screen.getByRole("alert")).not.toBeNull()
+  const logged = spy.mock.calls.find((call) => call[0] === "ClickAway crashed while rendering:")
+  expect(logged).toBeDefined()
+  expect(logged[1]).toBe(crash)
+  spy.mockRestore()
+})
