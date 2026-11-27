@@ -8,6 +8,7 @@ import { getSeasonRewardTier } from '../src/utils/seasonUtils.js'
 import { buildHistorySnapshot } from '../src/features/history/historyRoundsSnapshotBuilder.js'
 const source = readFileSync('server/playerMysqlDatabase.js', 'utf8')
 const seasonsSource = readFileSync('server/db/seasons.js', 'utf8')
+const schemaSource = readFileSync('server/db/schema.js', 'utf8')
 
 test('history preserves result kind and RR summaries exclude placement points, including zero', () => {
   const rows = ['placement', 'rr', null].map((rankResultKind, i) => normalizeHistoryEntry({ progressionMode: 'ranked', rankResultKind, rankDelta: [120, 15, -3][i] }))
@@ -108,9 +109,9 @@ test('season progress upsert and reads share the rollover transaction and preser
 })
 
 test('restricted startup rejects a missing migration 013 column', async () => {
-  const code = source.slice(source.indexOf('const REQUIRED_DATABASE_TABLES'), source.indexOf('export async function initializeSchema')).replace('export ', '')
+  const code = schemaSource.slice(schemaSource.indexOf('const REQUIRED_DATABASE_TABLES'), schemaSource.indexOf('export async function initializeSchema')).replace('export ', '')
   let columnExists = false
-  const tables = [...source.matchAll(/^  "([a-z_]+)",$/gm)].map(match => ({ tableName: match[1] }))
+  const tables = [...schemaSource.matchAll(/^  "([a-z_]+)",$/gm)].map(match => ({ tableName: match[1] }))
   const ctx = { pool: { query: async sql => [sql.includes('information_schema.tables') ? tables : columnExists ? [{ columnName: 'rank_result_kind' }] : []] }, console: { log() {} } }
   vm.runInNewContext(code, ctx)
   await assert.rejects(ctx.verifySchema(), /migration 013/)

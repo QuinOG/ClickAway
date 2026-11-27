@@ -21,6 +21,7 @@ import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const sharedSource = readFileSync("server/db/shared.js", "utf8")
 const seasonsSource = readFileSync("server/db/seasons.js", "utf8")
+const schemaSource = readFileSync("server/db/schema.js", "utf8")
 const section = (start, end, text = source) => text.slice(text.indexOf(start), text.indexOf(end)).replaceAll("export ", "")
 const plan = buildDemoPlan({ count: 3, days: 5, now: new Date("2026-11-15T12:00:00Z"), duelsTo: "admin" })
 const plain = value => JSON.parse(JSON.stringify(value))
@@ -184,8 +185,8 @@ export function checkSql(sql) {
   assert.equal(quote, false)
   assert.equal(depth, 0)
   for (const match of sql.matchAll(/INSERT INTO (\w+) \(([^)]+)\)/g)) {
-    const ddl = source.match(new RegExp(`CREATE TABLE IF NOT EXISTS ${match[1]} \\(([\\s\\S]*?)\\n\\s*\\)`))?.[1] ?? ""
-    const added = [...source.matchAll(new RegExp(`addColumnIfMissing\\("${match[1]}", "([^"]+)"`, "g"))].map(m => m[1])
+    const ddl = schemaSource.match(new RegExp(`CREATE TABLE IF NOT EXISTS ${match[1]} \\(([\\s\\S]*?)\\n\\s*\\)`))?.[1] ?? ""
+    const added = [...schemaSource.matchAll(new RegExp(`addColumnIfMissing\\("${match[1]}", "([^"]+)"`, "g"))].map(m => m[1])
     for (const col of match[2].split(",").map(c => c.trim())) assert.ok(new RegExp(`\\b${col}\\s+(?:bigint|int|varchar|timestamptz|jsonb|boolean)\\b`).test(ddl) || added.includes(col), `${match[1]}.${col}`)
   }
 }
@@ -194,8 +195,8 @@ test("all generated INSERT columns match initializeSchema, statements balance, F
   checkSql(await generateDemoSql(plan))
   if (existsSync("docs/demo-data/demo-players.sql")) checkSql(readFileSync("docs/demo-data/demo-players.sql", "utf8"))
   for (const table of ["round_history", "round_replays", "challenges", "user_collection", "user_lifetime_stats", "user_season_stats", "user_achievement_progress"]) {
-    const start = source.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`)
-    assert.match(source.slice(start, source.indexOf("`)", start)), /REFERENCES users \(id\) ON DELETE CASCADE/)
+    const start = schemaSource.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`)
+    assert.match(schemaSource.slice(start, schemaSource.indexOf("`)", start)), /REFERENCES users \(id\) ON DELETE CASCADE/)
   }
 })
 
