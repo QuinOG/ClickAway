@@ -6,7 +6,7 @@ import { normalizeHistoryEntry } from '../src/utils/historyUtils.js'
 import { normalizeLifetimeStats, buildProfileStatsFromLifetime } from '../src/utils/lifetimeStatsUtils.js'
 import { getSeasonRewardTier } from '../src/utils/seasonUtils.js'
 import { buildHistorySnapshot } from '../src/features/history/historyRoundsSnapshotBuilder.js'
-const source = readFileSync('server/playerMysqlDatabase.js', 'utf8')
+const roundsSource = readFileSync('server/db/rounds.js', 'utf8')
 const seasonsSource = readFileSync('server/db/seasons.js', 'utf8')
 const schemaSource = readFileSync('server/db/schema.js', 'utf8')
 const progressSource = readFileSync('server/db/progress.js', 'utf8')
@@ -75,7 +75,7 @@ test('rollover serializes concurrent requests, preserves duration and catches up
 })
 
 test('new ranked history kind comes from pre-round placement state, never client input', () => {
-  const expression = source.match(/rankResultKind: historyEntry\?\.progressionMode === 'ranked'\s*\?[^,]+/)[0].replace('rankResultKind: ', '')
+  const expression = roundsSource.match(/rankResultKind: historyEntry\?\.progressionMode === 'ranked'\s*\?[^,]+/)[0].replace('rankResultKind: ', '')
   for (const state of [{ isUnranked: true }, { isPlacement: true }, { isPlacement: false }]) {
     const result = vm.runInNewContext(expression, { historyEntry: { progressionMode: 'ranked' }, rankOutcome: { previousRankProgress: state } })
     assert.equal(result, state.isUnranked || state.isPlacement ? 'placement' : 'rr')

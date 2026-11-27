@@ -18,12 +18,14 @@ import * as shop from "../server/serverShopCatalogIdMappings.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 
-const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
+const roundsSource = readFileSync("server/db/rounds.js", "utf8")
 const sharedSource = readFileSync("server/db/shared.js", "utf8")
 const seasonsSource = readFileSync("server/db/seasons.js", "utf8")
 const schemaSource = readFileSync("server/db/schema.js", "utf8")
 const progressSource = readFileSync("server/db/progress.js", "utf8")
-const section = (start, end, text = source) => text.slice(text.indexOf(start), text.indexOf(end)).replaceAll("export ", "")
+const section = (start, end, text = roundsSource) => (
+  end === undefined ? text.slice(text.indexOf(start)) : text.slice(text.indexOf(start), text.indexOf(end))
+).replaceAll("export ", "")
 const plan = buildDemoPlan({ count: 3, days: 5, now: new Date("2026-11-15T12:00:00Z"), duelsTo: "admin" })
 const plain = value => JSON.parse(JSON.stringify(value))
 
@@ -86,7 +88,7 @@ async function runLivePlayer(player, index) {
   vm.runInContext(section("async function ensureLifetimeStatsRow", "async function getLoadoutStatsRows", progressSource), ctx)
   vm.runInContext(section("async function insertRoundHistoryEntry", "async function persistLoadoutStats"), ctx)
   vm.runInContext(section("async function addUnlockedAchievements", "export async function findRoundHistoryPage"), ctx)
-  vm.runInContext(section("export async function completeUserRound", "\nexport default pool"), ctx)
+  vm.runInContext(section("export async function completeUserRound"), ctx)
   vm.runInContext(section("async function readUserSeasonStats", "\nexport {", seasonsSource), ctx)
   const shopSource = readFileSync("server/playerStateStore.js", "utf8")
   vm.runInContext(shopSource.slice(shopSource.indexOf("export class PlayerStateError")).replaceAll("export ", ""), ctx)
