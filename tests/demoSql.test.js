@@ -82,7 +82,7 @@ async function runLivePlayer(player, index) {
   vm.runInContext(section("const TODAY_UTC_WINDOW", "async function getRoundHistoryCount"), ctx)
   vm.runInContext(section("async function ensureLifetimeStatsRow", "async function getLoadoutStatsRows"), ctx)
   vm.runInContext(section("async function insertRoundHistoryEntry", "async function persistLoadoutStats"), ctx)
-  vm.runInContext(section("async function addUnlockedAchievements", "export async function findUserByUsername"), ctx)
+  vm.runInContext(section("async function addUnlockedAchievements", "export async function createDefaultUserProgress"), ctx)
   vm.runInContext(section("export async function completeUserRound", "// Saves only the preferences"), ctx)
   vm.runInContext(section("async function readUserSeasonStats", "export async function insertRoundReplay"), ctx)
   const shopSource = readFileSync("server/playerStateStore.js", "utf8")

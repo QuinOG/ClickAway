@@ -7,7 +7,7 @@ import { RANK_SYSTEM_VERSION } from "../src/utils/rankUtils.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
-const sourceFiles = ["server/db/shared.js", "server/playerMysqlDatabase.js"]
+const sourceFiles = ["server/db/shared.js", "server/db/users.js", "server/playerMysqlDatabase.js"]
 const imports = {}
 const chunks = []
 for (const file of sourceFiles) {
