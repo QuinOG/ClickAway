@@ -19,6 +19,7 @@ for (const file of sourceFiles) {
   const stripped = fileSource
     .replace(/^import\s+[\s\S]*?from\s+"[^"]+"\r?\n?/gm, "")
     .replace(/^import\s+"[^"]+"\r?\n?/gm, "")
+    .replace(/^export\s+\*\s+from\s+"[^"]+"\r?\n?/gm, "")
     .replace(/^export\s+\{[\s\S]*?\}(?:\s+from\s+"[^"]+")?\r?\n?/gm, "")
     .replaceAll("export default pool", "")
     .replaceAll("export ", "")
