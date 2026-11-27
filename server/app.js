@@ -14,6 +14,7 @@ const __dirname = dirname(__filename)
 
 import rateLimit from "express-rate-limit"
 
+import pool from "./db/pgPool.js"
 import {
   AUTH_COOKIE_MAX_AGE_MS,
   AUTH_COOKIE_NAME,
@@ -52,6 +53,7 @@ import { calculateRoundRewards, simulateRound, getTokenlessGeometrySeed, isRacea
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
 import { createPlayerStateStore } from "./playerStateStore.js"
 import { handleExpressError, handleRouteError } from "./routeErrors.js"
+import { securityHeaders } from "./securityHeaders.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
@@ -59,6 +61,7 @@ import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 
 export function createApp() {
   const app = express()
+  app.disable("x-powered-by")
   // Rate limits key on the client IP. Only trust X-Forwarded-For when a proxy we
   // control sets it (Railway sets RAILWAY_ENVIRONMENT); otherwise anyone reaching
   // the server directly could rotate that header to dodge the login limit.
@@ -104,6 +107,7 @@ export function createApp() {
     origin: CLIENT_ORIGIN,
     credentials: true,
   }))
+  app.use(securityHeaders({ isProduction: IS_PRODUCTION }))
   app.use(express.json({ limit: "64kb" }))
 
   function buildAuthPayload(user) {
@@ -203,6 +207,25 @@ export function createApp() {
 
   app.get("/api/health", (_request, response) => {
     response.json({ ok: true })
+  })
+
+  app.get("/api/health/ready", async (_request, response) => {
+    const timeout = new Error("Readiness query timed out.")
+    let timer
+    try {
+      await Promise.race([
+        pool.query("SELECT 1"),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(timeout), 2_000)
+        }),
+      ])
+      response.json({ ok: true, database: "up" })
+    } catch (error) {
+      console.error("Database readiness check failed:", error === timeout ? timeout.message : error.code ?? error.name)
+      response.status(503).json({ ok: false, database: "down" })
+    } finally {
+      clearTimeout(timer)
+    }
   })
 
   app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
@@ -963,12 +986,24 @@ export function createApp() {
     }
   })
 
+  app.use("/api", (_request, response) => {
+    response.status(404).json({ error: "Not found." })
+  })
+
   const distPath = join(__dirname, "../dist")
 
   if (existsSync(distPath)) {
-    app.use(express.static(distPath))
+    const indexPath = join(distPath, "index.html")
+    app.use("/assets", express.static(join(distPath, "assets"), { immutable: true, maxAge: "1y" }))
+    app.use(express.static(distPath, {
+      setHeaders(response, filePath) {
+        if (filePath === indexPath) {
+          response.setHeader("Cache-Control", "no-cache")
+        }
+      },
+    }))
     app.get("/{*splat}", (_request, response) => {
-      response.sendFile(join(distPath, "index.html"))
+      response.sendFile("index.html", { root: distPath, headers: { "Cache-Control": "no-cache" } })
     })
   }
 
