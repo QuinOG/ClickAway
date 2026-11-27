@@ -53,10 +53,24 @@ Pending; not applied to any remote database. initializeSchema adds the same null
 checked column; verifySchema requires it. No tables or grants are added. NULL rows
 retain legacy History labels. New ranked rounds record placement versus RR.
 
-Season reads and ranked season writes serialize under a transaction advisory lock.
+Seeding the first season and rolling over an ended one serialize under a transaction
+advisory lock. While the latest season is running, reads and ranked season writes skip it.
 Expired seasons end and contiguous equal-duration successors are created lazily,
 including elapsed seasons after downtime. Rating, placement and career records carry
 over unchanged. Each season starts with zero rounds, peak and reward until Ranked
 is played; only placed ratings contribute to peaks/rewards. Leaderboard records
 remain explicitly all-time. Weekly rounds count all history in the last seven days
 on the server, independent of pagination. No replay format or validation changes.
+
+## Migration 014: one duel race and non-overlapping rounds
+
+Apply `014_add_duel_race_and_round_window.sql` before deploying with DB_AUTO_MIGRATE=false.
+Pending; not applied to any remote database. initializeSchema adds the same nullable
+columns; verifySchema requires them.
+
+- `challenges.racing_started_at`: the first race start moves a duel from `accepted` to
+  `racing`. A restart within 10 seconds is allowed; after that the duel can't be raced
+  again. A race still unsubmitted 65 minutes later (tokens last 60) is settled as a loss.
+- `users.last_round_ends_at`: the latest end a counted timed round could have had. A
+  timed round whose token was issued before that end (1 second slack) is rejected.
+

@@ -6,9 +6,9 @@ import vm from 'node:vm'
 import { isRaceableReplay } from '../server/roundRewards.js'
 const source = readFileSync('server/index.js', 'utf8')
 const code = source.slice(source.indexOf('app.post("/api/round/start"'), source.indexOf('app.post("/api/round/complete"'))
-function duelStart(replay) {
+function duelStart(replay, { raceStarts = true } = {}) {
   let handler
-  const ctx = { parsePositiveIntId, app: { post: (p, a, b, h) => { handler = h } }, requireAuth: {}, roundRateLimiter: {}, isRaceableReplay, findReplayById: async () => replay,
+  const ctx = { parsePositiveIntId, app: { post: (p, a, b, h) => { handler = h } }, requireAuth: {}, roundRateLimiter: {}, isRaceableReplay, findReplayById: async () => replay, startChallengeRace: async () => raceStarts,
     getDifficultyById: id => ({ id }), createRoundSeed: () => 99, findChallengeById: async () => ({ replayId: 42, replaySeed: 0, opponentUserId: 2, status: 'accepted', modeId: 'normal' }),
     signRoundToken: value => { assert.equal(value.challengeId, 7); assert.equal(value.seed, 0); return 'token' }, JWT_SECRET: 'test', handleRouteError: e => { throw e } }
   vm.runInNewContext(code, ctx)
@@ -27,4 +27,11 @@ test('an open duel against a replay saved before Bullseye and Gold cannot be rac
   let status, body
   await handler({ body: { modeId: 'normal', challengeId: 7 }, auth: { userId: 2 } }, { status(code) { status = code; return this }, json(value) { body = value } })
   assert.equal(status, 400); assert.match(body.error, /cannot be raced/)
+})
+
+test('a duel race that already started cannot be started again to retry a losing run', async () => {
+  const handler = duelStart({ id: 42, loadoutSnapshot: { arenaWidth: 600, arenaHeight: 400 } }, { raceStarts: false })
+  let status, body
+  await handler({ body: { modeId: 'normal', challengeId: 7 }, auth: { userId: 2 } }, { status(code) { status = code; return this }, json(value) { body = value } })
+  assert.equal(status, 409); assert.match(body.error, /already started this race/)
 })

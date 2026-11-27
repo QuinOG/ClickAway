@@ -70,6 +70,23 @@ test('rollover serializes concurrent requests, preserves duration and catches up
   assert.equal(seasons.length, 1) // Concurrent first reads seed only once.
 })
 
+test('a running season is read without the global rollover lock', async () => {
+  const now = new Date('2026-11-14T12:00:00Z')
+  const season = { id: 4, slug: 'season-4', status: 'active', startsAt: new Date(now - 86400000), endsAt: new Date(now.getTime() + 86400000) }
+  const statements = []
+  const pool = { getConnection: async () => ({ beginTransaction: async () => {}, query: async (sql) => {
+    statements.push(sql)
+    if (sql.includes('clock_timestamp')) return [[{ now }]]
+    if (sql.includes('FROM seasons')) return [[season]]
+    throw Error(sql)
+  }, commit: async () => {}, rollback: async () => {}, release: () => {} }) }
+  const code = source.slice(source.indexOf('async function withCurrentSeason('), source.indexOf('function toNonNegativeNumber'))
+  const ctx = { pool, mapSeasonRow: s => s }
+  vm.runInNewContext(code, ctx)
+  assert.equal((await ctx.withCurrentSeason(async (c, s) => s)).id, 4)
+  assert.ok(!statements.some(sql => sql.includes('pg_advisory_xact_lock') || sql.includes('FOR UPDATE')))
+})
+
 test('new ranked history kind comes from pre-round placement state, never client input', () => {
   const expression = source.match(/rankResultKind: historyEntry\?\.progressionMode === 'ranked'\s*\?[^,]+/)[0].replace('rankResultKind: ', '')
   for (const state of [{ isUnranked: true }, { isPlacement: true }, { isPlacement: false }]) {
@@ -109,7 +126,7 @@ test('restricted startup rejects a missing migration 013 column', async () => {
   const code = source.slice(source.indexOf('const REQUIRED_DATABASE_TABLES'), source.indexOf('export async function initializeSchema')).replace('export ', '')
   let columnExists = false
   const tables = [...source.matchAll(/^  "([a-z_]+)",$/gm)].map(match => ({ tableName: match[1] }))
-  const ctx = { pool: { query: async sql => [sql.includes('information_schema.tables') ? tables : columnExists ? [{ columnName: 'rank_result_kind' }] : []] }, console: { log() {} } }
+  const ctx = { pool: { query: async sql => [sql.includes('information_schema.tables') ? tables : !columnExists ? [] : sql.includes('racing_started_at') ? [{ columnName: 'racing_started_at' }, { columnName: 'last_round_ends_at' }] : [{ columnName: 'rank_result_kind' }]] }, console: { log() {} } }
   vm.runInNewContext(code, ctx)
   await assert.rejects(ctx.verifySchema(), /migration 013/)
   columnExists = true

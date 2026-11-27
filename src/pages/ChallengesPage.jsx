@@ -66,7 +66,7 @@ function describeDuel(challenge, currentUserId) {
     }
   }
   if (isIncoming && challenge.status === "pending") return { ...base, tone: "incoming" }
-  if (challenge.status === "accepted") return { ...base, tone: "accepted" }
+  if (challenge.status === "accepted" || challenge.status === "racing") return { ...base, tone: "accepted" }
   return base
 }
 
@@ -75,7 +75,8 @@ function ChallengeCard({ challenge, currentUserId, currentUsername, onRespond, o
   const { isIncoming, rival } = duel
   const status = !isIncoming && challenge.status === "pending"
     ? `Waiting for ${rival}`
-    : ["accepted", "declined", "expired"].includes(challenge.status) ? challenge.status : ""
+    : challenge.status === "racing" ? "Race in progress"
+      : ["accepted", "declined", "expired"].includes(challenge.status) ? challenge.status : ""
 
   return (
     <article className={`duelRow is-${duel.tone}`} data-status={challenge.status}>

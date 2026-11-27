@@ -46,6 +46,7 @@ import {
   applyUserSeasonProgress,
   completeChallenge,
   respondToChallenge,
+  startChallengeRace,
   saveUserProgress,
   updateUserPassword,
   updateUserRole,
@@ -676,12 +677,17 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
       if (
         !challenge
         || challenge.opponentUserId !== Number(request.auth.userId)
-        || challenge.status !== "accepted"
+        || !["accepted", "racing"].includes(challenge.status)
         || challenge.modeId !== modeId
         || challenge.replaySeed === null
         || !isRaceableReplay(await findReplayById(challenge.replayId))
       ) {
         response.status(400).json({ error: "That duel cannot be raced right now." })
+        return
+      }
+      // The duel's one race starts here, so a losing run can't be dropped and retried.
+      if (!(await startChallengeRace(challengeId, Number(request.auth.userId)))) {
+        response.status(409).json({ error: "You already started this race. A race you don't finish counts as a loss after an hour." })
         return
       }
       seed = challenge.replaySeed
@@ -872,6 +878,9 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         currentRankedState: currentProgress.rankedState,
       },
       countsTowardStats: Boolean(roundTokenId),
+      roundWindow: roundTokenIssuedAtMs !== null && Number.isFinite(simulation.roundEndMs)
+        ? { startsAtMs: roundTokenIssuedAtMs, endsAtMs: roundTokenIssuedAtMs + simulation.roundEndMs }
+        : null,
       historyEntry,
     }))
 
