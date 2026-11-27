@@ -77,6 +77,8 @@ These are the variables used by the app:
 | `ADMIN_PASSWORD` | No | If set, the backend creates or refreshes the admin account password on startup. If empty, admin seeding is skipped. |
 | `SUPABASE_DB_URL` | Yes | Postgres connection string from Supabase Dashboard → Project Settings → Database. |
 | `DB_AUTO_MIGRATE` | No | Defaults to `true`. Set to `false` when migrations are applied separately and the runtime uses a restricted database role. |
+| `DB_SSL_MODE` | No | `verify` checks the database's TLS certificate against `DB_SSL_CA`. `disable` turns TLS off, for a local Postgres only. `no-verify` (default) encrypts without checking the certificate and logs a warning. Use `verify` in production. An `sslmode` parameter in `SUPABASE_DB_URL` overrides this setting, so leave it out. |
+| `DB_SSL_CA` | For `verify` | CA certificate from the Supabase Dashboard → Database → SSL. Either a path to the PEM file or the PEM text (newlines may be written as `\n`). |
 | `VITE_SUPABASE_URL` | No | Supabase project URL, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | No | Supabase publishable/anon key, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
 | `VITE_API_BASE_URL` | No | Frontend API base URL. Defaults to `http://localhost:4000/api`. |
