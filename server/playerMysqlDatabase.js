@@ -2528,6 +2528,65 @@ export async function findUserByUsernameForChallenge(username) {
   }
 }
 
+export async function countOpenChallenges({ challengerUserId, opponentUserId }, connection = pool) {
+  const [rows] = await connection.query(
+    `SELECT COUNT(*) FILTER (
+              WHERE challenger_user_id = ? AND opponent_user_id = ? AND status IN ('pending', 'accepted')
+            ) AS with_opponent,
+            COUNT(*) FILTER (
+              WHERE challenger_user_id = ? AND status IN ('pending', 'accepted')
+            ) AS total,
+            COUNT(*) FILTER (
+              WHERE opponent_user_id = ? AND status = 'pending'
+            ) AS opponent_pending_incoming
+     FROM challenges
+     WHERE (challenger_user_id = ? AND status IN ('pending', 'accepted'))
+        OR (opponent_user_id = ? AND status = 'pending')`,
+    [challengerUserId, opponentUserId, challengerUserId, opponentUserId, challengerUserId, opponentUserId]
+  )
+  return {
+    withOpponent: Number(rows[0].with_opponent),
+    total: Number(rows[0].total),
+    opponentPendingIncoming: Number(rows[0].opponent_pending_incoming),
+  }
+}
+
+export class ChallengeCapError extends Error {}
+
+async function insertChallengeWithCap(challengerUserId, opponentUserId, insert) {
+  const connection = await pool.getConnection()
+  try {
+    await connection.beginTransaction()
+    // Lock both players in a fixed order so concurrent invitations cannot
+    // count the same remaining slot or deadlock on reversed player roles.
+    await connection.query(
+      "SELECT id FROM users WHERE id IN (?, ?) ORDER BY id FOR NO KEY UPDATE",
+      [challengerUserId, opponentUserId]
+    )
+    const { withOpponent, total, opponentPendingIncoming } = await countOpenChallenges({
+      challengerUserId,
+      opponentUserId,
+    }, connection)
+    if (withOpponent >= 3) {
+      throw new ChallengeCapError("You already have open duels with this player. Wait for them to finish.")
+    }
+    if (total >= 20) {
+      throw new ChallengeCapError("You already have too many open duels. Wait for them to finish.")
+    }
+    if (opponentPendingIncoming >= 50) {
+      throw new ChallengeCapError("This player has too many open duels right now. Try again later.")
+    }
+    const result = await insert(connection)
+    await connection.commit()
+    return result
+  } catch (error) {
+    await connection.rollback()
+    throw error
+  } finally {
+    connection.release()
+  }
+}
+
 export async function createChallenge({
   challengerUserId,
   challengerUsername,
@@ -2536,8 +2595,9 @@ export async function createChallenge({
   replayId,
   modeId,
   message = "",
+  enforceOpenCaps = false,
 } = {}) {
-  const [result] = await pool.execute(
+  const insert = (connection) => connection.execute(
     `INSERT INTO challenges (
        challenger_user_id,
        challenger_username,
@@ -2558,6 +2618,9 @@ export async function createChallenge({
       message ? String(message).slice(0, 280) : null,
     ]
   )
+  const [result] = enforceOpenCaps
+    ? await insertChallengeWithCap(challengerUserId, opponentUserId, insert)
+    : await insert(pool)
 
   try {
     return await findChallengeById(result.insertId)

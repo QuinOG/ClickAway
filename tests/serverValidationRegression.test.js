@@ -56,6 +56,7 @@ function route(method, path, extra = {}) {
   const end = source.indexOf('\n  app.', start + 1)
   let handler
   const ctx = { performance, parsePositiveIntId, isValidDrillId, getDifficultyById, requireAuth: null, roundRateLimiter: null,
+    challengeCreateLimiter: null, writeRateLimiter: null,
     app: { [method]: (...args) => { handler = args.at(-1) } }, findUserById: async () => ({ id: 1 }), createRoundSeed: () => 42,
     handleRouteError: error => { throw error }, ...extra }
   vm.runInNewContext(source.slice(start, end), ctx)
