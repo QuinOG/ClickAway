@@ -23,6 +23,7 @@ import {
 } from "./auth.js"
 import {
   createUser,
+  createUserSession,
   completeUserRound,
   createChallenge,
   findChallengeById,
@@ -38,9 +39,12 @@ import {
   findUserByUsername,
   findUserReplays,
   insertRoundReplay,
+  isUserSessionActive,
   applyUserSeasonProgress,
   completeChallenge,
   respondToChallenge,
+  revokeAllUserSessions,
+  revokeUserSession,
   saveUserProgress,
   LEADERBOARD_BOARDS,
 } from "./playerMysqlDatabase.js"
@@ -137,7 +141,8 @@ export function createApp() {
   // failed login or sign-up can never leave the browser signed in.
   async function createAuthResponse(user, response) {
     const progress = await findUserProgressByUserId(user.id)
-    setAuthCookie(response, signAuthToken(buildAuthPayload(user), JWT_SECRET))
+    const sid = await createUserSession(user.id)
+    setAuthCookie(response, signAuthToken({ ...buildAuthPayload(user), sid }, JWT_SECRET))
 
     return {
       user: {
@@ -165,24 +170,35 @@ export function createApp() {
     }
   }
 
-  function requireAuth(request, response, next) {
+  async function requireAuth(request, response, next) {
     const token = extractCookieToken(request.headers.cookie || "")
     if (!token) {
       response.status(401).json({ error: "Missing authentication token." })
       return
     }
 
+    let payload
     try {
-      const payload = verifyAuthToken(token, JWT_SECRET)
-      request.auth = {
-        userId: Number(payload.sub),
-        username: payload.username,
-        role: payload.role,
-      }
-      next()
+      payload = verifyAuthToken(token, JWT_SECRET)
     } catch {
       response.status(401).json({ error: "Invalid or expired authentication token." })
+      return
     }
+
+    const userId = Number(payload.sub)
+    // Remove the fallback for tokens without a session ID seven days after deploy.
+    if (payload.sid !== undefined && !(await isUserSessionActive(payload.sid, userId))) {
+      clearAuthCookie(response)
+      response.status(401).json({ error: "Session has ended. Please log in again." })
+      return
+    }
+
+    request.auth = {
+      userId,
+      username: payload.username,
+      role: payload.role,
+    }
+    next()
   }
 
   app.get("/api/health", (_request, response) => {
@@ -266,7 +282,25 @@ export function createApp() {
     }
   })
 
-  app.post("/api/auth/logout", (_request, response) => {
+  app.post("/api/auth/logout", async (request, response) => {
+    const token = extractCookieToken(request.headers.cookie || "")
+    let payload
+    if (token) {
+      try {
+        payload = verifyAuthToken(token, JWT_SECRET)
+      } catch {
+        // Clearing the cookie also works when the token has already expired.
+      }
+    }
+    if (payload?.sid !== undefined) {
+      await revokeUserSession(payload.sid, Number(payload.sub))
+    }
+    clearAuthCookie(response)
+    response.status(204).end()
+  })
+
+  app.post("/api/auth/logout-all", requireAuth, async (request, response) => {
+    await revokeAllUserSessions(request.auth.userId)
     clearAuthCookie(response)
     response.status(204).end()
   })

@@ -49,10 +49,13 @@ export async function loginUser({ username, password }) {
   }
 }
 
-export async function logoutUser() {
+export async function logoutUser(allDevices = false) {
   try {
-    await apiClient.post("/auth/logout")
+    await apiClient.post(allDevices ? "/auth/logout-all" : "/auth/logout")
   } catch (error) {
+    // A completed logout-all may have lost its response. Its revoked cookie
+    // cannot authenticate a retry.
+    if (allDevices && error?.response?.status === 401) return
     throw new Error(getErrorMessage(error, "Unable to log out."))
   }
 }

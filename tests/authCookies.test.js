@@ -13,7 +13,14 @@ test("auth cookies round trip the signed account identity", () => {
   assert.equal(payload.sub, "42")
   assert.equal(payload.username, "player")
   assert.equal(payload.role, "player")
+  assert.equal(Object.hasOwn(payload, "sid"), false)
   assert.equal(payload.exp - payload.iat, 7 * 24 * 60 * 60)
+})
+
+test("auth tokens carry the session ID when supplied", () => {
+  const sid = "2141a7ee-ec63-4b34-a32d-e18ea84a5a1a"
+  const token = signAuthToken({ id: 42, username: "player", role: "player", sid }, secret)
+  assert.equal(verifyAuthToken(token, secret).sid, sid)
 })
 
 test("auth verification rejects wrong signatures and expired sessions", () => {

@@ -4,12 +4,13 @@ export const AUTH_COOKIE_NAME = "clickaway_auth"
 const TOKEN_EXPIRY = "7d"
 export const AUTH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
-export function signAuthToken({ id, username, role }, jwtSecret) {
+export function signAuthToken({ id, username, role, sid }, jwtSecret) {
   return jwt.sign(
     {
       sub: String(id),
       username,
       role,
+      sid,
     },
     jwtSecret,
     { expiresIn: TOKEN_EXPIRY }

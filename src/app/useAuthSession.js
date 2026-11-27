@@ -6,17 +6,19 @@ import { startNewProgressSession } from "./progressResponseGuard.js"
 
 const PENDING_LOGOUT_KEY = "clickaway.pending-logout"
 
-function hasPendingLogout() {
+function getPendingLogout() {
   try {
-    return localStorage.getItem(PENDING_LOGOUT_KEY) === "1"
+    const pendingLogout = localStorage.getItem(PENDING_LOGOUT_KEY)
+    return pendingLogout === "1" || pendingLogout === "all" ? pendingLogout : null
   } catch {
-    return false
+    return null
   }
 }
 
-function markPendingLogout() {
+function markPendingLogout(allDevices = false) {
   try {
-    localStorage.setItem(PENDING_LOGOUT_KEY, "1")
+    const scope = allDevices || getPendingLogout() === "all" ? "all" : "1"
+    localStorage.setItem(PENDING_LOGOUT_KEY, scope)
   } catch {
     // Storage unavailable; explicit logout does not depend on this retry flag.
   }
@@ -43,9 +45,13 @@ function withAuthLock(task) {
   return locks?.request ? locks.request("clickaway-auth", task) : task()
 }
 
-function sendLogout(retryPending = false) {
+function sendLogout({ retryPending = false, allDevices = false } = {}) {
   if (!inFlightLogout) {
-    inFlightLogout = withAuthLock(() => (!retryPending || hasPendingLogout() ? logoutUser() : Promise.resolve()))
+    inFlightLogout = withAuthLock(async () => {
+      const pendingLogout = getPendingLogout()
+      if (retryPending && !pendingLogout) return
+      await logoutUser(allDevices || pendingLogout === "all")
+    })
       .then(() => {
         clearPendingLogout()
       })
@@ -133,9 +139,9 @@ export function useAuthSession({
     async function verifySession() {
       // A logout that never reached the server leaves its cookie valid. Retry it
       // here and stay logged out instead of restoring the previous player.
-      if (hasPendingLogout()) {
+      if (getPendingLogout()) {
         try {
-          await sendLogout(true)
+          await sendLogout({ retryPending: true })
         } catch {
           // Still pending; try again on the next load.
         }
@@ -225,15 +231,15 @@ export function useAuthSession({
     }
   }, [applyAuthenticatedSession, setIsAuthed])
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback((allDevices = false) => {
     authGeneration += 1
+    markPendingLogout(allDevices)
+    sendLogout({ allDevices }).catch(() => {
+      // Left pending: the next app load retries before restoring any session.
+    })
     startNewProgressSession()
     resetPlayerState()
     setIsAuthed(false)
-    markPendingLogout()
-    sendLogout().catch(() => {
-      // Left pending: the next app load retries before restoring any session.
-    })
     announceAuthChange()
   }, [resetPlayerState, setIsAuthed])
 
