@@ -14,6 +14,7 @@ const __dirname = dirname(__filename)
 
 import rateLimit from "express-rate-limit"
 
+import pool from "./db/pgPool.js"
 import {
   AUTH_COOKIE_MAX_AGE_MS,
   AUTH_COOKIE_NAME,
@@ -190,6 +191,25 @@ export function createApp() {
 
   app.get("/api/health", (_request, response) => {
     response.json({ ok: true })
+  })
+
+  app.get("/api/health/ready", async (_request, response) => {
+    const timeout = new Error("Readiness query timed out.")
+    let timer
+    try {
+      await Promise.race([
+        pool.query("SELECT 1"),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(timeout), 2_000)
+        }),
+      ])
+      response.json({ ok: true, database: "up" })
+    } catch (error) {
+      console.error("Database readiness check failed:", error === timeout ? timeout.message : error.code ?? error.name)
+      response.status(503).json({ ok: false, database: "down" })
+    } finally {
+      clearTimeout(timer)
+    }
   })
 
   app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
