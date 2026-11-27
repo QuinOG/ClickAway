@@ -3,9 +3,9 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import vm from "node:vm"
 
-const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
+const source = readFileSync("server/db/challenges.js", "utf8")
 const create = source.slice(source.indexOf("export async function createChallenge("), source.indexOf("export async function findChallengeById("))
-const transitions = source.slice(source.indexOf("export async function respondToChallenge("), source.indexOf("export default pool"))
+const transitions = source.slice(source.indexOf("export async function respondToChallenge("))
 const inputs = { challengeId: 11, userId: 2, action: "accept", opponentReplayId: 8,
   challengerUserId: 1, challengerUsername: "Player", opponentUserId: 2, opponentUsername: "Rival",
   replayId: 7, modeId: "normal", message: "a".repeat(300) }
