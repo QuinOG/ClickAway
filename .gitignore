@@ -28,3 +28,7 @@ test-results/playwright
 server/data/*.db
 server/data/*.db-shm
 server/data/*.db-wal
+
+# Raw UI capture working folders for new rounds (commit only curated crops)
+docs/ui-polish/**/raw/
+docs/feature-improvement/shots/**/raw/
