@@ -7,6 +7,7 @@ import { normalizeLifetimeStats, buildProfileStatsFromLifetime } from '../src/ut
 import { getSeasonRewardTier } from '../src/utils/seasonUtils.js'
 import { buildHistorySnapshot } from '../src/features/history/historyRoundsSnapshotBuilder.js'
 const source = readFileSync('server/playerMysqlDatabase.js', 'utf8')
+const seasonsSource = readFileSync('server/db/seasons.js', 'utf8')
 
 test('history preserves result kind and RR summaries exclude placement points, including zero', () => {
   const rows = ['placement', 'rr', null].map((rankResultKind, i) => normalizeHistoryEntry({ progressionMode: 'ranked', rankResultKind, rankDelta: [120, 15, -3][i] }))
@@ -57,7 +58,7 @@ test('rollover serializes concurrent requests, preserves duration and catches up
       throw Error(sql)
     }, commit: async () => { commits++; unlock() }, rollback: async () => unlock?.(), release: () => releases++ }
   } }
-  const code = source.slice(source.indexOf('async function withCurrentSeason('), source.indexOf('function normalizeProgressInput'))
+  const code = seasonsSource.slice(seasonsSource.indexOf('async function withCurrentSeason('), seasonsSource.indexOf('\nfunction mapSeasonRow('))
   const ctx = { pool, mapSeasonRow: s => s }
   vm.runInNewContext(code, ctx)
   const results = await Promise.all([ctx.withCurrentSeason(async (c, s) => s), ctx.withCurrentSeason(async (c, s) => s)])
@@ -91,7 +92,7 @@ test('season progress upsert and reads share the rollover transaction and preser
     query: async (sql, params) => { assert.deepEqual(Array.from(params), [7, 3]); return [[stats]] },
   }
   const ctx = { withCurrentSeason: work => work(connection, { id: 3 }), toNonNegativeNumber: v => Number(v) || 0, getSeasonRewardTier }
-  const code = source.slice(source.indexOf('async function readUserSeasonStats('), source.indexOf('export async function insertRoundReplay')).replaceAll('export ', '')
+  const code = seasonsSource.slice(seasonsSource.indexOf('async function readUserSeasonStats('), seasonsSource.indexOf('\nexport {')).replaceAll('export ', '')
   vm.runInNewContext(code, ctx)
   await ctx.applyUserSeasonProgress(7, { isRankedRound: true, isPlaced: false, rankMmr: 2000 })
   assert.equal(stats.peakMmr, 0); assert.equal(stats.rewardTier, 0)
@@ -137,7 +138,7 @@ test('a round played before a rollover is credited to the season it was played i
     },
   }
   const ctx = { withCurrentSeason: work => work(connection, seasons[1]), toNonNegativeNumber: v => Number(v) || 0, getSeasonRewardTier }
-  const code = source.slice(source.indexOf('async function readUserSeasonStats('), source.indexOf('export async function insertRoundReplay')).replaceAll('export ', '')
+  const code = seasonsSource.slice(seasonsSource.indexOf('async function readUserSeasonStats('), seasonsSource.indexOf('\nexport {')).replaceAll('export ', '')
   vm.runInNewContext(code, ctx)
 
   // Saved at 23:59:59, credited after the new season was created.

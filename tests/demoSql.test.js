@@ -20,6 +20,7 @@ import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 
 const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const sharedSource = readFileSync("server/db/shared.js", "utf8")
+const seasonsSource = readFileSync("server/db/seasons.js", "utf8")
 const section = (start, end, text = source) => text.slice(text.indexOf(start), text.indexOf(end)).replaceAll("export ", "")
 const plan = buildDemoPlan({ count: 3, days: 5, now: new Date("2026-11-15T12:00:00Z"), duelsTo: "admin" })
 const plain = value => JSON.parse(JSON.stringify(value))
@@ -84,7 +85,7 @@ async function runLivePlayer(player, index) {
   vm.runInContext(section("async function insertRoundHistoryEntry", "async function persistLoadoutStats"), ctx)
   vm.runInContext(section("async function addUnlockedAchievements", "export async function createDefaultUserProgress"), ctx)
   vm.runInContext(section("export async function completeUserRound", "// Saves only the preferences"), ctx)
-  vm.runInContext(section("async function readUserSeasonStats", "export async function insertRoundReplay"), ctx)
+  vm.runInContext(section("async function readUserSeasonStats", "\nexport {", seasonsSource), ctx)
   const shopSource = readFileSync("server/playerStateStore.js", "utf8")
   vm.runInContext(shopSource.slice(shopSource.indexOf("export class PlayerStateError")).replaceAll("export ", ""), ctx)
   for (const round of player.rounds) {
