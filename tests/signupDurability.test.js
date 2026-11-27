@@ -39,7 +39,7 @@ test('signup distinguishes username races, unrelated insert errors and post-crea
 test('signup refuses a name that differs only by case, including a race on the lower-case index', async () => {
   let handler, created = 0
   const ctx = { app: { post: (p, l, h) => { handler = h } }, authRateLimiter: {},
-    sanitizeUsername: x => x, sanitizePassword: x => x, validateUsername: () => '', validatePassword: () => '',
+    DEMO_PLAYER_USERNAMES, sanitizeUsername: x => x, sanitizePassword: x => x, validateUsername: () => '', validatePassword: () => '',
     findUserByUsernameIgnoreCase: async name => (name === 'alice' ? { id: 1, username: 'Alice' } : null), bcrypt: { hash: async () => 'hash' },
     createUser: async () => { created++; throw Object.assign(Error('duplicate'), { code: '23505', constraint: 'users_username_lower_key' }) },
     createAuthResponse: async () => ({}), handleRouteError: (e, r) => r.status(500).json({ error: e.message }), console: { error() {} } }
