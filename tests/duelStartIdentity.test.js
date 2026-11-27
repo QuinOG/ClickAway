@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { isRaceableReplay } from '../server/roundRewards.js'
-const source = readFileSync('server/index.js', 'utf8')
+const source = readFileSync('server/app.js', 'utf8')
 const code = source.slice(source.indexOf('app.post("/api/round/start"'), source.indexOf('app.post("/api/round/complete"'))
 function duelStart(replay) {
   let handler

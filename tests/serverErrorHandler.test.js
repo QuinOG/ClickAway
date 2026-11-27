@@ -136,8 +136,8 @@ test("handleExpressError delegates to next when headers are already sent", () =>
   assert.equal(statusCalled, false)
 })
 
-test("server/index.js registers handleExpressError as the last app.use after static catch-all", () => {
-  const source = readFileSync("server/index.js", "utf8")
+test("server/app.js registers handleExpressError as the last app.use after static catch-all", () => {
+  const source = readFileSync("server/app.js", "utf8")
   const staticBlockIndex = source.indexOf("app.use(express.static(distPath))")
   const errorUseIndex = source.lastIndexOf("app.use(handleExpressError)")
   const lastAppUseIndex = source.lastIndexOf("app.use(")

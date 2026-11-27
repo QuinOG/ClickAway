@@ -6,7 +6,7 @@ import { performance } from "node:perf_hooks"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { applyRankedMatchResult, RANK_SYSTEM_VERSION } from "../src/utils/rankUtils.js"
 
-const source = readFileSync("server/index.js", "utf8")
+const source = readFileSync("server/app.js", "utf8")
 const route = source.slice(source.indexOf('app.post("/api/round/complete"'), source.indexOf('app.put("/api/progress"'))
 const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("// Saves only the preferences"))

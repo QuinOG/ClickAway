@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs"
 import vm from "node:vm"
 import { isRaceableReplay } from "../server/roundRewards.js"
 
-const source = readFileSync("server/index.js", "utf8")
+const source = readFileSync("server/app.js", "utf8")
 const code = source.slice(source.indexOf('app.get("/api/replays/:replayId"'), source.indexOf('app.post("/api/challenges/:challengeId/respond"'))
 
 function harness(visibility, loadoutSnapshot = { arenaWidth: 600, arenaHeight: 400 }) {
