@@ -66,12 +66,23 @@ function formatReactionTime(value) {
 
 const clampRating = (value) => Math.max(0, Math.min(10, Math.round(value)))
 
-function getRoundGrade(average) {
+// eslint-disable-next-line react-refresh/only-export-components -- exported for tests
+export function getRoundGrade(average) {
   if (average >= 9) return "S"
   if (average >= 7.5) return "A"
   if (average >= 6) return "B"
   if (average >= 4) return "C"
   return "D"
+}
+
+// A few fast, accurate clicks rate high on most stats, so a short round can't
+// earn a top grade however clean it was.
+// eslint-disable-next-line react-refresh/only-export-components -- exported for tests
+export function getGradeForRound({ stats, hits }) {
+  const grade = getRoundGrade(stats.reduce((sum, stat) => sum + stat.rating, 0) / stats.length)
+  const cap = hits < 10 ? "C" : hits < 20 ? "B" : "S"
+  const bestToWorst = ["S", "A", "B", "C", "D"]
+  return bestToWorst[Math.max(bestToWorst.indexOf(grade), bestToWorst.indexOf(cap))]
 }
 
 // Use the same performance ratings for the grade; details show plain values.
@@ -85,7 +96,8 @@ function getPerformanceStats({ accuracy, bestStreak, avgReactionMs, bestReaction
     { label: "Streak", value: bestStreak, rating: clampRating(bestStreak / 2) },
     { label: "Avg speed", value: formatReactionTime(avgReactionMs), rating: avgMs > 0 ? clampRating((650 - avgMs) / 45) : 0 },
     { label: "Fastest", value: formatReactionTime(bestReactionMs), rating: bestMs > 0 ? clampRating((520 - bestMs) / 35) : 0 },
-    { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 10 },
+    // With no best score there is nothing to compare, so the rating stays neutral.
+    { label: "Vs best", value: normalizedBest ? `${Math.round((score / normalizedBest) * 100)}%` : "New", rating: normalizedBest ? clampRating((score / normalizedBest) * 10) : 5 },
   ]
   return stats
 }
@@ -223,7 +235,7 @@ export function GameOverOverlay({
     disabled: prefersReducedMotion,
   })
   const stats = getPerformanceStats({ accuracy, bestStreak, avgReactionMs, bestReactionMs, score, bestScore })
-  const grade = getRoundGrade(stats.reduce((sum, stat) => sum + stat.rating, 0) / stats.length)
+  const grade = getGradeForRound({ stats, hits })
   const reachedLevel = getLevelAfterRound(playerLevel, playerXpIntoLevel, roundXpEarned).reachedLevel
   const unlockedPart = allowsLevelProgression ? [...UNLOCK_WALL_PARTS]
     .filter((part) => part.unlockLevel > playerLevel && part.unlockLevel <= reachedLevel)

@@ -55,17 +55,26 @@ function getRankMetaText(rankProgress = {}) {
   return `${formatNumber(rankProgress.rr)} / ${formatNumber(rankProgress.rrMax)} RR`
 }
 
-function buildRecentForm(roundHistory = []) {
-  const recentRounds = (Array.isArray(roundHistory) ? roundHistory : []).slice(0, 7).reverse()
-  const scores = recentRounds.map((round) => toNumber(round?.score))
+// eslint-disable-next-line react-refresh/only-export-components -- exported for tests
+export function buildRecentForm(roundHistory = []) {
+  const history = Array.isArray(roundHistory) ? roundHistory : []
+  const recentRounds = history.slice(0, 7).reverse()
   const bars = recentRounds.map((round, index) => ({
     id: `${round?.playedAtIso ?? "round"}-${index}`,
-    score: scores[index],
+    score: toNumber(round?.score),
     mode: getModeLabelFromHistoryEntry(round ?? {}),
     rankDelta: toNumber(round?.rankDelta),
     rankResultLabel: round?.rankResultKind === "placement" ? "placement points" : "RR",
     isRanked: isRankedModeEntry(round ?? {}),
   }))
+  // Modes differ in length and scoring, so the average and trend only compare
+  // rounds in the newest round's mode.
+  const trendModeLabel = history.length > 0 ? getModeLabelFromHistoryEntry(history[0] ?? {}) : null
+  const scores = history
+    .filter((round) => getModeLabelFromHistoryEntry(round ?? {}) === trendModeLabel)
+    .slice(0, 7)
+    .reverse()
+    .map((round) => toNumber(round?.score))
   const midpoint = Math.max(1, Math.floor(scores.length / 2))
   const olderAverage = scores.slice(0, midpoint).reduce((sum, score) => sum + score, 0) / midpoint
   const newerScores = scores.slice(midpoint)
@@ -81,6 +90,8 @@ function buildRecentForm(roundHistory = []) {
     trendPercent: olderAverage > 0
       ? Math.round(((newerAverage - olderAverage) / olderAverage) * 100)
       : 0,
+    trendModeLabel,
+    trendRoundCount: scores.length,
   }
 }
 
@@ -310,7 +321,8 @@ export default function ProfilePage({
                     <h2 id="recent-form-title">Last {recentForm.bars.length || 0} rounds</h2>
                   </div>
                   <strong className={recentForm.trendPercent >= 0 ? "isPositive" : "isNegative"}>
-                    {recentForm.bars.length > 1 ? `${formatSignedValue(recentForm.trendPercent)}%` : "Calibrating"}
+                    {recentForm.trendModeLabel ? `${recentForm.trendModeLabel} · ` : ""}
+                    {recentForm.trendRoundCount > 1 ? `${formatSignedValue(recentForm.trendPercent)}%` : "Calibrating"}
                   </strong>
                 </div>
                 <ol className="profileFormTokens" aria-label={`Average recent score ${recentForm.averageScore}`}>
