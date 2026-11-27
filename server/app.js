@@ -48,6 +48,7 @@ import { calculateRoundRewards, simulateRound, getTokenlessGeometrySeed, isRacea
 import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.js"
 import { createPlayerStateStore } from "./playerStateStore.js"
 import { handleExpressError, handleRouteError } from "./routeErrors.js"
+import { securityHeaders } from "./securityHeaders.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
@@ -55,6 +56,7 @@ import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 
 export function createApp() {
   const app = express()
+  app.disable("x-powered-by")
   // Rate limits key on the client IP. Only trust X-Forwarded-For when a proxy we
   // control sets it (Railway sets RAILWAY_ENVIRONMENT); otherwise anyone reaching
   // the server directly could rotate that header to dodge the login limit.
@@ -100,6 +102,7 @@ export function createApp() {
     origin: CLIENT_ORIGIN,
     credentials: true,
   }))
+  app.use(securityHeaders({ isProduction: IS_PRODUCTION }))
   app.use(express.json({ limit: "64kb" }))
 
   function buildAuthPayload(user) {

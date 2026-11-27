@@ -83,6 +83,13 @@ test("unknown API routes return a JSON 404 for GET and POST", async (t) => {
   }
 })
 
+test("the app sends security headers and omits X-Powered-By", async (t) => {
+  const request = await startTestApp(t)
+  const { headers } = await request("/api/health")
+  assert.match(headers.get("Content-Security-Policy"), /frame-ancestors 'none'/)
+  assert.equal(headers.get("X-Powered-By"), null)
+})
+
 test("built assets are immutable and SPA HTML requires revalidation", async (t) => {
   const assetsPath = new URL("../../dist/assets/", import.meta.url)
   if (!existsSync(assetsPath)) {
