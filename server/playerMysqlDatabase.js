@@ -133,6 +133,12 @@ export async function verifySchema() {
       AND column_name = 'outcome'`)
   if (!outcomeColumns.length) throw new Error("Supabase schema is incomplete. Missing round_history.outcome; apply the ranked forfeit migration.")
 
+  const [consumedHistoryColumns] = await pool.query(`SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'consumed_round_tokens'
+      AND column_name = 'round_history_id'`)
+  if (!consumedHistoryColumns.length) throw new Error("Supabase schema is incomplete. Missing consumed_round_tokens.round_history_id; apply the round recovery migration.")
+
   console.log("Supabase schema verified.")
 }
 
@@ -389,6 +395,7 @@ export async function initializeSchema() {
     CONSTRAINT fk_consumed_round_tokens_user
       FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
   )`)
+  await addColumnIfMissing("consumed_round_tokens", "round_history_id", "bigint DEFAULT NULL")
   await pool.query(`DELETE FROM consumed_round_tokens WHERE consumed_at < now() - interval '2 days'`)
 
   await pool.query(`CREATE TABLE IF NOT EXISTS pending_ranked_rounds (
@@ -2027,7 +2034,7 @@ async function settlePendingRankedRounds(connection, userId, { olderThanMs = 0 }
     rankMmr = rankOutcome.nextMmr
     rankedState = rankOutcome.nextRankedState
 
-    await insertRoundHistoryEntry(connection, userId, {
+    const forfeitEntry = await insertRoundHistoryEntry(connection, userId, {
       modeId,
       progressionMode,
       score: 0,
@@ -2039,9 +2046,10 @@ async function settlePendingRankedRounds(connection, userId, { olderThanMs = 0 }
         : "rr",
       outcome: "forfeit",
     })
+    const forfeitHistoryId = Number(String(forfeitEntry?.id ?? "").replace(/^r-/, ""))
     await connection.execute(
-      "INSERT INTO consumed_round_tokens (token_id, user_id) VALUES (?, ?)",
-      [roundId, userId]
+      "INSERT INTO consumed_round_tokens (token_id, user_id, round_history_id) VALUES (?, ?, ?)",
+      [roundId, userId, Number.isSafeInteger(forfeitHistoryId) && forfeitHistoryId > 0 ? forfeitHistoryId : null]
     )
     await connection.execute(
       "DELETE FROM pending_ranked_rounds WHERE round_id = ? AND user_id = ?",
@@ -2097,6 +2105,44 @@ export async function settleExpiredRankedRounds(userId) {
   }
 }
 
+export async function findConsumedRoundHistoryEntry(tokenId, userId) {
+  const [rows] = await pool.query(
+    `SELECT
+       h.id,
+       h.mode AS modeId,
+       h.progression_mode AS progressionMode,
+       h.score,
+       h.hits,
+       h.misses,
+       h.best_streak AS bestStreak,
+       h.avg_reaction_ms AS avgReactionMs,
+       h.best_reaction_ms AS bestReactionMs,
+       h.coins_earned AS coinsEarned,
+       h.xp_earned AS xpEarned,
+       h.rank_delta AS rankDelta,
+       h.rank_result_kind AS rankResultKind,
+       h.outcome,
+       h.loadout_name AS loadoutName,
+       h.loadout_id AS loadoutId,
+       h.tempo_core_id AS tempoCoreId,
+       h.streak_lens_id AS streakLensId,
+       h.power_rig_id AS powerRigId,
+       h.powerup_slot_1_id AS powerupSlot1Id,
+       h.powerup_slot_2_id AS powerupSlot2Id,
+       h.powerup_slot_3_id AS powerupSlot3Id,
+       h.played_at AS playedAt
+     FROM consumed_round_tokens t
+     INNER JOIN round_history h
+       ON h.id = t.round_history_id
+       AND h.user_id = t.user_id
+     WHERE t.token_id = ? AND t.user_id = ?
+     LIMIT 1`,
+    [String(tokenId), userId]
+  )
+
+  return rows[0] ? buildHistoryEntry(rows[0]) : null
+}
+
 export class RoundAlreadySubmittedError extends Error {
   constructor() {
     super("This round has already been submitted.")
@@ -2105,7 +2151,7 @@ export class RoundAlreadySubmittedError extends Error {
   }
 }
 
-class RoundForfeitedError extends Error {
+export class RoundForfeitedError extends Error {
   constructor() {
     super("This ranked round was already counted as a loss because a new one was started.")
     this.name = "RoundForfeitedError"
@@ -2157,15 +2203,15 @@ export async function completeUserRound({
          ON CONFLICT (token_id) DO NOTHING`,
         [String(roundTokenId), userId]
       )
+      if (!claim.affectedRows) {
+        throw new RoundAlreadySubmittedError()
+      }
       if (requiresPendingRankedRound) {
         const [pending] = await connection.execute(
           "DELETE FROM pending_ranked_rounds WHERE round_id = ? AND user_id = ?",
           [String(roundTokenId), userId]
         )
         if (!pending.affectedRows) throw new RoundForfeitedError()
-      }
-      if (!claim.affectedRows) {
-        throw new RoundAlreadySubmittedError()
       }
     }
 
@@ -2263,6 +2309,16 @@ export async function completeUserRound({
         ? (rankOutcome.previousRankProgress?.isUnranked || rankOutcome.previousRankProgress?.isPlacement ? 'placement' : 'rr')
         : null,
     })
+
+    if (roundTokenId) {
+      const historyRowId = Number(String(insertedHistoryEntry?.id ?? "").replace(/^r-/, ""))
+      if (Number.isSafeInteger(historyRowId) && historyRowId > 0) {
+        await connection.execute(
+          "UPDATE consumed_round_tokens SET round_history_id = ? WHERE token_id = ? AND user_id = ?",
+          [historyRowId, String(roundTokenId), userId]
+        )
+      }
+    }
 
     if (countsTowardStats) {
       const committedHistoryEntry = {

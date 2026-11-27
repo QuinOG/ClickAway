@@ -124,3 +124,14 @@ BEGIN
 END
 $grant$;
 ```
+
+## Round recovery by token
+
+`initializeSchema()` adds `consumed_round_tokens.round_history_id` with a default of `NULL`,
+and `verifySchema()` requires the column at startup. For deployments with `DB_AUTO_MIGRATE=false`,
+run this SQL in Supabase before deploying.
+
+```sql
+ALTER TABLE public.consumed_round_tokens
+  ADD COLUMN IF NOT EXISTS round_history_id bigint DEFAULT NULL;
+```

@@ -12,19 +12,26 @@ const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("// Saves only the preferences"))
   .replace("export ", "")
 
-async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {}, clientReaction = {} } = {}) {
+async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, challengeId = 11, savedTimestamp = {}, clientReaction = {}, consumedHistory = null, pendingDeleted = true } = {}) {
   const trace = [], writes = [], headers = {}
-  let handler, saveInputs, savedHistoryEntry, simulatedLevel, seasonInputs, stats = 0
+  let handler, saveInputs, savedHistoryEntry, simulatedLevel, seasonInputs, stats = 0, routeError = null
   const locked = { coins: 990, xp: 990, mmr: 400, rankSystemVersion: RANK_SYSTEM_VERSION,
     placementMatchesPlayed: 10, demotionProtectionRounds: 0 }
   const connection = {
     beginTransaction: async () => trace.push("begin"),
     execute: async (sql, params) => {
-      if (sql.includes("consumed_round_tokens")) { trace.push("claim"); return [{ affectedRows: duplicate ? 0 : 1 }] }
+      if (sql.includes("INSERT INTO consumed_round_tokens")) { trace.push("claim"); return [{ affectedRows: duplicate ? 0 : 1 }] }
+      if (sql.includes("DELETE FROM pending_ranked_rounds")) { trace.push("pending"); return [{ affectedRows: pendingDeleted ? 1 : 0 }] }
       writes.push({ sql, params }); return [{ affectedRows: 1 }]
     },
     query: async () => [[]],
     commit: async () => trace.push("commit"), rollback: async () => trace.push("rollback"), release: () => trace.push("release"),
+  }
+  const RoundAlreadySubmittedError = class extends Error {
+    constructor() { super("This round has already been submitted."); this.name = "RoundAlreadySubmittedError"; this.status = 409 }
+  }
+  const RoundForfeitedError = class extends Error {
+    constructor() { super("This ranked round was already counted as a loss because a new one was started."); this.name = "RoundForfeitedError"; this.status = 409 }
   }
   const ctx = {
     performance, console: { error: () => {} },
@@ -33,7 +40,7 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     MAX_STORED_REACTION_MS: 2_147_483_647,
     findUserById: async () => { trace.push("identity"); return { id: 7, username: "private-user" } },
     getDifficultyById: id => ({ id, allowsRankProgression: ranked }),
-    verifyRoundToken: () => ({ valid: true, seed: 42, roundId: "private-token", issuedAtMs: 0, challengeId: 11 }),
+    verifyRoundToken: () => ({ valid: true, seed: 42, roundId: "private-token", issuedAtMs: 0, challengeId }),
     findRoundCompletionContext: async () => { trace.push("context"); return { levelXp: 250, rankMmr: 0,
       rankedState: { rankSystemVersion: RANK_SYSTEM_VERSION, placementMatchesPlayed: 0 }, hasRankedHistory: true } },
     getLevelProgress, applyRankedMatchResult, RANK_SYSTEM_VERSION,
@@ -45,7 +52,9 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
       baseRankDelta: 10, placementMatchScore: 20, allowsRankProgression: ranked }),
     pool: { getConnection: async () => connection },
     getUserStateRow: async (_connection, _id, options) => { assert.equal(options.forUpdate, true); trace.push("lock"); return locked },
-    RoundAlreadySubmittedError: class extends Error {},
+    RoundAlreadySubmittedError,
+    RoundForfeitedError,
+    findConsumedRoundHistoryEntry: async () => consumedHistory,
     hasXpRoundToday: async () => true,
     getTodaysDailyGoalRounds: async () => ({ dayKey: null, rounds: [] }),
     sumDailyGoalRewards: () => ({ coins: 0, xp: 0 }),
@@ -62,7 +71,7 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     completeChallenge: async () => { trace.push("duel"); return { ok: true, challenge: { id: 11 } } },
     applyUserSeasonProgress: async (_id, inputs) => { seasonInputs = inputs; trace.push("season"); if (failure === "season") throw Error("failure"); return {} },
     findUserProgressByUserId: async () => { trace.push("progress"); if (failure === "progress") throw Error("failure"); return { final: true } },
-    handleRouteError: (_error, response) => response.status(409).json({ error: "save failed" }),
+    handleRouteError: (error, response) => { routeError = error; response.status(error?.status ?? 409).json({ error: error?.message || "save failed" }) },
   }
   vm.runInNewContext(save, ctx)
   const realSave = ctx.completeUserRound
@@ -72,7 +81,7 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     setHeader: (name, value) => { headers[name] = value }, json(body) { this.body = body; return this } }
   await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0 }], roundToken: token ? "private-token" : null, ...clientReaction } }, response)
   assert.match(headers["Server-Timing"], /^context;dur=\d+\.\d{2}, simulate;dur=\d+\.\d{2}, save;dur=\d+\.\d{2}, followups;dur=\d+\.\d{2}, progress;dur=\d+\.\d{2}, total;dur=\d+\.\d{2}$/)
-  return { trace, writes, response, saveInputs, savedHistoryEntry, simulatedLevel, seasonInputs, stats }
+  return { trace, writes, response, saveInputs, savedHistoryEntry, simulatedLevel, seasonInputs, stats, routeError }
 }
 
 test("season attribution prefers the committed DB timestamp across a rollover", async () => {
@@ -145,4 +154,37 @@ for (const failure of ["replay", "season", "progress"]) test(`committed save suc
   assert.equal(h.response.body.earnedXp, 20)
   assert.equal(h.response.body.progress === null, failure === "progress")
   assert.equal(Boolean(h.response.body.followUpError), failure !== "progress")
+})
+
+test("completeUserRound links consumed_round_tokens.round_history_id inside the transaction", async () => {
+  const h = await run({ savedTimestamp: { id: "r-42" } })
+  assert.equal(h.response.statusCode, 200)
+  const linkWrite = h.writes.find(({ sql }) => sql.includes("UPDATE consumed_round_tokens SET round_history_id"))
+  assert.ok(linkWrite)
+  assert.deepEqual([...linkWrite.params], [42, "private-token", 7])
+})
+
+test("duplicate token with saved history returns 200 alreadySaved without touching pending or followups", async () => {
+  const savedEntry = { id: "r-42", outcome: "completed", coinsEarned: 18, xpEarned: 120, rankDelta: 14 }
+  const h = await run({ duplicate: true, ranked: true, challengeId: null, pendingDeleted: false, consumedHistory: savedEntry })
+  assert.deepEqual(h.trace.slice(3), ["begin", "lock", "claim", "rollback", "release", "progress"])
+  assert.equal(h.writes.length, 0)
+  assert.equal(h.stats, 0)
+  assert.equal(h.response.statusCode, 200)
+  assert.deepEqual({ ...h.response.body }, {
+    alreadySaved: true,
+    historyEntry: savedEntry,
+    progress: { final: true },
+    earnedCoins: 18,
+    earnedXp: 120,
+    rankDelta: 14,
+  })
+})
+
+test("duplicate token consumed by a forfeit returns 409 with the forfeit error", async () => {
+  const forfeitEntry = { id: "r-55", outcome: "forfeit", coinsEarned: 0, xpEarned: 0, rankDelta: -22 }
+  const h = await run({ duplicate: true, ranked: true, challengeId: null, pendingDeleted: false, consumedHistory: forfeitEntry })
+  assert.equal(h.response.statusCode, 409)
+  assert.equal(h.routeError?.name, "RoundForfeitedError")
+  assert.equal(h.response.body.error, "This ranked round was already counted as a loss because a new one was started.")
 })

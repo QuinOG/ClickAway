@@ -144,6 +144,17 @@ function hasXpRoundToday(rounds = [], now = Date.now()) {
   return rounds.some((round) => Number(round?.xpEarned) > 0 && Date.parse(round?.playedAtIso ?? "") >= todayStartMs)
 }
 
+const MAX_ROUND_SAVE_RETRIES = 3
+
+function isRetryableRoundSaveError(error) {
+  if (typeof error?.retryable === "boolean") return error.retryable
+  const status = error?.status ?? error?.response?.status ?? null
+  if (status !== null && status !== undefined) {
+    return Number(status) >= 500
+  }
+  return Boolean(error?.isNetworkError || (error && !error.response && error.status === undefined))
+}
+
 export function useGameScreenController({
   onRoundComplete,
   selectedModeId = DEFAULT_MODE_ID,
@@ -214,6 +225,8 @@ export function useGameScreenController({
   const previousChallengeIdRef = useRef(challengeId)
   // Whether the finished round reached the server, and what it actually awarded.
   const [roundSave, setRoundSave] = useState({ status: "idle" })
+  const lastRoundSavePayloadRef = useRef(null)
+  const inFlightRoundSaveNonceRef = useRef(null)
   // A duel is raced once. After its round, Play Again and Change Mode leave the
   // duel (onExitDuel) and start ordinary rounds instead of re-racing it.
   const finishedDuelRef = useRef(false)
@@ -656,6 +669,8 @@ export function useGameScreenController({
     setRoundMode(nextRoundMode)
     resetRoundState(nextRoundMode)
     hasAwardedRoundRef.current = false
+    lastRoundSavePayloadRef.current = null
+    inFlightRoundSaveNonceRef.current = null
     setRoundSave({ status: "idle" })
     roundEventsRef.current = []
     roundStartTimeRef.current = 0
@@ -818,6 +833,8 @@ export function useGameScreenController({
     arenaDimensionsRef.current = null
     setLogicalDimensions(null)
     setGhostScore(0)
+    lastRoundSavePayloadRef.current = null
+    inFlightRoundSaveNonceRef.current = null
     setRoundSave({ status: "idle" })
     countdownEndsAtRef.current = 0
     setRoundStartStatus("idle")
@@ -1416,6 +1433,75 @@ export function useGameScreenController({
     onModeChange?.(gameOnboardingStep.modeId)
   }, [gameOnboardingStep, onModeChange, selectedModeId])
 
+  const submitRoundSave = useCallback((payload, { savingRoundNonce, countsTowardRR, retriesUsed }) => {
+    if (inFlightRoundSaveNonceRef.current === savingRoundNonce) return
+    inFlightRoundSaveNonceRef.current = savingRoundNonce
+    setRoundSave({ status: "saving" })
+
+    const roundSaveResult = (async () => onRoundComplete?.(payload))()
+    Promise.resolve(roundSaveResult).then((result) => {
+      if (inFlightRoundSaveNonceRef.current === savingRoundNonce) {
+        inFlightRoundSaveNonceRef.current = null
+      }
+      // Session Net RR counts only what the server awarded, once per round,
+      // even if the save lands after the next round has started. Placement
+      // scores aren't RR.
+      const previousRank = result?.rankProgress?.previous
+      const isPlacementRound = previousRank
+        ? (previousRank.isPlacement || previousRank.isUnranked)
+        : result?.historyEntry?.rankResultKind === "placement"
+      if (result?.ok === true && countsTowardRR && !isPlacementRound) {
+        const awarded = Number(result.rankDelta)
+        if (Number.isFinite(awarded) && awarded !== 0) {
+          setSessionStats((previousStats) => ({ ...previousStats, netRR: previousStats.netRR + awarded }))
+        }
+      }
+      if (roundNonceRef.current !== savingRoundNonce) return
+      if (result?.ok === true) {
+        lastRoundSavePayloadRef.current = null
+        setRoundSave({ status: "saved", outcome: result })
+        return
+      }
+      const retryable = Boolean(payload?.roundToken)
+        && result?.retryable === true
+        && retriesUsed < MAX_ROUND_SAVE_RETRIES
+      setRoundSave({
+        status: "failed",
+        error: result?.error || "The server did not confirm this round was saved.",
+        retryable,
+        retriesUsed,
+      })
+    }).catch((error) => {
+      if (inFlightRoundSaveNonceRef.current === savingRoundNonce) {
+        inFlightRoundSaveNonceRef.current = null
+      }
+      if (roundNonceRef.current !== savingRoundNonce) return
+      const retryable = Boolean(payload?.roundToken)
+        && isRetryableRoundSaveError(error)
+        && retriesUsed < MAX_ROUND_SAVE_RETRIES
+      setRoundSave({
+        status: "failed",
+        error: error?.message || "Unable to save this round.",
+        retryable,
+        retriesUsed,
+      })
+    })
+  }, [onRoundComplete])
+
+  const retryRoundSave = useCallback(() => {
+    const pending = lastRoundSavePayloadRef.current
+    if (!pending) return
+    if (roundNonceRef.current !== pending.savingRoundNonce) return
+    if (roundSave.status !== "failed" || !roundSave.retryable) return
+    const nextRetriesUsed = (roundSave.retriesUsed ?? 0) + 1
+    if (nextRetriesUsed > MAX_ROUND_SAVE_RETRIES) return
+    submitRoundSave(pending.payload, {
+      savingRoundNonce: pending.savingRoundNonce,
+      countsTowardRR: pending.countsTowardRR,
+      retriesUsed: nextRetriesUsed,
+    })
+  }, [roundSave.retryable, roundSave.retriesUsed, roundSave.status, submitRoundSave])
+
   useEffect(() => {
     if (phase !== ROUND_PHASE.GAME_OVER || hasAwardedRoundRef.current) return undefined
 
@@ -1427,8 +1513,7 @@ export function useGameScreenController({
       hasAwardedRoundRef.current = true
 
       const savingRoundNonce = roundNonceRef.current
-      setRoundSave({ status: "saving" })
-      const roundSaveResult = (async () => onRoundComplete?.({
+      const payload = {
         clicksScored: hits,
         hits,
         misses,
@@ -1450,28 +1535,11 @@ export function useGameScreenController({
         arenaHeight: arenaDimensionsRef.current?.arenaHeight ?? null,
         challengeId: finishedDuelRef.current ? null : challengeIdRef.current,
         drillId: activeDrillIdRef.current,
-      }))()
+      }
       if (challengeIdRef.current) finishedDuelRef.current = true
       const countsTowardRR = roundMode.allowsRankProgression === true
-      Promise.resolve(roundSaveResult).then((result) => {
-        // Session Net RR counts only what the server awarded, once per round,
-        // even if the save lands after the next round has started. Placement
-        // scores aren't RR.
-        const previousRank = result?.rankProgress?.previous
-        if (result?.ok === true && countsTowardRR && !previousRank?.isPlacement && !previousRank?.isUnranked) {
-          const awarded = Number(result.rankDelta)
-          if (Number.isFinite(awarded) && awarded !== 0) {
-            setSessionStats((previousStats) => ({ ...previousStats, netRR: previousStats.netRR + awarded }))
-          }
-        }
-        if (roundNonceRef.current !== savingRoundNonce) return
-        setRoundSave(result?.ok === true
-          ? { status: "saved", outcome: result }
-          : { status: "failed", error: result?.error || "The server did not confirm this round was saved." })
-      }).catch((error) => {
-        if (roundNonceRef.current !== savingRoundNonce) return
-        setRoundSave({ status: "failed", error: error?.message || "Unable to save this round." })
-      })
+      lastRoundSavePayloadRef.current = { payload, savingRoundNonce, countsTowardRR }
+      submitRoundSave(payload, { savingRoundNonce, countsTowardRR, retriesUsed: 0 })
 
       setSessionStats((previousStats) => ({
         rounds: previousStats.rounds + 1,
@@ -1497,7 +1565,6 @@ export function useGameScreenController({
     hits,
     misses,
     onBuildWalkthroughChange,
-    onRoundComplete,
     phase,
     roundMode.allowsCoinRewards,
     roundMode.allowsLevelProgression,
@@ -1507,6 +1574,7 @@ export function useGameScreenController({
     roundMode.progressionMode,
     roundStartLoadoutSnapshot,
     score,
+    submitRoundSave,
   ])
 
   useEffect(() => {
@@ -1808,6 +1876,8 @@ export function useGameScreenController({
       roundCoinsEarned: roundSave.outcome?.earnedCoins ?? roundCoinsEarned,
       roundSaveStatus: roundSave.status,
       roundSaveError: roundSave.error ?? "",
+      roundSaveRetryable: Boolean(roundSave.retryable),
+      onRetryRoundSave: retryRoundSave,
       roundSaveNote: roundSave.outcome?.followUpError ?? "",
       allowsCoinRewards,
       allowsLevelProgression,

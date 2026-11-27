@@ -31,6 +31,7 @@ import {
   createChallenge,
   findChallengeById,
   findChallengesForUser,
+  findConsumedRoundHistoryEntry,
   findCurrentSeason,
   findLeaderboardPage,
   findReplayById,
@@ -44,6 +45,8 @@ import {
   insertRoundReplay,
   isUserSessionActive,
   recordPendingRankedRound,
+  RoundAlreadySubmittedError,
+  RoundForfeitedError,
   applyUserSeasonProgress,
   completeChallenge,
   respondToChallenge,
@@ -999,6 +1002,35 @@ export function createApp() {
         followUpError,
       })
     } catch (error) {
+      if (error instanceof RoundAlreadySubmittedError && roundTokenId) {
+        try {
+          const savedEntry = await findConsumedRoundHistoryEntry(roundTokenId, user.id)
+          if (savedEntry) {
+            if (savedEntry.outcome === "forfeit") {
+              handleRouteError(new RoundForfeitedError(), response)
+              return
+            }
+            let progress = null
+            try {
+              progress = await measure("progress", () => findUserProgressByUserId(user.id))
+            } catch (progressError) {
+              console.error("Round already saved, but reading progress failed:", progressError)
+            }
+            response.json({
+              alreadySaved: true,
+              historyEntry: savedEntry,
+              progress,
+              earnedCoins: savedEntry.coinsEarned,
+              earnedXp: savedEntry.xpEarned,
+              rankDelta: savedEntry.rankDelta,
+            })
+            return
+          }
+        } catch (lookupError) {
+          handleRouteError(lookupError, response)
+          return
+        }
+      }
       handleRouteError(error, response)
     }
   })
