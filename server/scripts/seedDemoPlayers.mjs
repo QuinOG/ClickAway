@@ -55,7 +55,6 @@ export async function writeDemoPlan(plan, db, store) {
     const user = await db.createUser({ username: player.username, passwordHash: await bcrypt.hash(password, 12), role: "player" })
     users.set(player.username, user)
     created.add(player.username)
-    await store.ensurePlayerUser(user)
     let progress = await db.createDefaultUserProgress(user.id)
     const savedRounds = []
     for (const round of player.rounds) {

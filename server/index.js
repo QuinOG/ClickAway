@@ -38,6 +38,9 @@ import {
   findRoundCompletionContext,
   findUserById,
   findUserByUsername,
+  findUserByUsernameIgnoreCase,
+  hasOpenChallengeBetween,
+  pruneUserReplays,
   findUserReplays,
   insertRoundReplay,
   applyUserSeasonProgress,
@@ -258,7 +261,7 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
 
   let createdUser
   try {
-    const existingUser = await findUserByUsername(username)
+    const existingUser = await findUserByUsernameIgnoreCase(username)
     if (existingUser) {
       response.status(409).json({ error: "That username is already taken." })
       return
@@ -266,7 +269,7 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
     const passwordHash = await bcrypt.hash(password, 12)
     createdUser = await createUser({ username, passwordHash, role: "player" })
   } catch (error) {
-    if (error.code === "23505" && error.constraint === "users_username_key") {
+    if (error.code === "23505" && ["users_username_key", "users_username_lower_key"].includes(error.constraint)) {
       response.status(409).json({ error: "That username is already taken." })
     } else {
       handleRouteError(error, response)
@@ -275,7 +278,6 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
   }
 
   try {
-    await playerStateStore.ensurePlayerUser(createdUser)
     response.status(201).json(await createAuthResponse(createdUser, response))
   } catch (error) {
     // The account exists at this point, so say so: retrying sign-up would only
@@ -310,7 +312,6 @@ app.post("/api/auth/login", authRateLimiter, async (request, response) => {
   }
 
   try {
-    await playerStateStore.ensurePlayerUser(user)
     response.json(await createAuthResponse(user, response))
   } catch (error) {
     handleRouteError(error, response)
@@ -330,7 +331,6 @@ app.get("/api/auth/me", requireAuth, async (request, response) => {
   }
 
   try {
-    await playerStateStore.ensurePlayerUser(user)
     response.json({
       user: {
         id: user.id,
@@ -480,7 +480,7 @@ app.get("/api/challenges", requireAuth, async (request, response) => {
   }
 })
 
-app.post("/api/challenges", requireAuth, async (request, response) => {
+app.post("/api/challenges", requireAuth, roundRateLimiter, async (request, response) => {
   const user = await findUserById(request.auth.userId)
   if (!user) {
     response.status(401).json({ error: "Session is no longer valid." })
@@ -508,6 +508,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
     }
     if (opponent.id === user.id) {
       response.status(400).json({ error: "You cannot challenge yourself." })
+      return
+    }
+
+    if (await hasOpenChallengeBetween(user.id, opponent.id)) {
+      response.status(409).json({ error: "You already have an open duel with this player." })
       return
     }
 
@@ -884,7 +889,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     let followUpError = null
     const followupsStartedAt = performance.now()
     try {
-      const submittedEvents = Array.isArray(events) ? events : []
+      const submittedEvents = (Array.isArray(events) ? events : []).map(pickReplayEvent)
       if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
         replay = await insertRoundReplay({
           userId: user.id,
@@ -917,6 +922,15 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     } catch (error) {
       console.error("Round saved, but a follow-up write failed:", error)
       followUpError = "Your round was saved, but its replay or duel result couldn't be stored."
+    }
+
+    // Old replays are housekeeping: a failure here only logs.
+    if (replay?.id) {
+      try {
+        await pruneUserReplays(user.id)
+      } catch (error) {
+        console.error("Round saved, but pruning old replays failed:", error)
+      }
     }
 
     // Season credit is independent of the replay, so a replay failure can't skip it.
@@ -968,6 +982,15 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     handleRouteError(error, response)
   }
 })
+
+// Stores only the fields replay playback uses, never the client's extra keys.
+function pickReplayEvent(event) {
+  const picked = { type: event?.type, t: event?.t }
+  if (typeof event?.x === "number") picked.x = event.x
+  if (typeof event?.y === "number") picked.y = event.y
+  if (typeof event?.powerupId === "string") picked.powerupId = event.powerupId
+  return picked
+}
 
 app.put("/api/progress", requireAuth, async (request, response) => {
   const user = await findUserById(request.auth.userId)
