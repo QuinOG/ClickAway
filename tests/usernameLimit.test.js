@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { sanitizeUsername, sanitizePassword, validateUsername, validatePassword } from '../server/validation.js'
-const source = readFileSync('server/index.js', 'utf8')
+const source = readFileSync('server/app.js', 'utf8')
 for (const [length, status] of [[24, 201], [25, 400]]) {
   test(`signup username ${length} characters returns ${status}`, async () => {
     let handler

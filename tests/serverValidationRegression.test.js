@@ -50,10 +50,10 @@ test("simulation rejects unknown drills and drills outside easy mode", () => {
   assert.equal(simulateRound([], "normal", { drillId: TRAINING_DRILLS[0].id }).valid, false)
 })
 
-const source = readFileSync("server/index.js", "utf8")
+const source = readFileSync("server/app.js", "utf8")
 function route(method, path, extra = {}) {
   const start = source.indexOf(`app.${method}("${path}"`)
-  const end = source.indexOf('\napp.', start + 1)
+  const end = source.indexOf('\n  app.', start + 1)
   let handler
   const ctx = { performance, parsePositiveIntId, isValidDrillId, getDifficultyById, requireAuth: null, roundRateLimiter: null,
     app: { [method]: (...args) => { handler = args.at(-1) } }, findUserById: async () => ({ id: 1 }), createRoundSeed: () => 42,

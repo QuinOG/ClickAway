@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 const db = readFileSync('server/playerMysqlDatabase.js', 'utf8')
-const server = readFileSync('server/index.js', 'utf8')
+const server = readFileSync('server/app.js', 'utf8')
 const createCode = db.slice(db.indexOf('export async function createUser('), db.indexOf('export async function updateUserPassword(')).replace('export ', '')
 const signupCode = server.slice(server.indexOf('app.post("/api/auth/signup"'), server.indexOf('app.post("/api/auth/login"'))
 test('createUser returns the INSERT identity, including admin hash and role, without another read', async () => {

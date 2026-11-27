@@ -12,6 +12,7 @@
     "test": "npm run test:unit && npm run test:ui",
     "test:unit": "node --test tests/*.test.js",
     "test:ui": "node scripts/run-vitest.mjs",
+    "test:integration": "node --test tests/integration/",
     "test:browser": "playwright test",
     "test:browser:update": "playwright test tests/e2e/visual-cohesion.spec.js --update-snapshots",
     "test:release": "npm run lint && npm run test && npm run test:browser && npm run build",
@@ -40,6 +41,8 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
+    "@electric-sql/pglite": "0.5.16",
+    "@electric-sql/pglite-socket": "0.2.19",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.61.1",
     "@testing-library/react": "^16.3.2",
