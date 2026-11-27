@@ -816,12 +816,6 @@ async function getLoadoutStatsRows(executor, userId) {
     .filter(Boolean)
 }
 
-async function getWeeklyRoundCount(executor, userId) {
-  const [[weekly]] = await executor.query(`SELECT COUNT(*) AS roundsThisWeek FROM round_history
-    WHERE user_id = ? AND played_at >= now() - interval '7 days' AND played_at <= now()`, [userId])
-  return toNonNegativeNumber(weekly?.roundsThisWeek, 0)
-}
-
 // Whether the player already had an XP-earning round today (UTC). The first one
 // each day earns double XP; the save and the progress read both ask this.
 // The current UTC day by the database clock. Inside a transaction now() is the
@@ -889,6 +883,31 @@ async function getRoundHistoryCount(executor, userId) {
   )
 
   return toNonNegativeNumber(rows[0]?.totalCount, 0)
+}
+
+// Reads total count, weekly count, and whether an XP round was played today
+// (UTC) in one round_history scan instead of three separate round trips.
+async function getRoundHistoryProgressCounts(executor, userId) {
+  const [[counts]] = await executor.query(
+    `SELECT
+       COUNT(*) AS totalCount,
+       COUNT(*) FILTER (
+         WHERE played_at >= now() - interval '7 days' AND played_at <= now()
+       ) AS roundsThisWeek,
+       COALESCE(
+         bool_or(xp_earned > 0 AND ${TODAY_UTC_WINDOW}),
+         false
+       ) AS hasXpRoundToday
+     FROM round_history
+     WHERE user_id = ?`,
+    [userId]
+  )
+
+  return {
+    totalRoundCount: toNonNegativeNumber(counts?.totalCount, 0),
+    roundsThisWeek: toNonNegativeNumber(counts?.roundsThisWeek, 0),
+    hasXpRoundToday: Boolean(counts?.hasXpRoundToday),
+  }
 }
 
 // Rebuilds stats from history only for accounts that predate the stats table
@@ -1323,12 +1342,16 @@ async function buildProgressRecord(executor, userId) {
     userRow.activeLoadoutId
   )
   const normalizedRoundHistory = historyRows.map(buildHistoryEntry)
-  const totalRoundCount = await getRoundHistoryCount(executor, userId)
+  const {
+    totalRoundCount,
+    roundsThisWeek,
+    hasXpRoundToday: playedXpRoundToday,
+  } = await getRoundHistoryProgressCounts(executor, userId)
   const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
-  lifetimeStats.roundsThisWeek = await getWeeklyRoundCount(executor, userId)
+  lifetimeStats.roundsThisWeek = roundsThisWeek
   // From the server, not the 50 loaded rounds, so the lobby never promises a
   // bonus that an older round today already used.
-  const dailyBonusAvailable = !(await hasXpRoundToday(executor, userId))
+  const dailyBonusAvailable = !playedXpRoundToday
   const dailyGoals = await getDailyGoalsSnapshot(executor, userId)
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
