@@ -1661,6 +1661,10 @@ export function normalizePaginationLimit(limit, maxLimit, defaultLimit) {
   return Math.max(1, Math.min(maxLimit, Math.floor(value)))
 }
 
+export function escapeLikePattern(text) {
+  return text.replace(/[\\%_]/g, "\\$&")
+}
+
 async function readRankedLeaderboardRows(connection, {
   board = LEADERBOARD_BOARDS.MMR,
   page = 1,
@@ -1718,10 +1722,24 @@ async function readRankedLeaderboardRows(connection, {
     filtered_ladder AS (
       SELECT *
       FROM ranked_ladder
-      ${normalizedSearch ? "WHERE LOWER(username) LIKE ?" : ""}
+      ${normalizedSearch ? "WHERE LOWER(username) LIKE ? ESCAPE '\\'" : ""}
     )`
 
-  const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
+  const filterParams = normalizedSearch
+    ? [PLACEMENT_MATCH_COUNT, `%${escapeLikePattern(normalizedSearch)}%`]
+    : [PLACEMENT_MATCH_COUNT]
+
+  const readFilteredCount = async (rows) => {
+    if (rows.length > 0) return toNonNegativeNumber(rows[0].totalCount, 0)
+
+    const [[countRow]] = await connection.query(
+      `${baseCte}
+       SELECT COUNT(*) AS totalCount
+       FROM filtered_ladder`,
+      filterParams
+    )
+    return toNonNegativeNumber(countRow?.totalCount, 0)
+  }
 
   if (view === "aroundMe" && userId) {
     const [[selfRow]] = await connection.query(
@@ -1730,7 +1748,7 @@ async function readRankedLeaderboardRows(connection, {
        FROM ranked_ladder
        WHERE userId = ?
        LIMIT 1`,
-      [PLACEMENT_MATCH_COUNT, ...searchParams, userId]
+      [...filterParams, userId]
     )
 
     if (!selfRow) {
@@ -1749,23 +1767,20 @@ async function readRankedLeaderboardRows(connection, {
     const minRank = Math.max(1, selfRank - LEADERBOARD_AROUND_WINDOW)
     const maxRank = selfRank + LEADERBOARD_AROUND_WINDOW
 
+    // Count all search matches before limiting the rows to the rank window.
     const [rows] = await connection.query(
-      `${baseCte}
+      `${baseCte}, counted_ladder AS (
+         SELECT *, COUNT(*) OVER () AS totalCount
+         FROM filtered_ladder
+       )
        SELECT *
-       FROM filtered_ladder
+       FROM counted_ladder
        WHERE rank BETWEEN ? AND ?
        ORDER BY rank ASC`,
-      [PLACEMENT_MATCH_COUNT, ...searchParams, minRank, maxRank]
+      [...filterParams, minRank, maxRank]
     )
 
-    const [[countRow]] = await connection.query(
-      `${baseCte}
-       SELECT COUNT(*) AS totalCount
-       FROM filtered_ladder`,
-      [PLACEMENT_MATCH_COUNT, ...searchParams]
-    )
-
-    const totalCount = toNonNegativeNumber(countRow?.totalCount, 0)
+    const totalCount = await readFilteredCount(rows)
 
     return {
       rows: rows.map(mapLeaderboardRow),
@@ -1782,21 +1797,14 @@ async function readRankedLeaderboardRows(connection, {
   const offset = (normalizedPage - 1) * normalizedLimit
   const [rows] = await connection.query(
     `${baseCte}
-     SELECT *
+     SELECT *, COUNT(*) OVER () AS totalCount
      FROM filtered_ladder
      ORDER BY rank ${reverse ? "DESC" : "ASC"}
      LIMIT ? OFFSET ?`,
-    [PLACEMENT_MATCH_COUNT, ...searchParams, normalizedLimit, offset]
+    [...filterParams, normalizedLimit, offset]
   )
 
-  const [[countRow]] = await connection.query(
-    `${baseCte}
-     SELECT COUNT(*) AS totalCount
-     FROM filtered_ladder`,
-    [PLACEMENT_MATCH_COUNT, ...searchParams]
-  )
-
-  const totalCount = toNonNegativeNumber(countRow?.totalCount, 0)
+  const totalCount = await readFilteredCount(rows)
   const totalPages = totalCount > 0 ? Math.ceil(totalCount / normalizedLimit) : 0
 
   let selfRank = null
@@ -1807,7 +1815,7 @@ async function readRankedLeaderboardRows(connection, {
        FROM ranked_ladder
        WHERE userId = ?
        LIMIT 1`,
-      [PLACEMENT_MATCH_COUNT, ...searchParams, userId]
+      [...filterParams, userId]
     )
     selfRank = selfRow ? Math.max(1, Number(selfRow.rank) || 1) : null
   }
