@@ -189,6 +189,8 @@ export function simulateRound(events, modeId, {
     misses: replay.misses,
     score: replay.score,
     bestStreak: replay.bestStreak,
+    avgReactionMs: replay.avgReactionMs,
+    bestReactionMs: replay.bestReactionMs,
     loadoutSnapshot: normalizedSnapshot,
     roundEndMs: deadlineCheck.roundEndMs,
   }

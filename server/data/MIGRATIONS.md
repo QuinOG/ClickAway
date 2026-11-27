@@ -59,3 +59,17 @@ over unchanged. Each season starts with zero rounds, peak and reward until Ranke
 is played; only placed ratings contribute to peaks/rewards. Leaderboard records
 remain explicitly all-time. Weekly rounds count all history in the last seven days
 on the server, independent of pagination. No replay format or validation changes.
+
+## Verified reaction times
+
+`initializeSchema()` adds `user_lifetime_stats.verified_best_reaction_ms` with a
+default of `NULL`. For deployments with `DB_AUTO_MIGRATE=false`, run this SQL in
+Supabase before deploying.
+
+```sql
+ALTER TABLE public.user_lifetime_stats
+  ADD COLUMN IF NOT EXISTS verified_best_reaction_ms int DEFAULT NULL;
+```
+
+Existing lifetime stats and round history keep their reaction values. The
+Reaction ladder starts empty and fills as players complete eligible rounds.
