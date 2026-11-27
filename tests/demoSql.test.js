@@ -19,7 +19,8 @@ import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 
 const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
-const section = (start, end) => source.slice(source.indexOf(start), source.indexOf(end)).replaceAll("export ", "")
+const sharedSource = readFileSync("server/db/shared.js", "utf8")
+const section = (start, end, text = source) => text.slice(text.indexOf(start), text.indexOf(end)).replaceAll("export ", "")
 const plan = buildDemoPlan({ count: 3, days: 5, now: new Date("2026-11-15T12:00:00Z"), duelsTo: "admin" })
 const plain = value => JSON.parse(JSON.stringify(value))
 
@@ -76,8 +77,8 @@ async function runLivePlayer(player, index) {
     findUserById: async () => ({ id: 7, username: player.username }), findUserProgressByUserId: async () => ({}),
   }
   vm.createContext(ctx)
-  vm.runInContext(section("function toNullableNonNegativeNumber", "function normalizeStringList"), ctx)
-  vm.runInContext(section("function normalizeRoundHistoryEntry", "function normalizeProgressInput"), ctx)
+  vm.runInContext(section("function toNullableNonNegativeNumber", "function normalizeStringList", sharedSource), ctx)
+  vm.runInContext(section("function normalizeRoundHistoryEntry", "function buildHistoryEntry", sharedSource), ctx)
   vm.runInContext(section("const TODAY_UTC_WINDOW", "async function getRoundHistoryCount"), ctx)
   vm.runInContext(section("async function ensureLifetimeStatsRow", "async function getLoadoutStatsRows"), ctx)
   vm.runInContext(section("async function insertRoundHistoryEntry", "async function persistLoadoutStats"), ctx)

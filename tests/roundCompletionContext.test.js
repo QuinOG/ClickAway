@@ -7,13 +7,24 @@ import { RANK_SYSTEM_VERSION } from "../src/utils/rankUtils.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { isRankedModeEntry } from "../src/utils/gameModeLabelsAndRankedFilters.js"
 
-const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
+const sourceFiles = ["server/db/shared.js", "server/playerMysqlDatabase.js"]
 const imports = {}
-for (const match of source.matchAll(/from "((?:\.\.\/src\/|\.\/serverShop)[^"]+)"/g)) {
-  Object.assign(imports, await import(new URL(`../server/${match[1]}`, import.meta.url)))
+const chunks = []
+for (const file of sourceFiles) {
+  const fileSource = readFileSync(file, "utf8")
+  const baseUrl = new URL(`../${file}`, import.meta.url)
+  for (const match of fileSource.matchAll(/from "((?:\.\.\/(?:src\/|serverShop)|\.\.\/\.\.\/src\/|\.\/serverShop)[^"]+)"/g)) {
+    Object.assign(imports, await import(new URL(match[1], baseUrl)))
+  }
+  const stripped = fileSource
+    .replace(/^import\s+[\s\S]*?from\s+"[^"]+"\r?\n?/gm, "")
+    .replace(/^import\s+"[^"]+"\r?\n?/gm, "")
+    .replace(/^export\s+\{[\s\S]*?\}(?:\s+from\s+"[^"]+")?\r?\n?/gm, "")
+    .replaceAll("export default pool", "")
+    .replaceAll("export ", "")
+  chunks.push(stripped)
 }
-const code = source.slice(source.indexOf("const DEFAULT_PROGRESS ="))
-  .replaceAll("export default pool", "").replaceAll("export ", "")
+const code = chunks.join("\n")
 const plain = value => JSON.parse(JSON.stringify(value))
 
 function harness({ user = {}, rankedRounds = 0, history = [], cold = false } = {}) {

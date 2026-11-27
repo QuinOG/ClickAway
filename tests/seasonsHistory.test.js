@@ -57,7 +57,7 @@ test('rollover serializes concurrent requests, preserves duration and catches up
       throw Error(sql)
     }, commit: async () => { commits++; unlock() }, rollback: async () => unlock?.(), release: () => releases++ }
   } }
-  const code = source.slice(source.indexOf('async function withCurrentSeason('), source.indexOf('function toNonNegativeNumber'))
+  const code = source.slice(source.indexOf('async function withCurrentSeason('), source.indexOf('function normalizeProgressInput'))
   const ctx = { pool, mapSeasonRow: s => s }
   vm.runInNewContext(code, ctx)
   const results = await Promise.all([ctx.withCurrentSeason(async (c, s) => s), ctx.withCurrentSeason(async (c, s) => s)])
