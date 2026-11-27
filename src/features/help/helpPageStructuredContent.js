@@ -226,7 +226,7 @@ export const TRACKING_POINTS = [
   "If your account has no saved rounds yet, the History page shows an empty state with a quick link back to Game.",
   "Ladder includes placed ranked players, with 25 per page, search, and an Around Me view.",
   "Server rank order is hidden rating first, then best score, best streak, accuracy, username, and user id as tie-breakers.",
-  "Choose Rating, Best Score, Best Streak, Accuracy, or Reaction to compare players; flip the order with the sort control.",
+  "Choose Rating, Best score, Best streak, Accuracy or Reaction to compare players; flip the order with the sort control.",
   "Hover leaderboard names for quick stats. Your row is marked YOU and opens your profile; use Challenge on a rival to open Duels.",
 ]
 

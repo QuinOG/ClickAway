@@ -33,7 +33,7 @@ export default function HelpQuickStartSection({ cards = [] }) {
   return (
     <section className="helpBlock quickStartFeature" aria-label="Quick Start">
       <header className="quickStartHeader">
-        <p className="helpSectionEyebrow">First Minute</p>
+        <p className="helpSectionEyebrow">First minute</p>
         <h2 className="cardH2 quickStartTitle">Quick Start</h2>
         <p className="quickStartLead">
           Four things to know before your first run.

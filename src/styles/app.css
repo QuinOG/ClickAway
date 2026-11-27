@@ -31,6 +31,9 @@
 @import "./animations.css";
 @import "./game-feel.css";
 
+/* Unslop polish for every screen except Armory; loads last so it wins. */
+@import "./unslop.css";
+
 /*
  * Fontsource variable packages expose `* Variable` family names. These aliases
  * preserve the established Sora/Space Grotesk contracts used throughout the

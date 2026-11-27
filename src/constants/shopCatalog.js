@@ -178,7 +178,7 @@ export const SHOP_CATEGORIES = [
         imageSrc: "/skins/bubble.png",
         gameImageScale: 100,
         shopImageScale: 100,
-        description: "Try to pop it!",
+        description: "Try to pop it",
       }),
       createButtonSkinItem({
         id: "skin_tennis",

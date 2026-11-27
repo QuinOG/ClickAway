@@ -203,7 +203,7 @@ test("history pagination and Ladder filtering remain recoverable", async ({ page
   await expect(page.getByRole("button", { name: "Load older rounds" })).toBeHidden()
 
   await page.goto("/leaderboard")
-  const bestScoreTab = page.getByRole("tab", { name: "Best Score" })
+  const bestScoreTab = page.getByRole("tab", { name: "Best score" })
   await bestScoreTab.click()
   await expect(bestScoreTab).toHaveAttribute("aria-selected", "true")
   await page.getByRole("button", { name: "Around Me" }).click()

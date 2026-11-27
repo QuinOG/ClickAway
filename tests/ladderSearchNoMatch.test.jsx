@@ -182,7 +182,7 @@ describe("Ladder search with no matches", () => {
     await waitFor(() => expect(ladderNames()).toHaveLength(3))
     await user.type(searchBox(), "zzz")
     await screen.findByText(/No players match “zzz”/)
-    await user.click(screen.getByRole("tab", { name: "Best Score" }))
+    await user.click(screen.getByRole("tab", { name: "Best score" }))
     await waitFor(() => expect(fetchLeaderboard).toHaveBeenLastCalledWith(expect.objectContaining({ board: "bestScore", search: "zzz" })))
     expect(await screen.findByText(/ranked #2 out of/)).toBeTruthy()
     expect(screen.queryByText("Clear the search to see your rank on this board.")).toBeNull()

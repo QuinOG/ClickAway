@@ -34,7 +34,7 @@ test("a rejected board request clears the previous board's standing", async () =
   render(page())
   const panel = screen.getByRole("region", { name: "Your leaderboard standing" })
   await within(panel).findByText("#17")
-  fireEvent.click(screen.getByRole("tab", { name: "Best Score" }))
+  fireEvent.click(screen.getByRole("tab", { name: "Best score" }))
   await screen.findByText("Board offline")
   expect(within(panel).queryByText("#17")).toBeNull()
   expect(within(panel).getAllByText("--").length).toBeGreaterThan(0)

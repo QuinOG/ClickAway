@@ -37,7 +37,7 @@ for (const width of [1440, 768, 390, 320]) {
     await expect(page.locator('.ladderPlayerHoverCard').first()).toBeVisible()
     await capture(page, `player-focus-${width}`)
     await page.locator('.leaderboardPlayerName').first().evaluate(element => element.blur())
-    for (const name of ["Best Score", "Best Streak", "Accuracy", "Reaction", "Rating"]) {
+    for (const name of ["Best score", "Best streak", "Accuracy", "Reaction", "Rating"]) {
       await page.getByRole("tab", { name, exact: true }).click()
       await expect(page.locator(".ladderPlate")).toHaveCount(5)
       await capture(page, `${name.replaceAll(" ", "-")}-${width}`)

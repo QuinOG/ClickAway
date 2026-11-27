@@ -44,16 +44,16 @@ function positionLadderCard(wrap) {
 
 const BOARD_OPTIONS = [
   { key: "mmr", label: "Rating" },
-  { key: "bestScore", label: "Best Score" },
-  { key: "bestStreak", label: "Best Streak" },
+  { key: "bestScore", label: "Best score" },
+  { key: "bestStreak", label: "Best streak" },
   { key: "accuracy", label: "Accuracy" },
   { key: "reaction", label: "Reaction" },
 ]
 
 const SORTABLE_COLUMNS = [
   { key: "mmr", label: "Rating" },
-  { key: "bestScore", label: "Best Score" },
-  { key: "bestStreak", label: "Best Streak" },
+  { key: "bestScore", label: "Best score" },
+  { key: "bestStreak", label: "Best streak" },
   { key: "accuracyPercent", label: "Accuracy" },
   { key: "bestReactionMs", label: "Reaction" },
 ]
@@ -268,7 +268,7 @@ function LeaderboardStandingPanel({
 
   return (
     <section className="leaderboardStandingPanel" aria-label="Your leaderboard standing">
-      <p className="leaderboardSectionEyebrow">Your Standing</p>
+      <p className="leaderboardSectionEyebrow">Your standing</p>
       <div className="leaderboardStandingSpotlight" aria-label="Visible ladder spot">
         <span className="leaderboardStandingSpotlightLabel">Spot</span>
         <strong className={`leaderboardStandingSpotlightValue${displaySpot.length > 5 ? " isWord" : ""}`}>{displaySpot}</strong>
@@ -481,7 +481,7 @@ function NearMeSection({ rows = [], selfRank = null, mmrGap = 0 }) {
   return (
     <section className="leaderboardNearMeSection" aria-label="Players around your rank">
       <div className="leaderboardNearMeHeader">
-        <p className="leaderboardSectionEyebrow">Around You</p>
+        <p className="leaderboardSectionEyebrow">Around you</p>
         <p className="leaderboardNearMeLead">
           {selfRank
             ? `Your global rank is #${formatNumericValue(selfRank)}`

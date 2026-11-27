@@ -1,0 +1,94 @@
+/*
+ * Unslop polish (2026-11-27): every screen except Armory, which has its own block in game-armory.css.
+ * The painted arena art and the big figures keep their color and display face. The chrome around them gets quiet:
+ * small labels in sentence case at weight 600 with no tracking and no glow, flat page titles, and no decorative loops.
+ * Page titles and display-face card headings keep their uppercase arcade look.
+ */
+
+/* Small labels: sentence case, no tracking, weight 600, no glow. */
+:is(
+    .commandHeaderEyebrow, .leaderboardFieldCount small, .historyArchiveCount small,
+    /* Lobby and HUD */
+    .arenaLobbyKicker, .lobbyModeRecordHeader span, .lobbyModeBriefStat small,
+    .hudEyebrow, .hudStreakLabel, .hudComboLabel, .hudBestReadout, .hudModeIdentity, .hudIdentity span, .hudTimerUnit,
+    .powerupStateLabel,
+    /* Shop */
+    .shopPriceTag, .shopItemStateTag, .shopItemRarity, .shopCommandLoadoutMeta strong,
+    /* Ladder and hover card */
+    .leaderboardSectionEyebrow, .leaderboardPodiumTier, .leaderboardStandingSpotlightLabel,
+    .leaderboardStandingStatLabel, .leaderboardBoardTab,
+    .profileHoverRankLabel, .profileHoverStatLabel,
+    /* Duels */
+    .duelKind, .duelScore span, .duelStake small, .duelToken span,
+    /* History */
+    .historySectionTitle, .historyHighlightEyebrow, .historyClimbLabel, .historyRankBadge,
+    .historyRoundCardMode, .historyRoundCardScoreLabel, .historyRoundCardStamp, .historyRoundCardMeters em,
+    .historyRoundCardReward em, .historyRoundCardNoRewards, .historyTrendLabel, .historyTable th,
+    /* Help */
+    .helpSectionEyebrow, .helpModeStakes, .rankTierLabel, .quickStartCardEyebrow,
+    .quickStartVisual.isModes i, .helpModeStats small, .helpTable th
+) {
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+
+/* Tables: header cells read as quiet labels. */
+:is(.historyPage, .helpTable) th {
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 600 !important;
+}
+
+/* Remaining heavy small text drops from 700 to 900 down to 600. */
+:is(
+    .hudQuietMeta, .hudComboNextLabel, .lobbyStageSpec small, .lobbyStageSpec b, .lobbyModeReward,
+    .lobbyDailyGoalLabel, .lobbyDailyGoalProgress, .lobbyDailyGoalReward span, .arenaLobbyDailyBonus,
+    .shopTabLabel, .leaderboardSeasonMeta strong, .leaderboardStandingScope, .tierBadge span,
+    .profileHoverIdentityName, .profileHoverRankValue, .profileHoverStatValue,
+    .historyHighlightStat, .historyRowMarker, .historyModeBadge, .historyTrajectoryLegend button,
+    .helpMissionIndex, .helpPowerupMeta, .helpPowerupMetaLevel, .helpFlowIndex, .rankTierRange,
+    .helpArmoryLink, .quickStartStreak small
+) {
+    font-weight: 600 !important;
+}
+
+/* Glows and drop shadows on small chrome text and badges. */
+:is(
+    .powerupSlotBadge, .gameProgressValue, .profileInstrumentTag, .profileReceiptMode, .profileStampOutcome,
+    .leaderboardPodiumRating small, .leaderboardStandingTierBadge span, .leaderboardYouBadge,
+    .historyTrajectoryDelta, .historyTrendStatValue, .lobbyModeBriefStat b, .shopActionPrice
+) {
+    text-shadow: none !important;
+}
+
+/* Page titles: keep the uppercase display face and the ink outline, drop the gradient fill and the gold halo. */
+.commandHeaderTitle, .uiSceneTitle, .authTitle {
+    background: none !important;
+    color: #ffc94a !important;
+    -webkit-text-fill-color: currentColor !important;
+    filter: drop-shadow(0 3px 0 #040912) !important;
+}
+
+/* Profile attributes: flat off-white figures instead of chrome gradient text. */
+.profileAttributes .profilePanelHeading h2,
+.profileAttributes .profileAttributeValue {
+    background: none !important;
+    color: #f2f5f7 !important;
+    -webkit-text-fill-color: currentColor !important;
+    filter: drop-shadow(0 2px 0 #040912) !important;
+}
+
+/* Decorative loops: the floating login mark and the spinning lobby orbit hold still. */
+.authTitleMark { animation: none !important; }
+.lobbyStageOrbit { animation: none !important; }
+
+/* Stragglers with more specific rules upstream. */
+.shopGrid .shopItemCard .shopItemRarity { letter-spacing: 0 !important; text-transform: none !important; text-shadow: none !important; }
+.historyPage .secondaryButton { text-transform: none !important; letter-spacing: 0 !important; }
+:is(.lobbyStageEdit, .helpRulebook summary, .faqQuestion, .helpTable td) { font-weight: 600 !important; }
+
+/* Sentence-case eyebrows read smaller than caps at the same size, so they step up from 11px to 12px. */
+:is(.commandHeaderEyebrow, .arenaLobbyKicker, .historyHighlightEyebrow, .leaderboardSectionEyebrow,
+    .helpSectionEyebrow, .historyTrendLabel) { font-size: 12px !important; }

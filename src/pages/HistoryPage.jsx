@@ -363,7 +363,7 @@ export default function HistoryPage({
 
     if (historySnapshot.latestRound) {
       cards.push({
-        eyebrow: "Latest Run",
+        eyebrow: "Latest run",
         title: `${getModeLabelFromHistoryEntry(historySnapshot.latestRound)} round`,
         value: `${formatNumber(historySnapshot.latestRound.score)} score`,
         meta: getPlayedAtLabel(historySnapshot.latestRound),
@@ -393,7 +393,7 @@ export default function HistoryPage({
 
     if (historySnapshot.bestScoreRound && !isLatestAlsoPeak) {
       cards.push({
-        eyebrow: "Peak Score",
+        eyebrow: "Peak score",
         title: historySnapshot.bestScoreRound.loadoutSnapshot?.loadoutName || "Saved loadout",
         value: `${formatNumber(historySnapshot.bestScoreRound.score)} score`,
         meta: `${getModeLabelFromHistoryEntry(historySnapshot.bestScoreRound)} on ${getPlayedAtLabel(historySnapshot.bestScoreRound)}`,
@@ -408,7 +408,7 @@ export default function HistoryPage({
 
     if (historySnapshot.bestRankGainRound && historySnapshot.bestRankGain > 0) {
       cards.push({
-        eyebrow: "Ranked Surge",
+        eyebrow: "Ranked surge",
         title: historySnapshot.bestRankGainRound.loadoutSnapshot?.loadoutName || "Ranked push",
         value: `${formatRankDelta(historySnapshot.bestRankGainRound.rankDelta)} RR`,
         meta: getPlayedAtLabel(historySnapshot.bestRankGainRound),
@@ -421,7 +421,7 @@ export default function HistoryPage({
       })
     } else if (historySnapshot.cleanestRound) {
       cards.push({
-        eyebrow: "Accuracy Highlight",
+        eyebrow: "Accuracy highlight",
         title: historySnapshot.cleanestRound.loadoutSnapshot?.loadoutName || "Sharpest round",
         value: formatPercent(historySnapshot.cleanestRound.accuracyPercent),
         meta: `${getModeLabelFromHistoryEntry(historySnapshot.cleanestRound)} on ${getPlayedAtLabel(historySnapshot.cleanestRound)}`,
@@ -500,7 +500,7 @@ export default function HistoryPage({
 
             <section className="historyLogSection" aria-label="Full match log">
               <div className="historySectionHeader">
-                <h2 className="historySectionTitle">Full Log</h2>
+                <h2 className="historySectionTitle">Full log</h2>
               </div>
 
               <div className="historyTableWrap">
@@ -515,7 +515,7 @@ export default function HistoryPage({
                       <th className="historyNumericColumn">Accuracy</th>
                       <th className="historyNumericColumn">Coins</th>
                       <th className="historyNumericColumn">XP</th>
-                      <th className="historyNumericColumn">Rank Result</th>
+                      <th className="historyNumericColumn">Rank result</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -597,13 +597,13 @@ export default function HistoryPage({
                 </p>
                 <div className="historyTrendStats">
                   <span className="historyTrendStat">
-                    <span className="historyTrendStatLabel">Avg Score</span>
+                    <span className="historyTrendStatLabel">Avg score</span>
                     <strong className="historyTrendStatValue">
                       {formatNumber(historySnapshot.recentAverageScore)}
                     </strong>
                   </span>
                   <span className="historyTrendStat">
-                    <span className="historyTrendStatLabel">Avg Accuracy</span>
+                    <span className="historyTrendStatLabel">Avg accuracy</span>
                     <strong className="historyTrendStatValue">
                       {formatPercent(historySnapshot.recentAccuracyPercent)}
                     </strong>
