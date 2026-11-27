@@ -12,9 +12,9 @@ const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("// Saves only the preferences"))
   .replace("export ", "")
 
-async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {} } = {}) {
+async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {}, clientReaction = {} } = {}) {
   const trace = [], writes = [], headers = {}
-  let handler, saveInputs, simulatedLevel, seasonInputs, stats = 0
+  let handler, saveInputs, savedHistoryEntry, simulatedLevel, seasonInputs, stats = 0
   const locked = { coins: 990, xp: 990, mmr: 400, rankSystemVersion: RANK_SYSTEM_VERSION,
     placementMatchesPlayed: 10, demotionProtectionRounds: 0 }
   const connection = {
@@ -30,6 +30,7 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     performance, console: { error: () => {} },
     app: { post: (_path, _auth, _limiter, fn) => { handler = fn } }, requireAuth: null, roundRateLimiter: null,
     JWT_SECRET: "test", ROUND_SUBMIT_CLOCK_SLACK_MS: 0, MAX_COINS: 1000, MAX_XP: 1000, MAX_MMR: 1000,
+    MAX_STORED_REACTION_MS: 2_147_483_647,
     findUserById: async () => { trace.push("identity"); return { id: 7, username: "private-user" } },
     getDifficultyById: id => ({ id, allowsRankProgression: ranked }),
     verifyRoundToken: () => ({ valid: true, seed: 42, roundId: "private-token", issuedAtMs: 0, challengeId: 11 }),
@@ -39,8 +40,7 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     getTokenlessGeometrySeed: () => 42,
     simulateRound: (_events, _mode, options) => { trace.push("simulate"); simulatedLevel = options.playerLevel;
       return { valid: !invalid, reason: "invalid events", hits: 1, misses: 0, score: 5, bestStreak: 1,
-        bullseyes: 0, goldHits: 0, loadoutSnapshot: null } },
-    sanitizeReactionMs: () => null,
+        bullseyes: 0, goldHits: 0, loadoutSnapshot: null, avgReactionMs: 230, bestReactionMs: 230 } },
     calculateRoundRewards: () => ({ earnedCoins: 20, earnedXp: 20, progressionMode: ranked ? "ranked" : "non_ranked",
       baseRankDelta: 10, placementMatchScore: 20, allowsRankProgression: ranked }),
     pool: { getConnection: async () => connection },
@@ -50,7 +50,11 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     getTodaysDailyGoalRounds: async () => ({ dayKey: null, rounds: [] }),
     sumDailyGoalRewards: () => ({ coins: 0, xp: 0 }),
     backfillLifetimeStatsFromHistory: async () => trace.push("backfill"),
-    insertRoundHistoryEntry: async (_connection, _id, entry) => { trace.push("history"); return { ...entry, ...savedTimestamp } },
+    insertRoundHistoryEntry: async (_connection, _id, entry) => {
+      trace.push("history")
+      savedHistoryEntry = { ...entry, ...savedTimestamp }
+      return savedHistoryEntry
+    },
     getLifetimeStatsRow: async () => ({}), mapLifetimeStatsRow: () => ({}),
     applyRoundToLifetimeStats: () => ({}), persistLifetimeStats: async () => { stats++ },
     buildAchievementStatsFromLifetime: () => ({}), evaluateAchievements: () => [], getUnlockedAchievementIds: () => [], addUnlockedAchievements: async () => {},
@@ -66,9 +70,9 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
   vm.runInNewContext(route, ctx)
   const response = { statusCode: 200, status(code) { this.statusCode = code; return this },
     setHeader: (name, value) => { headers[name] = value }, json(body) { this.body = body; return this } }
-  await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0 }], roundToken: token ? "private-token" : null } }, response)
+  await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0 }], roundToken: token ? "private-token" : null, ...clientReaction } }, response)
   assert.match(headers["Server-Timing"], /^context;dur=\d+\.\d{2}, simulate;dur=\d+\.\d{2}, save;dur=\d+\.\d{2}, followups;dur=\d+\.\d{2}, progress;dur=\d+\.\d{2}, total;dur=\d+\.\d{2}$/)
-  return { trace, writes, response, saveInputs, simulatedLevel, seasonInputs, stats }
+  return { trace, writes, response, saveInputs, savedHistoryEntry, simulatedLevel, seasonInputs, stats }
 }
 
 test("season attribution prefers the committed DB timestamp across a rollover", async () => {
@@ -103,6 +107,15 @@ test("invalid simulation never begins a save or claims a token", async () => {
   assert.deepEqual(h.trace, ["identity", "context", "simulate"])
   assert.equal(h.response.statusCode, 400)
   assert.equal(h.writes.length, 0)
+})
+
+test("round completion saves the simulation's reaction times and ignores client values", async () => {
+  const h = await run({ clientReaction: { avgReactionMs: 1, bestReactionMs: 0 } })
+  assert.equal(h.response.statusCode, 200)
+  assert.equal(h.savedHistoryEntry.avgReactionMs, 230)
+  assert.equal(h.savedHistoryEntry.bestReactionMs, 230)
+  const verifiedWrite = h.writes.find(({ sql }) => sql.includes("verified_best_reaction_ms"))
+  assert.deepEqual([...verifiedWrite.params], [230, 7])
 })
 
 test("duplicate token rolls back before paying or writing history", async () => {

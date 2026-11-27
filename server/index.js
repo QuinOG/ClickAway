@@ -624,18 +624,9 @@ app.post("/api/shop/equip", requireAuth, async (request, response) => {
   }
 })
 
-// Reaction metrics are client-measured (they depend on button spawn times the
-// server cannot reconstruct yet), so they are display-only stats: sanitized to
-// plausible bounds and never fed into rewards or rank.
-const MAX_REACTION_MS = 60_000
+// Untimed tokenless rounds can have timestamps beyond the range of a PostgreSQL int.
+const MAX_STORED_REACTION_MS = 2_147_483_647
 const ROUND_SUBMIT_CLOCK_SLACK_MS = 5_000
-
-function sanitizeReactionMs(value) {
-  if (value === null || value === undefined || value === "") return null
-  const n = Number(value)
-  if (!Number.isFinite(n) || n < 0) return null
-  return Math.min(MAX_REACTION_MS, Math.round(n))
-}
 
 app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, response) => {
   const modeId = String(request.body?.modeId || "")
@@ -795,9 +786,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       }
     }
 
-    const { hits, misses, score, bestStreak, bullseyes, goldHits } = simulation
-    const avgReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.avgReactionMs) : null
-    const bestReactionMs = hits > 0 ? sanitizeReactionMs(request.body?.bestReactionMs) : null
+    const { hits, misses, score, bestStreak, bullseyes, goldHits, avgReactionMs, bestReactionMs } = simulation
 
     const calculatedRewards = calculateRoundRewards({
       modeId,
@@ -827,8 +816,8 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
       hits,
       misses,
       bestStreak,
-      avgReactionMs,
-      bestReactionMs,
+      avgReactionMs: avgReactionMs === null ? null : Math.min(avgReactionMs, MAX_STORED_REACTION_MS),
+      bestReactionMs: bestReactionMs === null ? null : Math.min(bestReactionMs, MAX_STORED_REACTION_MS),
       coinsEarned: earnedCoins,
       xpEarned: earnedXp,
       rankDelta: estimatedRankOutcome.appliedRankDelta,

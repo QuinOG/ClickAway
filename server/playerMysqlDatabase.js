@@ -277,6 +277,7 @@ export async function initializeSchema() {
   )`)
 
   await addColumnIfMissing("user_lifetime_stats", "drill_stats_json", "jsonb DEFAULT NULL")
+  await addColumnIfMissing("user_lifetime_stats", "verified_best_reaction_ms", "int DEFAULT NULL")
 
   await pool.query(`CREATE TABLE IF NOT EXISTS user_loadout_stats (
     user_id bigint NOT NULL,
@@ -1676,9 +1677,9 @@ async function readRankedLeaderboardRows(connection, {
   const normalizedPage = normalizePaginationPage(page)
   const normalizedSearch = String(search || "").trim().toLowerCase()
   const orderClause = buildLeaderboardOrderClause(normalizedBoard)
-  const reactionFilter = normalizedBoard === LEADERBOARD_BOARDS.REACTION
-    ? "AND ls.best_reaction_ms IS NOT NULL"
-    : ""
+  const isReactionBoard = normalizedBoard === LEADERBOARD_BOARDS.REACTION
+  const reactionFilter = isReactionBoard ? "AND ls.verified_best_reaction_ms IS NOT NULL" : ""
+  const reactionColumn = isReactionBoard ? "ls.verified_best_reaction_ms" : "ls.best_reaction_ms"
 
   const baseCte = `
     WITH ranked_players AS (
@@ -1696,7 +1697,7 @@ async function readRankedLeaderboardRows(connection, {
             THEN ROUND(100.0 * ls.total_hits / (ls.total_hits + ls.total_misses))
           ELSE 0
         END AS accuracyPercent,
-        ls.best_reaction_ms AS bestReactionMs
+        ${reactionColumn} AS bestReactionMs
       FROM users u
       LEFT JOIN user_lifetime_stats ls
         ON ls.user_id = u.id
@@ -2063,6 +2064,18 @@ export async function completeUserRound({
         }
       }
       await persistLifetimeStats(connection, userId, nextLifetimeStats)
+
+      // The demo seeder also counts rounds toward stats. Only token-backed
+      // completions contribute to the Reaction ladder.
+      const bestReactionMs = insertedHistoryEntry?.bestReactionMs ?? null
+      if (roundTokenId && bestReactionMs !== null) {
+        await connection.execute(
+          `UPDATE user_lifetime_stats
+           SET verified_best_reaction_ms = LEAST(verified_best_reaction_ms, ?)
+           WHERE user_id = ?`,
+          [bestReactionMs, userId]
+        )
+      }
 
       const loadoutId = committedHistoryEntry?.loadoutSnapshot?.loadoutId
       if (loadoutId) {

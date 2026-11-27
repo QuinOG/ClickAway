@@ -227,6 +227,9 @@ export function replayRoundEvents(roundRules, events = [], { seed = null, arenaW
     geometry = createGeometrySimulation({ roundRules, ...arena, rng: createSeededRng(seed), goldRng: createSeededRng(deriveGoldSeed(seed)) })
   }
   const simulation = createRoundSimulation(roundRules)
+  let targetShownAtMs = 0
+  let totalReactionMs = 0
+  let bestReactionMs = null
 
   for (const event of events) {
     if (event.type === ROUND_EVENT_TYPES.HIT) {
@@ -245,6 +248,10 @@ export function replayRoundEvents(roundRules, events = [], { seed = null, arenaW
         geometry.applyHit(event.t)
       }
       simulation.applyHit(event.t, { bullseye, gold })
+      const reactionMs = event.t - targetShownAtMs
+      totalReactionMs += reactionMs
+      bestReactionMs = bestReactionMs === null ? reactionMs : Math.min(bestReactionMs, reactionMs)
+      targetShownAtMs = event.t
     } else if (event.type === ROUND_EVENT_TYPES.MISS) {
       if (geometry && typeof event.x === "number" && typeof event.y === "number" && geometry.pointIsInsideTarget(event.x, event.y)) {
         return { valid: false, reason: "Miss click was inside the target." }
@@ -254,6 +261,8 @@ export function replayRoundEvents(roundRules, events = [], { seed = null, arenaW
     } else if (event.type === ROUND_EVENT_TYPES.POWERUP) {
       const outcome = simulation.applyPowerup(event.powerupId, event.t)
       if (outcome.applied) geometry?.applyPowerup(event.powerupId, event.t)
+      // Magnet moves the active target immediately. Misses leave it in place.
+      if (outcome.applied && outcome.effectType === "magnet_center") targetShownAtMs = event.t
       if (!outcome.applied && outcome.reason !== "untimed_round") {
         return {
           valid: false,
@@ -267,5 +276,11 @@ export function replayRoundEvents(roundRules, events = [], { seed = null, arenaW
     }
   }
 
-  return { valid: true, ...simulation.getSummary() }
+  const summary = simulation.getSummary()
+  return {
+    valid: true,
+    ...summary,
+    avgReactionMs: summary.hits > 0 ? Math.round(totalReactionMs / summary.hits) : null,
+    bestReactionMs,
+  }
 }
