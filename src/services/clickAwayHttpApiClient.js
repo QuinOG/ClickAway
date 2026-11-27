@@ -237,6 +237,11 @@ export async function submitRound({
     })
     return response.data
   } catch (error) {
-    throw new Error(getErrorMessage(error, "Unable to submit round."))
+    const status = error?.response?.status ?? null
+    const nextError = new Error(getErrorMessage(error, "Unable to submit round."))
+    nextError.status = status
+    nextError.isNetworkError = !error?.response
+    nextError.retryable = !error?.response || (Number.isInteger(status) && status >= 500)
+    throw nextError
   }
 }

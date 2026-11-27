@@ -5,6 +5,8 @@ import test, { after, before } from "node:test"
 
 import { AUTH_COOKIE_NAME } from "../../server/auth.js"
 import { getDifficultyById } from "../../src/constants/gameModesConfig.js"
+import { createGeometrySimulation } from "../../src/game/engine/roundGeometry.js"
+import { createSeededRng } from "../../src/game/engine/seededRng.js"
 import { PLACEMENT_MATCH_COUNT, RANK_SYSTEM_VERSION } from "../../src/utils/rankUtils.js"
 import { startTestDatabase } from "./testDatabase.js"
 
@@ -152,7 +154,7 @@ test("PUT /api/progress ignores client-supplied coins", async (t) => {
   assert.equal(me.data.progress.coins, progress.coins)
 })
 
-test("a ranked token saves one history entry and rejects reuse", async (t) => {
+test("a ranked token saves one history entry and replays alreadySaved on duplicate submit", async (t) => {
   const request = await startTestApp(t)
   const { user, cookie, progress } = await signup(request, "RankedPlayer")
   const modeId = "hard"
@@ -188,11 +190,19 @@ test("a ranked token saves one history entry and rejects reuse", async (t) => {
   assert.deepEqual(pending, [])
 
   const duplicate = await request("/api/round/complete", submission)
-  assert.equal(duplicate.status, 409, JSON.stringify(duplicate.data))
+  assert.equal(duplicate.status, 200, JSON.stringify(duplicate.data))
+  assert.equal(duplicate.data.alreadySaved, true)
+  assert.equal(duplicate.data.earnedCoins, complete.data.earnedCoins)
+  assert.equal(duplicate.data.earnedXp, complete.data.earnedXp)
+  assert.equal(duplicate.data.rankDelta, complete.data.rankDelta)
+  assert.equal(duplicate.data.historyEntry.modeId, modeId)
+  assert.equal(duplicate.data.historyEntry.outcome, "completed")
   const state = await request("/api/player/state", { cookie })
   assert.equal(state.status, 200, JSON.stringify(state.data))
   assert.equal(state.data.progress.rankMmr, complete.data.progress.rankMmr)
   assert.deepEqual(state.data.progress.rankedState, complete.data.progress.rankedState)
+  assert.equal(state.data.progress.coins, complete.data.progress.coins)
+  assert.equal(state.data.progress.levelXp, complete.data.progress.levelXp)
 
   const history = await request("/api/history", { cookie })
   assert.equal(history.status, 200, JSON.stringify(history.data))
@@ -201,6 +211,107 @@ test("a ranked token saves one history entry and rejects reuse", async (t) => {
   assert.equal(history.data.entries[0].modeId, modeId)
   assert.equal(history.data.entries[0].misses, 1)
   assert.equal(history.data.entries[0].outcome, "completed")
+})
+
+test("re-submitting a completed reward-bearing round returns alreadySaved and awards coins once", async (t) => {
+  const request = await startTestApp(t)
+  const { cookie, progress: initialProgress } = await signup(request, "RecoveryPlayer")
+  const modeId = "normal"
+  const mode = getDifficultyById(modeId)
+  t.mock.timers.enable({ apis: ["Date"] })
+
+  const start = await request("/api/round/start", {
+    method: "POST",
+    cookie,
+    body: { modeId },
+  })
+  assert.equal(start.status, 200, JSON.stringify(start.data))
+  const { roundToken, seed } = start.data
+
+  const geometry = createGeometrySimulation({
+    roundRules: mode,
+    seed,
+    arenaWidth: 640,
+    arenaHeight: 400,
+    rng: createSeededRng(seed),
+  })
+  const events = []
+  for (let i = 0; i < 6; i += 1) {
+    const { position, buttonSize } = geometry.getState()
+    const tMs = 250 + i * 250
+    events.push({ type: "hit", t: tMs, x: position.x + buttonSize / 2, y: position.y + buttonSize / 2 })
+    geometry.applyHit(tMs)
+  }
+
+  t.mock.timers.tick(mode.durationSeconds * 1000)
+  const submission = {
+    method: "POST",
+    cookie,
+    body: {
+      modeId,
+      roundToken,
+      arenaWidth: 640,
+      arenaHeight: 400,
+      events,
+    },
+  }
+
+  const first = await request("/api/round/complete", submission)
+  assert.equal(first.status, 200, JSON.stringify(first.data))
+  assert.ok(first.data.earnedCoins > 0, "first round should earn coins")
+  assert.ok(first.data.earnedXp > 0, "first round should earn XP")
+  assert.equal(first.data.progress.coins, initialProgress.coins + first.data.earnedCoins)
+
+  const second = await request("/api/round/complete", submission)
+  assert.equal(second.status, 200, JSON.stringify(second.data))
+  assert.equal(second.data.alreadySaved, true)
+  assert.equal(second.data.earnedCoins, first.data.earnedCoins)
+  assert.equal(second.data.earnedXp, first.data.earnedXp)
+  assert.equal(second.data.rankDelta, first.data.rankDelta)
+  assert.equal(second.data.historyEntry.hits, 6)
+  assert.equal(second.data.progress.coins, first.data.progress.coins)
+  assert.equal(second.data.progress.levelXp, first.data.progress.levelXp)
+  assert.equal(second.data.progress.totalRoundCount, 1)
+})
+
+test("re-submitting a consumed token without a recorded history row still returns 409", async (t) => {
+  const request = await startTestApp(t)
+  const { user, cookie } = await signup(request, "LegacyTokenPlayer")
+  const modeId = "normal"
+  const mode = getDifficultyById(modeId)
+  t.mock.timers.enable({ apis: ["Date"] })
+
+  const start = await request("/api/round/start", {
+    method: "POST",
+    cookie,
+    body: { modeId },
+  })
+  assert.equal(start.status, 200, JSON.stringify(start.data))
+  const { roundToken } = start.data
+
+  t.mock.timers.tick(mode.durationSeconds * 1000)
+  const submission = {
+    method: "POST",
+    cookie,
+    body: {
+      modeId,
+      roundToken,
+      arenaWidth: 640,
+      arenaHeight: 400,
+      events: [{ type: "miss", t: 120, x: 20, y: 20 }],
+    },
+  }
+  const first = await request("/api/round/complete", submission)
+  assert.equal(first.status, 200, JSON.stringify(first.data))
+
+  await pool.execute(
+    "UPDATE consumed_round_tokens SET round_history_id = NULL WHERE user_id = ?",
+    [user.id]
+  )
+
+  const second = await request("/api/round/complete", submission)
+  assert.equal(second.status, 409, JSON.stringify(second.data))
+  assert.equal(second.data.error, "This round has already been submitted.")
 })
 
 test("starting another ranked round forfeits the first and leaves one pending round", async (t) => {

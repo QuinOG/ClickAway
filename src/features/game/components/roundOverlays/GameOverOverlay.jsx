@@ -169,6 +169,8 @@ export function GameOverOverlay({
   placementLabel = null,
   roundSaveStatus = "idle",
   roundSaveError = "",
+  roundSaveRetryable = false,
+  onRetryRoundSave = null,
   roundSaveNote = "",
   playerLevel = 1,
   playerXpIntoLevel = 0,
@@ -283,7 +285,16 @@ export function GameOverOverlay({
       ) : null}
       {isPracticeMode ? <p className="gameOverPracticeNote">{isRoundSaved ? "Practice result recorded." : "Practice round complete."} No coins, XP, or RR earned.</p> : null}
       {(isRoundSaved || roundSaveStatus === "idle") && roundSaveNote ? <p className="gameOverPracticeNote" role={isRoundSaved ? "status" : undefined}>{roundSaveNote}</p> : null}
-      {roundSaveStatus === "failed" ? <p className="gameOverSaveStatus isFailed" role="alert">This round couldn't be saved, so its rewards weren't added.{roundSaveError ? ` ${roundSaveError}` : ""}</p> : null}
+      {roundSaveStatus === "failed" ? (
+        <p className="gameOverSaveStatus isFailed" role="alert">
+          {roundSaveRetryable && onRetryRoundSave
+            ? "This round hasn't been confirmed yet. Check your connection and try again."
+            : `This round couldn't be saved, so its rewards weren't added.${roundSaveError ? ` ${roundSaveError}` : ""}`}
+          {roundSaveRetryable && onRetryRoundSave ? (
+            <> <button className="resultSecondary" type="button" onClick={onRetryRoundSave}>Try saving again</button></>
+          ) : null}
+        </p>
+      ) : null}
       <div className="gameOverActions">
         <p className="gameOverNextGoal" data-goal={nextRoundGoal?.kind}>Next round · {nextRoundGoal?.text || `Push for ${formatNumber(Math.max(score, bestScore) + 1)} points`}</p>
         <button ref={primaryActionRef} className="primaryButton primaryButton-lg" type="button" onClick={onPrimaryAction}>{primaryActionLabel}</button>

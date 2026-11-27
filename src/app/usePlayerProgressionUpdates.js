@@ -4,6 +4,15 @@ import { submitRound } from "../services/clickAwayHttpApiClient.js"
 import { applyProgressResponse, beginProgressRequest, settleProgressMutation } from "./progressResponseGuard.js"
 import { normalizeDailyGoalRewards } from "../utils/dailyGoals.js"
 
+function isRetryableRoundError(error) {
+  if (typeof error?.retryable === "boolean") return error.retryable
+  const status = error?.status ?? error?.response?.status ?? null
+  if (status !== null && status !== undefined) {
+    return Number(status) >= 500
+  }
+  return Boolean(error?.isNetworkError || (error && !error.response && error.status === undefined))
+}
+
 export function usePlayerProgressionUpdates({
   isAuthed,
   applyProgress,
@@ -46,7 +55,9 @@ export function usePlayerProgressionUpdates({
         const applied = await applyProgressResponse(ticket, response.progress, applyProgress)
         return {
           ok: true,
-          // Missing from older servers: Results then keeps the client's own count.
+          alreadySaved: Boolean(response.alreadySaved),
+          historyEntry: response.historyEntry ?? null,
+          // Missing from older servers and alreadySaved replays: Results then keeps the client's own count.
           goldHits: Number.isFinite(Number(response.goldHits)) && response.goldHits !== null ? Number(response.goldHits) : null,
           bullseyes: Number.isFinite(Number(response.bullseyes)) && response.bullseyes !== null ? Number(response.bullseyes) : null,
           earnedCoins: response.earnedCoins,
@@ -62,7 +73,12 @@ export function usePlayerProgressionUpdates({
         }
       } catch (error) {
         console.error("Unable to submit round:", error)
-        return { ok: false, error: error?.message || "Couldn't reach the server." }
+        const retryable = Boolean(roundToken) && isRetryableRoundError(error)
+        return {
+          ok: false,
+          error: error?.message || "Couldn't reach the server.",
+          ...(retryable ? { retryable: true } : {}),
+        }
       } finally {
         if (mutationSucceeded) settleProgressMutation(ticket, applyProgress)
       }
