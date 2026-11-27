@@ -407,7 +407,8 @@ export default function App() {
           element={
             <ProtectedRoute isAuthed={isAuthed}>
               <ProfilePage
-                onLogout={handleLogout}
+                onLogout={() => handleLogout()}
+                onLogoutAll={() => handleLogout(true)}
                 playerName={playerUsername}
                 coins={coins}
                 levelProgress={levelProgress}

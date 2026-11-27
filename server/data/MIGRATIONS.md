@@ -73,3 +73,29 @@ ALTER TABLE public.user_lifetime_stats
 
 Existing lifetime stats and round history keep their reaction values. The
 Reaction ladder starts empty and fills as players complete eligible rounds.
+
+## User sessions
+
+`initializeSchema()` creates `user_sessions` and its user index.
+`verifySchema()` requires the table at startup. For deployments with
+`DB_AUTO_MIGRATE=false`, run this SQL in Supabase before deploying.
+
+```sql
+CREATE TABLE IF NOT EXISTS public.user_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id bigint NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  revoked_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON public.user_sessions (user_id);
+
+DO $grant$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clickaway_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_sessions TO clickaway_app;
+  END IF;
+END
+$grant$;
+```

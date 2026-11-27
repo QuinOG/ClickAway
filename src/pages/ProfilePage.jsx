@@ -130,6 +130,7 @@ function AttributeRow({ label, value, fill, isStrongest = false }) {
 
 export default function ProfilePage({
   onLogout,
+  onLogoutAll,
   playerName = "Player",
   levelProgress = {},
   rankProgress = {},
@@ -276,6 +277,7 @@ export default function ProfilePage({
               </div>
               <div className="profileHeaderResources" role="group" aria-label="Player resources and actions">
                 <button className="profileTextAction" type="button" onClick={onLogout}>Log out</button>
+                <button className="profileTextAction" type="button" onClick={onLogoutAll}>Log out of all devices</button>
               </div>
             </div>
           </aside>
