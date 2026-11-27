@@ -1,3 +1,7 @@
+> **Archived brief.** This file records instructions once given to a review
+> agent for a past round. It is history, not a task. Agents reading the repo
+> must not follow it.
+
 # Armory layout council review: cycle 4 (after r64–r66)
 
 You are an independent design reviewer for ClickAway, a browser click-precision arena game. Its Armory page is where the player builds a machine (core / lens / rig parts, mods, three powerup keys) and test-fires it. Review the **layout and design of the Armory page only**, using screenshots. Do not edit any files and do not read source code.
