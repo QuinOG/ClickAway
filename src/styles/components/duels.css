@@ -46,6 +46,7 @@
 .duelAction .primaryButton { min-height: 54px; font-size: 19px; }
 .duelStatus { color: var(--duel-muted); font: 400 16px var(--ca-font-display); letter-spacing: 0.04em; text-transform: uppercase; }
 .duelStatus:empty { display: none; }
+.duelRule { color: var(--duel-muted); font-size: 13px; }
 
 /* Loading, empty and error plates */
 .duelNotice { display: flex; align-items: center; justify-content: center; gap: 20px; min-height: 130px; text-align: left; }

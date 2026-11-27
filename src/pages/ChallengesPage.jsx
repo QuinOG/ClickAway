@@ -119,9 +119,12 @@ function ChallengeCard({ challenge, currentUserId, currentUsername, onRespond, o
           </>
         ) : null}
         {isIncoming && challenge.status === "accepted" ? (
-          <button type="button" className="primaryButton" onClick={() => onRaceGhost(challenge)}>
-            <Play weight="fill" aria-hidden="true" /> Race Ghost
-          </button>
+          <>
+            <button type="button" className="primaryButton" onClick={() => onRaceGhost(challenge)}>
+              <Play weight="fill" aria-hidden="true" /> Race Ghost
+            </button>
+            <span className="duelRule">You get one race. Leaving counts as a loss.</span>
+          </>
         ) : <span className="duelStatus">{status}</span>}
       </div>
     </article>

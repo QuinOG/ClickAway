@@ -47,6 +47,7 @@ import {
   completeChallenge,
   respondToChallenge,
   startChallengeRace,
+  reopenChallengeRace,
   saveUserProgress,
   updateUserPassword,
   updateUserRole,
@@ -931,6 +932,15 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     } catch (error) {
       console.error("Round saved, but a follow-up write failed:", error)
       followUpError = "Your round was saved, but its replay or duel result couldn't be stored."
+      // completeChallenge didn't run, so the duel would expire as a loss.
+      if (roundTokenChallengeId && !completedChallenge) {
+        try {
+          await reopenChallengeRace(roundTokenChallengeId, user.id)
+          followUpError = "Your round was saved, but the duel result couldn't be stored. You can race this duel again."
+        } catch (reopenError) {
+          console.error("Reopening the duel race failed:", reopenError)
+        }
+      }
     }
 
     // Old replays are housekeeping: a failure here only logs.

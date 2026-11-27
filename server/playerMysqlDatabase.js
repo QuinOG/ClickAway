@@ -2649,6 +2649,17 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
   return rows.map(mapChallengeRow).filter(Boolean)
 }
 
+// The race was played but its result couldn't be stored, so it can't settle
+// the duel. Reopen the duel instead of letting it expire as a loss.
+export async function reopenChallengeRace(challengeId, userId) {
+  await pool.execute(
+    `UPDATE challenges
+     SET status = 'accepted', racing_started_at = NULL
+     WHERE id = ? AND opponent_user_id = ? AND status = 'racing'`,
+    [challengeId, userId]
+  )
+}
+
 // A duel gets one race. The first start moves it from accepted to racing; a
 // restart within a few seconds (a lost response, a quick retry) is still
 // allowed, but a race can't be abandoned and replayed until it is won.

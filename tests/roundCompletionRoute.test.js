@@ -14,7 +14,7 @@ const save = database.slice(database.indexOf("export async function completeUser
 
 async function run({ pruneFails = false, token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {} } = {}) {
   const trace = [], writes = [], headers = {}
-  let handler, saveInputs, simulatedLevel, seasonInputs, stats = 0, replayInput, prunes = []
+  let handler, saveInputs, simulatedLevel, seasonInputs, stats = 0, replayInput, prunes = [], reopens = []
   const locked = { coins: 990, xp: 990, mmr: 400, rankSystemVersion: RANK_SYSTEM_VERSION,
     placementMatchesPlayed: 10, demotionProtectionRounds: 0 }
   const connection = {
@@ -56,6 +56,7 @@ async function run({ pruneFails = false, token = true, duplicate = false, invali
     buildAchievementStatsFromLifetime: () => ({}), evaluateAchievements: () => [], getUnlockedAchievementIds: () => [], addUnlockedAchievements: async () => {},
     insertRoundReplay: async input => { replayInput = input; trace.push("replay"); if (failure === "replay") throw Error("failure"); return { id: 8 } },
     pruneUserReplays: async id => { prunes.push(id); if (pruneFails) throw Error("prune") },
+    reopenChallengeRace: async (id, userId) => { reopens.push([id, userId]) },
     completeChallenge: async () => { trace.push("duel"); return { ok: true, challenge: { id: 11 } } },
     applyUserSeasonProgress: async (_id, inputs) => { seasonInputs = inputs; trace.push("season"); if (failure === "season") throw Error("failure"); return {} },
     findUserProgressByUserId: async () => { trace.push("progress"); if (failure === "progress") throw Error("failure"); return { final: true } },
@@ -69,7 +70,7 @@ async function run({ pruneFails = false, token = true, duplicate = false, invali
     setHeader: (name, value) => { headers[name] = value }, json(body) { this.body = body; return this } }
   await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0, type: "hit", x: 3, y: "no", powerupId: 5, extra: "junk" }], roundToken: token ? "private-token" : null } }, response)
   assert.match(headers["Server-Timing"], /^context;dur=\d+\.\d{2}, simulate;dur=\d+\.\d{2}, save;dur=\d+\.\d{2}, followups;dur=\d+\.\d{2}, progress;dur=\d+\.\d{2}, total;dur=\d+\.\d{2}$/)
-  return { replayInput, prunes, trace, writes, response, saveInputs, simulatedLevel, seasonInputs, stats }
+  return { replayInput, prunes, reopens, trace, writes, response, saveInputs, simulatedLevel, seasonInputs, stats }
 }
 
 test("season attribution prefers the committed DB timestamp across a rollover", async () => {
@@ -142,4 +143,12 @@ test("replay stores only known event fields and old replays are pruned without r
   const failed = await run({ pruneFails: true })
   assert.equal(failed.response.statusCode, 200)
   assert.equal(failed.response.body.followUpError, null)
+})
+
+test("a duel race whose result can't be stored is reopened instead of expiring as a loss", async () => {
+  const failed = await run({ failure: "replay" })
+  assert.deepEqual(failed.reopens, [[11, 7]])
+  assert.match(failed.response.body.followUpError, /race this duel again/)
+  const settled = await run()
+  assert.deepEqual(settled.reopens, [])
 })
