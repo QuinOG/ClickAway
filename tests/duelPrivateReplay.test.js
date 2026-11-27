@@ -12,8 +12,8 @@ function harness(visibility, loadoutSnapshot = { arenaWidth: 600, arenaHeight: 4
   const routes = new Map()
   let writes = 0
   const ctx = { parsePositiveIntId,
-    app: { get: (path, auth, handler) => routes.set(path, handler), post: (path, auth, handler) => routes.set(path, handler) },
-    requireAuth: {}, findUserById: async id => ({ id, username: "Player" }),
+    app: { get: (path, auth, handler) => routes.set(path, handler), post: (path, auth, limiter, handler) => routes.set(path, handler) },
+    requireAuth: {}, challengeCreateLimiter: {}, findUserById: async id => ({ id, username: "Player" }),
     findUserByUsernameForChallenge: async () => ({ id: 2, username: "Rival" }),
     findReplayById: async () => ({ id: 7, userId: 1, modeId: "normal", visibility, loadoutSnapshot }),
     isRaceableReplay,

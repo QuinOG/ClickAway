@@ -13,7 +13,7 @@ import { randomUUID } from "node:crypto"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-import rateLimit from "express-rate-limit"
+import rateLimit, { ipKeyGenerator } from "express-rate-limit"
 
 import pool from "./db/pgPool.js"
 import {
@@ -24,6 +24,7 @@ import {
   verifyAuthToken,
 } from "./auth.js"
 import {
+  ChallengeCapError,
   createUser,
   createUserSession,
   completeUserRound,
@@ -65,7 +66,7 @@ import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
 export function createApp() {
   const app = express()
   app.disable("x-powered-by")
-  // Rate limits key on the client IP. Only trust X-Forwarded-For when a proxy we
+  // IP-based limits rely on the client IP. Only trust X-Forwarded-For when a proxy we
   // control sets it (Railway sets RAILWAY_ENVIRONMENT); otherwise anyone reaching
   // the server directly could rotate that header to dodge the login limit.
   // TRUST_PROXY overrides: a hop count (e.g. "1") or "false".
@@ -104,6 +105,30 @@ export function createApp() {
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: "Too many rounds submitted. Please slow down." },
+  })
+
+  const authenticatedLimitOptions = {
+    keyGenerator: (request) => String(request.auth?.userId ?? ipKeyGenerator(request.ip)),
+    standardHeaders: true,
+    legacyHeaders: false,
+  }
+  const writeRateLimiter = rateLimit({
+    ...authenticatedLimitOptions,
+    windowMs: 60 * 1000,
+    limit: 60,
+    message: { error: "Too many updates. Please slow down." },
+  })
+  const challengeCreateLimiter = rateLimit({
+    ...authenticatedLimitOptions,
+    windowMs: 10 * 60 * 1000,
+    limit: 10,
+    message: { error: "Too many duel invitations. Please try again later." },
+  })
+  const leaderboardRateLimiter = rateLimit({
+    ...authenticatedLimitOptions,
+    windowMs: 60 * 1000,
+    limit: 60,
+    message: { error: "Too many leaderboard requests. Please slow down." },
   })
 
   app.use(cors({
@@ -369,7 +394,7 @@ export function createApp() {
     }
   })
 
-  app.get("/api/leaderboard", requireAuth, async (request, response) => {
+  app.get("/api/leaderboard", requireAuth, leaderboardRateLimiter, async (request, response) => {
     const user = await findUserById(request.auth.userId)
     if (!user) {
       response.status(401).json({ error: "Session is no longer valid." })
@@ -491,7 +516,7 @@ export function createApp() {
     }
   })
 
-  app.post("/api/challenges", requireAuth, async (request, response) => {
+  app.post("/api/challenges", requireAuth, challengeCreateLimiter, async (request, response) => {
     const user = await findUserById(request.auth.userId)
     if (!user) {
       response.status(401).json({ error: "Session is no longer valid." })
@@ -546,15 +571,20 @@ export function createApp() {
         replayId: replay.id,
         modeId: replay.modeId,
         message,
+        enforceOpenCaps: true,
       })
 
       response.json({ challenge })
     } catch (error) {
+      if (error instanceof ChallengeCapError) {
+        response.status(409).json({ error: error.message })
+        return
+      }
       handleRouteError(error, response)
     }
   })
 
-  app.post("/api/challenges/:challengeId/respond", requireAuth, async (request, response) => {
+  app.post("/api/challenges/:challengeId/respond", requireAuth, writeRateLimiter, async (request, response) => {
     const user = await findUserById(request.auth.userId)
     if (!user) {
       response.status(401).json({ error: "Session is no longer valid." })
@@ -610,7 +640,7 @@ export function createApp() {
     }
   })
 
-  app.post("/api/shop/purchase", requireAuth, async (request, response) => {
+  app.post("/api/shop/purchase", requireAuth, writeRateLimiter, async (request, response) => {
     const user = await findUserById(request.auth.userId)
     if (!user) {
       response.status(401).json({ error: "Session is no longer valid." })
@@ -627,7 +657,7 @@ export function createApp() {
     }
   })
 
-  app.post("/api/shop/equip", requireAuth, async (request, response) => {
+  app.post("/api/shop/equip", requireAuth, writeRateLimiter, async (request, response) => {
     const user = await findUserById(request.auth.userId)
     if (!user) {
       response.status(401).json({ error: "Session is no longer valid." })
@@ -973,7 +1003,7 @@ export function createApp() {
     }
   })
 
-  app.put("/api/progress", requireAuth, async (request, response) => {
+  app.put("/api/progress", requireAuth, writeRateLimiter, async (request, response) => {
     const user = await findUserById(request.auth.userId)
     if (!user) {
       response.status(401).json({ error: "Session is no longer valid." })
