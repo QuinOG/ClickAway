@@ -12,7 +12,7 @@
     "test": "npm run test:unit && npm run test:ui",
     "test:unit": "node --test tests/*.test.js",
     "test:ui": "node scripts/run-vitest.mjs",
-    "test:integration": "node --test tests/integration/",
+    "test:integration": "node --test tests/integration/*.test.js",
     "test:browser": "playwright test",
     "test:capture": "node scripts/run-capture.mjs",
     "test:browser:update": "playwright test tests/e2e/visual-cohesion.spec.js --update-snapshots",
