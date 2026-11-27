@@ -14,6 +14,7 @@
     "test:ui": "node scripts/run-vitest.mjs",
     "test:integration": "node --test tests/integration/",
     "test:browser": "playwright test",
+    "test:capture": "node scripts/run-capture.mjs",
     "test:browser:update": "playwright test tests/e2e/visual-cohesion.spec.js --update-snapshots",
     "test:release": "npm run lint && npm run test && npm run test:browser && npm run build",
     "preview": "vite preview"

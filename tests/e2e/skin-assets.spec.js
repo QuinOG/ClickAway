@@ -16,7 +16,9 @@ for (const width of [1440,390]) test(`skin capture ${width}`, async ({page}) => 
  await gotoRoute(page,{path:'/game',heading:'Enter the arena'})
  await page.clock.install(); await page.getByRole('button',{name:/^Start /}).last().click(); await page.clock.runFor(4000)
  await expect(page.locator('.arena .bigCircleButton').first()).toBeVisible()
- await page.screenshot({path:`docs/feature-improvement/shots/round-complete/${process.env.SKIN_PHASE || 'after'}-default-skin${width===390?'-phone':''}.png`})
+ if (process.env.SKIN_PHASE) {
+  await page.screenshot({path:`docs/feature-improvement/shots/round-complete/${process.env.SKIN_PHASE || 'after'}-default-skin${width===390?'-phone':''}.png`})
+ }
  if(process.env.SKIN_PHASE==='after') for(const route of [{path:'/armory',heading:'Armory'},{path:'/shop',heading:'Cosmetic shop'}]) {
  await gotoRoute(page,route); await page.screenshot({path:`docs/feature-improvement/shots/round-complete/after-${route.path.slice(1)}-skins-${width}.png`,fullPage:true})
  }

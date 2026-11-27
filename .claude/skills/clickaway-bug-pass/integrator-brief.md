@@ -11,7 +11,7 @@ You merge one run's work into a single verified branch. Work in the shared check
    - For any DB change, update both startup paths: initializeSchema, plus a numbered migration in server/data/migrations/, verifySchema's table list, migration 011-style grants and server/data/MIGRATIONS.md.
 4. **Verify**, and fix whatever breaks:
    - `npm run lint`, `npm run test:unit`, `npx vitest run --config vitest.config.js` and `npm run build`;
-   - `SHOT_DIR={{OUT_DIR}}/shots npx playwright test tests/e2e/zz-app.spec.js --workers=1`. Any `SKIPPED` line is a failure to fix or explain; the API mocks live in tests/e2e/fixtures.js.
+   - `SHOT_DIR={{OUT_DIR}}/shots npm run test:capture -- tests/e2e/zz-app.spec.js --workers=1`. Any `SKIPPED` line is a failure to fix or explain; the API mocks live in tests/e2e/fixtures.js.
 5. **Write the PR items.** Concatenate every `{{OUT_DIR}}/*-items.md`, add items for the approved plans, and sort them by feature heading. Write the result to `{{OUT_DIR}}/pr-items.md`.
 6. **Report** in `{{OUT_DIR}}/integration.md`:
    - the merged branches and any conflicts and how they were resolved;
