@@ -2248,6 +2248,25 @@ function mapReplayRow(row = {}) {
   }
 }
 
+function mapReplaySummaryRow(row = {}) {
+  if (!row?.id) {
+    return null
+  }
+
+  return {
+    id: Number(row.id),
+    userId: Number(row.userId),
+    username: String(row.username || ""),
+    modeId: String(row.modeId || ""),
+    score: toNonNegativeNumber(row.score, 0),
+    hits: toNonNegativeNumber(row.hits, 0),
+    misses: toNonNegativeNumber(row.misses, 0),
+    bestStreak: toNonNegativeNumber(row.bestStreak, 0),
+    visibility: String(row.visibility || "public"),
+    playedAt: row.playedAt ?? null,
+  }
+}
+
 function mapChallengeRow(row = {}) {
   if (!row?.id) {
     return null
@@ -2413,9 +2432,6 @@ export async function findUserReplays(userId, { limit = 10 } = {}) {
        user_id AS userId,
        username,
        mode_id AS modeId,
-       seed,
-       events_json AS eventsJson,
-       loadout_snapshot_json AS loadoutSnapshotJson,
        score,
        hits,
        misses,
@@ -2431,7 +2447,7 @@ export async function findUserReplays(userId, { limit = 10 } = {}) {
     [userId, normalizedLimit]
   )
 
-  return rows.map(mapReplayRow).filter(Boolean)
+  return rows.map(mapReplaySummaryRow).filter(Boolean)
 }
 
 export async function findUserByUsernameForChallenge(username) {
