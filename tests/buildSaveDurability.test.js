@@ -2,8 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-const source = readFileSync('server/playerMysqlDatabase.js', 'utf8')
-const code = source.slice(source.indexOf('export async function saveUserProgress('), source.indexOf('\nfunction mapSeasonRow(')).replace('export ', '')
+const source = readFileSync('server/db/progress.js', 'utf8')
+const code = source.slice(source.indexOf('export async function saveUserProgress('), source.indexOf('\nexport {')).replace('export ', '')
 test('a committed preference write survives refresh failure; failed writes still roll back', async () => {
   for (const failWrite of [false, true]) {
     const log = []

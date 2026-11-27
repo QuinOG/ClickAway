@@ -5,7 +5,7 @@ import vm from 'node:vm'
 import { applyRankedMatchResult, buildDefaultRankedState, PLACEMENT_MATCH_COUNT } from '../src/utils/rankUtils.js'
 import { applyRoundToLifetimeStats, applyRoundToLoadoutStats } from '../src/utils/lifetimeStatsUtils.js'
 import { buildAchievementStats } from '../src/game/achievements/evaluateAchievements.js'
-const expression = readFileSync('server/playerMysqlDatabase.js', 'utf8').match(/rankedWin: ([^\r\n]+)/)[1].replace(/,$/, '')
+const expression = readFileSync('server/db/rounds.js', 'utf8').match(/rankedWin: ([^\r\n]+)/)[1].replace(/,$/, '')
 test('first, middle, final and reset placements never count as ranked wins; placed wins do', () => {
   for (const played of [0, 1, PLACEMENT_MATCH_COUNT - 1, PLACEMENT_MATCH_COUNT]) for (const delta of [20, -20]) {
     const outcome = applyRankedMatchResult({ currentMmr: 200, currentRankedState: { ...buildDefaultRankedState(), placementMatchesPlayed: played }, hasRankedHistory: played > 0, baseRankDelta: delta, placementMatchScore: 20, allowsRankProgression: true })

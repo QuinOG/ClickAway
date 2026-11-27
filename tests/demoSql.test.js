@@ -18,8 +18,14 @@ import * as shop from "../server/serverShopCatalogIdMappings.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { getSeasonRewardTier } from "../src/utils/seasonUtils.js"
 
-const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
-const section = (start, end) => source.slice(source.indexOf(start), source.indexOf(end)).replaceAll("export ", "")
+const roundsSource = readFileSync("server/db/rounds.js", "utf8")
+const sharedSource = readFileSync("server/db/shared.js", "utf8")
+const seasonsSource = readFileSync("server/db/seasons.js", "utf8")
+const schemaSource = readFileSync("server/db/schema.js", "utf8")
+const progressSource = readFileSync("server/db/progress.js", "utf8")
+const section = (start, end, text = roundsSource) => (
+  end === undefined ? text.slice(text.indexOf(start)) : text.slice(text.indexOf(start), text.indexOf(end))
+).replaceAll("export ", "")
 const plan = buildDemoPlan({ count: 3, days: 5, now: new Date("2026-11-15T12:00:00Z"), duelsTo: "admin" })
 const plain = value => JSON.parse(JSON.stringify(value))
 
@@ -76,14 +82,14 @@ async function runLivePlayer(player, index) {
     findUserById: async () => ({ id: 7, username: player.username }), findUserProgressByUserId: async () => ({}),
   }
   vm.createContext(ctx)
-  vm.runInContext(section("function toNullableNonNegativeNumber", "function normalizeStringList"), ctx)
-  vm.runInContext(section("function normalizeRoundHistoryEntry", "function normalizeProgressInput"), ctx)
-  vm.runInContext(section("const TODAY_UTC_WINDOW", "async function getRoundHistoryCount"), ctx)
-  vm.runInContext(section("async function ensureLifetimeStatsRow", "async function getLoadoutStatsRows"), ctx)
+  vm.runInContext(section("function toNullableNonNegativeNumber", "function normalizeStringList", sharedSource), ctx)
+  vm.runInContext(section("function normalizeRoundHistoryEntry", "function buildHistoryEntry", sharedSource), ctx)
+  vm.runInContext(section("const TODAY_UTC_WINDOW", "async function getRoundHistoryCount", progressSource), ctx)
+  vm.runInContext(section("async function ensureLifetimeStatsRow", "async function getLoadoutStatsRows", progressSource), ctx)
   vm.runInContext(section("async function insertRoundHistoryEntry", "async function persistLoadoutStats"), ctx)
-  vm.runInContext(section("async function addUnlockedAchievements", "export async function findUserByUsername"), ctx)
-  vm.runInContext(section("export async function completeUserRound", "// Saves only the preferences"), ctx)
-  vm.runInContext(section("async function readUserSeasonStats", "export async function insertRoundReplay"), ctx)
+  vm.runInContext(section("async function addUnlockedAchievements", "export async function findRoundHistoryPage"), ctx)
+  vm.runInContext(section("export async function completeUserRound"), ctx)
+  vm.runInContext(section("async function readUserSeasonStats", "\nexport {", seasonsSource), ctx)
   const shopSource = readFileSync("server/playerStateStore.js", "utf8")
   vm.runInContext(shopSource.slice(shopSource.indexOf("export class PlayerStateError")).replaceAll("export ", ""), ctx)
   for (const round of player.rounds) {
@@ -182,8 +188,8 @@ export function checkSql(sql) {
   assert.equal(quote, false)
   assert.equal(depth, 0)
   for (const match of sql.matchAll(/INSERT INTO (\w+) \(([^)]+)\)/g)) {
-    const ddl = source.match(new RegExp(`CREATE TABLE IF NOT EXISTS ${match[1]} \\(([\\s\\S]*?)\\n\\s*\\)`))?.[1] ?? ""
-    const added = [...source.matchAll(new RegExp(`addColumnIfMissing\\("${match[1]}", "([^"]+)"`, "g"))].map(m => m[1])
+    const ddl = schemaSource.match(new RegExp(`CREATE TABLE IF NOT EXISTS ${match[1]} \\(([\\s\\S]*?)\\n\\s*\\)`))?.[1] ?? ""
+    const added = [...schemaSource.matchAll(new RegExp(`addColumnIfMissing\\("${match[1]}", "([^"]+)"`, "g"))].map(m => m[1])
     for (const col of match[2].split(",").map(c => c.trim())) assert.ok(new RegExp(`\\b${col}\\s+(?:bigint|int|varchar|timestamptz|jsonb|boolean)\\b`).test(ddl) || added.includes(col), `${match[1]}.${col}`)
   }
 }
@@ -192,8 +198,8 @@ test("all generated INSERT columns match initializeSchema, statements balance, F
   checkSql(await generateDemoSql(plan))
   if (existsSync("docs/demo-data/demo-players.sql")) checkSql(readFileSync("docs/demo-data/demo-players.sql", "utf8"))
   for (const table of ["round_history", "round_replays", "challenges", "user_collection", "user_lifetime_stats", "user_season_stats", "user_achievement_progress"]) {
-    const start = source.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`)
-    assert.match(source.slice(start, source.indexOf("`)", start)), /REFERENCES users \(id\) ON DELETE CASCADE/)
+    const start = schemaSource.indexOf(`CREATE TABLE IF NOT EXISTS ${table} (`)
+    assert.match(schemaSource.slice(start, schemaSource.indexOf("`)", start)), /REFERENCES users \(id\) ON DELETE CASCADE/)
   }
 })
 

@@ -11,7 +11,7 @@ import {
   RANK_SYSTEM_VERSION,
 } from "../src/utils/rankUtils.js"
 
-const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
+const database = readFileSync("server/db/rounds.js", "utf8")
 const settlement = database.slice(
   database.indexOf("async function settlePendingRankedRounds("),
   database.indexOf("export async function recordPendingRankedRound")
