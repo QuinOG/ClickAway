@@ -216,6 +216,14 @@ export async function initializeSchema() {
     INSERT INTO profile_images (id) VALUES (1),(2),(3),(4),(5),(6),(7) ON CONFLICT (id) DO NOTHING;
   `)
 
+  // Sign-up treats "Alice" and "alice" as the same name; this makes the database agree.
+  // Older data may already hold such a pair, so a failure here must not stop startup.
+  try {
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_key ON users (LOWER(username))`)
+  } catch (error) {
+    console.warn("Could not enforce case-insensitive usernames (existing names differ only by case):", error.message)
+  }
+
   // The achievement catalog is seeded from ACHIEVEMENTS (the single source of truth
   // shared with the frontend) instead of a hand-maintained id list, so the two can
   // never drift out of sync again.
@@ -476,13 +484,6 @@ function normalizeStringList(values = []) {
   )
 }
 
-function normalizeOwnedItemIds(itemIds = []) {
-  return normalizeStringList(itemIds).filter((itemId) => {
-    const catalogItem = getCatalogItemById(itemId)
-    return catalogItem && !catalogItem.builtIn
-  })
-}
-
 function normalizeLoadoutSnapshot(snapshot = {}) {
   const moduleIds = snapshot?.moduleIds ?? {}
   const powerupIds = Array.isArray(snapshot?.powerupIds)
@@ -572,18 +573,9 @@ function normalizeRoundHistoryEntry(entry = {}, index = 0) {
 }
 
 function normalizeProgressInput(record = {}) {
-  const ownedItemIds = normalizeOwnedItemIds(record.ownedItemIds)
-  const ownedItemIdSet = new Set(ownedItemIds)
-  const levelXp = toNonNegativeNumber(record.levelXp, DEFAULT_PROGRESS.levelXp)
-  const normalizedRoundHistory = (Array.isArray(record.roundHistory) ? record.roundHistory : []).map(
-    normalizeRoundHistoryEntry
-  )
-  const migratedRankData = migrateLegacyRankData({
-    rankMmr: record.rankMmr,
-    rankedState: record.rankedState,
-    roundHistory: normalizedRoundHistory,
-  })
-  const level = getLevelProgress(levelXp).level
+  const level = getLevelProgress(
+    toNonNegativeNumber(record.levelXp, DEFAULT_PROGRESS.levelXp)
+  ).level
   const normalizedLoadoutState = normalizeLoadoutState(
     level,
     record.savedLoadouts,
@@ -591,31 +583,8 @@ function normalizeProgressInput(record = {}) {
   )
 
   return {
-    coins: toNonNegativeNumber(record.coins, DEFAULT_PROGRESS.coins),
-    levelXp,
-    rankMmr: migratedRankData.rankMmr,
-    rankedState: migratedRankData.rankedState,
-    ownedItemIds,
-    equippedButtonSkinId: resolveEquippedItemId(
-      record.equippedButtonSkinId,
-      "button_skin",
-      ownedItemIdSet
-    ),
-    equippedArenaThemeId: resolveEquippedItemId(
-      record.equippedArenaThemeId,
-      "arena_theme",
-      ownedItemIdSet
-    ),
-    equippedProfileImageId: resolveEquippedItemId(
-      record.equippedProfileImageId,
-      "profile_image",
-      ownedItemIdSet
-    ),
     activeLoadoutId: normalizedLoadoutState.activeLoadoutId,
     savedLoadouts: normalizedLoadoutState.savedLoadouts,
-    selectedModeId: String(record.selectedModeId || DEFAULT_PROGRESS.selectedModeId),
-    roundHistory: normalizedRoundHistory,
-    unlockedAchievementIds: normalizeStringList(record.unlockedAchievementIds),
     buildWalkthrough: normalizeBuildWalkthrough(
       record.buildWalkthrough ?? record.buildWalkthroughStatus,
       BUILD_WALKTHROUGH_STATUS.DISMISSED
@@ -785,12 +754,6 @@ async function getLoadoutStatsRows(executor, userId) {
     .filter(Boolean)
 }
 
-async function getWeeklyRoundCount(executor, userId) {
-  const [[weekly]] = await executor.query(`SELECT COUNT(*) AS roundsThisWeek FROM round_history
-    WHERE user_id = ? AND played_at >= now() - interval '7 days' AND played_at <= now()`, [userId])
-  return toNonNegativeNumber(weekly?.roundsThisWeek, 0)
-}
-
 // Whether the player already had an XP-earning round today (UTC). The first one
 // each day earns double XP; the save and the progress read both ask this.
 // The current UTC day by the database clock. Inside a transaction now() is the
@@ -858,6 +821,24 @@ async function getRoundHistoryCount(executor, userId) {
   )
 
   return toNonNegativeNumber(rows[0]?.totalCount, 0)
+}
+
+// Total rounds, rounds in the last 7 days and the daily-bonus check in one read.
+async function getRoundCounts(executor, userId) {
+  const [[row]] = await executor.query(
+    `SELECT
+       COUNT(*) AS totalCount,
+       COUNT(*) FILTER (WHERE played_at >= now() - interval '7 days' AND played_at <= now()) AS roundsThisWeek,
+       COUNT(*) FILTER (WHERE xp_earned > 0 AND ${TODAY_UTC_WINDOW}) AS xpRoundsToday
+     FROM round_history
+     WHERE user_id = ?`,
+    [userId]
+  )
+  return {
+    totalRoundCount: toNonNegativeNumber(row?.totalCount, 0),
+    roundsThisWeek: toNonNegativeNumber(row?.roundsThisWeek, 0),
+    hasXpRoundToday: toNonNegativeNumber(row?.xpRoundsToday, 0) > 0,
+  }
 }
 
 // Rebuilds stats from history only for accounts that predate the stats table
@@ -1288,12 +1269,13 @@ async function buildProgressRecord(executor, userId) {
     userRow.activeLoadoutId
   )
   const normalizedRoundHistory = historyRows.map(buildHistoryEntry)
-  const totalRoundCount = await getRoundHistoryCount(executor, userId)
+  const { totalRoundCount, roundsThisWeek, hasXpRoundToday: xpRoundToday } =
+    await getRoundCounts(executor, userId)
   const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
-  lifetimeStats.roundsThisWeek = await getWeeklyRoundCount(executor, userId)
+  lifetimeStats.roundsThisWeek = roundsThisWeek
   // From the server, not the 50 loaded rounds, so the lobby never promises a
   // bonus that an older round today already used.
-  const dailyBonusAvailable = !(await hasXpRoundToday(executor, userId))
+  const dailyBonusAvailable = !xpRoundToday
   const dailyGoals = await getDailyGoalsSnapshot(executor, userId)
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
@@ -1416,6 +1398,18 @@ export async function findUserByUsername(username) {
     `SELECT id, username, password_hash AS passwordHash, role
      FROM users
      WHERE username = ?
+     LIMIT 1`,
+    [String(username || "").trim()]
+  )
+
+  return mapUserRow(rows[0])
+}
+
+export async function findUserByUsernameIgnoreCase(username) {
+  const [rows] = await pool.query(
+    `SELECT id, username, password_hash AS passwordHash, role
+     FROM users
+     WHERE LOWER(username) = LOWER(?)
      LIMIT 1`,
     [String(username || "").trim()]
   )
@@ -2419,6 +2413,34 @@ export async function findUserReplays(userId, { limit = 10 } = {}) {
   )
 
   return rows.map(mapReplayRow).filter(Boolean)
+}
+
+export async function hasOpenChallengeBetween(challengerUserId, opponentUserId) {
+  const [rows] = await pool.query(
+    `SELECT 1 FROM challenges
+     WHERE challenger_user_id = ? AND opponent_user_id = ?
+       AND status IN ('pending', 'accepted', 'racing')
+     LIMIT 1`,
+    [challengerUserId, opponentUserId]
+  )
+  return rows.length > 0
+}
+
+// Keeps a user's newest replays plus any a duel still points at. Duel replays
+// must stay: challenges.replay_id cascades on delete, and opponent_replay_id has no
+// foreign key at all.
+export async function pruneUserReplays(userId, keep = 25) {
+  await pool.query(
+    `DELETE FROM round_replays
+     WHERE user_id = ?
+       AND id NOT IN (
+         SELECT id FROM round_replays WHERE user_id = ?
+         ORDER BY played_at DESC, id DESC LIMIT ?
+       )
+       AND id NOT IN (SELECT replay_id FROM challenges)
+       AND id NOT IN (SELECT opponent_replay_id FROM challenges WHERE opponent_replay_id IS NOT NULL)`,
+    [userId, userId, keep]
+  )
 }
 
 export async function findUserByUsernameForChallenge(username) {

@@ -17,16 +17,17 @@ test('history preserves result kind and RR summaries exclude placement points, i
 })
 
 test('server weekly count survives progress normalization and exceeds loaded history', async () => {
-  const code = source.slice(source.indexOf('async function getWeeklyRoundCount('), source.indexOf('async function getRoundHistoryCount('))
-  const ctx = { toNonNegativeNumber: v => Number(v) || 0 }
+  const code = source.slice(source.indexOf('async function getRoundCounts('), source.indexOf('async function backfillLifetimeStatsFromHistory('))
+  const ctx = { toNonNegativeNumber: v => Number(v) || 0, TODAY_UTC_WINDOW: 'TODAY' }
   vm.runInNewContext(code, ctx)
   const executor = { query: async (sql, params) => {
     assert.deepEqual(Array.from(params), [7])
     assert.doesNotMatch(sql, /LIMIT/)
     assert.match(sql, /COUNT\(\*\)/)
+    assert.match(sql, /FILTER/)
     return [[{ roundsThisWeek: '125' }]]
   } }
-  const stats = normalizeLifetimeStats({ roundsThisWeek: await ctx.getWeeklyRoundCount(executor, 7) })
+  const stats = normalizeLifetimeStats({ roundsThisWeek: await (await ctx.getRoundCounts(executor, 7)).roundsThisWeek })
   assert.equal(buildProfileStatsFromLifetime(stats, []).roundsThisWeek, 125)
   assert.match(source, /played_at >= now\(\) - interval '7 days' AND played_at <= now\(\)/)
 })
