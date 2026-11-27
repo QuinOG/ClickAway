@@ -1,5 +1,6 @@
 import assert from "node:assert/strict"
 import { once } from "node:events"
+import { existsSync, readdirSync } from "node:fs"
 import test, { after, before } from "node:test"
 
 import { AUTH_COOKIE_NAME } from "../../server/auth.js"
@@ -48,8 +49,9 @@ async function startTestApp(t) {
       headers,
       body: JSON.stringify(body),
     })
-    const data = response.status === 204 ? null : await response.json()
-    return { status: response.status, data, setCookie: response.headers.get("Set-Cookie") }
+    const contentType = response.headers.get("Content-Type")
+    const data = contentType?.includes("application/json") ? await response.json() : await response.text()
+    return { status: response.status, data, headers: response.headers, setCookie: response.headers.get("Set-Cookie") }
   }
 }
 
@@ -70,6 +72,37 @@ test("the server's pool can query the test database", async () => {
 
 test("initializeSchema can run a second time", async () => {
   await assert.doesNotReject(initializeSchema)
+})
+
+test("unknown API routes return a JSON 404 for GET and POST", async (t) => {
+  const request = await startTestApp(t)
+  for (const method of ["GET", "POST"]) {
+    const { status, data } = await request("/api/nope", { method })
+    assert.equal(status, 404)
+    assert.deepEqual(data, { error: "Not found." })
+  }
+})
+
+test("built assets are immutable and SPA HTML requires revalidation", async (t) => {
+  const assetsPath = new URL("../../dist/assets/", import.meta.url)
+  if (!existsSync(assetsPath)) {
+    t.skip("Run npm run build to verify production cache headers.")
+    return
+  }
+  const asset = readdirSync(assetsPath).find((name) => name.endsWith(".js"))
+  assert.ok(asset, "the build should contain a JavaScript asset")
+
+  const request = await startTestApp(t)
+  const script = await request(`/assets/${asset}`)
+  assert.equal(script.status, 200)
+  assert.match(script.headers.get("Cache-Control"), /max-age=31536000/)
+  assert.match(script.headers.get("Cache-Control"), /immutable/)
+
+  for (const path of ["/", "/index.html", "/some-client-route"]) {
+    const html = await request(path)
+    assert.equal(html.status, 200)
+    assert.equal(html.headers.get("Cache-Control"), "no-cache")
+  }
 })
 
 test("signup sets an httpOnly cookie that authenticates /api/auth/me", async (t) => {

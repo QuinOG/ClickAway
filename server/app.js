@@ -929,12 +929,24 @@ export function createApp() {
     }
   })
 
+  app.use("/api", (_request, response) => {
+    response.status(404).json({ error: "Not found." })
+  })
+
   const distPath = join(__dirname, "../dist")
 
   if (existsSync(distPath)) {
-    app.use(express.static(distPath))
+    const indexPath = join(distPath, "index.html")
+    app.use("/assets", express.static(join(distPath, "assets"), { immutable: true, maxAge: "1y" }))
+    app.use(express.static(distPath, {
+      setHeaders(response, filePath) {
+        if (filePath === indexPath) {
+          response.setHeader("Cache-Control", "no-cache")
+        }
+      },
+    }))
     app.get("/{*splat}", (_request, response) => {
-      response.sendFile(join(distPath, "index.html"))
+      response.sendFile("index.html", { root: distPath, headers: { "Cache-Control": "no-cache" } })
     })
   }
 
