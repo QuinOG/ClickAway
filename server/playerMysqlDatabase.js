@@ -123,6 +123,13 @@ export async function verifySchema() {
       AND column_name = 'rank_result_kind'`)
   if (!columns.length) throw new Error("Supabase schema is incomplete. Missing round_history.rank_result_kind; apply migration 013.")
 
+  const [raceColumns] = await pool.query(`SELECT column_name AS columnName
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND ((table_name = 'challenges' AND column_name = 'racing_started_at')
+        OR (table_name = 'users' AND column_name = 'last_round_ends_at'))`)
+  if (raceColumns.length < 2) throw new Error("Supabase schema is incomplete. Missing challenges.racing_started_at or users.last_round_ends_at; apply migration 014.")
+
   console.log("Supabase schema verified.")
 }
 
@@ -215,6 +222,14 @@ export async function initializeSchema() {
 
     INSERT INTO profile_images (id) VALUES (1),(2),(3),(4),(5),(6),(7) ON CONFLICT (id) DO NOTHING;
   `)
+
+  // Sign-up treats "Alice" and "alice" as the same name; this makes the database agree.
+  // Older data may already hold such a pair, so a failure here must not stop startup.
+  try {
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_key ON users (LOWER(username))`)
+  } catch (error) {
+    console.warn("Could not enforce case-insensitive usernames (existing names differ only by case):", error.message)
+  }
 
   // The achievement catalog is seeded from ACHIEVEMENTS (the single source of truth
   // shared with the frontend) instead of a hand-maintained id list, so the two can
@@ -396,6 +411,9 @@ export async function initializeSchema() {
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_opponent_status ON challenges (opponent_user_id, status, created_at)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_challenger_status ON challenges (challenger_user_id, status, created_at)`)
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_challenges_replay ON challenges (replay_id)`)
+  // Migration 014: one duel race per challenge, and rounds that can't overlap.
+  await addColumnIfMissing("challenges", "racing_started_at", "timestamptz NULL DEFAULT NULL")
+  await addColumnIfMissing("users", "last_round_ends_at", "timestamptz NULL DEFAULT NULL")
 
   await ensureActiveSeason()
 
@@ -406,19 +424,29 @@ async function ensureActiveSeason() {
   await findCurrentSeason()
 }
 
-// One transaction lock also covers the empty-table seed and season-stat writes.
 // Rating, placements and career records carry over; season counters start empty.
+// The global lock is taken only to seed the first season or roll over an ended
+// one. While the latest season is running, every leaderboard read and ranked
+// round runs without it, so players don't queue behind one another.
 async function withCurrentSeason(work) {
   const connection = await pool.getConnection()
-  try {
-    await connection.beginTransaction()
-    await connection.query("SELECT pg_advisory_xact_lock(72431901)")
+  const readLatestSeason = async (lockClause = "") => {
     const [[clock]] = await connection.query("SELECT clock_timestamp() AS now")
-    const now = new Date(clock.now)
     const [rows] = await connection.query(`SELECT id, slug, name, status,
       starts_at AS startsAt, ends_at AS endsAt FROM seasons
-      ORDER BY starts_at DESC, id DESC LIMIT 1 FOR UPDATE`)
-    let season = rows[0]
+      ORDER BY starts_at DESC, id DESC LIMIT 1${lockClause}`)
+    return { now: new Date(clock.now), season: rows[0] }
+  }
+  try {
+    await connection.beginTransaction()
+    let { now, season } = await readLatestSeason()
+    if (season && new Date(season.endsAt) > now) {
+      const result = await work(connection, mapSeasonRow(season))
+      await connection.commit()
+      return result
+    }
+    await connection.query("SELECT pg_advisory_xact_lock(72431901)")
+    ;({ now, season } = await readLatestSeason(" FOR UPDATE"))
     if (!season) {
       const [created] = await connection.query(`INSERT INTO seasons (slug, name, starts_at, ends_at, status)
         VALUES (?, ?, ?, ?, 'active') RETURNING id, slug, name, status, starts_at AS startsAt, ends_at AS endsAt`,
@@ -474,13 +502,6 @@ function normalizeStringList(values = []) {
         .filter(Boolean)
     )
   )
-}
-
-function normalizeOwnedItemIds(itemIds = []) {
-  return normalizeStringList(itemIds).filter((itemId) => {
-    const catalogItem = getCatalogItemById(itemId)
-    return catalogItem && !catalogItem.builtIn
-  })
 }
 
 function normalizeLoadoutSnapshot(snapshot = {}) {
@@ -572,18 +593,9 @@ function normalizeRoundHistoryEntry(entry = {}, index = 0) {
 }
 
 function normalizeProgressInput(record = {}) {
-  const ownedItemIds = normalizeOwnedItemIds(record.ownedItemIds)
-  const ownedItemIdSet = new Set(ownedItemIds)
-  const levelXp = toNonNegativeNumber(record.levelXp, DEFAULT_PROGRESS.levelXp)
-  const normalizedRoundHistory = (Array.isArray(record.roundHistory) ? record.roundHistory : []).map(
-    normalizeRoundHistoryEntry
-  )
-  const migratedRankData = migrateLegacyRankData({
-    rankMmr: record.rankMmr,
-    rankedState: record.rankedState,
-    roundHistory: normalizedRoundHistory,
-  })
-  const level = getLevelProgress(levelXp).level
+  const level = getLevelProgress(
+    toNonNegativeNumber(record.levelXp, DEFAULT_PROGRESS.levelXp)
+  ).level
   const normalizedLoadoutState = normalizeLoadoutState(
     level,
     record.savedLoadouts,
@@ -591,31 +603,8 @@ function normalizeProgressInput(record = {}) {
   )
 
   return {
-    coins: toNonNegativeNumber(record.coins, DEFAULT_PROGRESS.coins),
-    levelXp,
-    rankMmr: migratedRankData.rankMmr,
-    rankedState: migratedRankData.rankedState,
-    ownedItemIds,
-    equippedButtonSkinId: resolveEquippedItemId(
-      record.equippedButtonSkinId,
-      "button_skin",
-      ownedItemIdSet
-    ),
-    equippedArenaThemeId: resolveEquippedItemId(
-      record.equippedArenaThemeId,
-      "arena_theme",
-      ownedItemIdSet
-    ),
-    equippedProfileImageId: resolveEquippedItemId(
-      record.equippedProfileImageId,
-      "profile_image",
-      ownedItemIdSet
-    ),
     activeLoadoutId: normalizedLoadoutState.activeLoadoutId,
     savedLoadouts: normalizedLoadoutState.savedLoadouts,
-    selectedModeId: String(record.selectedModeId || DEFAULT_PROGRESS.selectedModeId),
-    roundHistory: normalizedRoundHistory,
-    unlockedAchievementIds: normalizeStringList(record.unlockedAchievementIds),
     buildWalkthrough: normalizeBuildWalkthrough(
       record.buildWalkthrough ?? record.buildWalkthroughStatus,
       BUILD_WALKTHROUGH_STATUS.DISMISSED
@@ -785,12 +774,6 @@ async function getLoadoutStatsRows(executor, userId) {
     .filter(Boolean)
 }
 
-async function getWeeklyRoundCount(executor, userId) {
-  const [[weekly]] = await executor.query(`SELECT COUNT(*) AS roundsThisWeek FROM round_history
-    WHERE user_id = ? AND played_at >= now() - interval '7 days' AND played_at <= now()`, [userId])
-  return toNonNegativeNumber(weekly?.roundsThisWeek, 0)
-}
-
 // Whether the player already had an XP-earning round today (UTC). The first one
 // each day earns double XP; the save and the progress read both ask this.
 // The current UTC day by the database clock. Inside a transaction now() is the
@@ -858,6 +841,24 @@ async function getRoundHistoryCount(executor, userId) {
   )
 
   return toNonNegativeNumber(rows[0]?.totalCount, 0)
+}
+
+// Total rounds, rounds in the last 7 days and the daily-bonus check in one read.
+async function getRoundCounts(executor, userId) {
+  const [[row]] = await executor.query(
+    `SELECT
+       COUNT(*) AS totalCount,
+       COUNT(*) FILTER (WHERE played_at >= now() - interval '7 days' AND played_at <= now()) AS roundsThisWeek,
+       COUNT(*) FILTER (WHERE xp_earned > 0 AND ${TODAY_UTC_WINDOW}) AS xpRoundsToday
+     FROM round_history
+     WHERE user_id = ?`,
+    [userId]
+  )
+  return {
+    totalRoundCount: toNonNegativeNumber(row?.totalCount, 0),
+    roundsThisWeek: toNonNegativeNumber(row?.roundsThisWeek, 0),
+    hasXpRoundToday: toNonNegativeNumber(row?.xpRoundsToday, 0) > 0,
+  }
 }
 
 // Rebuilds stats from history only for accounts that predate the stats table
@@ -1179,7 +1180,8 @@ async function getUserStateRow(executor, userId, options = {}) {
        current_profile_theme_id AS currentProfileThemeId,
        active_loadout_slot AS activeLoadoutId,
        build_walkthrough_status AS buildWalkthroughStatus,
-       seen_unlock_part_ids_json AS seenUnlockPartIdsJson
+       seen_unlock_part_ids_json AS seenUnlockPartIdsJson,
+       last_round_ends_at AS lastRoundEndsAt
      FROM users
      WHERE id = ?
      LIMIT 1${lockClause}`,
@@ -1288,12 +1290,13 @@ async function buildProgressRecord(executor, userId) {
     userRow.activeLoadoutId
   )
   const normalizedRoundHistory = historyRows.map(buildHistoryEntry)
-  const totalRoundCount = await getRoundHistoryCount(executor, userId)
+  const { totalRoundCount, roundsThisWeek, hasXpRoundToday: xpRoundToday } =
+    await getRoundCounts(executor, userId)
   const lifetimeStats = await backfillLifetimeStatsFromHistory(executor, userId)
-  lifetimeStats.roundsThisWeek = await getWeeklyRoundCount(executor, userId)
+  lifetimeStats.roundsThisWeek = roundsThisWeek
   // From the server, not the 50 loaded rounds, so the lobby never promises a
   // bonus that an older round today already used.
-  const dailyBonusAvailable = !(await hasXpRoundToday(executor, userId))
+  const dailyBonusAvailable = !xpRoundToday
   const dailyGoals = await getDailyGoalsSnapshot(executor, userId)
   const loadoutStats = await getLoadoutStatsRows(executor, userId)
   const migratedRankData = migrateLegacyRankData({
@@ -1416,6 +1419,18 @@ export async function findUserByUsername(username) {
     `SELECT id, username, password_hash AS passwordHash, role
      FROM users
      WHERE username = ?
+     LIMIT 1`,
+    [String(username || "").trim()]
+  )
+
+  return mapUserRow(rows[0])
+}
+
+export async function findUserByUsernameIgnoreCase(username) {
+  const [rows] = await pool.query(
+    `SELECT id, username, password_hash AS passwordHash, role
+     FROM users
+     WHERE LOWER(username) = LOWER(?)
      LIMIT 1`,
     [String(username || "").trim()]
   )
@@ -1717,10 +1732,11 @@ async function readRankedLeaderboardRows(connection, {
     filtered_ladder AS (
       SELECT *
       FROM ranked_ladder
-      ${normalizedSearch ? "WHERE LOWER(username) LIKE ?" : ""}
+      ${normalizedSearch ? "WHERE LOWER(username) LIKE ? ESCAPE '\\'" : ""}
     )`
 
-  const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
+  // Escape LIKE wildcards so a search for "_" or "%" matches those characters literally.
+  const searchParams = normalizedSearch ? [`%${normalizedSearch.replace(/[\\%_]/g, "\\$&")}%`] : []
 
   if (view === "aroundMe" && userId) {
     const [[selfRow]] = await connection.query(
@@ -1827,17 +1843,6 @@ export async function findLeaderboardPage(options = {}) {
   return queryRankedLeaderboardRows(options)
 }
 
-export async function findLeaderboardRows({ limit = 25 } = {}) {
-  const page = await queryRankedLeaderboardRows({
-    board: LEADERBOARD_BOARDS.MMR,
-    page: 1,
-    limit,
-    view: "top",
-  })
-
-  return page.rows
-}
-
 export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_PAGE_SIZE } = {}) {
   const normalizedLimit = normalizePaginationLimit(limit, 100, HISTORY_PAGE_SIZE)
   const normalizedPage = normalizePaginationPage(page)
@@ -1886,9 +1891,12 @@ export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_P
   }
 }
 
+const ROUND_OVERLAP_SLACK_MS = 1000
+const CHALLENGE_RESTART_GRACE_SECONDS = 10
+
 export class RoundAlreadySubmittedError extends Error {
-  constructor() {
-    super("This round has already been submitted.")
+  constructor(message = "This round has already been submitted.") {
+    super(message)
     this.name = "RoundAlreadySubmittedError"
     this.status = 409
   }
@@ -1914,6 +1922,10 @@ export async function completeUserRound({
   // Only server-started rounds count toward lifetime and loadout stats and
   // achievements. Unverified rounds are kept in history but can't be farmed.
   countsTowardStats = true,
+  // Server times a timed round could have started and ended ({ startsAtMs,
+  // endsAtMs }). A player's timed rounds can't overlap, so tokens started side
+  // by side can't be played in parallel to multiply rewards.
+  roundWindow = null,
   historyEntry,
 }) {
   const connection = await pool.getConnection()
@@ -1939,6 +1951,25 @@ export async function completeUserRound({
       )
       if (!claim.affectedRows) {
         throw new RoundAlreadySubmittedError()
+      }
+      if (roundWindow) {
+        // An honest client asks for the next token only after a round ends, so
+        // its start is never before the previous round's end. The slack covers
+        // the token's whole-second issue time.
+        const lastEndsAtMs = userRow.lastRoundEndsAt ? new Date(userRow.lastRoundEndsAt).getTime() : null
+        if (lastEndsAtMs !== null && roundWindow.startsAtMs < lastEndsAtMs - ROUND_OVERLAP_SLACK_MS) {
+          throw new RoundAlreadySubmittedError("This round overlapped another round, so it wasn't counted.")
+        }
+        await connection.execute(
+          `UPDATE users
+           SET last_round_ends_at = GREATEST(COALESCE(last_round_ends_at, to_timestamp(0)), ?)
+           WHERE id = ?`,
+          [new Date(roundWindow.endsAtMs), userId]
+        )
+      }
+      // Purge expired used tokens on about 1% of claims, not only at startup.
+      if (Math.random() < 0.01) {
+        await connection.query(`DELETE FROM consumed_round_tokens WHERE consumed_at < now() - interval '2 days'`)
       }
     }
 
@@ -2421,6 +2452,34 @@ export async function findUserReplays(userId, { limit = 10 } = {}) {
   return rows.map(mapReplayRow).filter(Boolean)
 }
 
+export async function hasOpenChallengeBetween(challengerUserId, opponentUserId) {
+  const [rows] = await pool.query(
+    `SELECT 1 FROM challenges
+     WHERE challenger_user_id = ? AND opponent_user_id = ?
+       AND status IN ('pending', 'accepted', 'racing')
+     LIMIT 1`,
+    [challengerUserId, opponentUserId]
+  )
+  return rows.length > 0
+}
+
+// Keeps a user's newest replays plus any a duel still points at. Duel replays
+// must stay: challenges.replay_id cascades on delete, and opponent_replay_id has no
+// foreign key at all.
+export async function pruneUserReplays(userId, keep = 25) {
+  await pool.query(
+    `DELETE FROM round_replays
+     WHERE user_id = ?
+       AND id NOT IN (
+         SELECT id FROM round_replays WHERE user_id = ?
+         ORDER BY played_at DESC, id DESC LIMIT ?
+       )
+       AND id NOT IN (SELECT replay_id FROM challenges)
+       AND id NOT IN (SELECT opponent_replay_id FROM challenges WHERE opponent_replay_id IS NOT NULL)`,
+    [userId, userId, keep]
+  )
+}
+
 export async function findUserByUsernameForChallenge(username) {
   const normalizedUsername = String(username || "").trim()
   if (!normalizedUsername) {
@@ -2546,6 +2605,7 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
   }
 
   const params = normalizedRole === "all" ? [userId, userId] : [userId]
+  await settleAbandonedRaces(userId)
   const [rows] = await pool.query(
     `SELECT
        c.id,
@@ -2571,7 +2631,7 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
        ON opponent_replay.id = c.opponent_replay_id
      WHERE (${whereClause})
        AND (
-         c.status IN ('pending', 'accepted')
+         c.status IN ('pending', 'accepted', 'racing')
          OR c.id IN (
            SELECT recent.id FROM challenges recent
            WHERE ${whereClause.replaceAll("c.", "recent.")}
@@ -2587,6 +2647,45 @@ export async function findChallengesForUser(userId, { role = "all" } = {}) {
   // plus the 50 most recent for history; otherwise newer duels could push an
   // actionable one off the list (and off the pending badge).
   return rows.map(mapChallengeRow).filter(Boolean)
+}
+
+// The race was played but its result couldn't be stored, so it can't settle
+// the duel. Reopen the duel instead of letting it expire as a loss.
+export async function reopenChallengeRace(challengeId, userId) {
+  await pool.execute(
+    `UPDATE challenges
+     SET status = 'accepted', racing_started_at = NULL
+     WHERE id = ? AND opponent_user_id = ? AND status = 'racing'`,
+    [challengeId, userId]
+  )
+}
+
+// A duel gets one race. The first start moves it from accepted to racing; a
+// restart within a few seconds (a lost response, a quick retry) is still
+// allowed, but a race can't be abandoned and replayed until it is won.
+export async function startChallengeRace(challengeId, userId) {
+  const [result] = await pool.execute(
+    `UPDATE challenges
+     SET status = 'racing', racing_started_at = COALESCE(racing_started_at, now())
+     WHERE id = ? AND opponent_user_id = ?
+       AND (status = 'accepted'
+         OR (status = 'racing' AND racing_started_at > now() - interval '${CHALLENGE_RESTART_GRACE_SECONDS} seconds'))`,
+    [challengeId, userId]
+  )
+  return result.affectedRows > 0
+}
+
+// A race token lasts 60 minutes, so a race still unsubmitted after that can
+// never finish. It counts as a loss for the player who started it.
+async function settleAbandonedRaces(userId) {
+  await pool.execute(
+    `UPDATE challenges
+     SET status = 'completed', challenger_won = true, completed_at = now()
+     WHERE status = 'racing'
+       AND racing_started_at < now() - interval '65 minutes'
+       AND (challenger_user_id = ? OR opponent_user_id = ?)`,
+    [userId, userId]
+  )
 }
 
 export async function respondToChallenge({
@@ -2641,8 +2740,8 @@ export async function completeChallenge({
   if (challenge.opponentUserId !== userId) {
     return { ok: false, reason: "Only the challenged player can complete this duel." }
   }
-  if (challenge.status !== "accepted") {
-    return { ok: false, reason: "Challenge must be accepted before completing." }
+  if (challenge.status !== "racing") {
+    return { ok: false, reason: "Challenge must be raced before completing." }
   }
 
   const opponentReplay = await findReplayById(opponentReplayId)
@@ -2666,7 +2765,7 @@ export async function completeChallenge({
          opponent_replay_id = ?,
          challenger_won = ?,
          completed_at = CURRENT_TIMESTAMP
-     WHERE id = ? AND status = 'accepted'`,
+     WHERE id = ? AND status = 'racing'`,
     [opponentReplay.id, challengerWon, challengeId]
   )
   if (!result.affectedRows) {

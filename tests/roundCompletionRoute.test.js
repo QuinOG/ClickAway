@@ -12,9 +12,9 @@ const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
 const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("// Saves only the preferences"))
   .replace("export ", "")
 
-async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {} } = {}) {
+async function run({ pruneFails = false, token = true, duplicate = false, invalid = false, failure = null, ranked = false, savedTimestamp = {} } = {}) {
   const trace = [], writes = [], headers = {}
-  let handler, saveInputs, simulatedLevel, seasonInputs, stats = 0
+  let handler, saveInputs, simulatedLevel, seasonInputs, stats = 0, replayInput, prunes = [], reopens = []
   const locked = { coins: 990, xp: 990, mmr: 400, rankSystemVersion: RANK_SYSTEM_VERSION,
     placementMatchesPlayed: 10, demotionProtectionRounds: 0 }
   const connection = {
@@ -54,7 +54,9 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
     getLifetimeStatsRow: async () => ({}), mapLifetimeStatsRow: () => ({}),
     applyRoundToLifetimeStats: () => ({}), persistLifetimeStats: async () => { stats++ },
     buildAchievementStatsFromLifetime: () => ({}), evaluateAchievements: () => [], getUnlockedAchievementIds: () => [], addUnlockedAchievements: async () => {},
-    insertRoundReplay: async () => { trace.push("replay"); if (failure === "replay") throw Error("failure"); return { id: 8 } },
+    insertRoundReplay: async input => { replayInput = input; trace.push("replay"); if (failure === "replay") throw Error("failure"); return { id: 8 } },
+    pruneUserReplays: async id => { prunes.push(id); if (pruneFails) throw Error("prune") },
+    reopenChallengeRace: async (id, userId) => { reopens.push([id, userId]) },
     completeChallenge: async () => { trace.push("duel"); return { ok: true, challenge: { id: 11 } } },
     applyUserSeasonProgress: async (_id, inputs) => { seasonInputs = inputs; trace.push("season"); if (failure === "season") throw Error("failure"); return {} },
     findUserProgressByUserId: async () => { trace.push("progress"); if (failure === "progress") throw Error("failure"); return { final: true } },
@@ -66,9 +68,9 @@ async function run({ token = true, duplicate = false, invalid = false, failure =
   vm.runInNewContext(route, ctx)
   const response = { statusCode: 200, status(code) { this.statusCode = code; return this },
     setHeader: (name, value) => { headers[name] = value }, json(body) { this.body = body; return this } }
-  await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0 }], roundToken: token ? "private-token" : null } }, response)
+  await handler({ auth: { userId: 7 }, body: { modeId: ranked ? "hard" : "normal", events: [{ t: 0, type: "hit", x: 3, y: "no", powerupId: 5, extra: "junk" }], roundToken: token ? "private-token" : null } }, response)
   assert.match(headers["Server-Timing"], /^context;dur=\d+\.\d{2}, simulate;dur=\d+\.\d{2}, save;dur=\d+\.\d{2}, followups;dur=\d+\.\d{2}, progress;dur=\d+\.\d{2}, total;dur=\d+\.\d{2}$/)
-  return { trace, writes, response, saveInputs, simulatedLevel, seasonInputs, stats }
+  return { replayInput, prunes, reopens, trace, writes, response, saveInputs, simulatedLevel, seasonInputs, stats }
 }
 
 test("season attribution prefers the committed DB timestamp across a rollover", async () => {
@@ -132,4 +134,21 @@ for (const failure of ["replay", "season", "progress"]) test(`committed save suc
   assert.equal(h.response.body.earnedXp, 20)
   assert.equal(h.response.body.progress === null, failure === "progress")
   assert.equal(Boolean(h.response.body.followUpError), failure !== "progress")
+})
+
+test("replay stores only known event fields and old replays are pruned without risking the response", async () => {
+  const h = await run()
+  assert.equal(JSON.stringify(h.replayInput.events), JSON.stringify([{ type: "hit", t: 0, x: 3 }]))
+  assert.deepEqual(h.prunes, [7])
+  const failed = await run({ pruneFails: true })
+  assert.equal(failed.response.statusCode, 200)
+  assert.equal(failed.response.body.followUpError, null)
+})
+
+test("a duel race whose result can't be stored is reopened instead of expiring as a loss", async () => {
+  const failed = await run({ failure: "replay" })
+  assert.deepEqual(failed.reopens, [[11, 7]])
+  assert.match(failed.response.body.followUpError, /race this duel again/)
+  const settled = await run()
+  assert.deepEqual(settled.reopens, [])
 })

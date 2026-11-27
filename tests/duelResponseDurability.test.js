@@ -15,7 +15,7 @@ function harness(name, { failWrite = false, affectedRows = 1, failRead = true } 
   let writes = 0
   const logs = []
   const before = { id: 11, challengerUserId: 1, opponentUserId: 2,
-    status: name === "respondToChallenge" ? "pending" : "accepted",
+    status: name === "respondToChallenge" ? "pending" : "racing",
     replayId: 7, modeId: "normal", replaySeed: 0, replayScore: 20 }
   const context = {
     console: { error: (...args) => logs.push(args) },

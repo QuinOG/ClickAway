@@ -5,16 +5,9 @@ import { getDifficultyById } from "../../src/constants/gameModesConfig.js"
 import { applyRankedMatchResult } from "../../src/utils/rankUtils.js"
 import { calculateRoundRewards, simulateRound } from "../roundRewards.js"
 import { validateUsername } from "../validation.js"
+import { DEMO_PLAYER_USERNAMES } from "../demoPlayerNames.js"
 
-// Reserved demo namespace: removal is deliberately limited to this exact list.
-export const DEMO_PLAYER_USERNAMES = Object.freeze([
-  "PixelRook", "NeonBadger", "OrbitFox", "QuietClutch", "MangoStrafe",
-  "LunarDash", "CopperAim", "GhostCircuit", "VelvetViper", "FrostByte",
-  "TinyTitan", "EchoPebble", "TurboFern", "NovaNoodle", "AmberArc",
-  "CloudCrit", "StaticOtter", "CobaltCrow", "MintMirage", "RapidRaven",
-  "DuskDrifter", "JellyJolt", "SolarSparrow", "LuckyLag", "PrismPanda",
-  "RustyReflex", "CometCrab", "SilverSprout", "WaffleWizard", "ZenithZip",
-])
+export { DEMO_PLAYER_USERNAMES }
 export const DEMO_ARENA = Object.freeze({ arenaWidth: 960, arenaHeight: 640 })
 
 export function usernameSeed(username) {

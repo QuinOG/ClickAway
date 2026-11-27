@@ -133,7 +133,7 @@ test("writer uses signup hashing, real round inputs, history backdating and seas
     insertRoundReplay: async (input) => { replays.push(input); return { id: replays.length } },
     applyUserSeasonProgress: async (...args) => { seasons.push(args) },
   }
-  const result = await writeDemoPlan({ players: [player], duels: [] }, db, { ensurePlayerUser: async () => user })
+  const result = await writeDemoPlan({ players: [player], duels: [] }, db, {})
   assert.deepEqual(result, { created: 1, skipped: 0, rounds: 6, duels: 0 })
   assert.equal(sql.length, 6)
   assert.deepEqual(sql[0], ["UPDATE round_history SET played_at = ? WHERE id = ? AND user_id = ?", [new Date(player.rounds[0].playedAtIso), 1, 7]])

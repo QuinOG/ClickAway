@@ -57,10 +57,19 @@ if (!["postgres:", "postgresql:"].includes(parsedConnectionUrl.protocol)) {
   throw new Error("SUPABASE_DB_URL must use the postgres:// or postgresql:// protocol.")
 }
 
+// Verifies the server certificate when SUPABASE_CA_CERT holds the CA PEM text.
+// Without it, TLS is accepted unverified (the previous default).
+const supabaseCaCert = String(process.env.SUPABASE_CA_CERT || "").trim()
 const pool = new Pool({
   connectionString,
-  ssl: { rejectUnauthorized: false },
+  ssl: supabaseCaCert
+    ? { ca: supabaseCaCert.replace(/\\n/g, "\n") }
+    : { rejectUnauthorized: false },
 })
+
+// Without this listener, an idle client dropped by the server emits an error
+// that nothing handles, and the process crashes.
+pool.on("error", (error) => console.error("Idle Postgres client error:", error))
 
 const wrappedPool = {
   ...wrapQueryable(pool),

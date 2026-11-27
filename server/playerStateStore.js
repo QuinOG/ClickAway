@@ -1,8 +1,4 @@
-﻿import pool, {
-  findUserById,
-  findUserByUsername,
-  findUserProgressByUserId,
-} from "./playerMysqlDatabase.js"
+﻿import pool, { findUserProgressByUserId } from "./playerMysqlDatabase.js"
 import {
   getCatalogItemById,
   getMappedShopItemById,
@@ -53,32 +49,11 @@ function resolveMappedItemOrThrow(itemId) {
   }
 }
 
-async function resolveExistingUser(user) {
-  if (user?.id) {
-    const matchedUser = await findUserById(user.id)
-    if (matchedUser) return matchedUser
-  }
-
-  if (user?.username) {
-    const matchedUser = await findUserByUsername(user.username)
-    if (matchedUser) return matchedUser
-  }
-
-  throw new PlayerStateError(404, "Player state was not found.")
-}
-
 export function createPlayerStateStore() {
   return {
-    provider: "mysql",
-
-    async ensurePlayerUser(user) {
-      return resolveExistingUser(user)
-    },
-
     async getPlayerState({ user }) {
-      const existingUser = await resolveExistingUser(user)
-      const progress = await findUserProgressByUserId(existingUser.id)
-      return buildPlayerProgressResponse(existingUser, progress)
+      const progress = await findUserProgressByUserId(user.id)
+      return buildPlayerProgressResponse(user, progress)
     },
 
     async purchaseItem({ user, itemId }) {
@@ -87,7 +62,6 @@ export function createPlayerStateStore() {
         throw new PlayerStateError(400, "Built-in items cannot be purchased.")
       }
 
-      const existingUser = await resolveExistingUser(user)
       const connection = await pool.getConnection()
 
       try {
@@ -98,7 +72,7 @@ export function createPlayerStateStore() {
            FROM users
            WHERE id = ?
            LIMIT 1 FOR UPDATE`,
-          [existingUser.id]
+          [user.id]
         )
 
         if (userRows.length === 0) {
@@ -110,7 +84,7 @@ export function createPlayerStateStore() {
            FROM user_collection
            WHERE user_id = ? AND item_type = ? AND item_id = ?
            LIMIT 1`,
-          [existingUser.id, mappedItem.collectionType, mappedItem.dbItemId]
+          [user.id, mappedItem.collectionType, mappedItem.dbItemId]
         )
 
         if (ownedRows.length > 0) {
@@ -123,11 +97,11 @@ export function createPlayerStateStore() {
 
         await connection.execute(
           "INSERT INTO user_collection (user_id, item_type, item_id) VALUES (?, ?, ?)",
-          [existingUser.id, mappedItem.collectionType, mappedItem.dbItemId]
+          [user.id, mappedItem.collectionType, mappedItem.dbItemId]
         )
         await connection.execute(
           "UPDATE users SET coins = coins - ? WHERE id = ?",
-          [mappedItem.cost, existingUser.id]
+          [mappedItem.cost, user.id]
         )
 
         await connection.commit()
@@ -138,12 +112,11 @@ export function createPlayerStateStore() {
         connection.release()
       }
 
-      return buildPlayerProgressResponse(existingUser, await readProgressAfterCommit(existingUser.id))
+      return buildPlayerProgressResponse(user, await readProgressAfterCommit(user.id))
     },
 
     async equipItem({ user, itemId }) {
       const mappedItem = resolveMappedItemOrThrow(itemId)
-      const existingUser = await resolveExistingUser(user)
       const connection = await pool.getConnection()
 
       try {
@@ -154,7 +127,7 @@ export function createPlayerStateStore() {
            FROM users
            WHERE id = ?
            LIMIT 1 FOR UPDATE`,
-          [existingUser.id]
+          [user.id]
         )
 
         if (userRows.length === 0) {
@@ -167,7 +140,7 @@ export function createPlayerStateStore() {
              FROM user_collection
              WHERE user_id = ? AND item_type = ? AND item_id = ?
              LIMIT 1`,
-            [existingUser.id, mappedItem.collectionType, mappedItem.dbItemId]
+            [user.id, mappedItem.collectionType, mappedItem.dbItemId]
           )
 
           if (ownedRows.length === 0) {
@@ -179,7 +152,7 @@ export function createPlayerStateStore() {
           `UPDATE users
            SET ${mappedItem.currentUserColumn} = ?
            WHERE id = ?`,
-          [mappedItem.dbItemId, existingUser.id]
+          [mappedItem.dbItemId, user.id]
         )
 
         await connection.commit()
@@ -190,7 +163,7 @@ export function createPlayerStateStore() {
         connection.release()
       }
 
-      return buildPlayerProgressResponse(existingUser, await readProgressAfterCommit(existingUser.id))
+      return buildPlayerProgressResponse(user, await readProgressAfterCommit(user.id))
     },
   }
 }

@@ -38,11 +38,16 @@ import {
   findRoundCompletionContext,
   findUserById,
   findUserByUsername,
+  findUserByUsernameIgnoreCase,
+  hasOpenChallengeBetween,
+  pruneUserReplays,
   findUserReplays,
   insertRoundReplay,
   applyUserSeasonProgress,
   completeChallenge,
   respondToChallenge,
+  startChallengeRace,
+  reopenChallengeRace,
   saveUserProgress,
   updateUserPassword,
   updateUserRole,
@@ -55,6 +60,7 @@ import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.
 import { createPlayerStateStore } from "./playerStateStore.js"
 import { handleExpressError, handleRouteError } from "./routeErrors.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
+import { DEMO_PLAYER_USERNAMES } from "./demoPlayerNames.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
@@ -241,6 +247,14 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
     return
   }
 
+  // seedDemoPlayers.mjs --remove deletes accounts by these names, so a real
+  // player must not be able to take one.
+  const lowerUsername = username.toLowerCase()
+  if (DEMO_PLAYER_USERNAMES.some((name) => name.toLowerCase() === lowerUsername)) {
+    response.status(400).json({ error: "That username is reserved." })
+    return
+  }
+
   const passwordError = validatePassword(password)
   if (passwordError) {
     response.status(400).json({ error: passwordError })
@@ -249,7 +263,7 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
 
   let createdUser
   try {
-    const existingUser = await findUserByUsername(username)
+    const existingUser = await findUserByUsernameIgnoreCase(username)
     if (existingUser) {
       response.status(409).json({ error: "That username is already taken." })
       return
@@ -257,7 +271,7 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
     const passwordHash = await bcrypt.hash(password, 12)
     createdUser = await createUser({ username, passwordHash, role: "player" })
   } catch (error) {
-    if (error.code === "23505" && error.constraint === "users_username_key") {
+    if (error.code === "23505" && ["users_username_key", "users_username_lower_key"].includes(error.constraint)) {
       response.status(409).json({ error: "That username is already taken." })
     } else {
       handleRouteError(error, response)
@@ -266,7 +280,6 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
   }
 
   try {
-    await playerStateStore.ensurePlayerUser(createdUser)
     response.status(201).json(await createAuthResponse(createdUser, response))
   } catch (error) {
     // The account exists at this point, so say so: retrying sign-up would only
@@ -301,7 +314,6 @@ app.post("/api/auth/login", authRateLimiter, async (request, response) => {
   }
 
   try {
-    await playerStateStore.ensurePlayerUser(user)
     response.json(await createAuthResponse(user, response))
   } catch (error) {
     handleRouteError(error, response)
@@ -321,7 +333,6 @@ app.get("/api/auth/me", requireAuth, async (request, response) => {
   }
 
   try {
-    await playerStateStore.ensurePlayerUser(user)
     response.json({
       user: {
         id: user.id,
@@ -471,7 +482,7 @@ app.get("/api/challenges", requireAuth, async (request, response) => {
   }
 })
 
-app.post("/api/challenges", requireAuth, async (request, response) => {
+app.post("/api/challenges", requireAuth, roundRateLimiter, async (request, response) => {
   const user = await findUserById(request.auth.userId)
   if (!user) {
     response.status(401).json({ error: "Session is no longer valid." })
@@ -499,6 +510,11 @@ app.post("/api/challenges", requireAuth, async (request, response) => {
     }
     if (opponent.id === user.id) {
       response.status(400).json({ error: "You cannot challenge yourself." })
+      return
+    }
+
+    if (await hasOpenChallengeBetween(user.id, opponent.id)) {
+      response.status(409).json({ error: "You already have an open duel with this player." })
       return
     }
 
@@ -662,12 +678,17 @@ app.post("/api/round/start", requireAuth, roundRateLimiter, async (request, resp
       if (
         !challenge
         || challenge.opponentUserId !== Number(request.auth.userId)
-        || challenge.status !== "accepted"
+        || !["accepted", "racing"].includes(challenge.status)
         || challenge.modeId !== modeId
         || challenge.replaySeed === null
         || !isRaceableReplay(await findReplayById(challenge.replayId))
       ) {
         response.status(400).json({ error: "That duel cannot be raced right now." })
+        return
+      }
+      // The duel's one race starts here, so a losing run can't be dropped and retried.
+      if (!(await startChallengeRace(challengeId, Number(request.auth.userId)))) {
+        response.status(409).json({ error: "You already started this race. A race you don't finish counts as a loss after an hour." })
         return
       }
       seed = challenge.replaySeed
@@ -858,6 +879,9 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
         currentRankedState: currentProgress.rankedState,
       },
       countsTowardStats: Boolean(roundTokenId),
+      roundWindow: roundTokenIssuedAtMs !== null && Number.isFinite(simulation.roundEndMs)
+        ? { startsAtMs: roundTokenIssuedAtMs, endsAtMs: roundTokenIssuedAtMs + simulation.roundEndMs }
+        : null,
       historyEntry,
     }))
 
@@ -875,7 +899,7 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     let followUpError = null
     const followupsStartedAt = performance.now()
     try {
-      const submittedEvents = Array.isArray(events) ? events : []
+      const submittedEvents = (Array.isArray(events) ? events : []).map(pickReplayEvent)
       if (roundSeed !== null && (submittedEvents.length > 0 || roundTokenChallengeId)) {
         replay = await insertRoundReplay({
           userId: user.id,
@@ -908,6 +932,24 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     } catch (error) {
       console.error("Round saved, but a follow-up write failed:", error)
       followUpError = "Your round was saved, but its replay or duel result couldn't be stored."
+      // completeChallenge didn't run, so the duel would expire as a loss.
+      if (roundTokenChallengeId && !completedChallenge) {
+        try {
+          await reopenChallengeRace(roundTokenChallengeId, user.id)
+          followUpError = "Your round was saved, but the duel result couldn't be stored. You can race this duel again."
+        } catch (reopenError) {
+          console.error("Reopening the duel race failed:", reopenError)
+        }
+      }
+    }
+
+    // Old replays are housekeeping: a failure here only logs.
+    if (replay?.id) {
+      try {
+        await pruneUserReplays(user.id)
+      } catch (error) {
+        console.error("Round saved, but pruning old replays failed:", error)
+      }
     }
 
     // Season credit is independent of the replay, so a replay failure can't skip it.
@@ -959,6 +1001,15 @@ app.post("/api/round/complete", requireAuth, roundRateLimiter, async (request, r
     handleRouteError(error, response)
   }
 })
+
+// Stores only the fields replay playback uses, never the client's extra keys.
+function pickReplayEvent(event) {
+  const picked = { type: event?.type, t: event?.t }
+  if (typeof event?.x === "number") picked.x = event.x
+  if (typeof event?.y === "number") picked.y = event.y
+  if (typeof event?.powerupId === "string") picked.powerupId = event.powerupId
+  return picked
+}
 
 app.put("/api/progress", requireAuth, async (request, response) => {
   const user = await findUserById(request.auth.userId)

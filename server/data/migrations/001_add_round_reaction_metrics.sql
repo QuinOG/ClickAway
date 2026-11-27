@@ -7,9 +7,9 @@
 --   staging: unknown / not tracked
 --   production: unknown / not tracked
 -- Bootstrap note:
---   server/data/clickaway.sql already includes these columns for fresh
---   environments. Run this migration only against databases created before that
---   schema update.
+--   The old MySQL schema snapshot (clickaway.sql, removed; see git history)
+--   already included these columns for fresh environments. Run this migration
+--   only against databases created before that schema update.
 -- Reversible:
 --   manual only, and potentially destructive if reaction data exists:
 --   ALTER TABLE `round_history`
