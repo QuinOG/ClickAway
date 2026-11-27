@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 const source = readFileSync('server/playerMysqlDatabase.js', 'utf8')
-const code = source.slice(source.indexOf('export async function findUserProgressByUserId('), source.indexOf('\nexport const LEADERBOARD_BOARDS')).replace('export ', '')
+const code = source.slice(source.indexOf('export async function findUserProgressByUserId('), source.indexOf('\nexport async function findRoundHistoryPage(')).replace('export ', '')
 test('progress snapshots release before bounded transient retries and never use the pool for reads', async () => {
   for (const stage of ['acquire', 'begin', 'read', 'commit']) for (const errorCode of ['40001', '40P01', '08006']) {
     let held = false, attempts = 0, releases = 0
