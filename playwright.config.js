@@ -3,8 +3,13 @@ import { defineConfig, devices } from "@playwright/test"
 const port = Number(process.env.PLAYWRIGHT_PORT || 4173)
 const baseURL = `http://127.0.0.1:${port}`
 
+// zz-* specs are design-review capture scripts. They write screenshots into
+// docs/ and need local setup, so they run only via `npm run test:capture`.
+const includeCaptureSpecs = process.env.PLAYWRIGHT_CAPTURE === "1"
+
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: includeCaptureSpecs ? [] : ["**/zz-*.spec.js"],
   outputDir: "./test-results/playwright",
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
   fullyParallel: false,
