@@ -3,18 +3,17 @@ import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import vm from "node:vm"
 
-const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
+const source = readFileSync("server/db/replays.js", "utf8")
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
 function loadReplayQueries(rowsByQuery) {
   const calls = []
   const mappersCode = source.slice(
     source.indexOf("function mapReplayRow("),
-    source.indexOf("function mapChallengeRow(")
+    source.indexOf("export async function insertRoundReplay(")
   )
   const queriesCode = source.slice(
-    source.indexOf("export async function findReplayById("),
-    source.indexOf("export async function findUserByUsernameForChallenge(")
+    source.indexOf("export async function findReplayById(")
   ).replaceAll("export ", "")
 
   const ctx = {
