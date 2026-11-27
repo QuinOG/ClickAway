@@ -9,6 +9,7 @@ import { buildHistorySnapshot } from '../src/features/history/historyRoundsSnaps
 const source = readFileSync('server/playerMysqlDatabase.js', 'utf8')
 const seasonsSource = readFileSync('server/db/seasons.js', 'utf8')
 const schemaSource = readFileSync('server/db/schema.js', 'utf8')
+const progressSource = readFileSync('server/db/progress.js', 'utf8')
 
 test('history preserves result kind and RR summaries exclude placement points, including zero', () => {
   const rows = ['placement', 'rr', null].map((rankResultKind, i) => normalizeHistoryEntry({ progressionMode: 'ranked', rankResultKind, rankDelta: [120, 15, -3][i] }))
@@ -19,8 +20,8 @@ test('history preserves result kind and RR summaries exclude placement points, i
 })
 
 test('server weekly count survives progress normalization and exceeds loaded history', async () => {
-  const todayWindow = source.slice(source.indexOf('const TODAY_UTC_WINDOW'), source.indexOf('async function hasXpRoundToday('))
-  const code = source.slice(source.indexOf('async function getRoundHistoryProgressCounts('), source.indexOf('// Rebuilds stats from history'))
+  const todayWindow = progressSource.slice(progressSource.indexOf('const TODAY_UTC_WINDOW'), progressSource.indexOf('async function hasXpRoundToday('))
+  const code = progressSource.slice(progressSource.indexOf('async function getRoundHistoryProgressCounts('), progressSource.indexOf('// Rebuilds stats from history'))
   const ctx = { toNonNegativeNumber: v => Number(v) || 0 }
   vm.runInNewContext(todayWindow + code, ctx)
   const executor = { query: async (sql, params) => {
@@ -32,7 +33,7 @@ test('server weekly count survives progress normalization and exceeds loaded his
   const counts = await ctx.getRoundHistoryProgressCounts(executor, 7)
   const stats = normalizeLifetimeStats({ roundsThisWeek: counts.roundsThisWeek })
   assert.equal(buildProfileStatsFromLifetime(stats, []).roundsThisWeek, 125)
-  assert.match(source, /played_at >= now\(\) - interval '7 days' AND played_at <= now\(\)/)
+  assert.match(progressSource, /played_at >= now\(\) - interval '7 days' AND played_at <= now\(\)/)
 })
 
 test('rollover serializes concurrent requests, preserves duration and catches up after downtime', async () => {

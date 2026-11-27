@@ -9,7 +9,7 @@ import { applyRankedMatchResult, RANK_SYSTEM_VERSION } from "../src/utils/rankUt
 const source = readFileSync("server/app.js", "utf8")
 const route = source.slice(source.indexOf('app.post("/api/round/complete"'), source.indexOf('app.put("/api/progress"'))
 const database = readFileSync("server/playerMysqlDatabase.js", "utf8")
-const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("// Saves only the preferences"))
+const save = database.slice(database.indexOf("export async function completeUserRound("), database.indexOf("\nexport default pool"))
   .replace("export ", "")
 
 async function run({ token = true, duplicate = false, invalid = false, failure = null, ranked = false, challengeId = 11, savedTimestamp = {}, clientReaction = {}, consumedHistory = null, pendingDeleted = true } = {}) {

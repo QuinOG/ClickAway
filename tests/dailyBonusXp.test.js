@@ -8,13 +8,14 @@ import * as dailyGoals from "../src/utils/dailyGoals.js"
 // Runs the real completeUserRound against a scripted connection to check the
 // first-round-of-the-day XP bonus and daily goal rewards.
 const source = readFileSync("server/playerMysqlDatabase.js", "utf8")
+const progressSource = readFileSync("server/db/progress.js", "utf8")
 const code = source.slice(
   source.indexOf("export async function completeUserRound("),
-  source.indexOf("// Saves only the preferences the client actually sent")
+  source.indexOf("\nexport default pool")
 ).replace("export async function", "async function")
-const helper = source.slice(
-  source.indexOf("const TODAY_UTC_WINDOW"),
-  source.indexOf("async function getRoundHistoryCount(")
+const helper = progressSource.slice(
+  progressSource.indexOf("const TODAY_UTC_WINDOW"),
+  progressSource.indexOf("async function getRoundHistoryCount(")
 )
 
 const TODAY = "2026-11-15"
