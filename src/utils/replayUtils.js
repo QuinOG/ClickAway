@@ -3,6 +3,7 @@ import { getDifficultyById } from "../constants/gameModesConfig.js"
 import { replayRoundEvents } from "../game/engine/roundEngine.js"
 
 export function buildRoundRulesFromReplay(replay = {}) {
+  if (!replay || typeof replay !== "object" || Array.isArray(replay)) return null
   const mode = getDifficultyById(replay.modeId)
   if (!mode) {
     return null
@@ -16,6 +17,7 @@ export function buildRoundRulesFromReplay(replay = {}) {
  * the score they had at that moment in their round.
  */
 export function computeGhostScoreAtElapsed(replay = {}, elapsedMs = 0, playerLevel = 1) {
+  if (!replay || typeof replay !== "object" || Array.isArray(replay)) return 0
   const roundRules = buildRoundRulesFromReplay(replay, playerLevel)
   if (!roundRules) {
     return 0
@@ -34,17 +36,29 @@ export function computeGhostScoreAtElapsed(replay = {}, elapsedMs = 0, playerLev
 }
 
 export function normalizeReplayRecord(replay = {}) {
-  const events = Array.isArray(replay.events)
-    ? replay.events
-    : (typeof replay.eventsJson === "string"
-      ? JSON.parse(replay.eventsJson)
-      : replay.eventsJson ?? [])
+  if (!replay || typeof replay !== "object" || Array.isArray(replay)) replay = {}
+  let events = Array.isArray(replay.events) ? replay.events : replay.eventsJson
+  if (typeof events === "string") {
+    try {
+      events = JSON.parse(events)
+    } catch {
+      events = []
+    }
+  }
+  if (!Array.isArray(events)) events = []
 
   let loadoutSnapshot = replay.loadoutSnapshot ?? null
   if (!loadoutSnapshot && replay.loadoutSnapshotJson) {
-    loadoutSnapshot = typeof replay.loadoutSnapshotJson === "string"
-      ? JSON.parse(replay.loadoutSnapshotJson)
-      : replay.loadoutSnapshotJson
+    try {
+      loadoutSnapshot = typeof replay.loadoutSnapshotJson === "string"
+        ? JSON.parse(replay.loadoutSnapshotJson)
+        : replay.loadoutSnapshotJson
+    } catch {
+      loadoutSnapshot = null
+    }
+  }
+  if (!loadoutSnapshot || typeof loadoutSnapshot !== "object" || Array.isArray(loadoutSnapshot)) {
+    loadoutSnapshot = null
   }
 
   return {

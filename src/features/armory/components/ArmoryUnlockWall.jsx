@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useId, useState } from "react"
 import { MODULE_SLOTS, LOADOUT_POWERUPS, PASSIVE_LOADOUT_MODULES } from "../../../constants/buildcraft.js"
 import { ModuleSlotGlyph, PowerupGlyph } from "../../buildcraft/loadoutBuildcraftGlyphIcons.jsx"
 import { getUnlockText } from "../armoryUtils.js"
@@ -71,6 +71,15 @@ const WALL_TABS = [{ id: "all", label: "All" }, ...MODULE_SLOTS.map((slot) => ({
 export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeLoadout }) {
   const [activeTab, setActiveTab] = useState("all")
   const dialogRef = useOverlayDismiss(isOpen, onClose)
+  const tabsId = useId()
+  function handleTabKeyDown(event) {
+    const index = WALL_TABS.findIndex((tab) => tab.id === activeTab)
+    const nextIndex = { ArrowRight: (index + 1) % WALL_TABS.length, ArrowLeft: (index + WALL_TABS.length - 1) % WALL_TABS.length, Home: 0, End: WALL_TABS.length - 1 }[event.key]
+    if (nextIndex === undefined) return
+    event.preventDefault()
+    setActiveTab(WALL_TABS[nextIndex].id)
+    event.currentTarget.parentElement.querySelectorAll('[role="tab"]')[nextIndex].focus()
+  }
   if (!isOpen) return null
 
   const allParts = [...PASSIVE_LOADOUT_MODULES, ...LOADOUT_POWERUPS]
@@ -147,13 +156,13 @@ export default function ArmoryUnlockWall({ isOpen, onClose, playerLevel, activeL
 
         <div className="armoryUnlockWallTabs" role="tablist" aria-label="Part categories">
           {WALL_TABS.map((tab) => (
-            <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} className={`armoryUnlockWallTab ${activeTab === tab.id ? "isActive" : ""}`} onClick={() => setActiveTab(tab.id)}>
+            <button key={tab.id} type="button" role="tab" id={`${tabsId}-${tab.id}`} aria-controls={`${tabsId}-panel`} tabIndex={activeTab === tab.id ? 0 : -1} onKeyDown={handleTabKeyDown} aria-selected={activeTab === tab.id} className={`armoryUnlockWallTab ${activeTab === tab.id ? "isActive" : ""}`} onClick={() => setActiveTab(tab.id)}>
               {tab.label}
             </button>
           ))}
         </div>
 
-        <div className={`armoryUnlockWallGrid tab-${activeTab}`}>
+        <div className={`armoryUnlockWallGrid tab-${activeTab}`} role="tabpanel" id={`${tabsId}-panel`} aria-labelledby={`${tabsId}-${activeTab}`}>
           {MODULE_SLOTS.filter((slot) => activeTab === "all" || activeTab === slot.id).map((slot) => (
             <ArmoryUnlockWallPanel
               key={slot.id}

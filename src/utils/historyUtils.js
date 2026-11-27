@@ -69,6 +69,7 @@ function normalizePlayedAtIso(value, fallbackDate = new Date()) {
 }
 
 export function normalizeHistoryEntry(entry = {}, index = 0) {
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) entry = {}
   const fallbackDate = new Date(Date.now() - index)
   const playedAtIso = normalizePlayedAtIso(
     entry.playedAtIso ?? entry.playedAt,
@@ -122,6 +123,7 @@ export function normalizeHistoryEntry(entry = {}, index = 0) {
  * @returns {string}
  */
 export function formatPlayedAtLabel(playedDate) {
+  if (!(playedDate instanceof Date) || Number.isNaN(playedDate.getTime())) return "\u2014"
   const now = new Date()
   const elapsedMs = Math.max(0, now.getTime() - playedDate.getTime())
   const elapsedMinutes = elapsedMs / (1000 * 60)
@@ -209,7 +211,10 @@ export function createHistoryEntry({
  * @returns {Object[]}
  */
 export function appendHistoryEntry(currentHistory, nextEntry) {
-  return [nextEntry, ...currentHistory].slice(0, RECENT_HISTORY_LIMIT)
+  const history = Array.isArray(currentHistory) ? currentHistory : []
+  return [nextEntry, ...history]
+    .filter((entry) => entry && typeof entry === "object" && !Array.isArray(entry))
+    .slice(0, RECENT_HISTORY_LIMIT)
 }
 
 /**
@@ -218,7 +223,8 @@ export function appendHistoryEntry(currentHistory, nextEntry) {
  * @returns {{bestScore: number, bestStreak: number, accuracyPercent: number}}
  */
 export function buildPlayerLeaderboardStats(historyEntries) {
-  if (!historyEntries.length) {
+  const entries = Array.isArray(historyEntries) ? historyEntries : []
+  if (!entries.length) {
     return {
       bestScore: 0,
       bestStreak: 0,
@@ -231,7 +237,8 @@ export function buildPlayerLeaderboardStats(historyEntries) {
   let totalHits = 0
   let totalMisses = 0
 
-  historyEntries.forEach((entry) => {
+  entries.forEach((entry) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return
     bestScore = Math.max(bestScore, Number(entry.score) || 0)
     bestStreak = Math.max(bestStreak, Number(entry.bestStreak) || 0)
     totalHits += Number(entry.hits) || 0

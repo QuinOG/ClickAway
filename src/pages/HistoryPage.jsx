@@ -32,7 +32,8 @@ function formatNumber(value = 0) {
 }
 
 function getPlayedAtLabel(round = {}) {
-  const playedAtDate = new Date(round.playedAtIso || Date.now())
+  if (!round?.playedAtIso) return "\u2014"
+  const playedAtDate = new Date(round.playedAtIso)
   return Number.isNaN(playedAtDate.getTime())
     ? "\u2014"
     : formatPlayedAtLabel(playedAtDate)

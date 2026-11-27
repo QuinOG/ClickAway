@@ -148,7 +148,8 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState("")
   const [replayLoadError, setReplayLoadError] = useState("")
-  const [respondingChallengeId, setRespondingChallengeId] = useState(null)
+  const [respondingChallengeIds, setRespondingChallengeIds] = useState(() => new Set())
+  const [respondError, setRespondError] = useState("")
   const [sendForm, setSendForm] = useState({ opponentUsername: ladderRival, replayId: "", message: "" })
   const [sendError, setSendError] = useState("")
   const [sendSuccess, setSendSuccess] = useState("")
@@ -163,6 +164,7 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
 
     setIsLoading(true)
     setLoadError("")
+    setRespondError("")
     setReplayLoadError("")
     try {
       const [challengeResponse, replayResponse] = await Promise.allSettled([
@@ -231,7 +233,8 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
   const launchReady = Boolean(sendForm.opponentUsername.trim() && selectedReplay)
 
   async function handleRespond(challengeId, action, source) {
-    setRespondingChallengeId(challengeId)
+    setRespondingChallengeIds((current) => new Set(current).add(challengeId))
+    setRespondError("")
     signalAction(source, { state: "pending", silent: true })
     try {
       await respondToChallenge(challengeId, action)
@@ -241,10 +244,14 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
         eventId: `duel-${action}-${challengeId}`,
       })
     } catch (error) {
-      setLoadError(error.message || "Unable to update challenge.")
+      setRespondError(error.message || "Unable to update challenge.")
       signalAction(source, { state: "denied", eventName: FEEDBACK_EVENTS.ACTION_DENY })
     } finally {
-      setRespondingChallengeId(null)
+      setRespondingChallengeIds((current) => {
+        const next = new Set(current)
+        next.delete(challengeId)
+        return next
+      })
     }
   }
 
@@ -307,8 +314,23 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
               key={option.id}
               type="button"
               role="tab"
+              id={`duel-filter-${option.id}`}
+              aria-controls="duel-inbox-panel"
               aria-selected={filter === option.id}
+              tabIndex={filter === option.id ? 0 : -1}
               className={`leaderboardBoardTab${filter === option.id ? " isActive" : ""}`}
+              onKeyDown={(event) => {
+                const index = FILTERS.findIndex((item) => item.id === option.id)
+                const nextIndex = event.key === "ArrowRight" ? (index + 1) % FILTERS.length
+                  : event.key === "ArrowLeft" ? (index - 1 + FILTERS.length) % FILTERS.length
+                    : event.key === "Home" ? 0
+                      : event.key === "End" ? FILTERS.length - 1 : null
+                if (nextIndex === null) return
+                event.preventDefault()
+                const nextTab = document.getElementById(`duel-filter-${FILTERS[nextIndex].id}`)
+                nextTab?.focus()
+                nextTab?.click()
+              }}
               onClick={(event) => {
                 setFilter(option.id)
                 signalAction(event.currentTarget, {
@@ -322,57 +344,61 @@ export default function ChallengesPage({ currentUserId = "", currentUsername = "
           ))}
         </div>
 
-        {isLoading ? (
-          <div className="duelRow duelNotice" role="status" aria-live="polite">
-            <strong>Scanning rival channels</strong>
-          </div>
-        ) : null}
+        <div id="duel-inbox-panel" role="tabpanel" aria-labelledby={`duel-filter-${filter}`}>
+          {respondError ? <p className="duelStakeNote" role="alert">{respondError}</p> : null}
 
-        {!isLoading && loadError ? (
-          <div className="duelRow duelNotice" role="alert">
-            <img src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />
-            <div>
-              <strong>Rival network unavailable</strong>
-              <p>{loadError}</p>
+          {isLoading ? (
+            <div className="duelRow duelNotice" role="status" aria-live="polite">
+              <strong>Scanning rival channels</strong>
             </div>
-            <button
-              type="button"
-              className="secondaryButton"
-              onClick={async (event) => {
-                const source = event.currentTarget
-                signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
-                const succeeded = await loadChallenges()
-                signalAction(source, {
-                  state: succeeded ? "confirmed" : "denied",
-                  eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
-                })
-              }}
-            >Reload duels</button>
-          </div>
-        ) : null}
+          ) : null}
 
-        {!isLoading && !loadError && visibleChallenges.length === 0 ? (
-          <div className="duelRow duelNotice" role="status">
-            <img src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />
-            <div>
-              <strong>{emptyCopy.split(". ")[0]}.</strong>
-              <p>{emptyCopy.split(". ")[1]}</p>
+          {!isLoading && loadError ? (
+            <div className="duelRow duelNotice" role="alert">
+              <img src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />
+              <div>
+                <strong>Rival network unavailable</strong>
+                <p>{loadError}</p>
+              </div>
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={async (event) => {
+                  const source = event.currentTarget
+                  signalAction(source, { state: "pending", eventName: FEEDBACK_EVENTS.RETRY })
+                  const succeeded = await loadChallenges()
+                  signalAction(source, {
+                    state: succeeded ? "confirmed" : "denied",
+                    eventName: succeeded ? FEEDBACK_EVENTS.ACTION_CONFIRM : FEEDBACK_EVENTS.ACTION_DENY,
+                  })
+                }}
+              >Reload duels</button>
             </div>
-          </div>
-        ) : null}
+          ) : null}
 
-        <div className="duelRows">
-          {visibleChallenges.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              currentUserId={currentUserId}
-              currentUsername={currentUsername}
-              onRespond={handleRespond}
-              onRaceGhost={handleRaceGhost}
-              isResponding={respondingChallengeId === challenge.id}
-            />
-          ))}
+          {!isLoading && !loadError && visibleChallenges.length === 0 ? (
+            <div className="duelRow duelNotice" role="status">
+              <img src="/art/duels/rival-masked.png" alt="" width="320" height="317" decoding="async" />
+              <div>
+                <strong>{emptyCopy.split(". ")[0]}.</strong>
+                <p>{emptyCopy.split(". ")[1]}</p>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="duelRows">
+            {visibleChallenges.map((challenge) => (
+              <ChallengeCard
+                key={challenge.id}
+                challenge={challenge}
+                currentUserId={currentUserId}
+                currentUsername={currentUsername}
+                onRespond={handleRespond}
+                onRaceGhost={handleRaceGhost}
+                isResponding={respondingChallengeIds.has(challenge.id)}
+              />
+            ))}
+          </div>
         </div>
       </section>
 

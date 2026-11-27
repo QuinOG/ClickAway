@@ -11,6 +11,15 @@ const page = (id, best = 200) => (
   <MemoryRouter><HistoryPage roundHistory={rounds(id)} totalRoundCount={51} careerBestScore={best} /></MemoryRouter>
 )
 
+test.each([undefined, null, ""])("missing playedAtIso (%s) renders an unknown date", (playedAtIso) => {
+  const history = [{ ...rounds("undated")[0], playedAtIso }]
+  const { container } = render(<MemoryRouter><HistoryPage roundHistory={history} /></MemoryRouter>)
+
+  expect(container.querySelector(".historyPlayedPrimary").textContent).toBe("\u2014")
+  expect(container.querySelector(".historyRoundCard time").textContent).toBe("\u2014")
+  expect(screen.queryByText(/Just now/i)).toBeNull()
+})
+
 test("refreshing the first page clears an obsolete pagination error", async () => {
   fetchHistoryPage.mockRejectedValueOnce(new Error("Old page failed"))
   const { rerender } = render(page("first"))

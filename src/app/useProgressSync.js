@@ -6,6 +6,7 @@ import { pickProgressIntent } from "./progressIntent.js"
 import {
   applyProgressResponse,
   beginProgressRequest,
+  captureProgressSession,
   isCurrentSession,
   markPendingPreferences,
   settlePendingPreferences,
@@ -53,7 +54,9 @@ export function useProgressSync({ isAuthed, applyProgress }) {
 
     const requestEpoch = sessionEpochRef.current
     const intentSequence = ++latestIntentSequenceRef.current
-    const ticket = beginProgressRequest()
+    const session = captureProgressSession()
+    let ticket
+    let mutationSucceeded = false
     const pendingHandle = markPendingPreferences(payload)
 
     persistQueueRef.current = persistQueueRef.current
@@ -61,11 +64,13 @@ export function useProgressSync({ isAuthed, applyProgress }) {
       .then(async () => {
         // Checked before sending, not only after: a save queued by one account
         // must never be sent once another account has logged in.
-        if (sessionEpochRef.current !== requestEpoch || !isCurrentSession(ticket)) {
+        if (sessionEpochRef.current !== requestEpoch || !isCurrentSession(session)) {
           return null
         }
 
+        ticket = beginProgressRequest()
         const response = await updatePlayerProgress(payload)
+        mutationSucceeded = true
         if (
           sessionEpochRef.current !== requestEpoch
           || intentSequence !== latestIntentSequenceRef.current
@@ -97,7 +102,7 @@ export function useProgressSync({ isAuthed, applyProgress }) {
       })
       .finally(() => {
         settlePendingPreferences(pendingHandle)
-        if (sessionEpochRef.current === requestEpoch
+        if (mutationSucceeded && sessionEpochRef.current === requestEpoch
           && intentSequence === latestIntentSequenceRef.current) {
           settleProgressMutation(ticket, applyProgress)
         }

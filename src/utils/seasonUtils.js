@@ -34,13 +34,16 @@ export function normalizeSeasonRecord(season = {}) {
 
   const startsAt = season.startsAt ?? season.starts_at ?? null
   const endsAt = season.endsAt ?? season.ends_at ?? null
-  const startMs = startsAt ? new Date(startsAt).getTime() : 0
-  const endMs = endsAt ? new Date(endsAt).getTime() : 0
+  const parsedStartMs = startsAt ? new Date(startsAt).getTime() : NaN
+  const parsedEndMs = endsAt ? new Date(endsAt).getTime() : NaN
+  const startMs = Number.isFinite(parsedStartMs) ? parsedStartMs : 0
+  const endMs = Number.isFinite(parsedEndMs) ? parsedEndMs : 0
+  const hasValidRange = Number.isFinite(parsedStartMs) && Number.isFinite(parsedEndMs) && endMs > startMs
   const nowMs = Date.now()
   const totalMs = Math.max(1, endMs - startMs)
   const elapsedMs = Math.max(0, Math.min(totalMs, nowMs - startMs))
-  const progressPercent = Math.round((elapsedMs / totalMs) * 100)
-  const daysRemaining = endMs > nowMs
+  const progressPercent = hasValidRange ? Math.round((elapsedMs / totalMs) * 100) : 0
+  const daysRemaining = hasValidRange && endMs > nowMs
     ? Math.ceil((endMs - nowMs) / (1000 * 60 * 60 * 24))
     : 0
 

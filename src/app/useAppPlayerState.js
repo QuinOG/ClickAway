@@ -62,74 +62,76 @@ function normalizeStringList(values = []) {
 }
 
 function normalizeProgress(progress = {}) {
-  const levelXp = Math.max(0, Number(progress.levelXp) || 0)
+  const safeProgress = progress && typeof progress === "object" ? progress : {}
+  const levelXp = Math.max(0, Number(safeProgress.levelXp) || 0)
   const level = getLevelProgress(levelXp).level
-  const normalizedRoundHistory = (Array.isArray(progress.roundHistory) ? progress.roundHistory : [])
+  const normalizedRoundHistory = (Array.isArray(safeProgress.roundHistory) ? safeProgress.roundHistory : [])
     .map(normalizeHistoryEntry)
   const migratedRankData = migrateLegacyRankData({
-    rankMmr: progress.rankMmr,
-    rankedState: progress.rankedState,
+    rankMmr: safeProgress.rankMmr,
+    rankedState: safeProgress.rankedState,
     roundHistory: normalizedRoundHistory,
   })
   const normalizedLoadouts = normalizeLoadoutState(
     level,
-    progress.savedLoadouts,
-    progress.activeLoadoutId
+    safeProgress.savedLoadouts,
+    safeProgress.activeLoadoutId
   )
   const normalizedLifetimeStats = normalizeLifetimeStats(
-    progress.lifetimeStats ?? DEFAULT_LIFETIME_STATS
+    safeProgress.lifetimeStats ?? DEFAULT_LIFETIME_STATS
   )
-  const normalizedLoadoutStats = (Array.isArray(progress.loadoutStats) ? progress.loadoutStats : [])
+  const normalizedLoadoutStats = (Array.isArray(safeProgress.loadoutStats) ? safeProgress.loadoutStats : [])
     .map(normalizeLoadoutStatsEntry)
     .filter(Boolean)
 
   return {
     // Server-reported; null when unknown (older responses), and the lobby then
     // falls back to the loaded rounds.
-    dailyBonusAvailable: typeof progress.dailyBonusAvailable === "boolean" ? progress.dailyBonusAvailable : null,
+    dailyBonusAvailable: typeof safeProgress.dailyBonusAvailable === "boolean" ? safeProgress.dailyBonusAvailable : null,
     // Server-reported; null from older servers, and the lobby then shows no goals.
-    dailyGoals: normalizeDailyGoals(progress.dailyGoals),
-    coins: Math.max(0, Number(progress.coins) || 0),
+    dailyGoals: normalizeDailyGoals(safeProgress.dailyGoals),
+    coins: Math.max(0, Number(safeProgress.coins) || 0),
     levelXp,
     rankMmr: migratedRankData.rankMmr,
     rankedState: migratedRankData.rankedState,
-    ownedItemIds: normalizeStringList(progress.ownedItemIds),
+    ownedItemIds: normalizeStringList(safeProgress.ownedItemIds),
     equippedButtonSkinId: String(
-      progress.equippedButtonSkinId || DEFAULT_EQUIPPED_IDS.buttonSkin
+      safeProgress.equippedButtonSkinId || DEFAULT_EQUIPPED_IDS.buttonSkin
     ),
     equippedArenaThemeId: String(
-      progress.equippedArenaThemeId || DEFAULT_EQUIPPED_IDS.arenaTheme
+      safeProgress.equippedArenaThemeId || DEFAULT_EQUIPPED_IDS.arenaTheme
     ),
     equippedProfileImageId: String(
-      progress.equippedProfileImageId || DEFAULT_EQUIPPED_IDS.profileImage
+      safeProgress.equippedProfileImageId || DEFAULT_EQUIPPED_IDS.profileImage
     ),
     roundHistory: normalizedRoundHistory,
     lifetimeStats: normalizedLifetimeStats,
     loadoutStats: normalizedLoadoutStats,
-    totalRoundCount: Math.max(0, Number(progress.totalRoundCount) || normalizedRoundHistory.length),
-    unlockedAchievementIds: normalizeStringList(progress.unlockedAchievementIds),
+    totalRoundCount: Math.max(0, Number(safeProgress.totalRoundCount) || normalizedRoundHistory.length),
+    unlockedAchievementIds: normalizeStringList(safeProgress.unlockedAchievementIds),
     savedLoadouts: normalizedLoadouts.savedLoadouts,
     activeLoadoutId: normalizedLoadouts.activeLoadoutId,
     buildWalkthrough: normalizeBuildWalkthrough(
-      progress.buildWalkthrough,
+      safeProgress.buildWalkthrough,
       BUILD_WALKTHROUGH_STATUS.DISMISSED
     ),
-    seenUnlockPartIds: normalizeSeenUnlockPartIds(progress.seenUnlockPartIds),
+    seenUnlockPartIds: normalizeSeenUnlockPartIds(safeProgress.seenUnlockPartIds),
   }
 }
 
 function normalizePlayerState(playerState = {}) {
+  const safePlayerState = playerState && typeof playerState === "object" ? playerState : {}
   return {
-    coins: Math.max(0, Number(playerState.coins) || 0),
-    ownedItemIds: normalizeStringList(playerState.ownedItemIds),
+    coins: Math.max(0, Number(safePlayerState.coins) || 0),
+    ownedItemIds: normalizeStringList(safePlayerState.ownedItemIds),
     equippedButtonSkinId: String(
-      playerState.equippedButtonSkinId || DEFAULT_EQUIPPED_IDS.buttonSkin
+      safePlayerState.equippedButtonSkinId || DEFAULT_EQUIPPED_IDS.buttonSkin
     ),
     equippedArenaThemeId: String(
-      playerState.equippedArenaThemeId || DEFAULT_EQUIPPED_IDS.arenaTheme
+      safePlayerState.equippedArenaThemeId || DEFAULT_EQUIPPED_IDS.arenaTheme
     ),
     equippedProfileImageId: String(
-      playerState.equippedProfileImageId || DEFAULT_EQUIPPED_IDS.profileImage
+      safePlayerState.equippedProfileImageId || DEFAULT_EQUIPPED_IDS.profileImage
     ),
   }
 }
@@ -213,14 +215,15 @@ export function useAppPlayerState() {
   }, [])
 
   const applyPlayerState = useCallback((response = {}) => {
-    const normalizedPlayerState = normalizePlayerState(response.state ?? response)
+    const safeResponse = response && typeof response === "object" ? response : {}
+    const normalizedPlayerState = normalizePlayerState(safeResponse.state ?? safeResponse)
 
-    if (response?.user?.id !== undefined && response?.user?.id !== null) {
-      setPlayerUserId(String(response.user.id))
+    if (safeResponse?.user?.id !== undefined && safeResponse?.user?.id !== null) {
+      setPlayerUserId(String(safeResponse.user.id))
     }
 
-    if (response?.user?.username) {
-      setPlayerUsername(String(response.user.username))
+    if (safeResponse?.user?.username) {
+      setPlayerUsername(String(safeResponse.user.username))
     }
 
     setCoins(normalizedPlayerState.coins)
@@ -233,15 +236,16 @@ export function useAppPlayerState() {
   }, [])
 
   const applyAuthenticatedSession = useCallback((response = {}) => {
-    if (response?.user?.id !== undefined && response?.user?.id !== null) {
-      setPlayerUserId(String(response.user.id))
+    const safeResponse = response && typeof response === "object" ? response : {}
+    if (safeResponse?.user?.id !== undefined && safeResponse?.user?.id !== null) {
+      setPlayerUserId(String(safeResponse.user.id))
     }
 
-    if (response?.user?.username) {
-      setPlayerUsername(String(response.user.username))
+    if (safeResponse?.user?.username) {
+      setPlayerUsername(String(safeResponse.user.username))
     }
 
-    return applyProgress(response.progress)
+    return applyProgress(safeResponse.progress)
   }, [applyProgress])
 
   const resetPlayerState = useCallback(() => {

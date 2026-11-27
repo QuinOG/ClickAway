@@ -3272,3 +3272,37 @@
     .armoryMachine .armoryMachineCore { container-type: inline-size; }
     .armoryMachine .armoryMachineBench { width: calc(100cqw / var(--armory-machine-scale, 1)); }
 }
+
+/* Unslop polish (2026-11-27): quiet the chrome so the machine ring and part art carry the screen.
+   Sentence-case labels, lighter weights, no glows on chrome, flat segment bars. */
+.armoryPage :is(
+    .armoryRailEyebrow, .armoryCart small, .armoryRailActionLabel, .armoryMachineNameHint,
+    .armoryMachineTarget small, .armoryMachineHousingSlot, .armoryInstrumentLabel,
+    .armorySwapReport span, .armorySwapReportPreview, .armoryStateEmblemLabel
+) {
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+.armoryPage .armoryCart small { font-size: 10px; }
+.armoryPage .armoryInstrumentLabel { font-size: 12px !important; color: rgb(214 226 242 / 62%) !important; }
+.armoryPage .armoryInstrumentValue,
+.armoryPage .armoryMachineRackKey,
+.armoryPage .armoryPartFeatureName { text-shadow: none !important; }
+.armoryPage :is(.armoryCartCompare, .armoryMachineRackKey, .armoryMachineRackMeta) { font-weight: 600 !important; letter-spacing: 0 !important; }
+.armoryPage .armoryCartStats.isEmpty { font-style: normal !important; color: rgb(214 226 242 / 50%); }
+
+/* Active states: a hairline and a surface step, no halo. */
+.armoryPage .armoryCart.isActive { box-shadow: inset 0 0 0 1px rgb(120 200 255 / 70%) !important; }
+.armoryPage .armoryRailStepButton.isActive { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 35%) !important; }
+.armoryPage .armoryMachineRigConduit.isSelected { box-shadow: 0 0 0 2px rgb(4 9 18) !important; }
+.armoryPage .armoryMachineHousing.isSelected .armoryMachineHousingBody { box-shadow: inset 0 0 0 2px currentColor !important; }
+.armoryPage .armoryPartCard.isFeatured { outline-width: 1px !important; }
+
+/* Segment bars: flat fills, no glow. Gain and loss keep their meaning. */
+.armoryPage .armorySegmentGauge i.isOn { background: #4aa8e8 !important; box-shadow: none !important; }
+.armoryPage .armorySegmentGauge i.isGain { background: #3cc98c !important; box-shadow: none !important; }
+.armoryPage .armorySwapReportHead span { font-size: 12px !important; color: rgb(214 226 242 / 62%); }
+.armoryPage .armorySwapReportHead .armorySwapReportPreview { font-size: 11px !important; }
+.armoryPage .armoryCart small { text-transform: capitalize !important; }

@@ -34,6 +34,11 @@ export function beginProgressRequest() {
   return { session: sessionGeneration, request: requestCounter }
 }
 
+// Check queued work's account without reserving its place in response order.
+export function captureProgressSession() {
+  return { session: sessionGeneration }
+}
+
 export function isCurrentSession(ticket) {
   return Boolean(ticket) && ticket.session === sessionGeneration
 }

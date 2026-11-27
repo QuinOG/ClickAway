@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { MemoryRouter } from "react-router-dom"
+import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { describe, expect, test, vi } from "vitest"
 
 import LoginPage from "../src/pages/LoginPage.jsx"
@@ -11,6 +11,44 @@ function renderPage(page) {
 }
 
 describe("Branded auth arrival", () => {
+  test.each([
+    ["login", new Error("Login unavailable"), "Login unavailable"],
+    ["login", null, "Unable to log in with those details."],
+    ["signup", new Error("Signup unavailable"), "Signup unavailable"],
+    ["signup", null, "Unable to create account."],
+  ])("re-enables %s after rejection with %s", async (mode, error, expectedMessage) => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn().mockRejectedValue(error)
+    render(
+      <MemoryRouter initialEntries={[`/${mode}`]}>
+        <Routes>
+          <Route path={`/${mode}`} element={mode === "login"
+            ? <LoginPage onLogin={onSubmit} />
+            : <SignupPage onSignup={onSubmit} />} />
+          <Route path="/game" element={<p>Game destination</p>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await user.type(screen.getByLabelText("Username"), "deadeye")
+    await user.type(screen.getByLabelText("Password"), "precision123")
+    if (mode === "signup") {
+      await user.type(screen.getByLabelText("Confirm Password"), "precision123")
+    }
+    const buttonName = mode === "login" ? "Enter arena" : "Create account"
+    await user.click(screen.getByRole("button", { name: buttonName }))
+
+    expect((await screen.findByRole("alert")).textContent).toBe(expectedMessage)
+    expect(onSubmit).toHaveBeenCalledWith("deadeye", "precision123")
+    expect(screen.getByRole("button", { name: buttonName }).disabled).toBe(false)
+    expect(screen.getByLabelText("Username").disabled).toBe(false)
+    expect(screen.getByLabelText("Password").disabled).toBe(false)
+    if (mode === "signup") {
+      expect(screen.getByLabelText("Confirm Password").disabled).toBe(false)
+    }
+    expect(screen.queryByText("Game destination")).toBeNull()
+  })
+
   test("keeps the login form primary and labels the arena as a demonstration", () => {
     renderPage(<LoginPage onLogin={vi.fn()} />)
 

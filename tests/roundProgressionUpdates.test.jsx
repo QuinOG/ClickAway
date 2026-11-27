@@ -1,5 +1,6 @@
 import { renderHook } from "@testing-library/react"
 import { beforeEach, expect, test, vi } from "vitest"
+import toast from "react-hot-toast"
 
 import { startNewProgressSession } from "../src/app/progressResponseGuard.js"
 import { usePlayerProgressionUpdates } from "../src/app/usePlayerProgressionUpdates.js"
@@ -9,6 +10,7 @@ vi.mock("../src/services/clickAwayHttpApiClient.js", () => ({
   fetchCurrentUser: vi.fn(),
   submitRound: vi.fn(),
 }))
+vi.mock("react-hot-toast", () => ({ default: { error: vi.fn() } }))
 
 beforeEach(() => startNewProgressSession())
 
@@ -47,4 +49,20 @@ test("sends the round's seed and arena so a tokenless round can be scored with B
   const { result } = renderHook(() => usePlayerProgressionUpdates({ isAuthed: true, applyProgress: vi.fn() }))
   await result.current.handleRoundComplete({ modeId: "practice", seed: 38, arenaWidth: 600, arenaHeight: 400 })
   expect(submitRound).toHaveBeenLastCalledWith(expect.objectContaining({ roundToken: null, seed: 38, arenaWidth: 600, arenaHeight: 400 }))
+})
+
+test("a failed round does not schedule a progress refresh or toast", async () => {
+  startNewProgressSession()
+  vi.useFakeTimers()
+  try {
+    submitRound.mockRejectedValueOnce(Error("offline"))
+    const { result } = renderHook(() => usePlayerProgressionUpdates({ isAuthed: true, applyProgress: vi.fn() }))
+    expect(await result.current.handleRoundComplete({ modeId: "normal" })).toEqual({ ok: false, error: "offline" })
+    await vi.advanceTimersByTimeAsync(300)
+    expect(fetchCurrentUser).not.toHaveBeenCalled()
+    expect(toast.error).not.toHaveBeenCalled()
+  } finally {
+    startNewProgressSession()
+    vi.useRealTimers()
+  }
 })

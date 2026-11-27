@@ -82,16 +82,20 @@ export default function LoginPage({ onLogin }) {
     }
 
     setIsSubmitting(true)
-    const loginResult = await onLogin?.(username.trim(), password)
-    if (loginResult?.ok === false) {
-      setSubmitError(loginResult.error || "Unable to log in with those details.")
-      setIsSubmitting(false)
-      return
-    }
+    try {
+      const loginResult = await onLogin?.(username.trim(), password)
+      if (loginResult?.ok === false) {
+        setSubmitError(loginResult.error || "Unable to log in with those details.")
+        return
+      }
 
-    setSubmitError("")
-    setIsSubmitting(false)
-    navigate("/game")
+      setSubmitError("")
+      navigate("/game")
+    } catch (error) {
+      setSubmitError(error?.message || "Unable to log in with those details.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

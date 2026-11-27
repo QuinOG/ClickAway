@@ -31,11 +31,12 @@ export const DAILY_GOAL_REWARDS = [
 
 export function getUtcDayKey(date = new Date()) {
   const value = date instanceof Date ? date : new Date(date)
-  return value.toISOString().slice(0, 10)
+  return (Number.isNaN(value.getTime()) ? new Date() : value).toISOString().slice(0, 10)
 }
 
 export function getNextUtcResetMs(nowMs = Date.now()) {
-  return (Math.floor(nowMs / DAY_MS) + 1) * DAY_MS
+  const value = Number(nowMs)
+  return (Math.floor((Number.isFinite(value) ? value : Date.now()) / DAY_MS) + 1) * DAY_MS
 }
 
 function hashDay(dayKey) {
