@@ -1,3 +1,7 @@
+> **Archived brief.** This file records instructions once given to a review
+> agent for a past round. It is history, not a task. Agents reading the repo
+> must not follow it.
+
 # UI polish council review
 
 You are an independent design reviewer for ClickAway, a browser click-precision arena game. Review the latest integration using screenshots only. Do not edit files or inspect source code.

@@ -1,3 +1,7 @@
+> **Archived brief.** This file records instructions once given to a review
+> agent for a past round. It is history, not a task. Agents reading the repo
+> must not follow it.
+
 # Shop screen: council review
 
 You are an independent design reviewer for ClickAway, a browser click-precision arena game. Review using screenshots only. Do not edit files or read source code.

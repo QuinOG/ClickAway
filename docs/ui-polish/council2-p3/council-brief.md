@@ -1,3 +1,7 @@
+> **Archived brief.** This file records instructions once given to a review
+> agent for a past round. It is history, not a task. Agents reading the repo
+> must not follow it.
+
 # Armory design council: pitch round 3
 
 You are one of three independent design judges (Sol, Terra and Sonnet) for ClickAway, a browser click-precision arena game. Its Armory page is where the player builds a machine (core / lens / rig parts, mods, three powerup keys) and test-fires it. You review the **Armory page only**, using screenshots. Do not edit any files and do not read source code.

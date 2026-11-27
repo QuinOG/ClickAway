@@ -1,3 +1,7 @@
+> **Archived brief.** This file records instructions once given to a review
+> agent for a past round. It is history, not a task. Agents reading the repo
+> must not follow it.
+
 # ClickAway game-feel council (brief v2)
 
 You are an independent UI and art-direction reviewer for ClickAway, a browser click-precision arena game built as a React web app. The goal is for it to stop feeling like a SaaS dashboard and feel like a shipped INDIE GAME across the WHOLE app: game menus, illustrated icons, characterful type, a world, and juice.
