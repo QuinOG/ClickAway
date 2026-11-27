@@ -200,9 +200,6 @@ export function calculateRoundRewards({
   misses,
   score,
   bestStreak,
-  currentMmr,
-  currentRankedState,
-  hasRankedHistory,
 }) {
   const mode = getDifficultyById(modeId)
   const h = clamp(hits)
@@ -246,8 +243,5 @@ export function calculateRoundRewards({
     baseRankDelta,
     placementMatchScore,
     allowsRankProgression: mode.allowsRankProgression,
-    currentMmr,
-    currentRankedState,
-    hasRankedHistory,
   }
 }

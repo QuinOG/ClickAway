@@ -6,8 +6,9 @@ boot. A deployment using a restricted runtime role instead sets
 `DB_AUTO_MIGRATE=false`, applies the numbered migrations through Supabase first, and
 only verifies the required tables at startup.
 
-`server/data/clickaway.sql` and migrations `001` through `008` are historical MySQL-era
-snapshots kept for reference only. Migrations `009` and later are the active Supabase
+The old MySQL schema snapshot (`clickaway.sql`) was removed from the tree and lives in
+git history. Migrations `001` through `008` are historical MySQL-era patches kept for
+reference only. Migrations `009` and later are the active Supabase
 bootstrap and infrastructure migrations. Keep those files aligned with
 `initializeSchema()` whenever the runtime schema changes.
 
@@ -40,7 +41,7 @@ project-scoped Supabase MCP connection on `2026-07-13`. The environment classifi
 
 ## Notes
 
-- Fresh databases created from `clickaway.sql` already include the reaction metric
+- The old MySQL snapshot (in git history) already included the reaction metric
   columns, so `001_add_round_reaction_metrics.sql` is only for older databases.
 - The repo does not currently track migration application in the database itself.
   Update this file when a migration is applied in a real environment.

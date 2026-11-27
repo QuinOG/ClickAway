@@ -231,9 +231,13 @@ export async function submitRound({
       arenaHeight,
       challengeId,
       drillId,
-    })
+    }, { timeout: 30000 })
     return response.data
   } catch (error) {
+    // No response means a timeout or lost connection, so the server may have saved the round.
+    if (!error.response) {
+      throw new Error("We couldn't confirm the save. Your round may have been saved. Reload to check.")
+    }
     throw new Error(getErrorMessage(error, "Unable to submit round."))
   }
 }

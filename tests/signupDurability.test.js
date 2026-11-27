@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { DEMO_PLAYER_USERNAMES } from '../server/demoPlayerNames.js'
 const db = readFileSync('server/playerMysqlDatabase.js', 'utf8')
 const server = readFileSync('server/index.js', 'utf8')
 const createCode = db.slice(db.indexOf('export async function createUser('), db.indexOf('export async function updateUserPassword(')).replace('export ', '')
@@ -20,7 +21,7 @@ test('signup distinguishes username races, unrelated insert errors and post-crea
   let handler
   let inserts = 0
   const ctx = { app: { post: (p, l, h) => { handler = h } }, authRateLimiter: {},
-    sanitizeUsername: x => x, sanitizePassword: x => x, validateUsername: () => '', validatePassword: () => '',
+    DEMO_PLAYER_USERNAMES, sanitizeUsername: x => x, sanitizePassword: x => x, validateUsername: () => '', validatePassword: () => '',
     findUserByUsername: async () => null, bcrypt: { hash: async () => 'hash' },
     createUser: async () => { if (++inserts > 1) throw Object.assign(Error('duplicate'), { code: '23505', constraint: 'users_username_key' }); return { id: 1 } },
     playerStateStore: { ensurePlayerUser: async () => {} }, createAuthResponse: async () => ({ user: { id: 1 } }),

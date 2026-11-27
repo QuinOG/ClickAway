@@ -55,6 +55,7 @@ import { createRoundSeed, signRoundToken, verifyRoundToken } from "./roundToken.
 import { createPlayerStateStore } from "./playerStateStore.js"
 import { handleExpressError, handleRouteError } from "./routeErrors.js"
 import { sanitizePassword, sanitizeUsername, validatePassword, validateUsername } from "./validation.js"
+import { DEMO_PLAYER_USERNAMES } from "./demoPlayerNames.js"
 import { getDifficultyById } from "../src/constants/gameModesConfig.js"
 import { getLevelProgress } from "../src/utils/progressionUtils.js"
 import { applyRankedMatchResult } from "../src/utils/rankUtils.js"
@@ -238,6 +239,14 @@ app.post("/api/auth/signup", authRateLimiter, async (request, response) => {
   const usernameError = validateUsername(username)
   if (usernameError) {
     response.status(400).json({ error: usernameError })
+    return
+  }
+
+  // seedDemoPlayers.mjs --remove deletes accounts by these names, so a real
+  // player must not be able to take one.
+  const lowerUsername = username.toLowerCase()
+  if (DEMO_PLAYER_USERNAMES.some((name) => name.toLowerCase() === lowerUsername)) {
+    response.status(400).json({ error: "That username is reserved." })
     return
   }
 

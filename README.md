@@ -49,10 +49,8 @@ The backend creates and migrates its own schema automatically on startup
 3. Start the backend once — it creates every table it needs and backfills any missing
    columns on older databases.
 
-No manual SQL import is required. `server/data/clickaway.sql` is kept only as a
-historical snapshot of the old MySQL schema for reading by eye; see
-`server/data/MIGRATIONS.md` for details and why it should not be treated as the
-source of truth.
+No manual SQL import is required. The old MySQL schema snapshot was removed from the
+tree; it lives in git history. See `server/data/MIGRATIONS.md` for details.
 
 ### 3. Create your environment file
 
@@ -76,6 +74,7 @@ These are the variables used by the app:
 | `ADMIN_USERNAME` | No | Username for the optional seeded admin account. Defaults to `admin`. |
 | `ADMIN_PASSWORD` | No | If set, the backend creates or refreshes the admin account password on startup. If empty, admin seeding is skipped. |
 | `SUPABASE_DB_URL` | Yes | Postgres connection string from Supabase Dashboard → Project Settings → Database. |
+| `SUPABASE_CA_CERT` | No | CA certificate PEM text. When set, the Postgres TLS connection verifies the server certificate. Literal `\n` sequences are read as newlines. When unset, certificate verification is skipped. |
 | `DB_AUTO_MIGRATE` | No | Defaults to `true`. Set to `false` when migrations are applied separately and the runtime uses a restricted database role. |
 | `VITE_SUPABASE_URL` | No | Supabase project URL, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | No | Supabase publishable/anon key, for any client-side Supabase SDK usage. Not required by the backend's DB layer. |
@@ -203,7 +202,6 @@ ClickAway/
 |- public/                         Static images and rank/cosmetic assets
 |- server/
 |  |- data/
-|  |  |- clickaway.sql             Historical MySQL schema snapshot (pre-Supabase)
 |  |  |- MIGRATIONS.md             Manual migration ledger and environment notes
 |  |  |- migrations/               Incremental patches for older databases
 |  |- db/

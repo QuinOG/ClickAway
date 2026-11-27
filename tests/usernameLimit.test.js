@@ -3,13 +3,14 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { sanitizeUsername, sanitizePassword, validateUsername, validatePassword } from '../server/validation.js'
+import { DEMO_PLAYER_USERNAMES } from '../server/demoPlayerNames.js'
 const source = readFileSync('server/index.js', 'utf8')
 for (const [length, status] of [[24, 201], [25, 400]]) {
   test(`signup username ${length} characters returns ${status}`, async () => {
     let handler
     let created = false
     const context = { app: { post: (_path, _limiter, callback) => { handler = callback } }, authRateLimiter: {},
-      sanitizeUsername, sanitizePassword, validateUsername, validatePassword,
+      DEMO_PLAYER_USERNAMES, sanitizeUsername, sanitizePassword, validateUsername, validatePassword,
       findUserByUsername: async () => null, bcrypt: { hash: async () => 'hash' },
       createUser: async ({ username }) => { created = true; return { id: 1, username } },
       playerStateStore: { ensurePlayerUser: async () => {} }, createAuthResponse: async user => ({ user }),

@@ -1717,10 +1717,11 @@ async function readRankedLeaderboardRows(connection, {
     filtered_ladder AS (
       SELECT *
       FROM ranked_ladder
-      ${normalizedSearch ? "WHERE LOWER(username) LIKE ?" : ""}
+      ${normalizedSearch ? "WHERE LOWER(username) LIKE ? ESCAPE '\\'" : ""}
     )`
 
-  const searchParams = normalizedSearch ? [`%${normalizedSearch}%`] : []
+  // Escape LIKE wildcards so a search for "_" or "%" matches those characters literally.
+  const searchParams = normalizedSearch ? [`%${normalizedSearch.replace(/[\\%_]/g, "\\$&")}%`] : []
 
   if (view === "aroundMe" && userId) {
     const [[selfRow]] = await connection.query(
@@ -1827,17 +1828,6 @@ export async function findLeaderboardPage(options = {}) {
   return queryRankedLeaderboardRows(options)
 }
 
-export async function findLeaderboardRows({ limit = 25 } = {}) {
-  const page = await queryRankedLeaderboardRows({
-    board: LEADERBOARD_BOARDS.MMR,
-    page: 1,
-    limit,
-    view: "top",
-  })
-
-  return page.rows
-}
-
 export async function findRoundHistoryPage(userId, { page = 1, limit = HISTORY_PAGE_SIZE } = {}) {
   const normalizedLimit = normalizePaginationLimit(limit, 100, HISTORY_PAGE_SIZE)
   const normalizedPage = normalizePaginationPage(page)
@@ -1939,6 +1929,10 @@ export async function completeUserRound({
       )
       if (!claim.affectedRows) {
         throw new RoundAlreadySubmittedError()
+      }
+      // Purge expired used tokens on about 1% of claims, not only at startup.
+      if (Math.random() < 0.01) {
+        await connection.query(`DELETE FROM consumed_round_tokens WHERE consumed_at < now() - interval '2 days'`)
       }
     }
 
