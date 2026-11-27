@@ -2,6 +2,7 @@ import "dotenv/config"
 
 import pg from "pg"
 
+import { resolveDatabaseSsl } from "./databaseSsl.js"
 import { restoreMysqlAliasCasing, toPositionalSql } from "./pgCompat.js"
 
 const { Pool } = pg
@@ -57,9 +58,13 @@ if (!["postgres:", "postgresql:"].includes(parsedConnectionUrl.protocol)) {
   throw new Error("SUPABASE_DB_URL must use the postgres:// or postgresql:// protocol.")
 }
 
+// Module code runs once per process, so the warning is logged once.
+const { ssl, warning } = resolveDatabaseSsl(process.env)
+if (warning) console.warn(warning)
+
 const pool = new Pool({
   connectionString,
-  ssl: { rejectUnauthorized: false },
+  ssl,
 })
 
 const wrappedPool = {
